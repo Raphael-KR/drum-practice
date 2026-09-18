@@ -145,12 +145,12 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   expect(document.querySelectorAll(".practice-dock > button")).toHaveLength(8);
   expect(document.querySelectorAll("#practice details")).toHaveLength(0);
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-  set("goto", "99999");
+  set("goto", "0");
   click("jump");
   const notice = document.getElementById("error-notice")!;
   expect(notice.hidden).toBe(false);
   expect(notice.closest(".statusline")).not.toBeNull();
-  expect(notice.textContent).toContain("마디 번호를 확인하세요");
+  expect(notice.textContent).toContain("이동할 마디 수를 1 이상의 정수로 입력하세요");
   click("error-notice");
   expect(notice.hidden).toBe(true);
   set("goto", "1");
@@ -191,6 +191,23 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
     expect(s.measures[0].start).toBe(before);
   });
 });
+it("returns to earlier measures and stops at the first measure", () => {
+  const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+  set("seek", String(song.measures[24].start + 0.5));
+  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  document.getElementById("seek")!.dispatchEvent(new Event("change"));
+  set("goto", "4");
+  click("jump");
+  animationFrame(0);
+  expect(Number((document.getElementById("seek") as HTMLInputElement).value)).toBeCloseTo(song.measures[20].start);
+  set("goto", "99999");
+  click("jump");
+  animationFrame(0);
+  expect(Number((document.getElementById("seek") as HTMLInputElement).value)).toBeCloseTo(song.measures[0].start);
+  click("home");
+  set("goto", "1");
+});
+
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("new-button");
   set("new-title", "독립 두 번째 곡");
