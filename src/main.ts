@@ -75,14 +75,14 @@ app.innerHTML = `
 <section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
 <div class="stage" id="stage"><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
-<div class="transport"><div class="flex transport-left"><button id="home" aria-label="처음으로">↤</button><label><select id="goto" aria-label="앞으로 이동할 마디 수">${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label><button id="jump">앞으로</button></div><button id="play" class="primary play">▶ 재생</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">BPM</button><button id="slower" aria-label="5 BPM 느리게">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="재생 BPM: 좌우로 드래그하여 조절" aria-orientation="horizontal" title="좌우로 드래그: 1 BPM씩 조절"><button id="faster" aria-label="5 BPM 빠르게">+5</button><label><input id="click" type="checkbox" checked>클릭</label></div></div>
+<div class="transport"><div class="flex transport-left"><button id="home" aria-label="처음으로">↤</button><label><select id="goto" aria-label="앞으로 이동할 마디 수">${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label><button id="jump">앞으로</button></div><button id="play" class="primary play">▶ 재생</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">BPM</button><button id="slower" aria-label="5 BPM 느리게">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="재생 BPM: 좌우 드래그로 조절, 두 번 탭하면 원곡 BPM" aria-orientation="horizontal" title="좌우 드래그: 1 BPM씩 조절 · 두 번 탭: 원곡 BPM"><button id="faster" aria-label="5 BPM 빠르게">+5</button><label><input id="click" type="checkbox" checked>클릭</label></div></div>
 <details><summary>소리·카운트인·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>준비 <select id="count"><option value="0">없음</option><option value="1">1마디</option><option value="2">2마디</option></select></label><label><input id="count-each" type="checkbox">반복마다 준비</label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
 <div class="panels"><section class="panel"><h2>구간 반복</h2><div class="flex"><label>시작 마디 <input id="loop-a" type="number" min="1" value="25"></label><label>박 <input id="loop-ab" type="number" min="1" step="0.25" value="1"></label><button id="set-a">현재 위치 A</button></div><div class="flex"><label>끝 마디 <input id="loop-b" type="number" min="1" value="29"></label><label>박 <input id="loop-bb" type="number" min="1" step="0.25" value="1"></label><button id="set-b">현재 위치 B</button></div><p class="subtle">끝 지점의 첫 음은 포함하지 않습니다. 25~28마디 반복은 끝을 29마디 1박으로 설정하세요.</p><div class="flex"><input id="loop-name" type="text" placeholder="예: 후렴 4마디" aria-label="반복 이름"><button id="save-loop">저장·반복</button><button id="new-loop">새 구간</button><button id="stop-loop">반복 끄기</button></div><div class="list" id="loops"></div></section><section class="panel"><h2>마커</h2><div class="flex"><input id="marker-name" type="text" placeholder="예: 어려운 필인" aria-label="마커 이름"><button id="add-marker">현재 위치 표시</button></div><div id="markers" class="list"></div><details><summary>백업·복원</summary><p class="subtle">백업에는 정렬·가사·연습 설정이 들어갑니다. 미디어를 포함하면 다른 기기에서도 바로 열 수 있습니다.</p><label><input id="include-media" type="checkbox" checked>PDF·음원 포함</label><div class="flex"><button id="export">백업 내보내기</button><label>가져오기 <input id="restore" type="file" accept=".zip"></label></div></details></section></div><p class="keyboard">스페이스: 재생/정지 · ←/→: 이전/다음 마디 · M: 마커 추가</p><p class="subtle" id="alignment-note">가사와 박 위치는 자동 추정 자료를 포함합니다. 어긋나는 곳은 ‘악보·가사 맞추기’에서 수정하세요.</p></section></main>
 <dialog id="library-dialog"><div class="dialoghead"><h2>내 악보 목록</h2><button id="new-button">＋ 곡 추가</button><button data-close="library-dialog">닫기</button></div><div id="library-list"></div></dialog>
 <dialog id="new-dialog"><div class="dialoghead"><h2>새 곡 준비</h2><button data-close="new-dialog">닫기</button></div><p>PDF와 음악을 골라 주세요. 마디 영역은 자동 제안 후 직접 수정할 수 있습니다.</p><form id="new-form"><p><label>가수 <input id="new-artist" type="text"></label><label>제목 <input id="new-title" required type="text" value="새 연습곡"></label></p><p><label>PDF <input id="pdf-file" required type="file" accept="application/pdf,.pdf"></label></p><p><label>음원 <input id="audio-file" required type="file" accept="audio/*,.mp3"></label></p><p><label>BPM <input id="new-bpm" type="number" min="20" max="300" value="94" required></label><label>첫 박(초) <input id="new-first" type="number" min="0" step="0.001" value="0" required></label><label>박자 <input id="new-beats" type="number" min="1" max="16" value="4" required>/ <select id="new-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></p><p><label>한글 발음 가사 — 한 줄에 한 구절</label><textarea id="new-lyrics" placeholder="스베테오 테니 이레테\n스베테오 우시낫테"></textarea></p><p class="subtle">가사 초기 위치는 임시 분배입니다. 노래를 들으며 실제 시작 시각을 맞춰 주세요.</p><button type="submit" class="primary">곡 만들기</button></form></dialog>
 <dialog id="editor-dialog"><div class="dialoghead"><h2>악보·가사 맞추기</h2><button data-close="editor-dialog">연습으로 돌아가기</button></div><div class="flex"><label>가수 <input id="edit-artist" type="text"></label><label>제목 <input id="edit-title" type="text"></label><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>첫 박(초) <input id="edit-first" type="number" min="0" step="0.001"></label><button id="reflow">이 템포로 전체 다시 맞추기</button><button id="estimate-tempo">음원 템포 추정</button><button id="tap-tempo">박자 탭</button><span id="tap-result"></span></div><p class="subtle">전체 다시 맞추기는 기존 시간 보정을 바꿉니다. 실행 전 백업을 권합니다. 음원과 가사 원본 시각은 별도로 확인하세요.</p><div class="editor"><section><div class="flex"><label>페이지 <select id="editor-page"></select></label><label>마디 <select id="measure-select"></select></label></div><p class="subtle">원본 위를 드래그하여 마디 영역을 지정한 후 추가하거나 선택한 마디에 적용하세요.</p><div class="pagebox"><canvas id="edit-canvas"></canvas></div><div class="flex"><button id="add-region">새 마디 추가</button><button id="apply-crop">선택 마디에 영역 적용</button></div></section><section><h3>선택한 마디</h3><div class="flex"><label>이름 <input id="measure-label" type="text" style="width:95px"></label><label>박 수 <input id="measure-beats" type="number" min="1" max="16"></label><label>분모 <select id="measure-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></div><div class="flex"><label>시작 초 <input id="measure-start" type="number" min="0" step="0.001"></label><label>끝 초 <input id="measure-end" type="number" min="0" step="0.001"></label><button id="apply-measure">마디 저장</button></div><label>내부 박 위치(0~1, 쉼표 구분)<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1" style="width:100%"></label><p class="subtle">마디 시작부터 끝까지 박 경계의 가로 위치입니다. 비우면 균등 간격을 사용합니다.</p><div class="flex"><button id="preview-measure">이 마디 듣기</button><button id="anchor-now">현재 음악 위치를 첫 박으로</button><button id="editor-play">재생/정지</button><span id="editor-time"></span></div><div class="flex"><button id="duplicate">뒤에 복제</button><button id="split">반으로 분할</button><button id="merge">다음과 합치기</button><button id="move-left">앞으로</button><button id="move-right">뒤로</button><button id="remove-measure" class="danger">마디 삭제</button></div><h3>가사 시각</h3><p class="subtle">시작·끝은 원곡 초 단위입니다. 문장을 음절로 나누어 더 세밀하게 맞출 수 있습니다.</p><div class="flex"><button id="add-lyric">현재 위치에 가사 추가</button><button id="show-near">현재 마디 가사</button><button id="show-all">전체 가사</button></div><div class="scroll"><table><thead><tr><th>발음</th><th>시작</th><th>끝</th><th>확인</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>
 <dialog id="original-dialog"><div class="dialoghead"><h2>원본 악보</h2><button data-close="original-dialog">닫기</button></div><div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>알림</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>`;
-document.getElementById("app")!.insertAdjacentHTML("beforeend", '<dialog id="tempo-dialog" aria-labelledby="tempo-heading"><div class="dialoghead"><h2 id="tempo-heading">연습 BPM</h2><button data-close="tempo-dialog">닫기</button></div><div id="tempo-options"></div><p class="subtle">숫자를 좌우로 드래그하면 1 BPM씩 조절합니다.</p></dialog>');
+document.getElementById("app")!.insertAdjacentHTML("beforeend", '<dialog id="tempo-dialog" aria-labelledby="tempo-heading"><div class="dialoghead"><h2 id="tempo-heading">연습 BPM</h2><button data-close="tempo-dialog">닫기</button></div><div id="tempo-options"></div><p class="subtle">숫자를 좌우로 드래그하면 1 BPM씩 조절하고, 두 번 탭하면 원곡 BPM으로 돌아갑니다.</p></dialog>');
 arrangeWorkspace();
 arrangeIcons();
 function updateSongHeading() {
@@ -456,31 +456,56 @@ $("tempo-options").onclick = e => {
   $<HTMLDialogElement>("tempo-dialog").close();
   void rate(Number(b.dataset.tempo)).catch(error);
 };
-let tempoDrag: { id: number; x: number; bpm: number } | undefined;
+let tempoDrag: { id: number; x: number; y: number; bpm: number; moved: boolean; started: number } | undefined;
+let lastTempoTap: { time: number; x: number; y: number } | undefined;
 const tempoInput = val("rate");
 tempoInput.onpointerdown = e => {
   if (busy || !record || (e.pointerType === "mouse" && e.button !== 0)) return;
-  tempoDrag = { id: e.pointerId, x: e.clientX, bpm: Number(tempoInput.value) };
+  tempoDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, bpm: Number(tempoInput.value), moved: false, started: Date.now() };
   tempoInput.setPointerCapture(e.pointerId);
   tempoInput.classList.add("dragging");
 };
 tempoInput.onpointermove = e => {
   if (!tempoDrag || tempoDrag.id !== e.pointerId) return;
+  if (Math.abs(e.clientX - tempoDrag.x) > 3 || Math.abs(e.clientY - tempoDrag.y) > 3) {
+    tempoDrag.moved = true;
+    lastTempoTap = undefined;
+  }
   const bpm = Math.round(tempoDrag.bpm) + Math.round((e.clientX - tempoDrag.x) / 8);
   tempoInput.value = String(clamp(bpm, Math.ceil(song().bpm * 0.5), Math.floor(song().bpm * 1.2)));
   tempoInput.setAttribute("aria-valuenow", tempoInput.value);
 };
 function endTempoDrag(e: PointerEvent, apply: boolean) {
   if (!tempoDrag || tempoDrag.id !== e.pointerId) return;
+  const drag = tempoDrag;
   tempoDrag = undefined;
   tempoInput.classList.remove("dragging");
   if (tempoInput.hasPointerCapture(e.pointerId)) tempoInput.releasePointerCapture(e.pointerId);
-  if (apply) void rate(num("rate")).catch(error);
-  else syncSettings();
+  if (!apply) {
+    lastTempoTap = undefined;
+    syncSettings();
+  } else if (drag.moved) {
+    lastTempoTap = undefined;
+    void rate(num("rate")).catch(error);
+  } else {
+    const now = Date.now();
+    syncSettings();
+    if (now - drag.started > 350) { lastTempoTap = undefined; return; }
+    if (lastTempoTap && now - lastTempoTap.time <= 350 &&
+        Math.hypot(e.clientX - lastTempoTap.x, e.clientY - lastTempoTap.y) <= 24) {
+      lastTempoTap = undefined;
+      void rate(song().bpm).catch(error);
+    } else lastTempoTap = { time: now, x: e.clientX, y: e.clientY };
+  }
 }
 tempoInput.onpointerup = e => endTempoDrag(e, true);
 tempoInput.onpointercancel = e => endTempoDrag(e, false);
 tempoInput.onlostpointercapture = e => endTempoDrag(e, false);
+tempoInput.ondblclick = e => {
+  e.preventDefault();
+  lastTempoTap = undefined;
+  if (record && song().settings.rate !== 1) void rate(song().bpm).catch(error);
+};
 tempoInput.onkeydown = e => {
   if (!["ArrowLeft", "ArrowDown", "ArrowRight", "ArrowUp"].includes(e.key)) return;
   e.preventDefault();

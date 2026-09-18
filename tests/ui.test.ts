@@ -299,7 +299,7 @@ it("offers tempo presets and previews single-BPM dragging until release", async 
   input.hasPointerCapture = () => false;
   const pointer = (name: string, x: number) => {
     const e = new Event(name);
-    Object.assign(e, { pointerId: 1, pointerType: "touch", clientX: x });
+    Object.assign(e, { pointerId: 1, pointerType: "touch", clientX: x, clientY: 100 });
     (input as any)[`on${name}`]?.(e);
   };
   pointer("pointerdown", 100);
@@ -313,7 +313,11 @@ it("offers tempo presets and previews single-BPM dragging until release", async 
   expect(input.value).toBe("75");
   pointer("pointercancel", 84);
   expect(input.value).toBe("77");
-  click("original-tempo");
+  pointer("pointerdown", 100);
+  pointer("pointerup", 100);
+  expect(input.value).toBe("77");
+  pointer("pointerdown", 100);
+  pointer("pointerup", 100);
   await vi.waitFor(() => expect(input.value).toBe("94"));
 });
 it("prepares a distinct second song through the file form without code edits", async () => {
