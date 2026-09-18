@@ -70,7 +70,7 @@ app.innerHTML = `
 <header><div class="brand"><div class="logo" aria-hidden="true">♩</div><div><h1>드럼 연습실</h1><small id="song-title">악보를 따라, 나의 속도로</small></div></div><div class="actions"><button id="library-button">내 곡</button><button id="new-button">＋ 곡 추가</button><button id="save-html" hidden>HTML 한 파일로 저장</button><button id="edit-button" hidden>악보·가사 맞추기</button></div></header>
 <main><section class="welcome" id="welcome"><span class="tag">PDF · 음악 · 가사</span><h2>다음 마디를 미리 보고,<br>어려운 부분은 천천히.</h2><p>움직이는 악보와 바로 아래 가사를 한눈에 보세요.<br>연습할 구간을 정하고, 나에게 맞는 속도로 반복합니다.</p><div class="actions"><button class="primary" id="demo-button">바람과 언덕의 발라드 열기</button><button id="welcome-new">내 악보로 시작</button></div><p class="subtle">파일과 연습 기록은 이 브라우저에 저장됩니다. 다른 기기로 옮기거나 보관하려면 백업을 내보내세요.</p></section>
 <div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>한 곡 파일 · 변경 사항은 이 화면에서만 유지됩니다. 보관하려면 “HTML 한 파일로 저장”을 눌러 새 파일로 저장하세요.</p>
-<section id="practice" hidden><div class="statusline"><div class="flex"><span class="now" id="current-bar">1 마디</span><span class="beatbadge" id="beat">1</span><small id="signature">4/4</small></div><div class="flex"><span id="tempo">94 BPM</span><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
+<section id="practice" hidden><div class="statusline"><div class="flex"><span class="now" id="current-bar">1 마디</span><span class="beatbadge" id="beat">1</span><small id="signature">4/4</small></div><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
 <div class="stage" id="stage"><div class="ribbon" id="ribbon"></div><div class="playhead"></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
 <div class="transport"><div class="flex"><button id="home" aria-label="처음으로">↤</button><button id="play" class="primary play">▶ 재생</button><label>마디 <input id="goto" type="number" min="1" value="1"></label><button id="jump">이동</button></div><div class="flex"><button id="slower" aria-label="1 BPM 느리게">−1</button><label><input id="rate" type="number" min="1" step="1" value="94" aria-label="재생 BPM"> BPM</label><button id="faster" aria-label="1 BPM 빠르게">+1</button></div><label><input id="click" type="checkbox" checked>클릭</label></div>
@@ -376,8 +376,6 @@ function frame() {
     val("seek").value = String(t);
     val("seek").setAttribute("aria-valuetext", `${loc.measure?.label || "1"} 마디`);
   }
-  $("tempo").textContent =
-    `${Number((s.bpm * s.settings.rate).toFixed(2))} BPM · 재생`;
   $("editor-time").textContent = `${t.toFixed(2)}초`;
 }
 requestAnimationFrame(frame);
