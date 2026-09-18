@@ -1075,3 +1075,64 @@ main > .error-notice { flex:none; width:100%; }
 
 /* Leave room for Safari’s native fullscreen exit control. */
 :root:fullscreen header { padding-left: max(88px, env(safe-area-inset-left)); }
+
+/* Keep the live beat beside its measure, above the score image. */
+.measure .label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  z-index: 2;
+}
+.measure-beat, .measure-signature { display: none; }
+.measure.active .label {
+  color: var(--accent);
+  font-weight: 700;
+  background: white;
+  border-radius: 5px;
+  padding: 2px 5px;
+}
+.measure.active .measure-beat {
+  display: inline-block;
+  min-width: 24px;
+  text-align: center;
+  color: white;
+  background: var(--accent);
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 20px;
+}
+.measure.active .measure-signature { display: inline; font-weight: 400; }
+.two-rows .measure.active .label { top: -22px; font-size: 12px; }
+.statusline:has(> .error-notice[hidden]) { min-height: 0; padding: 0; }
+
+#playhead-status {
+  position: absolute;
+  left: 33.333%;
+  top: 2px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: white;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+#playhead-status[hidden], .two-rows #playhead-status { display: none; }
+#playhead-beat {
+  background: var(--accent);
+  color: white;
+  border-radius: 4px;
+  min-width: 24px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 20px;
+}
+#practice:not(.two-rows) .measure-beat,
+#practice:not(.two-rows) .measure-signature { display: none; }

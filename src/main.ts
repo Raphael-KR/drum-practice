@@ -70,8 +70,8 @@ app.innerHTML = `
 <header><div class="brand"><div class="logo" aria-hidden="true">♩</div><div><h1>드럼 연습실</h1><small id="song-title">악보를 따라, 나의 속도로</small></div></div><div class="actions"><button id="library-button">내 곡</button><button id="new-button">＋ 곡 추가</button><button id="save-html" hidden>HTML 한 파일로 저장</button><button id="edit-button" hidden>악보·가사 맞추기</button></div></header>
 <main><section class="welcome" id="welcome"><span class="tag">PDF · 음악 · 가사</span><h2>다음 마디를 미리 보고,<br>어려운 부분은 천천히.</h2><p>움직이는 악보와 바로 아래 가사를 한눈에 보세요.<br>연습할 구간을 정하고, 나에게 맞는 속도로 반복합니다.</p><div class="actions"><button class="primary" id="demo-button">바람과 언덕의 발라드 열기</button><button id="welcome-new">내 악보로 시작</button></div><p class="subtle">파일과 연습 기록은 이 브라우저에 저장됩니다. 다른 기기로 옮기거나 보관하려면 백업을 내보내세요.</p></section>
 <div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>한 곡 파일 · 변경 사항은 이 화면에서만 유지됩니다. 보관하려면 “HTML 한 파일로 저장”을 눌러 새 파일로 저장하세요.</p>
-<section id="practice" hidden><div class="statusline"><div class="flex"><span class="now" id="current-bar">1 마디</span><span class="beatbadge" id="beat">1</span><small id="signature">4/4</small></div><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
-<div class="stage" id="stage"><div class="ribbon" id="ribbon"></div><div class="playhead"></div></div>
+<section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
+<div class="stage" id="stage"><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
 <div class="transport"><div class="flex"><button id="home" aria-label="처음으로">↤</button><button id="play" class="primary play">▶ 재생</button><label><input id="goto" type="number" min="1" step="1" value="1" aria-label="앞으로 이동할 마디 수"> 마디</label><button id="jump">앞으로</button></div><div class="flex"><button id="slower" aria-label="1 BPM 느리게">−1</button><label><input id="rate" type="number" min="1" step="1" value="94" aria-label="재생 BPM"> BPM</label><button id="faster" aria-label="1 BPM 빠르게">+1</button></div><label><input id="click" type="checkbox" checked>클릭</label></div>
 <details><summary>소리·카운트인·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>준비 <select id="count"><option value="0">없음</option><option value="1">1마디</option><option value="2">2마디</option></select></label><label><input id="count-each" type="checkbox">반복마다 준비</label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
@@ -258,7 +258,7 @@ function measureHTML(m: Measure, i: number, width: number) {
       return `<span class="syllable" title="${l.confirmed ? "확인됨" : "추정"}" style="left:${x * 100}%;${l.text.length > 4 ? "font-size:14px;white-space:normal;max-width:95%;transform:none;" : ""}">${esc(l.text)}</span>`;
     })
     .join("");
-  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label">${esc(m.label)} 마디${m.beats !== 4 || m.denominator !== 4 ? ` · ${m.beats}/${m.denominator}` : ""}</span><div class="crop" style="height:${height}px;background-image:url('${urls[r.page]}');background-size:${100 / r.w}% ${100 / r.h}%;background-position:${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%"></div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
+  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label">${esc(m.label)} 마디<span class="measure-beat" aria-label="현재 박">1</span><small class="measure-signature">${m.beats}/${m.denominator}</small></span><div class="crop" style="height:${height}px;background-image:url('${urls[r.page]}');background-size:${100 / r.w}% ${100 / r.h}%;background-position:${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%"></div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
 }
 function positionInMeasure(index: number, beat: number, width: number) {
   const s = song(),
@@ -351,11 +351,10 @@ function frame() {
   if (loc.measure) {
     const { index, measure: m, beat } = loc;
     const count = player.count();
-    $("current-bar").textContent = count ? "준비" : `${m.label} 마디`;
-    $("beat").textContent = String(
-      count || Math.min(m.beats, Math.floor(beat) + 1),
-    );
-    $("signature").textContent = `${m.beats}/${m.denominator}`;
+    $("playhead-status").hidden = s.settings.view !== "ribbon";
+    $("playhead-bar").textContent = `${m.label} 마디`;
+    $("playhead-beat").textContent = `${count ? "준비 " : ""}${count || Math.min(m.beats, Math.floor(beat) + 1)}`;
+    $("playhead-signature").textContent = `${m.beats}/${m.denominator}`;
     if (s.settings.view === "ribbon") {
       const x =
         trackOffsets[index] +
@@ -364,12 +363,15 @@ function frame() {
         `translateX(${$("stage").clientWidth / 3 - x}px)`;
     } else {
       renderRows(index);
-      $("ribbon")
-        .querySelectorAll<HTMLElement>("[data-index]")
-        .forEach((e) =>
-          e.classList.toggle("active", Number(e.dataset.index) === index),
-        );
     }
+    $("ribbon").querySelectorAll<HTMLElement>("[data-index]").forEach((e) => {
+      const active = Number(e.dataset.index) === index;
+      e.classList.toggle("active", active);
+      if (active) {
+        e.querySelector(".measure-beat")!.textContent =
+          `${count ? "준비 " : ""}${count || Math.min(m.beats, Math.floor(beat) + 1)}`;
+      }
+    });
   }
   $("elapsed").textContent = time(t);
   if (!scrubbing) {

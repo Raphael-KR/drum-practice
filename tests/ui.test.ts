@@ -208,6 +208,25 @@ it("returns to earlier measures and stops at the first measure", () => {
   set("goto", "1");
 });
 
+it("places the beat on the active measure in rows and on the fixed playhead in ribbon", () => {
+  const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+  set("view", "rows");
+  document.getElementById("view")!.dispatchEvent(new Event("change"));
+  set("seek", String(song.measures[24].start + 0.7));
+  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  animationFrame(0);
+  expect(document.querySelector(".measure.active")!.getAttribute("data-index")).toBe("24");
+  expect(document.querySelector(".measure.active .measure-beat")!.textContent).toBe("2");
+  expect(document.getElementById("playhead-status")!.hidden).toBe(true);
+  set("view", "ribbon");
+  document.getElementById("view")!.dispatchEvent(new Event("change"));
+  animationFrame(0);
+  expect(document.getElementById("playhead-status")!.hidden).toBe(false);
+  expect(document.getElementById("playhead-status")!.parentElement!.id).toBe("stage");
+  expect(document.getElementById("playhead-bar")!.textContent).toBe("25 마디");
+  expect(document.getElementById("playhead-beat")!.textContent).toBe("2");
+  click("home");
+});
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("new-button");
   set("new-title", "독립 두 번째 곡");
