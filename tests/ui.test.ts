@@ -274,7 +274,12 @@ it("keeps icon controls accessible and updates play and metronome states", async
   metronome.closest("label")!.click();
 });
 it("prepares a distinct second song through the file form without code edits", async () => {
+  click("library-button");
+  await vi.waitFor(() => expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(true));
+  expect(document.getElementById("library-button")!.getAttribute("aria-label")).toBe("내 악보 목록");
+  expect(document.getElementById("new-button")!.closest("dialog")!.id).toBe("library-dialog");
   click("new-button");
+  expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(false);
   set("new-title", "독립 두 번째 곡");
   set("new-bpm", "100");
   set("new-lyrics", "새로운 가사");
