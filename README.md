@@ -7,7 +7,7 @@ PDF 마디 영역과 원곡 시간을 연결하는 로컬 우선 웹앱입니다
 Node.js 22 이상을 사용합니다.
 
 ```sh
-cd /Users/raphael/Playground/drum-practice-web
+cd /Users/raphael/Playground/drum-practice
 npm ci
 npm run dev -- --port 5173
 ```
