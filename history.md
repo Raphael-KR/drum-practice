@@ -416,3 +416,9 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - STT: 13–16 second excerpts took 0.267–0.363 seconds each. AFM existing bridge: 40.099–42.011 seconds, all malformed content. Typed retry: 2.008 seconds, valid shape but incorrect whole-sentence replacement at run0. No AFM output applied.
 - Deterministic compact runs + diff: 2300→1264 tokens using Apple's tokenizer (45.0% reduction). This is not measured Codex billing or end-to-end speed. STT/code preprocessing useful; AFM alignment benefit not demonstrated.
 - App/source song timing and clinic files unchanged. Probe data stays ignored/local. Verification: actual local runtime outputs, manual comparison against supplied lyrics, tokenCount API, git diff --check.
+
+## AFM bounded helper tasks — 2026-09-19
+
+- Tested AFM 3 Core Advanced on 28 pre-labeled small tasks using typed FoundationModels outputs. Reading equivalence6/8 (median0.334s), command extraction5/8 (0.680s), feedback routing11/12 (0.365s).
+- Useful candidate: preserve original feedback and append preliminary category for downstream review. Not safe for direct commands or automatic lyric-error dismissal. One routing error confused clipped text with lyric timing.
+- Details and limitations: docs/AFM-SMALL-TASKS-TEST.md. Raw local evidence under ignored docs/experiments/afm-small-tasks. No product or clinic code changes; no measured end-to-end token/speed claim. Verified all expected/actual comparisons and git diff --check.
