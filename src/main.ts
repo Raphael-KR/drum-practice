@@ -1,3 +1,5 @@
+import { applyEnglishLyrics } from "./english-lyrics";
+import { applyJapaneseReadings } from "./lyric-reading";
 import { applyLyricRevision } from "./lyric-revision";
 import { playbackPosition, copyPosition } from "./playback-position";
 import "./style.css";
@@ -185,6 +187,8 @@ async function activate(r: RecordData) {
   applyUserLyricAnchors(r.song);
   applyLyricTimingPatch(r.song, lyricTimingRefinement);
   applyLyricRevision(r.song);
+  applyJapaneseReadings(r.song);
+  applyEnglishLyrics(r.song);
   validateSong(r.song);
   busy = true;
   try {
