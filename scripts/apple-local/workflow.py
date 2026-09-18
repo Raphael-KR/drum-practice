@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
+from boundaries import validate_anchors, boundary_candidates, probe_windows, assess_boundary
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
@@ -78,6 +79,8 @@ def main():
     for c in chunks:
         if not (0 <= c['start'] < c['end']) or not isinstance(c['reference'], str):
             p.error('Invalid reference segment')
+    listening_anchors = manifest.get('anchors', [])
+    validate_anchors(listening_anchors, set(ids))
     ffmpeg = shutil.which('ffmpeg')
     if not ffmpeg:
         p.error('ffmpeg is required')
@@ -92,8 +95,9 @@ def main():
     report = {'method':'Apple STT + deterministic diff + advisory AFM', 'verifiedByListening':False,
               'audioSHA256':hashlib.sha256(args.audio.read_bytes()).hexdigest(),
               'manifestSHA256':hashlib.sha256(args.manifest.read_bytes()).hexdigest(),
-              'sourceSHA256':{f:hashlib.sha256((HERE/f).read_bytes()).hexdigest() for f in ['SpeechBridge.swift','Review.swift','workflow.py']},
-              'sttStatus':status, 'segments':[], 'afmErrors':[]}
+              'sourceSHA256':{f:hashlib.sha256((HERE/f).read_bytes()).hexdigest() for f in ['SpeechBridge.swift','Review.swift','workflow.py','boundaries.py']},
+              'sttStatus':status, 'segments':[], 'afmErrors':[], 'listeningAnchors':listening_anchors,
+              'boundaryPolicy':{'singleCharacterSeconds':.8,'contextSpreadSeconds':.2,'autoApply':False}}
     pairs = []
     for chunk in chunks:
         ident = chunk['id']; wav = out/f'{ident}.wav'
@@ -106,6 +110,22 @@ def main():
         if 'segments' not in raw:
             raise RuntimeError(f'STT failed on {ident}: {raw.get("error")}')
         validate_segments(raw['segments'],duration)
+        boundaries=[]
+        for candidate in boundary_candidates(raw['segments'],chunk['start'],ident,listening_anchors):
+            probes=[]
+            for index,(lo,hi) in enumerate(probe_windows(candidate,chunk['end'])):
+                clip=out/f'{candidate["id"]}-probe{index}.wav'
+                begin_probe=time.perf_counter()
+                try:
+                    subprocess.run([ffmpeg,'-hide_banner','-loglevel','error','-ss',str(lo),'-t',str(hi-lo),'-i',str(args.audio.resolve()),'-ar','16000','-ac','1',str(clip)],check=True)
+                    pr=run_json(out/'stt',{'action':'transcribe','path':str(clip),'locale':manifest.get('locale','ja_JP')},120)
+                    if 'segments' in pr:validate_segments(pr['segments'],hi-lo)
+                except (subprocess.SubprocessError,ValueError,KeyError) as error:
+                    pr={'error':type(error).__name__}
+                pr.update(offset=lo,windowEnd=hi,seconds=time.perf_counter()-begin_probe)
+                write(out/f'{candidate["id"]}-probe{index}.json',pr)
+                probes.append(pr)
+            boundaries.append(assess_boundary(candidate,probes))
         diffs,anchors=compare(chunk['reference'],raw['segments'],chunk['start'],ident)
         for d in diffs:
             span=d['audioSpan']
@@ -115,7 +135,7 @@ def main():
                 pairs.append({k:d[k] for k in ['id','reference','recognized','referenceContext','recognizedContext']})
         report['segments'].append(dict(id=ident,start=chunk['start'],end=chunk['end'],sttSeconds=elapsed,
           runs=[[s['text'],round(chunk['start']+s['start'],3),round(chunk['start']+s['end'],3)] for s in raw['segments']],
-          differences=diffs, matchingTextRuns=anchors))
+          differences=diffs, matchingTextRuns=anchors, boundaryChecks=boundaries))
         write(out/'report.json',report)
         print(f'{ident}: STT {elapsed:.2f}s, {len(diffs)} review candidates',flush=True)
     write(out/'afm-input.json',pairs)
@@ -137,11 +157,19 @@ def main():
         report['afmErrors'].append(type(e).__name__)
     report['afmSeconds']=time.perf_counter()-begin
     report['afmRequested']=len(pairs)
+    matched_anchor_ids={a['id'] for s in report['segments'] for b in s['boundaryChecks'] for a in b['anchors']}
+    report['unmatchedListeningAnchors']=[a['id'] for a in listening_anchors if a['id'] not in matched_anchor_ids]
+    report['boundaryCandidateCount']=sum(len(s['boundaryChecks']) for s in report['segments'])
+    report['contextSensitiveCount']=sum(b['status']=='context_sensitive' for s in report['segments'] for b in s['boundaryChecks'])
     report['reviewCandidateCount']=sum(len(s['differences']) for s in report['segments'])
     write(out/'report.json',report)
     lines=['# Local audio review queue','','All candidates retained. AFM is advisory. No lyric times applied or listening verification claimed.','']
+    if report['unmatchedListeningAnchors']:
+        lines.append(f'Unmatched listening anchors: {report["unmatchedListeningAnchors"]}')
     for s in report['segments']:
         lines.append(f'## {s["id"]}: {s["start"]}–{s["end"]} seconds')
+        for b in s['boundaryChecks']:
+            lines.append(f'- BOUNDARY {b["id"]} {b["text"]!r}: {b["status"]}, spread {b["spreadSeconds"]:.3f}s; automatic correction blocked; anchors {b["anchorComparisons"]}')
         for d in s['differences']:
             lines.append(f'- {d["id"]} | bars {d["measures"]} | audio {d["audioSpan"]} | reference {d["reference"]!r} / STT {d["recognized"]!r} | AFM {d["afm"]["verdict"]}')
     (out/'review.md').write_text('\n'.join(lines)+'\n')
