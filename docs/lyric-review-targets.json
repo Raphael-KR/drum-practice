@@ -24,103 +24,103 @@
       "number": "072",
       "aliases": [],
       "lyricId": "v2-l22",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "073",
       "aliases": [],
       "lyricId": "v2-l28",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "074",
       "aliases": [],
       "lyricId": "v2-l35",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "075",
       "aliases": [],
       "lyricId": "v2-l40",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "076",
       "aliases": [],
       "lyricId": "v2-l41",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "205",
       "aliases": [],
       "lyricId": "v2-l45",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "077",
       "aliases": [],
       "lyricId": "v2-l46",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "078",
       "aliases": [],
       "lyricId": "v2-l47",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "079",
       "aliases": [],
       "lyricId": "v2-l48",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "080",
       "aliases": [],
       "lyricId": "v2-l49",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "081",
       "aliases": [],
       "lyricId": "v2-l52",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "082",
       "aliases": [],
       "lyricId": "v2-l58",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "083",
       "aliases": [],
       "lyricId": "v2-l64",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "084",
       "aliases": [],
       "lyricId": "v2-l77",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "085",
       "aliases": [],
       "lyricId": "v2-l79",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "086",
       "aliases": [],
       "lyricId": "v2-l82",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "087",
       "aliases": [],
       "lyricId": "v2-l86",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "088",
@@ -775,51 +775,52 @@
       "number": "206",
       "aliases": [],
       "lyricId": "v2-l2",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "207",
       "aliases": [],
       "lyricId": "v2-l3",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "208",
       "aliases": [],
       "lyricId": "v2-l4",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "209",
       "aliases": [],
       "lyricId": "v2-l7",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "210",
       "aliases": [],
       "lyricId": "v2-l8",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "211",
       "aliases": [],
       "lyricId": "v2-l10",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "212",
       "aliases": [],
       "lyricId": "v2-l11",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "213",
       "aliases": [],
       "lyricId": "v3-terminal-wa",
-      "status": "pending"
+      "status": "confirmed"
     }
   ],
   "positionPolicy": "nearest quarter beat; raw times retained as originalTime",
-  "appliedTailShift": "v2-l25 inclusive through end +1 quarter-beat tick, 2026-09-19"
+  "appliedTailShift": "v2-l25 inclusive through end +1 quarter-beat tick, 2026-09-19",
+  "appliedListeningBatch": "listening-through-m24-no-2026-09-19"
 }
