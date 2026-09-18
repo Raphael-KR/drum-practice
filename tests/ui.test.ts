@@ -92,7 +92,7 @@ beforeAll(async () => {
   }));
   await import("../src/main");
 });
-it("loads demo, saves named markers and loops and applies exact 1% step", async () => {
+it("loads demo, saves named markers and loops and applies exact 1 BPM step", async () => {
   click("demo-button");
   await vi.waitFor(() =>
     expect(document.querySelectorAll(".measure")).toHaveLength(110),
@@ -111,14 +111,31 @@ it("loads demo, saves named markers and loops and applies exact 1% step", async 
   click("slower");
   await vi.waitFor(() =>
     expect((document.getElementById("rate") as HTMLInputElement).value).toBe(
-      "99",
+      "93",
     ),
   );
   await vi.waitFor(async () => {
     const r = (await allRecords()).find((r) => r.song.id === "real-paradis")!;
-    expect(r.song.settings.rate).toBe(0.99);
+    expect(r.song.settings.rate).toBeCloseTo(93 / 94, 12);
     expect(r.song.loops.at(-1)!.name).toBe("DOM 후렴");
   });
+});
+it("accepts BPM input, increments by one BPM and clamps to supported audio range", async () => {
+  set("rate", "80");
+  document.getElementById("rate")!.dispatchEvent(new Event("change"));
+  await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("80"));
+  click("faster");
+  await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("81"));
+  await vi.waitFor(async () => {
+    const r = (await allRecords()).find(r => r.song.id === "real-paradis")!;
+    expect(r.song.settings.rate).toBeCloseTo(81 / 94, 12);
+  });
+  set("rate", "999");
+  document.getElementById("rate")!.dispatchEvent(new Event("change"));
+  await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("112.8"));
+  set("rate", "94");
+  document.getElementById("rate")!.dispatchEvent(new Event("change"));
+  await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("94"));
 });
 it("keeps direct tool access and previews the actual measure while scrubbing", async () => {
   expect(document.getElementById("song-title")!.textContent).toContain(

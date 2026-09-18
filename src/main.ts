@@ -73,7 +73,7 @@ app.innerHTML = `
 <section id="practice" hidden><div class="statusline"><div class="flex"><span class="now" id="current-bar">1 마디</span><span class="beatbadge" id="beat">1</span><small id="signature">4/4</small></div><div class="flex"><span id="tempo">94 BPM</span><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
 <div class="stage" id="stage"><div class="ribbon" id="ribbon"></div><div class="playhead"></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
-<div class="transport"><div class="flex"><button id="home" aria-label="처음으로">↤</button><button id="play" class="primary play">▶ 재생</button><label>마디 <input id="goto" type="number" min="1" value="1"></label><button id="jump">이동</button></div><div class="flex"><button id="slower" aria-label="1퍼센트 느리게">−1%</button><label><input id="rate" type="number" min="50" max="120" step="1" value="100" aria-label="재생 속도 퍼센트">%</label><button id="faster" aria-label="1퍼센트 빠르게">+1%</button></div><label><input id="click" type="checkbox" checked>클릭</label></div>
+<div class="transport"><div class="flex"><button id="home" aria-label="처음으로">↤</button><button id="play" class="primary play">▶ 재생</button><label>마디 <input id="goto" type="number" min="1" value="1"></label><button id="jump">이동</button></div><div class="flex"><button id="slower" aria-label="1 BPM 느리게">−1</button><label><input id="rate" type="number" min="1" step="1" value="94" aria-label="재생 BPM"> BPM</label><button id="faster" aria-label="1 BPM 빠르게">+1</button></div><label><input id="click" type="checkbox" checked>클릭</label></div>
 <details><summary>소리·카운트인·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>준비 <select id="count"><option value="0">없음</option><option value="1">1마디</option><option value="2">2마디</option></select></label><label><input id="count-each" type="checkbox">반복마다 준비</label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
 <div class="panels"><section class="panel"><h2>구간 반복</h2><div class="flex"><label>시작 마디 <input id="loop-a" type="number" min="1" value="25"></label><label>박 <input id="loop-ab" type="number" min="1" step="0.25" value="1"></label><button id="set-a">현재 위치 A</button></div><div class="flex"><label>끝 마디 <input id="loop-b" type="number" min="1" value="29"></label><label>박 <input id="loop-bb" type="number" min="1" step="0.25" value="1"></label><button id="set-b">현재 위치 B</button></div><p class="subtle">끝 지점의 첫 음은 포함하지 않습니다. 25~28마디 반복은 끝을 29마디 1박으로 설정하세요.</p><div class="flex"><input id="loop-name" type="text" placeholder="예: 후렴 4마디" aria-label="반복 이름"><button id="save-loop">저장·반복</button><button id="new-loop">새 구간</button><button id="stop-loop">반복 끄기</button></div><div class="list" id="loops"></div></section><section class="panel"><h2>마커</h2><div class="flex"><input id="marker-name" type="text" placeholder="예: 어려운 필인" aria-label="마커 이름"><button id="add-marker">현재 위치 표시</button></div><div id="markers" class="list"></div><details><summary>백업·복원</summary><p class="subtle">백업에는 정렬·가사·연습 설정이 들어갑니다. 미디어를 포함하면 다른 기기에서도 바로 열 수 있습니다.</p><label><input id="include-media" type="checkbox" checked>PDF·음원 포함</label><div class="flex"><button id="export">백업 내보내기</button><label>가져오기 <input id="restore" type="file" accept=".zip"></label></div></details></section></div><p class="keyboard">스페이스: 재생/정지 · ←/→: 이전/다음 마디 · M: 마커 추가</p><p class="subtle" id="alignment-note">가사와 박 위치는 자동 추정 자료를 포함합니다. 어긋나는 곳은 ‘악보·가사 맞추기’에서 수정하세요.</p></section></main>
 <dialog id="library-dialog"><div class="dialoghead"><h2>내 곡</h2><button data-close="library-dialog">닫기</button></div><div id="library-list"></div></dialog>
@@ -221,7 +221,9 @@ async function activate(r: RecordData) {
 }
 function syncSettings() {
   const s = song().settings;
-  val("rate").value = String(Math.round(s.rate * 100));
+  val("rate").value = String(Number((s.rate * song().bpm).toFixed(2)));
+  val("rate").min = String(song().bpm * 0.5);
+  val("rate").max = String(song().bpm * 1.2);
   val("click").checked = s.click;
   val("music-volume").value = String(s.musicVolume);
   val("click-volume").value = String(s.clickVolume);
@@ -392,11 +394,15 @@ async function toggle() {
     busy = false;
   }
 }
-async function rate(r: number) {
+async function rate(bpm: number) {
   if (busy) return;
   busy = true;
   try {
-    await engine().setRate(Math.round(clamp(r, 0.5, 1.2) * 100) / 100);
+    if (!Number.isFinite(bpm) || bpm <= 0) {
+      syncSettings();
+      throw Error("올바른 BPM을 입력하세요.");
+    }
+    await engine().setRate(clamp(bpm / song().bpm, 0.5, 1.2));
     syncSettings();
     queueSave();
   } finally {
@@ -410,9 +416,9 @@ action("jump", () => {
   if (!m) throw Error("마디 번호를 확인하세요.");
   engine().seek(m.start);
 });
-action("slower", () => rate(song().settings.rate - 0.01));
-action("faster", () => rate(song().settings.rate + 0.01));
-val("rate").onchange = () => rate(num("rate") / 100).catch(error);
+action("slower", () => rate(Number((song().settings.rate * song().bpm - 1).toFixed(2))));
+action("faster", () => rate(Number((song().settings.rate * song().bpm + 1).toFixed(2))));
+val("rate").onchange = () => rate(num("rate")).catch(error);
 let scrubbing = false,
   resumeAfterScrub = false;
 const seek = val("seek");
