@@ -520,3 +520,8 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 한계: 직접 전 음절 청취 검증 아님. 구간 첫 음절 DTW clip-start 문제는 기존 위치 유지로 처리, 순서 충돌 보정 6곳 포함 의심 목록 공개. 새 원문 자체의 누락·발음 불일치는 docs/LYRICS-V2-REVIEW.md에 기록.
 - 검증: 실데이터 534개 validateSong, 가장 오래된/최근 저장판 migration 결과 일치, archive·재적용·수동 보존 검사. Python 15개 통과. TypeScript 전체 테스트 및 빌드 결과는 아래 최종 검증 기록 참조.
 - 최종 검증: TypeScript 55 tests/15 files 통과, Python 15 tests 통과, portable/TypeScript/Vite build 통과. localhost:5173/demo/song.json HTTP 실제 응답의 v2 revision·534개 가사·청취 앵커·556개 보관본 확인. 실제 iPad 화면/전 음절 청취 정확도 검증은 미실시.
+
+## 2026-09-19 J-Lyric 사용자 제공 본문 비교
+- v2 일본어와 사용자 붙여넣은 새 본문을 공백 제외 비교: 반복 후렴 포함 23개 차이 구간. 자료·diff는 docs/experiments/lyrics-v3-comparison에 보존.
+- 일본어 누락 다수는 한글에는 이미 존재. 현재 표시에서 실질 확인된 수정 후보: 出ていくわ의 마지막 와 추가, 코마라테타→코마라세타, 코토노나이→코토모나이. 장음 표기는 별도 정리 대상.
+- docs/LYRICS-JAPANESE-COMPARISON.md에 전체 대조 및 텍스트/발음/타이밍 구분 기록. 비교 요청이므로 앱·가사·싱크 미변경. 문서 diff 검사 통과.
