@@ -54,7 +54,7 @@ export function applyLyricTimingPatch(song: Song, patch: TimingPatch = correctio
 }
 
 /** User listening reference: bar 15, fourth eighth note = beat offset 1.5. */
-export function applyUserLyricAnchors(song: Song): boolean {
+function applyBar15Anchor(song: Song): boolean {
   if (song.id !== correction.songId || song.lyrics.length !== correction.lyricCount ||
       lyricFingerprint(song.lyrics.map(l => l.text).join('')) !== correction.textFingerprint) return false;
   const i = song.lyrics.findIndex(l => l.id === 'l38' && l.text === '코');
@@ -68,5 +68,19 @@ export function applyUserLyricAnchors(song: Song): boolean {
   if (!previous.confirmed && Math.abs(previous.end - l.time) < 1e-7) previous.end = time;
   l.time = time;
   l.confirmed = true;
+  return true;
+}
+
+/** Listening report 001: use the copied audio timestamp, without grid snapping. */
+export function applyUserLyricAnchors(song: Song): boolean {
+  const bar15Changed = applyBar15Anchor(song);
+  if (song.id !== correction.songId || song.lyrics.length !== correction.lyricCount ||
+      lyricFingerprint(song.lyrics.map(l => l.text).join('')) !== correction.textFingerprint) return bar15Changed;
+  const lyric = song.lyrics[0];
+  if (lyric.id !== 'l0' || lyric.text !== '아' || lyric.confirmed ||
+      Math.abs(lyric.time - 20.58) > 1e-7 || Math.abs(lyric.end - 21.06) > 1e-7 ||
+      song.lyrics[1].time <= 20.828) return bar15Changed;
+  lyric.time = 20.828;
+  lyric.confirmed = true;
   return true;
 }
