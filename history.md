@@ -409,3 +409,10 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - Tested original mixture audio 113–129 seconds (16 s, mono 16 kHz). Local transcription returned Japanese text with per-run time ranges. The target 思い上がってた was recognized. Absolute start times: 思120.32, い121.58, 上121.76, が121.94, っ122.12, て122.48, た122.66.
 - Feasibility: useful independent recognition/timing evidence. Not proof of all-syllable accuracy: 思 covers two morae, and nearby 壁 / 旅鳥 were mistranscribed. Confidence is recognition confidence, not timestamp accuracy. No listening-based verification claimed. Original song.json unchanged.
 - Reproducible probe source, binary, sample and JSON retained locally under ignored docs/experiments/apple-stt/. No audio uploaded.
+
+## Local STT + AFM preprocessing benchmark — 2026-09-19
+
+- Reused clinic-ai Apple bridges read-only; tested three Japanese singing excerpts and a typed AFM retry. Details: docs/APPLE-LOCAL-PREPROCESSING-TEST.md.
+- STT: 13–16 second excerpts took 0.267–0.363 seconds each. AFM existing bridge: 40.099–42.011 seconds, all malformed content. Typed retry: 2.008 seconds, valid shape but incorrect whole-sentence replacement at run0. No AFM output applied.
+- Deterministic compact runs + diff: 2300→1264 tokens using Apple's tokenizer (45.0% reduction). This is not measured Codex billing or end-to-end speed. STT/code preprocessing useful; AFM alignment benefit not demonstrated.
+- App/source song timing and clinic files unchanged. Probe data stays ignored/local. Verification: actual local runtime outputs, manual comparison against supplied lyrics, tokenCount API, git diff --check.
