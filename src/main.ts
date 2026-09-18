@@ -447,7 +447,7 @@ async function finishScrub() {
   $("seek-position").hidden = true;
   const resume = resumeAfterScrub;
   resumeAfterScrub = false;
-  if (resume) await engine().play(false);
+  if (resume) await engine().play(false, false);
   queueSave();
 }
 window.addEventListener("pointerup", () => finishScrub().catch(error));

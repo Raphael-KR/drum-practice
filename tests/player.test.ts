@@ -112,3 +112,35 @@ it.each(["supported", "missing", "rejected"])("plays with %s Audio Session API",
     vi.unstubAllGlobals();
   }
 });
+
+ it.each([0, 2])("resumes paused music and clicks from the measure start with %i count-in measures", async (countIn) => {
+  vi.stubGlobal("AudioContext", Context);
+  vi.stubGlobal("window", { setInterval: () => 1 });
+  const p = new Player();
+  try {
+    p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+    p.original = { duration: 296.88 } as AudioBuffer;
+    p.rendered = {} as AudioBuffer;
+    p.song!.settings.countIn = countIn;
+    const m = p.song!.measures[24];
+    p.position = m.start;
+    await p.play();
+    const first = p.cycles[0];
+    (p.ctx as unknown as Context).currentTime = first.musicAt + 0.7;
+    p.pause();
+    expect(p.position).toBeCloseTo(m.start + 0.7);
+    await p.play();
+    const resumed = p.cycles[0];
+    expect(resumed.from).toBe(m.start);
+    expect(resumed.count).toBe(countIn * m.beats);
+    const source = [...p.nodes].find(n => (n as unknown as Node).buffer) as unknown as Node;
+    expect(source.started[1]).toBe(m.start);
+    (p.ctx as unknown as Context).currentTime = resumed.musicAt;
+    p.tick();
+    const clicks = [...p.nodes] as unknown as Node[];
+    expect(clicks.some(n => !n.buffer && Math.abs(n.started[0] - resumed.musicAt) < 1e-8)).toBe(true);
+  } finally {
+    p.pause();
+    vi.unstubAllGlobals();
+  }
+});

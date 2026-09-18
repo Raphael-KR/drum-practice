@@ -155,10 +155,10 @@ export class Player {
       this.renderRate = rate;
     }
     this.onprogress("준비되었습니다.");
-    if (was) await this.play(false);
+    if (was) await this.play(false, false);
     this.onstate();
   }
-  async play(count = true) {
+  async play(count = true, fromMeasureStart = true) {
     if (!this.song?.measures.length || !this.rendered)
       throw Error("악보 마디와 음원을 먼저 준비하세요.");
     // WebKit can otherwise treat Web Audio as ambient audio and obey silent mode.
@@ -181,6 +181,10 @@ export class Player {
     )
       this.position = this.loop.start;
     if (this.position >= this.duration) this.position = 0;
+    if (fromMeasureStart) {
+      const m = locate(this.song, this.position).measure;
+      if (m && this.position >= m.start) this.position = m.start;
+    }
     this.playing = true;
     this.addCycle(
       this.ctx.currentTime + 0.08,
@@ -195,7 +199,7 @@ export class Player {
     const was = this.playing;
     this.pause();
     this.position = Math.max(0, Math.min(time, this.duration));
-    if (was) void this.play(false);
+    if (was) void this.play(false, false);
     else this.onstate();
   }
   addCycle(at: number, from: number, count: number) {
