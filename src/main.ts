@@ -84,7 +84,8 @@ arrangeWorkspace();
 function updateSongHeading() {
   const s = song();
   $("song-title").textContent = [s.artist, s.title].filter(Boolean).join(" - ");
-  $("original-tempo").textContent = `♩ = ${s.bpm}`;
+  $("original-tempo-value").textContent = `= ${s.bpm}`;
+  $("original-tempo").setAttribute("aria-label", `원곡 템포: 4분음표 = ${s.bpm} BPM`);
   document.title = $("song-title").textContent!;
 }
 function tell(s: string) {

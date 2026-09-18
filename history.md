@@ -306,3 +306,9 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 사용자 설명에 따라 박 카운터가 아닌 4/4·5/4 박자표 누락을 수정했다. 회차33에서 비활성 마디의 박자표까지 숨긴 것이 원인. 두 줄 보기에서는 모든 마디의 박자표를 표시하고 활성 마디는 라벨 글자색을 상속하여 대비를 확보한다.
 - 전체34테스트 및 TypeScript 포함 build PASS. 예제 HTML 재생성 없음.
 - iOS27 iPad mini Safari 실제 화면에서 84마디의 5/4와 인접81–83·85–88마디의4/4 모두 표시·잘림 없음 확인. 주 에이전트도 docs/experiments/round30-signature84-screenshot.png를 직접 확인했다.
+
+## 회차 35 — 헤더 4분음표 모양 개선
+
+- 원곡 BPM의 글꼴 음표를 SVG로 교체. 기울어진 꽉 찬 타원 음표 머리와 일정한 굵기의 기둥으로 표시한다. 기존 파란색과 BPM 숫자 유지, 접근성 이름에 4분음표와 BPM 제공.
+- 전체34테스트 및 TypeScript 포함 build PASS. 예제 HTML 재생성 없음.
+- iPad mini Safari 캡처에서 도톰한 머리·기둥 및 숫자 정렬, 잘림 없음 직접 확인. 증거 docs/experiments/round31-header-screenshot.png. 기존 상태 유지 및 세션 종료 확인.

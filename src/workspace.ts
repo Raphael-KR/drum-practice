@@ -4,7 +4,7 @@ export function arrangeWorkspace() {
   const practice = el("practice");
   practice.querySelector(".statusline")!.append(el("error-notice"));
   document.querySelector(".brand")!.innerHTML =
-    '<h1 id="song-title">곡을 선택하세요</h1><span id="original-tempo" aria-label="원곡 템포"></span>';
+    '<h1 id="song-title">곡을 선택하세요</h1><span id="original-tempo" aria-label="원곡 템포"><svg class="tempo-note" viewBox="0 0 18 32" aria-hidden="true"><ellipse cx="6.5" cy="26" rx="6" ry="4" transform="rotate(-22 6.5 26)" fill="currentColor"/><path d="M11.5 25V2" stroke="currentColor" stroke-width="2"/></svg><span id="original-tempo-value"></span></span>';
   const dock = document.createElement("nav");
   dock.className = "practice-dock";
   dock.setAttribute("aria-label", "연습 도구");

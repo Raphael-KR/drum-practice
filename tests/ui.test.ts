@@ -141,7 +141,7 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   expect(document.getElementById("song-title")!.textContent).toContain(
     "Real Paradis -",
   );
-  expect(document.getElementById("original-tempo")!.textContent).toBe("♩ = 94");
+  expect(document.getElementById("original-tempo-value")!.textContent).toBe("= 94");
   expect(document.querySelectorAll(".practice-dock > button")).toHaveLength(8);
   expect(document.querySelectorAll("#practice details")).toHaveLength(0);
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
