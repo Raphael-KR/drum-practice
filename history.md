@@ -257,3 +257,10 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 매 재생 시 resume 전에 요청한다. API 미지원/설정 거부 시 기존 재생 경로를 유지하며 초기 로드에서 다른 앱의 오디오 세션을 건드리지 않는다. WebKit 근거: https://bugs.webkit.org/show_bug.cgi?id=237322#c6
 - 지원/미지원/거부 환경 및 두 번째 재생의 호출 순서 검사 추가.29테스트 PASS, TypeScript 포함 build PASS. 예제 HTML 재생성(10.35 MiB), 최신 템플릿 런타임 동일 및 audioSession 설정 포함 확인.
 - 실물 Edge/Sitecase에서 새 HTML로 무음 모드 청취는 아직 미검증. 기존에 복사한 파일에는 자동 반영되지 않으므로 새 파일 교체가 필요하다. 브라우저별 개인 연습 상태는 이번 예제 내보내기에 포함하지 않는다.
+
+
+## 회차 27 — iOS 18.6 환경 삭제
+
+- 사용자 명시 요청으로 iOS 18.6(22G86) 런타임과 연결된 Drum Practice iPad mini(CAC78C7B-F71D-4C5B-B03E-734479387F43) 삭제. 대상 기기는 Shutdown 확인, runtime delete dry-run으로18.6만 대상임을 확인 후 simctl 공식 삭제 명령 실행.
+- 재조회에서18.6 런타임/기기 없음, 기기 데이터 디렉터리 없음 확인. iOS27 런타임 및 iPad mini(9ECBE1E1-D908-45A7-AF31-5F9FEAB568E2) 유지. 실물 iPad 조작 없음.
+- df 여유공간 약7.3GiB→13GiB. APFS/캐시 등으로 표시량은 시점에 따라 변할 수 있다.
