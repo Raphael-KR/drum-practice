@@ -1177,3 +1177,18 @@ button.icon-button[hidden] { display:none; }
 #library-dialog #new-button { margin-left:auto; }
 #library-dialog .dialoghead { gap:12px; }
 #library-dialog #new-button .icon-caption { font-size:14px; }
+
+/* Equal side tracks keep play centered regardless of control widths. */
+.transport { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; }
+.transport-left { justify-self:start; }
+.transport-right { justify-self:end; }
+#goto { appearance:none; -webkit-appearance:none; background-image:none; text-align:center; text-align-last:center; padding:8px; }
+#rate { appearance:textfield; -moz-appearance:textfield; text-align:center; }
+#rate::-webkit-inner-spin-button, #rate::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+@media (max-width: 680px) {
+  .transport { gap:4px; padding:4px; }
+  .transport .flex { gap:3px; }
+  #goto { min-width:44px; width:44px; }
+  .transport input[type="number"] { width:52px; }
+  .transport-right label { gap:2px; }
+}
