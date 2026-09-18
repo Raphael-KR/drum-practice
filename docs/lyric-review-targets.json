@@ -1,0 +1,823 @@
+{
+  "revision": "listening-anchors-2026-09-19-v5",
+  "policy": "first listed target; explicit user assignment wins",
+  "items": [
+    {
+      "number": "069",
+      "aliases": [],
+      "lyricId": "v2-l1",
+      "status": "confirmed"
+    },
+    {
+      "number": "070",
+      "aliases": [],
+      "lyricId": "v2-l5",
+      "status": "confirmed"
+    },
+    {
+      "number": "071",
+      "aliases": [],
+      "lyricId": "v2-l9",
+      "status": "confirmed"
+    },
+    {
+      "number": "072",
+      "aliases": [],
+      "lyricId": "v2-l22",
+      "status": "pending"
+    },
+    {
+      "number": "073",
+      "aliases": [],
+      "lyricId": "v2-l28",
+      "status": "pending"
+    },
+    {
+      "number": "074",
+      "aliases": [],
+      "lyricId": "v2-l35",
+      "status": "pending"
+    },
+    {
+      "number": "075",
+      "aliases": [],
+      "lyricId": "v2-l40",
+      "status": "pending"
+    },
+    {
+      "number": "076",
+      "aliases": [],
+      "lyricId": "v2-l41",
+      "status": "pending"
+    },
+    {
+      "number": "205",
+      "aliases": [],
+      "lyricId": "v2-l45",
+      "status": "pending"
+    },
+    {
+      "number": "077",
+      "aliases": [],
+      "lyricId": "v2-l46",
+      "status": "pending"
+    },
+    {
+      "number": "078",
+      "aliases": [],
+      "lyricId": "v2-l47",
+      "status": "pending"
+    },
+    {
+      "number": "079",
+      "aliases": [],
+      "lyricId": "v2-l48",
+      "status": "pending"
+    },
+    {
+      "number": "080",
+      "aliases": [],
+      "lyricId": "v2-l49",
+      "status": "pending"
+    },
+    {
+      "number": "081",
+      "aliases": [],
+      "lyricId": "v2-l52",
+      "status": "pending"
+    },
+    {
+      "number": "082",
+      "aliases": [],
+      "lyricId": "v2-l58",
+      "status": "pending"
+    },
+    {
+      "number": "083",
+      "aliases": [],
+      "lyricId": "v2-l64",
+      "status": "pending"
+    },
+    {
+      "number": "084",
+      "aliases": [],
+      "lyricId": "v2-l77",
+      "status": "pending"
+    },
+    {
+      "number": "085",
+      "aliases": [],
+      "lyricId": "v2-l79",
+      "status": "pending"
+    },
+    {
+      "number": "086",
+      "aliases": [],
+      "lyricId": "v2-l82",
+      "status": "pending"
+    },
+    {
+      "number": "087",
+      "aliases": [],
+      "lyricId": "v2-l86",
+      "status": "pending"
+    },
+    {
+      "number": "088",
+      "aliases": [],
+      "lyricId": "v2-l89",
+      "status": "pending"
+    },
+    {
+      "number": "089",
+      "aliases": [],
+      "lyricId": "v2-l92",
+      "status": "pending"
+    },
+    {
+      "number": "090",
+      "aliases": [],
+      "lyricId": "v2-l105",
+      "status": "pending"
+    },
+    {
+      "number": "091",
+      "aliases": [],
+      "lyricId": "v2-l121",
+      "status": "pending"
+    },
+    {
+      "number": "092",
+      "aliases": [],
+      "lyricId": "v2-l125",
+      "status": "pending"
+    },
+    {
+      "number": "093",
+      "aliases": [],
+      "lyricId": "v2-l131",
+      "status": "pending"
+    },
+    {
+      "number": "094",
+      "aliases": [],
+      "lyricId": "v2-l132",
+      "status": "pending"
+    },
+    {
+      "number": "095",
+      "aliases": [],
+      "lyricId": "v2-l133",
+      "status": "pending"
+    },
+    {
+      "number": "096",
+      "aliases": [],
+      "lyricId": "v2-l135",
+      "status": "pending"
+    },
+    {
+      "number": "097",
+      "aliases": [],
+      "lyricId": "v2-l136",
+      "status": "pending"
+    },
+    {
+      "number": "098",
+      "aliases": [],
+      "lyricId": "v2-l145",
+      "status": "pending"
+    },
+    {
+      "number": "099",
+      "aliases": [],
+      "lyricId": "v2-l148",
+      "status": "pending"
+    },
+    {
+      "number": "100",
+      "aliases": [],
+      "lyricId": "v2-l159",
+      "status": "pending"
+    },
+    {
+      "number": "101",
+      "aliases": [],
+      "lyricId": "v2-l161",
+      "status": "pending"
+    },
+    {
+      "number": "102",
+      "aliases": [],
+      "lyricId": "v2-l173",
+      "status": "pending"
+    },
+    {
+      "number": "103",
+      "aliases": [],
+      "lyricId": "v2-l176",
+      "status": "pending"
+    },
+    {
+      "number": "104",
+      "aliases": [],
+      "lyricId": "v2-l178",
+      "status": "pending"
+    },
+    {
+      "number": "105",
+      "aliases": [],
+      "lyricId": "v2-l180",
+      "status": "pending"
+    },
+    {
+      "number": "106",
+      "aliases": [
+        "107"
+      ],
+      "lyricId": "v2-l185",
+      "status": "pending"
+    },
+    {
+      "number": "108",
+      "aliases": [
+        "109",
+        "110",
+        "111"
+      ],
+      "lyricId": "v2-l186",
+      "status": "pending"
+    },
+    {
+      "number": "112",
+      "aliases": [],
+      "lyricId": "v2-l187",
+      "status": "pending"
+    },
+    {
+      "number": "113",
+      "aliases": [],
+      "lyricId": "v2-l196",
+      "status": "pending"
+    },
+    {
+      "number": "114",
+      "aliases": [],
+      "lyricId": "v2-l199",
+      "status": "pending"
+    },
+    {
+      "number": "115",
+      "aliases": [],
+      "lyricId": "v2-l201",
+      "status": "pending"
+    },
+    {
+      "number": "116",
+      "aliases": [],
+      "lyricId": "v2-l208",
+      "status": "pending"
+    },
+    {
+      "number": "117",
+      "aliases": [],
+      "lyricId": "v2-l211",
+      "status": "pending"
+    },
+    {
+      "number": "118",
+      "aliases": [],
+      "lyricId": "v2-l214",
+      "status": "pending"
+    },
+    {
+      "number": "119",
+      "aliases": [],
+      "lyricId": "v2-l216",
+      "status": "pending"
+    },
+    {
+      "number": "120",
+      "aliases": [],
+      "lyricId": "v2-l220",
+      "status": "pending"
+    },
+    {
+      "number": "121",
+      "aliases": [],
+      "lyricId": "v2-l221",
+      "status": "pending"
+    },
+    {
+      "number": "122",
+      "aliases": [],
+      "lyricId": "v2-l225",
+      "status": "pending"
+    },
+    {
+      "number": "123",
+      "aliases": [],
+      "lyricId": "v2-l227",
+      "status": "pending"
+    },
+    {
+      "number": "124",
+      "aliases": [],
+      "lyricId": "v2-l229",
+      "status": "pending"
+    },
+    {
+      "number": "125",
+      "aliases": [],
+      "lyricId": "v2-l230",
+      "status": "pending"
+    },
+    {
+      "number": "126",
+      "aliases": [],
+      "lyricId": "v2-l239",
+      "status": "pending"
+    },
+    {
+      "number": "127",
+      "aliases": [],
+      "lyricId": "v2-l246",
+      "status": "pending"
+    },
+    {
+      "number": "128",
+      "aliases": [],
+      "lyricId": "v2-l247",
+      "status": "pending"
+    },
+    {
+      "number": "129",
+      "aliases": [],
+      "lyricId": "v2-l250",
+      "status": "pending"
+    },
+    {
+      "number": "130",
+      "aliases": [],
+      "lyricId": "v2-l253",
+      "status": "pending"
+    },
+    {
+      "number": "131",
+      "aliases": [],
+      "lyricId": "v2-l259",
+      "status": "pending"
+    },
+    {
+      "number": "132",
+      "aliases": [],
+      "lyricId": "v2-l265",
+      "status": "pending"
+    },
+    {
+      "number": "133",
+      "aliases": [],
+      "lyricId": "v2-l271",
+      "status": "pending"
+    },
+    {
+      "number": "134",
+      "aliases": [],
+      "lyricId": "v2-l279",
+      "status": "pending"
+    },
+    {
+      "number": "135",
+      "aliases": [],
+      "lyricId": "v2-l281",
+      "status": "pending"
+    },
+    {
+      "number": "136",
+      "aliases": [],
+      "lyricId": "v2-l282",
+      "status": "pending"
+    },
+    {
+      "number": "137",
+      "aliases": [],
+      "lyricId": "v2-l283",
+      "status": "pending"
+    },
+    {
+      "number": "138",
+      "aliases": [],
+      "lyricId": "v2-l286",
+      "status": "pending"
+    },
+    {
+      "number": "139",
+      "aliases": [],
+      "lyricId": "v2-l290",
+      "status": "pending"
+    },
+    {
+      "number": "140",
+      "aliases": [],
+      "lyricId": "v2-l292",
+      "status": "pending"
+    },
+    {
+      "number": "141",
+      "aliases": [],
+      "lyricId": "v2-l302",
+      "status": "pending"
+    },
+    {
+      "number": "142",
+      "aliases": [],
+      "lyricId": "v2-l304",
+      "status": "pending"
+    },
+    {
+      "number": "143",
+      "aliases": [],
+      "lyricId": "v2-l312",
+      "status": "pending"
+    },
+    {
+      "number": "144",
+      "aliases": [],
+      "lyricId": "v2-l320",
+      "status": "pending"
+    },
+    {
+      "number": "145",
+      "aliases": [],
+      "lyricId": "v2-l321",
+      "status": "pending"
+    },
+    {
+      "number": "146",
+      "aliases": [],
+      "lyricId": "v2-l322",
+      "status": "pending"
+    },
+    {
+      "number": "147",
+      "aliases": [],
+      "lyricId": "v2-l325",
+      "status": "pending"
+    },
+    {
+      "number": "148",
+      "aliases": [],
+      "lyricId": "v2-l326",
+      "status": "pending"
+    },
+    {
+      "number": "149",
+      "aliases": [],
+      "lyricId": "v2-l329",
+      "status": "pending"
+    },
+    {
+      "number": "150",
+      "aliases": [
+        "151",
+        "152"
+      ],
+      "lyricId": "v2-l334",
+      "status": "pending"
+    },
+    {
+      "number": "153",
+      "aliases": [
+        "154"
+      ],
+      "lyricId": "v2-l335",
+      "status": "pending"
+    },
+    {
+      "number": "155",
+      "aliases": [],
+      "lyricId": "v2-l336",
+      "status": "pending"
+    },
+    {
+      "number": "156",
+      "aliases": [],
+      "lyricId": "v2-l337",
+      "status": "pending"
+    },
+    {
+      "number": "157",
+      "aliases": [],
+      "lyricId": "v2-l347",
+      "status": "pending"
+    },
+    {
+      "number": "158",
+      "aliases": [],
+      "lyricId": "v2-l350",
+      "status": "pending"
+    },
+    {
+      "number": "159",
+      "aliases": [],
+      "lyricId": "v2-l363",
+      "status": "pending"
+    },
+    {
+      "number": "160",
+      "aliases": [],
+      "lyricId": "v2-l378",
+      "status": "pending"
+    },
+    {
+      "number": "161",
+      "aliases": [],
+      "lyricId": "v2-l380",
+      "status": "pending"
+    },
+    {
+      "number": "162",
+      "aliases": [],
+      "lyricId": "v2-l382",
+      "status": "pending"
+    },
+    {
+      "number": "163",
+      "aliases": [],
+      "lyricId": "v2-l390",
+      "status": "pending"
+    },
+    {
+      "number": "164",
+      "aliases": [],
+      "lyricId": "v2-l391",
+      "status": "pending"
+    },
+    {
+      "number": "165",
+      "aliases": [],
+      "lyricId": "v2-l393",
+      "status": "pending"
+    },
+    {
+      "number": "166",
+      "aliases": [],
+      "lyricId": "v2-l394",
+      "status": "pending"
+    },
+    {
+      "number": "167",
+      "aliases": [],
+      "lyricId": "v2-l396",
+      "status": "pending"
+    },
+    {
+      "number": "168",
+      "aliases": [],
+      "lyricId": "v2-l399",
+      "status": "pending"
+    },
+    {
+      "number": "169",
+      "aliases": [],
+      "lyricId": "v2-l400",
+      "status": "pending"
+    },
+    {
+      "number": "170",
+      "aliases": [],
+      "lyricId": "v2-l403",
+      "status": "pending"
+    },
+    {
+      "number": "171",
+      "aliases": [],
+      "lyricId": "v2-l407",
+      "status": "pending"
+    },
+    {
+      "number": "172",
+      "aliases": [],
+      "lyricId": "v2-l414",
+      "status": "pending"
+    },
+    {
+      "number": "173",
+      "aliases": [],
+      "lyricId": "v2-l418",
+      "status": "pending"
+    },
+    {
+      "number": "174",
+      "aliases": [],
+      "lyricId": "v2-l420",
+      "status": "pending"
+    },
+    {
+      "number": "175",
+      "aliases": [],
+      "lyricId": "v2-l423",
+      "status": "pending"
+    },
+    {
+      "number": "176",
+      "aliases": [],
+      "lyricId": "v2-l424",
+      "status": "pending"
+    },
+    {
+      "number": "177",
+      "aliases": [],
+      "lyricId": "v2-l425",
+      "status": "pending"
+    },
+    {
+      "number": "178",
+      "aliases": [],
+      "lyricId": "v2-l427",
+      "status": "pending"
+    },
+    {
+      "number": "179",
+      "aliases": [],
+      "lyricId": "v2-l430",
+      "status": "pending"
+    },
+    {
+      "number": "180",
+      "aliases": [],
+      "lyricId": "v2-l434",
+      "status": "pending"
+    },
+    {
+      "number": "181",
+      "aliases": [],
+      "lyricId": "v2-l443",
+      "status": "pending"
+    },
+    {
+      "number": "182",
+      "aliases": [],
+      "lyricId": "v2-l459",
+      "status": "pending"
+    },
+    {
+      "number": "183",
+      "aliases": [],
+      "lyricId": "v2-l463",
+      "status": "pending"
+    },
+    {
+      "number": "184",
+      "aliases": [],
+      "lyricId": "v2-l464",
+      "status": "pending"
+    },
+    {
+      "number": "185",
+      "aliases": [],
+      "lyricId": "v2-l466",
+      "status": "pending"
+    },
+    {
+      "number": "186",
+      "aliases": [],
+      "lyricId": "v2-l470",
+      "status": "pending"
+    },
+    {
+      "number": "187",
+      "aliases": [],
+      "lyricId": "v2-l471",
+      "status": "pending"
+    },
+    {
+      "number": "188",
+      "aliases": [
+        "189"
+      ],
+      "lyricId": "v2-l473",
+      "status": "pending"
+    },
+    {
+      "number": "190",
+      "aliases": [],
+      "lyricId": "v2-l474",
+      "status": "pending"
+    },
+    {
+      "number": "191",
+      "aliases": [],
+      "lyricId": "v2-l483",
+      "status": "pending"
+    },
+    {
+      "number": "192",
+      "aliases": [],
+      "lyricId": "v2-l486",
+      "status": "pending"
+    },
+    {
+      "number": "193",
+      "aliases": [],
+      "lyricId": "v2-l499",
+      "status": "pending"
+    },
+    {
+      "number": "194",
+      "aliases": [],
+      "lyricId": "v2-l511",
+      "status": "pending"
+    },
+    {
+      "number": "195",
+      "aliases": [],
+      "lyricId": "v2-l514",
+      "status": "pending"
+    },
+    {
+      "number": "196",
+      "aliases": [],
+      "lyricId": "v2-l516",
+      "status": "pending"
+    },
+    {
+      "number": "197",
+      "aliases": [],
+      "lyricId": "v2-l518",
+      "status": "pending"
+    },
+    {
+      "number": "198",
+      "aliases": [],
+      "lyricId": "v2-l519",
+      "status": "pending"
+    },
+    {
+      "number": "199",
+      "aliases": [
+        "200"
+      ],
+      "lyricId": "v2-l523",
+      "status": "pending"
+    },
+    {
+      "number": "201",
+      "aliases": [
+        "202",
+        "203",
+        "204"
+      ],
+      "lyricId": "v2-l524",
+      "status": "pending"
+    },
+    {
+      "number": "206",
+      "aliases": [],
+      "lyricId": "v2-l2",
+      "status": "pending"
+    },
+    {
+      "number": "207",
+      "aliases": [],
+      "lyricId": "v2-l3",
+      "status": "pending"
+    },
+    {
+      "number": "208",
+      "aliases": [],
+      "lyricId": "v2-l4",
+      "status": "pending"
+    },
+    {
+      "number": "209",
+      "aliases": [],
+      "lyricId": "v2-l7",
+      "status": "pending"
+    },
+    {
+      "number": "210",
+      "aliases": [],
+      "lyricId": "v2-l8",
+      "status": "pending"
+    },
+    {
+      "number": "211",
+      "aliases": [],
+      "lyricId": "v2-l10",
+      "status": "pending"
+    },
+    {
+      "number": "212",
+      "aliases": [],
+      "lyricId": "v2-l11",
+      "status": "pending"
+    },
+    {
+      "number": "213",
+      "aliases": [],
+      "lyricId": "v3-terminal-wa",
+      "status": "pending"
+    }
+  ]
+}

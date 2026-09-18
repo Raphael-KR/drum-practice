@@ -1,3 +1,4 @@
+import { applyListeningRevision } from "./listening-revision";
 import { applyEnglishLyrics } from "./english-lyrics";
 import { applyJapaneseReadings } from "./lyric-reading";
 import { applyLyricRevision } from "./lyric-revision";
@@ -189,6 +190,7 @@ async function activate(r: RecordData) {
   applyLyricRevision(r.song);
   applyJapaneseReadings(r.song);
   applyEnglishLyrics(r.song);
+  applyListeningRevision(r.song);
   validateSong(r.song);
   busy = true;
   try {
