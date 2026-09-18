@@ -264,3 +264,11 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 사용자 명시 요청으로 iOS 18.6(22G86) 런타임과 연결된 Drum Practice iPad mini(CAC78C7B-F71D-4C5B-B03E-734479387F43) 삭제. 대상 기기는 Shutdown 확인, runtime delete dry-run으로18.6만 대상임을 확인 후 simctl 공식 삭제 명령 실행.
 - 재조회에서18.6 런타임/기기 없음, 기기 데이터 디렉터리 없음 확인. iOS27 런타임 및 iPad mini(9ECBE1E1-D908-45A7-AF31-5F9FEAB568E2) 유지. 실물 iPad 조작 없음.
 - df 여유공간 약7.3GiB→13GiB. APFS/캐시 등으로 표시량은 시점에 따라 변할 수 있다.
+
+## 회차 28 — 두 줄 현재 마디 전체 음영 복원
+
+- 사용자 지적: 현재 마디 음영이 악보에서는 사라지고 아래 가사 쪽에만 보임.
+- 원인: .measure.active 배경 위에 불투명한 흰 종이를 포함한 .crop 배경 이미지가 그려져 악보 영역의 음영을 가림. 최초 Git 등록본부터 해당 구조였으므로 그 이전 정확한 변경 시점은 특정하지 않음.
+- 수정: 활성 마디의 .crop에도 accent-soft 배경색과 background-blend-mode:multiply 적용. 검은 음표 대비·악보 배율·가사 위치·탐색 동작 유지, 비활성 마디는 흰색 유지.
+- 검증: TypeScript 포함 build PASS. iOS27 iPad mini Safari 두줄25마디 스크린샷에서 악보전체 파란음영·인접마디 흰색·검은음표 확인. 로컬 증거 docs/experiments/round28*. 예제 exports HTML은 요청이 없어 재생성하지 않음.
+- 추가 검증: 26마디 터치 후 25마디는 흰색으로 복원되고 26마디 전체로 음영 이동. 두 스크린샷을 직접 확인. 원래 한 줄 보기·1마디·일시정지로 복원하고 DeviceInteraction 세션 종료 확인.

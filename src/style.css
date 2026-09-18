@@ -1045,6 +1045,11 @@ dialog::backdrop {
   background: var(--accent-soft);
   box-shadow: none;
 }
+/* The score image has opaque white paper; tint it too, without fading the notes. */
+.two-rows .measure.active .crop {
+  background-color: var(--accent-soft);
+  background-blend-mode: multiply;
+}
 .two-rows .measure.active .label {
   background: var(--accent);
   color: white;
