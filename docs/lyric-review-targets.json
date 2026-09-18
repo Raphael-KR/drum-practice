@@ -132,61 +132,61 @@
       "number": "089",
       "aliases": [],
       "lyricId": "v2-l92",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "090",
       "aliases": [],
       "lyricId": "v2-l105",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "091",
       "aliases": [],
       "lyricId": "v2-l121",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "092",
       "aliases": [],
       "lyricId": "v2-l125",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "093",
       "aliases": [],
       "lyricId": "v2-l131",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "094",
       "aliases": [],
       "lyricId": "v2-l132",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "095",
       "aliases": [],
       "lyricId": "v2-l133",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "096",
       "aliases": [],
       "lyricId": "v2-l135",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "097",
       "aliases": [],
       "lyricId": "v2-l136",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "098",
       "aliases": [],
       "lyricId": "v2-l145",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "099",
@@ -822,5 +822,5 @@
   ],
   "positionPolicy": "nearest quarter beat; raw times retained as originalTime",
   "appliedTailShift": "v2-l25 inclusive through end +1 quarter-beat tick, 2026-09-19",
-  "appliedListeningBatch": "listening-through-m24-yo-2026-09-19"
+  "appliedListeningBatch": "listening-through-m32-yo-2026-09-19"
 }

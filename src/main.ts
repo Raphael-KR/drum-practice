@@ -1,3 +1,4 @@
+import { applyListeningFeedbackM32 } from './lyric-feedback-m32';
 import { applyListeningFeedbackFollowup } from './lyric-feedback-followup';
 import { applyListeningFeedbackBatch } from './lyric-feedback-batch';
 import { applyTookuTailShift } from "./lyric-tail-shift";
@@ -199,6 +200,7 @@ async function activate(r: RecordData) {
   applyTookuTailShift(r.song);
   applyListeningFeedbackBatch(r.song);
   applyListeningFeedbackFollowup(r.song);
+  applyListeningFeedbackM32(r.song);
   validateSong(r.song);
   busy = true;
   try {
