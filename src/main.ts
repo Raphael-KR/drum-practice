@@ -1,4 +1,5 @@
 import "./style.css";
+import { displayRegion } from "./score-view";
 import { arrangeIcons, iconButton } from "./icons";
 import { arrangeWorkspace, selectEditorPane, paginateList } from "./workspace";
 import { Player } from "./audio";
@@ -237,7 +238,7 @@ function syncSettings() {
   engine().volumes();
 }
 function widthOf(m: Measure) {
-  const r = song().regions.find((r) => r.id === m.regionId)!;
+  const r = displayRegion(song(), song().regions.find((r) => r.id === m.regionId)!);
   return (
     (clamp($("stage").clientWidth * 0.245, 170, 340) *
       song().settings.zoom *
@@ -247,7 +248,7 @@ function widthOf(m: Measure) {
 }
 function measureHTML(m: Measure, i: number, width: number) {
   const s = song(),
-    r = s.regions.find((r) => r.id === m.regionId)!;
+    r = displayRegion(s, s.regions.find((r) => r.id === m.regionId)!);
   const ly = s.lyrics.filter((l) => l.time >= m.start && l.time < m.end);
   const height =
     width > 1 ? (width / r.w) * r.h * (pageRatios[r.page] || 1.294) : 165;
@@ -267,8 +268,8 @@ function positionInMeasure(index: number, beat: number, width: number) {
   const s = song(),
     m = s.measures[index],
     next = s.measures[index + 1];
-  const r = s.regions.find((r) => r.id === m.regionId)!;
-  const nextRegion = next && s.regions.find((r) => r.id === next.regionId)!;
+  const r = displayRegion(s, s.regions.find((r) => r.id === m.regionId)!);
+  const nextRegion = next && displayRegion(s, s.regions.find((r) => r.id === next.regionId)!);
   const end =
     width + (next ? widthOf(next) * xAtBeat(nextRegion!, next, 0) : 0);
   return continuousX(r, m, beat, width, end);
@@ -367,9 +368,9 @@ function frame() {
     } else {
       renderRows(index);
     }
-    const region = s.regions.find(r => r.id === m.regionId)!;
+    const region = displayRegion(s, s.regions.find(r => r.id === m.regionId)!);
     const next = s.measures[index + 1];
-    const nextRegion = next && s.regions.find(r => r.id === next.regionId)!;
+    const nextRegion = next && displayRegion(s, s.regions.find(r => r.id === next.regionId)!);
     // Cross printed bar margins continuously, but never bridge two screen rows.
     const nextStart = next && index % 4 !== 3 ? 1 + xAtBeat(nextRegion!, next, 0) : 1;
     const playedThrough = index + continuousX(region, m, beat, 1, nextStart);
