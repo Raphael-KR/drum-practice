@@ -1,3 +1,4 @@
+import { applyLyricRevision } from "./lyric-revision";
 import { playbackPosition, copyPosition } from "./playback-position";
 import "./style.css";
 import lyricTimingRefinement from "./lyric-timing-refinement";
@@ -183,6 +184,7 @@ async function activate(r: RecordData) {
   applyLyricTimingPatch(r.song);
   applyUserLyricAnchors(r.song);
   applyLyricTimingPatch(r.song, lyricTimingRefinement);
+  applyLyricRevision(r.song);
   validateSong(r.song);
   busy = true;
   try {

@@ -55,6 +55,8 @@ export interface Song {
   measures: Measure[];
   regions: Region[];
   lyrics: Lyric[];
+  lyricRevision?: string;
+  lyricArchive?: { revision: string; lyrics: Lyric[] }[];
   markers: Marker[];
   loops: Loop[];
   settings: Settings;
