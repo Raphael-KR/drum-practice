@@ -52,3 +52,21 @@ export function applyLyricTimingPatch(song: Song, patch: TimingPatch = correctio
   }
   return changedStarts;
 }
+
+/** User listening reference: bar 15, fourth eighth note = beat offset 1.5. */
+export function applyUserLyricAnchors(song: Song): boolean {
+  if (song.id !== correction.songId || song.lyrics.length !== correction.lyricCount ||
+      lyricFingerprint(song.lyrics.map(l => l.text).join('')) !== correction.textFingerprint) return false;
+  const i = song.lyrics.findIndex(l => l.id === 'l38' && l.text === '코');
+  const m = song.measures.find(m => m.label === '15');
+  if (i < 1 || !m) return false;
+  const l = song.lyrics[i], previous = song.lyrics[i - 1], next = song.lyrics[i + 1];
+  const time = m.start + (m.end - m.start) / m.beats * 1.5;
+  // Only upgrade the known generated version; preserve later manual changes.
+  if (l.confirmed || Math.abs(l.time - 36.22) > 1e-7 || Math.abs(l.end - 37.22) > 1e-7 ||
+      !next || time <= previous.time || time >= next.time) return false;
+  if (!previous.confirmed && Math.abs(previous.end - l.time) < 1e-7) previous.end = time;
+  l.time = time;
+  l.confirmed = true;
+  return true;
+}
