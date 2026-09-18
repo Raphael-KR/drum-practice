@@ -1143,3 +1143,5 @@ main > .error-notice { flex:none; width:100%; }
 
 #original-tempo { display: inline-flex; align-items: center; gap: 4px; }
 .tempo-note { width: 18px; height: 32px; flex: none; }
+
+#goto { min-width: 76px; height: 48px; min-height: 48px; padding: 8px 12px; font-size: 18px; }

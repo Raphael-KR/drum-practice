@@ -150,7 +150,7 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   const notice = document.getElementById("error-notice")!;
   expect(notice.hidden).toBe(false);
   expect(notice.closest(".statusline")).not.toBeNull();
-  expect(notice.textContent).toContain("이동할 마디 수를 1 이상의 정수로 입력하세요");
+  expect(notice.textContent).toContain("이동할 마디 수를 1~10 중에서 선택하세요");
   click("error-notice");
   expect(notice.hidden).toBe(true);
   set("goto", "1");
@@ -200,7 +200,9 @@ it("returns to earlier measures and stops at the first measure", () => {
   click("jump");
   animationFrame(0);
   expect(Number((document.getElementById("seek") as HTMLInputElement).value)).toBeCloseTo(song.measures[20].start);
-  set("goto", "99999");
+  set("seek", String(song.measures[4].start));
+  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  set("goto", "10");
   click("jump");
   animationFrame(0);
   expect(Number((document.getElementById("seek") as HTMLInputElement).value)).toBeCloseTo(song.measures[0].start);
