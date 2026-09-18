@@ -1,4 +1,5 @@
 import "./style.css";
+import lyricTimingRefinement from "./lyric-timing-refinement";
 import { applyLyricTimingPatch, applyUserLyricAnchors } from "./lyric-timing";
 import { chooseRecent, rememberScore } from "./recent-score";
 import { displayRegion } from "./score-view";
@@ -180,6 +181,7 @@ async function activate(r: RecordData) {
   validateSong(r.song);
   applyLyricTimingPatch(r.song);
   applyUserLyricAnchors(r.song);
+  applyLyricTimingPatch(r.song, lyricTimingRefinement);
   validateSong(r.song);
   busy = true;
   try {
