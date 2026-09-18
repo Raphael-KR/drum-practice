@@ -1,3 +1,4 @@
+import { applyListeningFeedbackFollowup } from './lyric-feedback-followup';
 import { applyListeningFeedbackBatch } from './lyric-feedback-batch';
 import { applyTookuTailShift } from "./lyric-tail-shift";
 import { lyricMeasureId, enableLyricGrid, synchronizeLyricGrid, nearestQuarterBeat, setLyricGrid } from "./lyric-grid";
@@ -197,6 +198,7 @@ async function activate(r: RecordData) {
   enableLyricGrid(r.song);
   applyTookuTailShift(r.song);
   applyListeningFeedbackBatch(r.song);
+  applyListeningFeedbackFollowup(r.song);
   validateSong(r.song);
   busy = true;
   try {

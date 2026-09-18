@@ -126,7 +126,7 @@
       "number": "088",
       "aliases": [],
       "lyricId": "v2-l89",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "089",
@@ -822,5 +822,5 @@
   ],
   "positionPolicy": "nearest quarter beat; raw times retained as originalTime",
   "appliedTailShift": "v2-l25 inclusive through end +1 quarter-beat tick, 2026-09-19",
-  "appliedListeningBatch": "listening-through-m24-no-2026-09-19"
+  "appliedListeningBatch": "listening-through-m24-yo-2026-09-19"
 }
