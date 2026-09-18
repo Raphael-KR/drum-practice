@@ -400,3 +400,12 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 
 - 사용자는556음절모두실제음악청취로확인하여보정요청. 도구조사결과현재세션은직접오디오청취/발음경계판정불가. 전음절청취보정은미완료이며자동분석을그대신완료로간주하지않음.
 - 기존스크립트확인: 보컬분리+MLXWhisper정렬후140토큰의306음절균등분배. 48마디오모도120.4~121.42구간균등분배. 전체토큰감사목록작성, docs/LYRIC-ALIGNMENT-AUDIT.md에근거와후속완료기준기록. 가사데이터변경/확정플래그승격없음.
+
+## Apple local STT feasibility — 2026-09-19
+
+- Goal: assess whether clinic-ai Apple STT can assist Japanese sung-lyric alignment. Scope: read-only clinic implementation; standalone local probe in docs/experiments/apple-stt. Success: actual transcription with audio timestamps. No production lyric edits or clinic changes.
+- Found session 한의원 AI 로컬 구축 (01a0aa61-7284-7960-9536-e5d7c134f6c9) and clinic_ai/native/SpeechBridge.swift: SpeechAnalyzer + SpeechTranscriber, audioTimeRange and transcriptionConfidence.
+- Compiled a Japanese-only copy using installed Xcode SDK. Runtime available=true, japaneseSupported=true; initially only ko_KR installed. AssetInventory installed ja_JP successfully (114 GiB free before installation).
+- Tested original mixture audio 113–129 seconds (16 s, mono 16 kHz). Local transcription returned Japanese text with per-run time ranges. The target 思い上がってた was recognized. Absolute start times: 思120.32, い121.58, 上121.76, が121.94, っ122.12, て122.48, た122.66.
+- Feasibility: useful independent recognition/timing evidence. Not proof of all-syllable accuracy: 思 covers two morae, and nearby 壁 / 旅鳥 were mistranscribed. Confidence is recognition confidence, not timestamp accuracy. No listening-based verification claimed. Original song.json unchanged.
+- Reproducible probe source, binary, sample and JSON retained locally under ignored docs/experiments/apple-stt/. No audio uploaded.
