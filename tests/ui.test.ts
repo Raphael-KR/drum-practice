@@ -229,6 +229,35 @@ it("places the beat on the active measure in rows and on the fixed playhead in r
   expect(document.getElementById("playhead-beat")!.textContent).toBe("2");
   click("home");
 });
+it("fills played measures, advances within a measure and clears future shading after rewind", () => {
+  const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+  set("view", "rows");
+  document.getElementById("view")!.dispatchEvent(new Event("change"));
+  const seekTo = (time: number) => {
+    set("seek", String(time));
+    document.getElementById("seek")!.dispatchEvent(new Event("input"));
+    animationFrame(0);
+  };
+  const fill = (index: number) => parseFloat((document.querySelector(`[data-index="${index}"]`) as HTMLElement).style.getPropertyValue("--played"));
+  const m = song.measures[25];
+  seekTo(m.start + (m.end - m.start) * 0.25);
+  expect(fill(24)).toBe(100);
+  const first = fill(25);
+  expect(first).toBeGreaterThan(0);
+  expect(first).toBeLessThan(100);
+  expect(fill(26)).toBe(0);
+  seekTo(m.start + (m.end - m.start) * 0.75);
+  expect(fill(25)).toBeGreaterThan(first);
+  seekTo(m.end - 0.0001);
+  const beforeBoundary = fill(26);
+  seekTo(m.end);
+  expect(fill(25)).toBe(100);
+  expect(Math.abs(fill(26) - beforeBoundary)).toBeLessThan(0.1);
+  seekTo(song.measures[24].start);
+  expect(fill(25)).toBe(0);
+  expect(fill(26)).toBe(0);
+  click("home");
+});
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("new-button");
   set("new-title", "독립 두 번째 곡");

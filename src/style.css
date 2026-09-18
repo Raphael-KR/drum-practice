@@ -1042,13 +1042,8 @@ dialog::backdrop {
   z-index: 1;
 }
 .two-rows .measure.active {
-  background: var(--accent-soft);
+  background: transparent;
   box-shadow: none;
-}
-/* The score image has opaque white paper; tint it too, without fading the notes. */
-.two-rows .measure.active .crop {
-  background-color: var(--accent-soft);
-  background-blend-mode: multiply;
 }
 .two-rows .measure.active .label {
   background: var(--accent);
@@ -1145,3 +1140,26 @@ main > .error-notice { flex:none; width:100%; }
 .tempo-note { width: 18px; height: 32px; flex: none; }
 
 #goto { min-width: 76px; height: 48px; min-height: 48px; padding: 8px 12px; font-size: 18px; }
+
+/* Tint the printed white paper as well as lyrics without fading black notation. */
+.two-rows .measure::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--played, 0%);
+  background: var(--accent-soft);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 1;
+}
+.two-rows .measure.progress-edge::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--played, 0%);
+  width: 2px;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 2;
+}

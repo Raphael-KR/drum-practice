@@ -365,8 +365,20 @@ function frame() {
     } else {
       renderRows(index);
     }
+    const region = s.regions.find(r => r.id === m.regionId)!;
+    const next = s.measures[index + 1];
+    const nextRegion = next && s.regions.find(r => r.id === next.regionId)!;
+    // Cross printed bar margins continuously, but never bridge two screen rows.
+    const nextStart = next && index % 4 !== 3 ? 1 + xAtBeat(nextRegion!, next, 0) : 1;
+    const playedThrough = index + continuousX(region, m, beat, 1, nextStart);
     $("ribbon").querySelectorAll<HTMLElement>("[data-index]").forEach((e) => {
-      const active = Number(e.dataset.index) === index;
+      const measureIndex = Number(e.dataset.index);
+      const active = measureIndex === index;
+      if (s.settings.view === "rows") {
+        const progress = clamp(playedThrough - measureIndex, 0, 1);
+        e.style.setProperty("--played", `${progress * 100}%`);
+        e.classList.toggle("progress-edge", playedThrough >= measureIndex && playedThrough < measureIndex + 1);
+      }
       e.classList.toggle("active", active);
       if (active) {
         e.querySelector(".measure-beat")!.textContent =
