@@ -801,11 +801,11 @@ dialog::backdrop {
   min-height: 44px !important;
 }
 .two-rows .stage {
-  height: 410px;
+  height: 442px;
 }
 .two-rows .ribbon {
   top: 28px;
-  gap: 26px 0;
+  gap: 58px 0;
 }
 .two-rows .measure {
   height: 168px;
@@ -1006,11 +1006,11 @@ dialog::backdrop {
 
 @media (min-width: 900px) and (max-height: 800px) {
   .two-rows .stage {
-    height: 376px;
+    height: 408px;
   }
   .two-rows .ribbon {
     top: 24px;
-    gap: 22px 0;
+    gap: 54px 0;
   }
   .two-rows .measure {
     height: 158px;
