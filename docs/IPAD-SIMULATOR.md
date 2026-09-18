@@ -52,3 +52,12 @@ Apple 공식 안내: https://developer.apple.com/documentation/safari-developer-
 ## iOS 27 설치 완료 (2026-09-18)
 
 사용자의 디스크 재확인·설치 요청 후 APFS 여유 26.0 GB(약 24 GiB)를 확인했다. `xcodebuild -downloadPlatform iOS -buildVersion 27.0 -architectureVariant arm64`가 Done/exit 0으로 완료됐다. 별도 simctl 조회에서 iOS 27.0 (24A434), `com.apple.CoreSimulator.SimRuntime.iOS-27-0`, `isAvailable: true`를 확인했다. 설치 직후 남은 공간은 약 16 GiB. iOS 18.6과 기존 기기는 보존했다. iOS 27용 기기 생성·부팅 및 MCP 터치 재검증은 아직 수행하지 않았다.
+
+
+## iOS 27 MCP 터치 검증 성공 (2026-09-18)
+
+현재 검증 기기: iPad mini (A17 Pro), iOS 27.0, UDID `9ECBE1E1-D908-45A7-AF31-5F9FEAB568E2`. 설치 시 생성된 기기를 부팅해 사용했다. 기존 iOS 18.6 기기는 보존. devicectl로 landscapeLeft 설정, Vite localhost:5173 재실행 및 HTTP 200 확인.
+
+Xcode MCP StartSession 성공 후 Safari hierarchy와 screenshot을 확보했다. hierarchy의 hitPoint로 예제 곡 열기, 화면 메뉴 열기, 닫기를 실행하고 각 결과를 확인했다. 1133×744 가로 화면에서 악보·94 BPM·하단 컨트롤이 표시됐다. 증거는 로컬 전용 `docs/experiments/ios27-capture01`~`05`의 screenshot/hierarchy 파일이다. 즉시 캡처에서는 곡 로딩이 끝나지 않아 후속 캡처에서 완료를 확인했다.
+
+MCP applicationState 메타데이터는 NotRun으로 반환됐지만 Safari hierarchy·화면 변화로 실제 동작을 검증했다. 이번 검증은 연결·기본 터치 smoke 범위이며 오디오 재생·전체화면·반복·두 줄 모드 전체 QA를 뜻하지 않는다. Computer Use의 Device Hub 바인딩 문제 해결과도 별개다.

@@ -223,3 +223,12 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - iOS 27.0 arm64 런타임 8.05 GB 다운로드 및 설치 Done, exit 0. 별도 simctl 조회에서 빌드 24A434/isAvailable true 확인. 증거: docs/experiments/ios27-install.json.
 - 설치 후 여유 약 16 GiB. 기존 iOS 18.6·시뮬레이터 데이터·사용자 파일 삭제 없음. 앱 코드 변경 없음.
 - 런타임 설치 완료와 MCP 터치 검증을 구분하며, 후자는 아직 미수행. 문서 diff 검사 후 Git 기록.
+
+
+## 회차 23 — iOS 27 iPad mini MCP 터치 smoke
+
+- 사용자 요청에 따라 설치된 iOS 27 iPad mini(9ECBE1E1-D908-45A7-AF31-5F9FEAB568E2)를 부팅, 가로 방향 설정. 멈춰 있던 Vite 서버 재실행 후 localhost HTTP 200 확인.
+- Apple device-interaction 절차로 MCP 세션 시작 성공, Safari 화면·hierarchy 확보. 실제 hitPoint 터치로 예제 곡 로드 → 화면 설정 열기 → 닫기 성공. 루트 에이전트도 캡처 01/04/05를 직접 확인했다.
+- 악보/94 BPM/하단 메뉴 표시 확인. 캡처 applicationState NotRun과 실제 Safari UI 상태 차이는 도구 메타데이터 한계로 기록. 재생/전체화면/두 줄 모드 전체 QA는 미실행.
+- 앱 소스·예제 HTML 변경 없음. 증거는 docs/experiments/ios27-capture01~05, 문서는 docs/IPAD-SIMULATOR.md.
+- 검증 후 DeviceInteractionEndSession의 `Session stopped` 확인. 세션 키는 로그·Git에 저장하지 않았다.
