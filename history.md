@@ -429,3 +429,8 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - Actual song executed twice across11 vocal windows. Second run STT3.77s total, AFM47 pairs20.91s;69 review candidates preserved. All IDs/time ranges checked, no AFM transport/schema errors. Output correctness remains separately reviewed.
 - Codex rejected two sameReading labels (が似/かに and って/らせ). Bar48 思 onset differs120.32 vs121.52sec across windows. No timing overwrite; no confirmed=true. Local review-decisions.json records these findings.
 - Verification: five Python tests and all44 app tests passed; both Swift bridges compiled and executed. Existing-output rejection and git diff checks performed. No exports regenerated, clinic code untouched, no external upload.
+
+## Apple local findings shared with team lead — 2026-09-19
+
+- 사용자의 명시적 요청으로 에이전트관리팀장(019fe926-aa3e-7d01-a7cc-25105ef93a95)에 현재 실험값·실패·활용조건·재사용 코드/문서 경로를 send_message_to_thread로 전달했다.
+- 전역 활용/후속발견 공유 절차의 정본 반영을 팀장에게 요청했다. 이 프로젝트 AGENTS.md에는 후속 실측 발견 공유 지침을 추가했다. 자동 주기 감시나 외부 서비스 전송은 생성하지 않았다.
