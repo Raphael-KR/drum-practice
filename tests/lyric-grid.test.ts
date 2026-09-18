@@ -1,5 +1,5 @@
 import {it,expect} from 'vitest';
-import {enableLyricGrid,nearestQuarterBeat,synchronizeLyricGrid,setLyricGrid} from '../src/lyric-grid';
+import {lyricMeasureId,enableLyricGrid,nearestQuarterBeat,synchronizeLyricGrid,setLyricGrid} from '../src/lyric-grid';
 import type {Song} from '../src/model';
 const fixture=()=>({measures:[
  {id:'a',label:'1',start:0,end:4,beats:4,denominator:4},
@@ -34,4 +34,13 @@ it('keeps musical coordinates after a tempo/grid change and respects free timing
 it('rejects invalid grid selections',()=>{
  const s=fixture();expect(()=>setLyricGrid(s,s.lyrics[0],{measureId:'a',tick:1.2})).toThrow();
  expect(()=>setLyricGrid(s,s.lyrics[0],{measureId:'missing',tick:0})).toThrow();
+});
+
+it('assigns a shared boundary once despite floating-point bar overlap',()=>{
+ const s=fixture();s.measures[0].end=4.000000000000001;
+ const l={id:'ru',text:'루',time:4,end:4.5,confirmed:false};
+ expect(s.measures.filter(m=>l.time>=m.start && l.time<m.end)).toHaveLength(2);
+ expect(lyricMeasureId(s,l)).toBe('b');
+ expect(lyricMeasureId(s,{...l,grid:{measureId:'b',tick:0}})).toBe('b');
+ expect(lyricMeasureId(s,{...l,grid:{measureId:'a',tick:16}})).toBe('b');
 });

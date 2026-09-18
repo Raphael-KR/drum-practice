@@ -131,6 +131,11 @@ it("loads demo, saves named markers and loops and applies exact 5 BPM step", asy
     expect(r.song.loops.at(-1)!.name).toBe("DOM 후렴");
   });
 });
+it("renders the boundary ru once in measure 11, never at the end of measure 10",()=>{
+ const text=(index:number)=>[...document.querySelectorAll(`[data-index="${index}"] .syllable`)].map(e=>e.textContent);
+ expect(text(9)).not.toContain('루');
+ expect(text(10).filter(t=>t==='루')).toHaveLength(1);
+});
 it("accepts BPM input, increments by five BPM and clamps to supported audio range", async () => {
   set("rate", "80");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));

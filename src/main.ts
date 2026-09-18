@@ -1,5 +1,4 @@
-import { removeReportedDuplicateRu } from "./lyric-cleanup";
-import { enableLyricGrid, synchronizeLyricGrid, nearestQuarterBeat, setLyricGrid } from "./lyric-grid";
+import { lyricMeasureId, enableLyricGrid, synchronizeLyricGrid, nearestQuarterBeat, setLyricGrid } from "./lyric-grid";
 import { applyListeningRevision } from "./listening-revision";
 import { applyEnglishLyrics } from "./english-lyrics";
 import { applyJapaneseReadings } from "./lyric-reading";
@@ -194,7 +193,6 @@ async function activate(r: RecordData) {
   applyEnglishLyrics(r.song);
   applyListeningRevision(r.song);
   enableLyricGrid(r.song);
-  removeReportedDuplicateRu(r.song);
   validateSong(r.song);
   busy = true;
   try {
@@ -279,7 +277,7 @@ function widthOf(m: Measure) {
 function measureHTML(m: Measure, i: number, width: number) {
   const s = song(),
     r = displayRegion(s, s.regions.find((r) => r.id === m.regionId)!);
-  const ly = s.lyrics.filter((l) => l.time >= m.start && l.time < m.end);
+  const ly = s.lyrics.filter((l) => lyricMeasureId(s, l) === m.id);
   const height =
     width > 1 ? (width / r.w) * r.h * (pageRatios[r.page] || 1.294) : 165;
   const syl = ly

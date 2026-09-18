@@ -1,4 +1,4 @@
-import {beatTime, type Song, type Lyric, type Measure} from './model';
+import {beatTime, locate, type Song, type Lyric, type Measure} from './model';
 export interface GridPoint { measureId:string; tick:number }
 export function nearestQuarterBeat(song: Song, time: number) {
   if(!Number.isFinite(time) || !song.measures.length) throw Error('박자 위치를 계산할 수 없습니다.');
@@ -49,4 +49,17 @@ export function enableLyricGrid(song:Song) {
     song.lyricGridEnabled=true;
   }
   synchronizeLyricGrid(song);
+}
+
+/** Assign each lyric to exactly one bar; floating-point overlap is not dual ownership. */
+export function lyricMeasureId(song:Song, lyric:Lyric): string | undefined {
+  if(lyric.grid && !lyric.freeTiming) {
+    const index=song.measures.findIndex(m=>m.id===lyric.grid!.measureId);
+    if(index>=0) {
+      const m=song.measures[index], next=song.measures[index+1];
+      if(lyric.grid.tick===m.beats*4 && next && Math.abs(m.end-next.start)<1e-8) return next.id;
+      return m.id;
+    }
+  }
+  return locate(song,lyric.time).measure?.id;
 }
