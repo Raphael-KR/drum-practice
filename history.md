@@ -441,3 +441,9 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - src/lyric-timing.ts/data.ts와 활성화 시 마이그레이션 추가. 기존 브라우저 악보도 적용하며 원래 시각/fingerprint가 맞는 미확인 항목만 변경. 사용자 수정·다른 곡·다른 가사판본 보호. public/demo/song.json 반영, exports 미갱신.
 - docs/LYRIC-SYNC-CORRECTION.md에 기준과 한계 기록. 미변경479개는 전부 정확하다고 판정한 것이 아니다. 전 음절 청취 확인 및 iPad GUI 재생 검증 미수행, confirmed=false 유지.
 - 검증: 신규4개 포함 앱48테스트 PASS, build PASS, 실제자료77개 변경/재적용0개/validateSong PASS, localhost5173 HTTP200. 원본 백업·556개 감사목록·원시실험은 docs/experiments/syllable-sync에 보존.
+
+## Requested listening accuracy validation — 2026-09-19
+
+- 전 음절 직접 청취 검증 경로를 다시 확인했으나 해당 도구 없음. 청취 검증/정답 시각0개로 정확도나 개선율은 산출하지 않았다.
+- 실제 적용 시각을556개 감사자료와 대조. 모델4조건 간 차이:100ms이하466개,200ms초과52개,500ms초과24개. 보정77개 자체 일치는 선정근거를 다시 평가하는 순환이므로 정확성 증거로 사용하지 않음.
+- docs/LYRIC-ACCURACY-REVIEW.md 및 로컬 listening-review.csv(청취 시각/검토자 빈칸) 기록. 앱 추가변경/되돌림 없음. 이전 보정 문서의 임계값 설명을 실제 선정 코드(짧은창은 중앙값 기준)에 맞게 명확히 함.
