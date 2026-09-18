@@ -92,6 +92,16 @@ beforeAll(async () => {
   }));
   await import("../src/main");
 });
+it("shows the app name and score library action on the home screen", async () => {
+  expect(document.getElementById("song-title")!.textContent).toBe("드럼 연습실");
+  expect(document.querySelector("#welcome h2")!.textContent).toBe("드럼 연습실");
+  expect(document.getElementById("original-tempo")!.hidden).toBe(true);
+  expect([...document.querySelectorAll("#welcome .actions button")].map(b => b.id)).toEqual(["demo-button", "welcome-library", "welcome-new"]);
+  expect(document.querySelector("#welcome-library svg")!.innerHTML).toBe(document.querySelector("#library-button svg")!.innerHTML);
+  click("welcome-library");
+  await vi.waitFor(() => expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(true));
+  (document.getElementById("library-dialog") as HTMLDialogElement).close();
+});
 it("loads demo, saves named markers and loops and applies exact 5 BPM step", async () => {
   click("demo-button");
   await vi.waitFor(() =>

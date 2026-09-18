@@ -70,7 +70,7 @@ let trackOffsets: number[] = [],
 const app = $("app");
 app.innerHTML = `
 <header><div class="brand"><div class="logo" aria-hidden="true">♩</div><div><h1>드럼 연습실</h1><small id="song-title">악보를 따라, 나의 속도로</small></div></div><div class="actions"><button id="library-button">내 악보 목록</button><button id="save-html" hidden>HTML 한 파일로 저장</button><button id="edit-button" hidden>악보·가사 맞추기</button></div></header>
-<main><section class="welcome" id="welcome"><span class="tag">PDF · 음악 · 가사</span><h2>다음 마디를 미리 보고,<br>어려운 부분은 천천히.</h2><p>움직이는 악보와 바로 아래 가사를 한눈에 보세요.<br>연습할 구간을 정하고, 나에게 맞는 속도로 반복합니다.</p><div class="actions"><button class="primary" id="demo-button">바람과 언덕의 발라드 열기</button><button id="welcome-new">내 악보로 시작</button></div><p class="subtle">파일과 연습 기록은 이 브라우저에 저장됩니다. 다른 기기로 옮기거나 보관하려면 백업을 내보내세요.</p></section>
+<main><section class="welcome" id="welcome"><span class="tag">PDF · 음악 · 가사</span><h2>드럼 연습실</h2><p class="welcome-lead">다음 마디를 미리 보고, 어려운 부분은 천천히.</p><p>움직이는 악보와 바로 아래 가사를 한눈에 보세요.<br>연습할 구간을 정하고, 나에게 맞는 속도로 반복합니다.</p><div class="actions"><button class="primary" id="demo-button">바람과 언덕의 발라드 열기</button><button id="welcome-library">내 악보 목록</button><button id="welcome-new">＋ 악보 추가</button></div><p class="subtle">파일과 연습 기록은 이 브라우저에 저장됩니다. 다른 기기로 옮기거나 보관하려면 백업을 내보내세요.</p></section>
 <div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>한 곡 파일 · 변경 사항은 이 화면에서만 유지됩니다. 보관하려면 “HTML 한 파일로 저장”을 눌러 새 파일로 저장하세요.</p>
 <section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
 <div class="stage" id="stage"><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
@@ -88,6 +88,7 @@ arrangeIcons();
 function updateSongHeading() {
   const s = song();
   $("song-title").textContent = [s.artist, s.title].filter(Boolean).join(" - ");
+  $("original-tempo").hidden = false;
   $("original-tempo-value").textContent = `= ${s.bpm}`;
   $("original-tempo").setAttribute("aria-label", `원곡 ${s.bpm} BPM으로 돌아가기`);
   ($("original-tempo") as HTMLButtonElement).disabled = false;
@@ -743,6 +744,7 @@ async function openLibrary() {
   $<HTMLDialogElement>("library-dialog").showModal();
 }
 action("library-button", openLibrary);
+action("welcome-library", openLibrary);
 $("library-list").onclick = async (e) => {
   const b = (e.target as HTMLElement).closest("button");
   if (!b) return;
@@ -764,6 +766,9 @@ $("library-list").onclick = async (e) => {
         urls = [];
         $("practice").hidden = true;
         $("welcome").hidden = false;
+        $("song-title").textContent = "드럼 연습실";
+        document.title = "드럼 연습실";
+        $("original-tempo").hidden = true;
         $("edit-button").hidden = true;
         document.body.classList.remove("has-song");
         $("save-html").hidden = true;
@@ -1494,6 +1499,7 @@ if (isPortable) {
     "library-button",
     "new-button",
     "welcome-new",
+    "welcome-library",
     "demo-button",
   ])
     $(id).hidden = true;

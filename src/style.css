@@ -1203,3 +1203,8 @@ button.icon-button[hidden] { display:none; }
 #tempo-options button, #tempo-presets { min-height:48px; }
 #slower .icon-caption, #faster .icon-caption { font-size:16px; }
 #slower .ui-icon, #faster .ui-icon { width:16px; }
+
+#original-tempo[hidden] { display:none; }
+.welcome-lead { font-size:20px; font-weight:600; }
+#welcome .icon-caption { font-size:16px; }
+#welcome .icon-button { gap:8px; padding:9px 15px; }
