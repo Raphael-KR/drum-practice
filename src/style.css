@@ -1196,3 +1196,10 @@ button.icon-button[hidden] { display:none; }
 #original-tempo { min-height:48px; padding:4px 8px; border-color:transparent; background:transparent; }
 #original-tempo:not(:disabled):hover { background:var(--accent-soft); }
 #original-tempo:not(:disabled):active { background:var(--accent-soft); transform:scale(.96); }
+
+#rate { width:68px; min-height:48px; padding:8px; cursor:ew-resize; touch-action:none; user-select:none; -webkit-user-select:none; caret-color:transparent; }
+#rate.dragging { background:var(--accent-soft); border-color:var(--accent); }
+#tempo-options { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:12px 0; }
+#tempo-options button, #tempo-presets { min-height:48px; }
+#slower .icon-caption, #faster .icon-caption { font-size:16px; }
+#slower .ui-icon, #faster .ui-icon { width:16px; }

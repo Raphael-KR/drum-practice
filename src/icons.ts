@@ -33,7 +33,7 @@ export function iconButton(id: string, name: string, label: string, caption?: st
 export function arrangeIcons() {
   const items = [
     ['home','start','처음으로'], ['play','play','재생'], ['jump','rewind','선택한 마디 수만큼 되감기'],
-    ['slower','minus','1 BPM 느리게'], ['faster','plus','1 BPM 빠르게'],
+    ['slower','minus','5 BPM 느리게','5'], ['faster','plus','5 BPM 빠르게','5'],
     ['library-button','library','내 악보 목록'], ['new-button','plus','곡 추가','곡 추가'],
     ['save-html','export','HTML 한 파일로 저장'], ['fullscreen','expand','전체화면'],
     ['open-loop-dialog','repeat','구간 반복','반복'], ['open-marker-dialog','bookmark','마커','마커'],

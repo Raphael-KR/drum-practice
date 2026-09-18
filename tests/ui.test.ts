@@ -92,7 +92,7 @@ beforeAll(async () => {
   }));
   await import("../src/main");
 });
-it("loads demo, saves named markers and loops and applies exact 1 BPM step", async () => {
+it("loads demo, saves named markers and loops and applies exact 5 BPM step", async () => {
   click("demo-button");
   await vi.waitFor(() =>
     expect(document.querySelectorAll(".measure")).toHaveLength(110),
@@ -112,24 +112,24 @@ it("loads demo, saves named markers and loops and applies exact 1 BPM step", asy
   click("slower");
   await vi.waitFor(() =>
     expect((document.getElementById("rate") as HTMLInputElement).value).toBe(
-      "93",
+      "89",
     ),
   );
   await vi.waitFor(async () => {
     const r = (await allRecords()).find((r) => r.song.id === "real-paradis")!;
-    expect(r.song.settings.rate).toBeCloseTo(93 / 94, 12);
+    expect(r.song.settings.rate).toBeCloseTo(89 / 94, 12);
     expect(r.song.loops.at(-1)!.name).toBe("DOM 후렴");
   });
 });
-it("accepts BPM input, increments by one BPM and clamps to supported audio range", async () => {
+it("accepts BPM input, increments by five BPM and clamps to supported audio range", async () => {
   set("rate", "80");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("80"));
   click("faster");
-  await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("81"));
+  await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("85"));
   await vi.waitFor(async () => {
     const r = (await allRecords()).find(r => r.song.id === "real-paradis")!;
-    expect(r.song.settings.rate).toBeCloseTo(81 / 94, 12);
+    expect(r.song.settings.rate).toBeCloseTo(85 / 94, 12);
   });
   set("rate", "999");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
@@ -287,6 +287,34 @@ it("keeps icon controls accessible and updates play and metronome states", async
   metronome.closest("label")!.click();
   expect(metronome.checked).toBe(!initial);
   metronome.closest("label")!.click();
+});
+it("offers tempo presets and previews single-BPM dragging until release", async () => {
+  click("tempo-presets");
+  expect(document.getElementById("tempo-dialog")!.hasAttribute("open")).toBe(true);
+  expect(document.querySelectorAll("#tempo-options button")).toHaveLength(6);
+  (document.querySelector('[data-tempo="75"]') as HTMLButtonElement).click();
+  await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(75 / 94));
+  const input = document.getElementById("rate") as HTMLInputElement;
+  input.setPointerCapture = () => {};
+  input.hasPointerCapture = () => false;
+  const pointer = (name: string, x: number) => {
+    const e = new Event(name);
+    Object.assign(e, { pointerId: 1, pointerType: "touch", clientX: x });
+    (input as any)[`on${name}`]?.(e);
+  };
+  pointer("pointerdown", 100);
+  pointer("pointermove", 116);
+  expect(input.value).toBe("77");
+  expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(75 / 94);
+  pointer("pointerup", 116);
+  await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(77 / 94));
+  pointer("pointerdown", 100);
+  pointer("pointermove", 84);
+  expect(input.value).toBe("75");
+  pointer("pointercancel", 84);
+  expect(input.value).toBe("77");
+  click("original-tempo");
+  await vi.waitFor(() => expect(input.value).toBe("94"));
 });
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("library-button");
