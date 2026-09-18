@@ -88,7 +88,8 @@ function updateSongHeading() {
   const s = song();
   $("song-title").textContent = [s.artist, s.title].filter(Boolean).join(" - ");
   $("original-tempo-value").textContent = `= ${s.bpm}`;
-  $("original-tempo").setAttribute("aria-label", `원곡 템포: 4분음표 = ${s.bpm} BPM`);
+  $("original-tempo").setAttribute("aria-label", `원곡 ${s.bpm} BPM으로 돌아가기`);
+  ($("original-tempo") as HTMLButtonElement).disabled = false;
   document.title = $("song-title").textContent!;
 }
 function tell(s: string) {
@@ -425,6 +426,7 @@ async function rate(bpm: number) {
     busy = false;
   }
 }
+action("original-tempo", () => rate(song().bpm));
 action("play", toggle);
 action("home", () => engine().seek(0));
 action("jump", () => {

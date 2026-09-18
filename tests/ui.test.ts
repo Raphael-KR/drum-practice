@@ -138,6 +138,21 @@ it("accepts BPM input, increments by one BPM and clamps to supported audio range
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("94"));
 });
+it("resets playback BPM through the original tempo heading without seeking", async () => {
+  const heading = document.getElementById("original-tempo") as HTMLButtonElement;
+  expect(heading.tagName).toBe("BUTTON");
+  expect(heading.disabled).toBe(false);
+  set("seek", "70");
+  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  set("rate", "80");
+  document.getElementById("rate")!.dispatchEvent(new Event("change"));
+  await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(80 / 94));
+  click("original-tempo");
+  await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("94"));
+  animationFrame(0);
+  expect((document.getElementById("seek") as HTMLInputElement).value).toBe("70");
+  click("home");
+});
 it("keeps direct tool access and previews the actual measure while scrubbing", async () => {
   expect(document.getElementById("song-title")!.textContent).toContain(
     "Real Paradis -",

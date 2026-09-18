@@ -358,3 +358,9 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 마디수 옆 마디 글자 제거, select 기본 화살표와 BPM number 스피너 숨김. 마디수 터치선택 및 BPM 숫자입력/±버튼 유지.
 - 전체39테스트 및 build PASS. 예제HTML재생성없음.
 - iPad mini Safari 화면에서 재생 중심x566.5(1133폭의정중앙), 마디글자/숫자화살표제거 및겹침없음 직접확인. docs/experiments/round38-transport-screenshot.png.
+
+## 회차 43 — 헤더 원곡 BPM으로 리셋
+
+- 헤더♩=BPM을48px터치버튼으로 변경하여 원곡속도로복귀. 기존rate처리 사용으로재생중현재위치유지, 곡없을때비활성. 접근성이름·도움말·누름반응 제공.
+- 80→헤더클릭→94복귀 및70초위치유지 UI계약검사 추가. 전체40테스트 및 build PASS. 예제HTML재생성없음.
+- iPad mini Safari에서 -1후93 접근성값, 헤더터치후94복귀 및정지/1마디유지 확인. round39-reset-screenshot.png 직접확인. 세션종료확인.
