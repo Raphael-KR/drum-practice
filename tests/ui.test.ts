@@ -3,6 +3,7 @@
 import "fake-indexeddb/auto";
 import { beforeAll, it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import { Blob as NativeBlob, File as NativeFile } from "node:buffer";
 import { allRecords } from "../src/storage";
 vi.mock("../src/pdf", () => ({
   renderPDF: async () => ({
@@ -50,13 +51,17 @@ vi.mock("../src/audio", () => ({
     }
   },
 }));
+let animationFrame: FrameRequestCallback;
 const click = (id: string) => document.getElementById(id)!.click();
 const set = (id: string, v: string) => {
   (document.getElementById(id) as HTMLInputElement).value = v;
 };
 beforeAll(async () => {
+  // jsdom lacks Blob.arrayBuffer; use the standard implementation for media reads.
+  vi.stubGlobal("Blob", NativeBlob);
+  vi.stubGlobal("File", NativeFile);
   document.body.innerHTML = '<div id="app"></div>';
-  vi.stubGlobal("requestAnimationFrame", () => 0);
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { animationFrame = callback; return 0; });
   vi.stubGlobal(
     "Image",
     class {
@@ -147,8 +152,15 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   expect(document.getElementById("seek-position")!.textContent).toBe("25 마디");
   expect(document.getElementById("seek-position")!.hidden).toBe(false);
   expect(seek.getAttribute("aria-valuetext")).toBe("25 마디");
-  seek.dispatchEvent(new Event("blur"));
+  // Safari can deliver a final input after releasing the native range thumb.
+  seek.dispatchEvent(new Event("pointerdown"));
+  window.dispatchEvent(new Event("pointerup"));
+  seek.dispatchEvent(new Event("input"));
+  seek.dispatchEvent(new Event("change"));
   expect(document.getElementById("seek-position")!.hidden).toBe(true);
+  click("home");
+  animationFrame(0);
+  expect(seek.getAttribute("aria-valuetext")).toBe("1 마디");
   click("metadata-button");
   set("edit-artist", "Real Paradis");
   const before = (await allRecords()).find((r) => r.song.id === "real-paradis")!

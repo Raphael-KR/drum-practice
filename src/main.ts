@@ -181,16 +181,28 @@ async function activate(r: RecordData) {
     document.body.classList.add("has-song");
     editingLoopId = undefined;
     $("save-loop").textContent = "저장·반복";
-    urls = r.pages.map((b) => URL.createObjectURL(b));
+    // Materialize persisted blobs before image decoding; Safari may not load
+    // an object URL backed directly by an IndexedDB blob after a reload.
+    urls = await Promise.all(r.pages.map(async (b) =>
+      URL.createObjectURL(new Blob([await b.arrayBuffer()], { type: b.type })),
+    ));
     pageRatios = await Promise.all(
-      urls.map(async (u) => {
+      urls.map(async (u, index) => {
         const img = new Image();
         img.src = u;
-        await img.decode();
+        try {
+          await img.decode();
+        } catch (cause) {
+          throw new Error(`악보 ${index + 1}쪽을 불러오지 못했습니다: ${cause instanceof Error ? cause.message : String(cause)}`, { cause });
+        }
         return img.naturalHeight / img.naturalWidth;
       }),
     );
-    await engine().load(r.audio, r.song);
+    try {
+      await engine().load(r.audio, r.song);
+    } catch (cause) {
+      throw new Error(`음원을 불러오지 못했습니다: ${cause instanceof Error ? cause.message : String(cause)}`, { cause });
+    }
     $("welcome").hidden = true;
     $("practice").hidden = false;
     $("edit-button").hidden = false;
@@ -358,7 +370,10 @@ function frame() {
     }
   }
   $("elapsed").textContent = time(t);
-  if (!scrubbing) val("seek").value = String(t);
+  if (!scrubbing) {
+    val("seek").value = String(t);
+    val("seek").setAttribute("aria-valuetext", `${loc.measure?.label || "1"} 마디`);
+  }
   $("tempo").textContent =
     `${Number((s.bpm * s.settings.rate).toFixed(2))} BPM · 재생`;
   $("editor-time").textContent = `${t.toFixed(2)}초`;
@@ -433,7 +448,9 @@ async function finishScrub() {
 }
 window.addEventListener("pointerup", () => finishScrub().catch(error));
 window.addEventListener("pointercancel", () => finishScrub().catch(error));
+// Native Safari range controls may dispatch input after pointerup.
 seek.onchange = () => {
+  $("seek-position").hidden = true;
   if (!scrubbing) {
     engine().seek(num("seek"));
     queueSave();

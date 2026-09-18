@@ -232,3 +232,14 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 악보/94 BPM/하단 메뉴 표시 확인. 캡처 applicationState NotRun과 실제 Safari UI 상태 차이는 도구 메타데이터 한계로 기록. 재생/전체화면/두 줄 모드 전체 QA는 미실행.
 - 앱 소스·예제 HTML 변경 없음. 증거는 docs/experiments/ios27-capture01~05, 문서는 docs/IPAD-SIMULATOR.md.
 - 검증 후 DeviceInteractionEndSession의 `Session stopped` 확인. 세션 키는 로그·Git에 저장하지 않았다.
+
+## 회차 24 — iPad Safari 연습 기능 검증·수정 반복
+
+- 목표/범위: iOS 27 iPad mini 가로 Safari localhost 웹앱에서 재생·탐색·속도·반복·마커·보기·전체화면·도구 메뉴를 직접 조작. 실제 전후 화면/계층을 완료 근거로 삼고 원본 편집·실물 청감 평가는 제외.
+- 초기 실행: 재생/정지, 메트로놈 스위치, 99→100% 속도, 두 줄 악보·가사 및 zoom 숨김, 반복25~29 첫박 복귀, 마커 생성/이동/삭제, 각 편집/정보 메뉴 확인. 속도 최초 표시 차이는 처리 중 상태이며 정착 후99 확인.
+- 발견/수정1: Safari range에서 손을 놓아도 마디 풍선이 남음 → change에서도 숨김. 현재 위치가 바뀌어도 aria-valuetext가 옛 마디에 남음 → frame에서 현재마디 갱신. 시뮬레이터 재검증 통과.
+- 발견/수정2: 전체화면 두 줄 모드의 하단버튼 잘림·네이티브 종료 버튼의 제목 가림 → 높이800까지 compact 간격 적용, 전체화면 제목 시작 여백. 악보 크기 유지. 최종 캡처에서 8버튼 y666~710, 제목x88 확인.
+- 발견/수정3: 설정 저장/새로고침 후 저장된 악보 Blob이 Loading error, arrayBuffer도 The object can not be found here 반환. 내부 브라우저 원인은 미확정. 저장 매체를 ArrayBuffer+MIME(bytes-v1)로 변경, 기존 Blob 읽기 호환 유지. 읽기 실패는 쓰기 전 거부해 기존 곡 보존. 반복 저장·재읽기 및 실패보존 테스트 추가.
+- 예제복구: 임시 localhost 복구 페이지로 real-paradis 미디어만 public/demo 원본에서 복구. song JSON 백업 후 post-read 비교 동일true, 페이지3 확인. 다른 곡/원본파일 삭제 없음. 임시 페이지는 public에서 제거하고 실험 증거로만 보관.
+- 회귀:26테스트 PASS, TypeScript 포함 build PASS. 원샷프롬프트 v16/v17에 실제 iPad조작·전체화면·저장재열기 기준 반영. 자세한 시나리오와 한계는 docs/IPAD-QA.md. 증거 docs/experiments/round24*. 기존 exports HTML 재생성 없음.
+- 최종GUI: bytes-v1저장후Safari새로고침→내곡재열기/악보표시PASS. seek59→home1 접근성 갱신PASS. 한줄·100%·클릭on·1마디·일시정지복원, 테스트마커/반복삭제, MCP Session stopped. 루트도최종캡처직접확인.

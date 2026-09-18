@@ -7,6 +7,22 @@ export interface RecordData {
   audio: Blob;
   pages: Blob[];
 }
+interface StoredMedia { bytes: ArrayBuffer; type: string }
+interface StoredRecord {
+  song: Song;
+  mediaFormat: "bytes-v1";
+  pdf: StoredMedia;
+  audio: StoredMedia;
+  pages: StoredMedia[];
+}
+async function storedMedia(blob: Blob): Promise<StoredMedia> {
+  return { bytes: await blob.arrayBuffer(), type: blob.type };
+}
+function restoreRecord(value: StoredRecord | RecordData): RecordData {
+  if (!("mediaFormat" in value)) return value;
+  const blob = (m: StoredMedia) => new Blob([m.bytes], { type: m.type });
+  return { song: value.song, pdf: blob(value.pdf), audio: blob(value.audio), pages: value.pages.map(blob) };
+}
 function db(): Promise<IDBDatabase> {
   return new Promise((ok, no) => {
     const r = indexedDB.open("drum-practice", 1);
@@ -22,11 +38,17 @@ export async function saveRecord(record: RecordData) {
     portableRecords.set(record.song.id, record);
     return;
   }
+  // Persist owned bytes, not references to browser-managed Blob backing files.
+  // Read everything before opening a write transaction, so failure preserves the old record.
+  const [pdf, audio, pages] = await Promise.all([
+    storedMedia(record.pdf), storedMedia(record.audio), Promise.all(record.pages.map(storedMedia)),
+  ]);
+  const stored: StoredRecord = { song: structuredClone(record.song), mediaFormat: "bytes-v1", pdf, audio, pages };
   const d = await db();
   try {
     await new Promise<void>((ok, no) => {
       const t = d.transaction("songs", "readwrite");
-      t.objectStore("songs").put(record);
+      t.objectStore("songs").put(stored);
       t.oncomplete = () => ok();
       t.onerror = () => no(t.error);
       t.onabort = () => no(t.error);
@@ -41,7 +63,7 @@ export async function allRecords(): Promise<RecordData[]> {
   try {
     return await new Promise((ok, no) => {
       const r = d.transaction("songs").objectStore("songs").getAll();
-      r.onsuccess = () => ok(r.result);
+      r.onsuccess = () => ok(r.result.map(restoreRecord));
       r.onerror = () => no(r.error);
     });
   } finally {

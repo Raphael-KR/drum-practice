@@ -61,3 +61,6 @@ Apple 공식 안내: https://developer.apple.com/documentation/safari-developer-
 Xcode MCP StartSession 성공 후 Safari hierarchy와 screenshot을 확보했다. hierarchy의 hitPoint로 예제 곡 열기, 화면 메뉴 열기, 닫기를 실행하고 각 결과를 확인했다. 1133×744 가로 화면에서 악보·94 BPM·하단 컨트롤이 표시됐다. 증거는 로컬 전용 `docs/experiments/ios27-capture01`~`05`의 screenshot/hierarchy 파일이다. 즉시 캡처에서는 곡 로딩이 끝나지 않아 후속 캡처에서 완료를 확인했다.
 
 MCP applicationState 메타데이터는 NotRun으로 반환됐지만 Safari hierarchy·화면 변화로 실제 동작을 검증했다. 이번 검증은 연결·기본 터치 smoke 범위이며 오디오 재생·전체화면·반복·두 줄 모드 전체 QA를 뜻하지 않는다. Computer Use의 Device Hub 바인딩 문제 해결과도 별개다.
+
+
+후속 기능 검증과 수정 결과는 [IPAD-QA.md](IPAD-QA.md)를 따른다. 재생·반복·마커·전체화면·저장 재열기를 검사했고, 회차24에서 탐색표시·전체화면배치·Safari미디어저장 방식을 수정했다.
