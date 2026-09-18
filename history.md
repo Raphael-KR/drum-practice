@@ -422,3 +422,10 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - Tested AFM 3 Core Advanced on 28 pre-labeled small tasks using typed FoundationModels outputs. Reading equivalence6/8 (median0.334s), command extraction5/8 (0.680s), feedback routing11/12 (0.365s).
 - Useful candidate: preserve original feedback and append preliminary category for downstream review. Not safe for direct commands or automatic lyric-error dismissal. One routing error confused clipped text with lyric timing.
 - Details and limitations: docs/AFM-SMALL-TASKS-TEST.md. Raw local evidence under ignored docs/experiments/afm-small-tasks. No product or clinic code changes; no measured end-to-end token/speed claim. Verified all expected/actual comparisons and git diff --check.
+
+## Apple local workflow implementation — 2026-09-19
+
+- Added reusable scripts/apple-local Speech/STT bridge, typed AFM review bridge, Python orchestration, and five focused timing/diff tests. npm run review:local and test:local are available. Contract: docs/APPLE-LOCAL-WORKFLOW.md; PRD updated.
+- Actual song executed twice across11 vocal windows. Second run STT3.77s total, AFM47 pairs20.91s;69 review candidates preserved. All IDs/time ranges checked, no AFM transport/schema errors. Output correctness remains separately reviewed.
+- Codex rejected two sameReading labels (が似/かに and って/らせ). Bar48 思 onset differs120.32 vs121.52sec across windows. No timing overwrite; no confirmed=true. Local review-decisions.json records these findings.
+- Verification: five Python tests and all44 app tests passed; both Swift bridges compiled and executed. Existing-output rejection and git diff checks performed. No exports regenerated, clinic code untouched, no external upload.

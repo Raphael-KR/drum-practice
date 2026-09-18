@@ -9,7 +9,9 @@
     "test": "vitest run",
     "preview": "vite preview --host 127.0.0.1",
     "portable": "node scripts/build-portable.mjs",
-    "predev": "npm run portable"
+    "predev": "npm run portable",
+    "review:local": "python3 scripts/apple-local/workflow.py",
+    "test:local": "python3 -m unittest discover -s scripts/apple-local -p \"test_*.py\""
   },
   "dependencies": {
     "jszip": "^3.10.2",

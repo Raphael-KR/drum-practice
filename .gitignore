@@ -12,3 +12,7 @@ docs/experiments/
 .env
 .env.*
 !.env.example
+
+# Python local preprocessing caches
+__pycache__/
+*.pyc
