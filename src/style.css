@@ -1136,3 +1136,7 @@ main > .error-notice { flex:none; width:100%; }
 }
 #practice:not(.two-rows) .measure-beat,
 #practice:not(.two-rows) .measure-signature { display: none; }
+
+/* Meter belongs to every measure, even while another measure is playing. */
+.two-rows .measure .measure-signature { display: inline; }
+.two-rows .measure.active .measure-signature { color: inherit; }
