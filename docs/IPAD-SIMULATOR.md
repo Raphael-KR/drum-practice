@@ -40,3 +40,10 @@ xcrun simctl io CAC78C7B-F71D-4C5B-B03E-734479387F43 screenshot /tmp/ipad-mini.p
 Safari 응답형 디자인 모드, 전체 연습 흐름, 실제 기기의 성능은 별도 검증 대상이다. Chromium viewport 검증을 iPad Safari 검증으로 소급하지 않는다.
 
 Apple 공식 안내: https://developer.apple.com/documentation/safari-developer-tools/adding-additional-simulators
+
+
+## 승인 후 재검사
+
+사용자가 Xcode 승인 완료를 알린 뒤 기존 클라이언트로 재시도했으나 같은 승인 오류가 났다. `DrumPractice.xcworkspace`를 생성해 XcodeOpenWorkspace로 열고 사용자가 표시된 요청을 승인한 뒤, StartSession의 승인 오류는 사라졌다. 웹 소스를 참조하는 작업공간이며 네이티브 앱 타깃은 없다. OpenWorkspace는 실행 대상 해석 시간 초과를 반환했지만 후속 기기 요청은 승인 단계를 통과했다.
+
+새 차단 사유: Device Interaction은 iOS/watchOS/tvOS **27.0 이상 시뮬레이터**를 요구한다. 설치된 런타임은 iOS 18.6뿐이어서 터치 세션은 생성되지 않았다. iOS 27.0 arm64 (24A434) 다운로드를 시도했으나 다운로드 크기 8.05 GB 대비 디스크 여유가 약 12 GiB여서 설치 공간 확보 전 중단했다. 기존 런타임/사용자 파일은 삭제하지 않았다. 다음 단계는 충분한 디스크 공간을 확보하고 iOS 27을 설치한 뒤 프로젝트 전용 iPad mini 기기로 재검사하는 것이다.

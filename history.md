@@ -207,3 +207,11 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - CLI: devicectl orientation set/get으로 landscapeLeft 설정·조회 성공. simctl screenshot의 2266×1488 이미지에서 iPad Safari localhost 첫 화면 확인. HTTP 200 확인. 증거: docs/experiments/ipad-mini-landscape-cli.png.
 - Xcode MCP: xcrun mcpbridge initialize와 tools/list 성공. Apple device-interaction 스킬에 따라 세션 시작 검사를 수행했으나 “This agent isn't approved to use Xcode's tools yet”로 거부. 프로젝트 열기/생성에 따른 Xcode 승인이 필요하다는 서버 안내. 터치·메뉴 조작은 실행하지 못했으며 성공으로 보고하지 않는다. 세션 키는 발급되지 않았다.
 - 결과: 재시작 완료. CLI 회전·캡처는 사용 가능, Computer Use 연결은 미해결, Xcode MCP 터치는 승인 단계에서 차단. docs/IPAD-SIMULATOR.md 갱신, 문서 diff 검사. 소스 변경이 없어 앱 테스트는 재실행하지 않았다. 원격 push 없음.
+
+
+## 회차 21 — Xcode 승인 반영 및 런타임 요구 확인
+
+- 사용자 승인 후 MCP 재시도. 초기에는 동일 승인 거부였으나 웹 소스 참조용 DrumPractice.xcworkspace를 열어 요청을 연결하고 사용자가 승인한 뒤 권한 오류 해소.
+- XcodeOpenWorkspace 자체는 네이티브 타깃 없는 작업공간의 실행 대상 해석 시간 초과. 후속 StartSession은 권한 오류 대신 iOS 27.0+ 필요 오류를 반환. 현재 설치 iOS 18.6이므로 세션/터치 실행 없음.
+- iOS 27.0 arm64 다운로드 시작, 실제 다운로드 8.05 GB 확인. 여유 약 12 GiB로 설치 공간 충분성을 보장할 수 없어 해당 다운로드 프로세스에 SIGINT로 중단. 다른 파일/런타임 삭제 없음.
+- 승인 해결과 실제 제어 성공을 구분한다. 잔여 조건은 공간 확보 및 iOS 27 런타임 설치. 앱 코드/HTML 변경 없음. 작업공간 XML 파싱과 git diff 검사 수행.
