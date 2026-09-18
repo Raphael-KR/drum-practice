@@ -820,5 +820,6 @@
       "status": "pending"
     }
   ],
-  "positionPolicy": "nearest quarter beat; raw times retained as originalTime"
+  "positionPolicy": "nearest quarter beat; raw times retained as originalTime",
+  "appliedTailShift": "v2-l25 inclusive through end +1 quarter-beat tick, 2026-09-19"
 }

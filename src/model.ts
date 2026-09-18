@@ -60,6 +60,7 @@ export interface Song {
   lyrics: Lyric[];
   lyricRevision?: string;
   lyricGridEnabled?: boolean;
+  lyricShifts?: string[];
   lyricArchive?: { revision: string; lyrics: Lyric[] }[];
   markers: Marker[];
   loops: Loop[];

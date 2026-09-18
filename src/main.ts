@@ -1,3 +1,4 @@
+import { applyTookuTailShift } from "./lyric-tail-shift";
 import { lyricMeasureId, enableLyricGrid, synchronizeLyricGrid, nearestQuarterBeat, setLyricGrid } from "./lyric-grid";
 import { applyListeningRevision } from "./listening-revision";
 import { applyEnglishLyrics } from "./english-lyrics";
@@ -193,6 +194,7 @@ async function activate(r: RecordData) {
   applyEnglishLyrics(r.song);
   applyListeningRevision(r.song);
   enableLyricGrid(r.song);
+  applyTookuTailShift(r.song);
   validateSong(r.song);
   busy = true;
   try {
