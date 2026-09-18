@@ -243,3 +243,10 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 예제복구: 임시 localhost 복구 페이지로 real-paradis 미디어만 public/demo 원본에서 복구. song JSON 백업 후 post-read 비교 동일true, 페이지3 확인. 다른 곡/원본파일 삭제 없음. 임시 페이지는 public에서 제거하고 실험 증거로만 보관.
 - 회귀:26테스트 PASS, TypeScript 포함 build PASS. 원샷프롬프트 v16/v17에 실제 iPad조작·전체화면·저장재열기 기준 반영. 자세한 시나리오와 한계는 docs/IPAD-QA.md. 증거 docs/experiments/round24*. 기존 exports HTML 재생성 없음.
 - 최종GUI: bytes-v1저장후Safari새로고침→내곡재열기/악보표시PASS. seek59→home1 접근성 갱신PASS. 한줄·100%·클릭on·1마디·일시정지복원, 테스트마커/반복삭제, MCP Session stopped. 루트도최종캡처직접확인.
+
+
+## 회차 25 — 최신 수정본 단일 HTML 내보내기
+
+- 사용자 요청에 따라 scripts/build-portable.mjs --demo 실행. exports/바람과 언덕의 발라드-드럼연습.html 재생성(10.35 MiB).
+- 최신 템플릿과 내장 JavaScript/CSS 일치 확인, PDF·음원·3페이지 이미지 포함 및 110마디/가사 데이터/94 BPM 확인. 예제 원본 public/demo 데이터를 사용하며 브라우저별 개인 저장 상태는 포함하지 않는다.
+- 이번 검증은 생성물 구조·코드 동일성 검사이며 file URL/iPad 파일 실행 GUI는 재검증하지 않았다. HTML은 Git 제외, 내보내기 기록만 커밋.
