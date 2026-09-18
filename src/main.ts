@@ -1,4 +1,5 @@
 import "./style.css";
+import { applyLyricTimingPatch } from "./lyric-timing";
 import { chooseRecent, rememberScore } from "./recent-score";
 import { displayRegion } from "./score-view";
 import { arrangeIcons, iconButton } from "./icons";
@@ -176,6 +177,8 @@ function song() {
   return record.song;
 }
 async function activate(r: RecordData) {
+  validateSong(r.song);
+  applyLyricTimingPatch(r.song);
   validateSong(r.song);
   busy = true;
   try {

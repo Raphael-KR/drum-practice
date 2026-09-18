@@ -434,3 +434,10 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 
 - 사용자의 명시적 요청으로 에이전트관리팀장(019fe926-aa3e-7d01-a7cc-25105ef93a95)에 현재 실험값·실패·활용조건·재사용 코드/문서 경로를 send_message_to_thread로 전달했다.
 - 전역 활용/후속발견 공유 절차의 정본 반영을 팀장에게 요청했다. 이 프로젝트 AGENTS.md에는 후속 실측 발견 공유 지침을 추가했다. 자동 주기 감시나 외부 서비스 전송은 생성하지 않았다.
+
+## Lyric syllable timing correction — 2026-09-19
+
+- 전체556음절의 균등분할 문제를 음절별 가나 토큰 DTW로 재분석. 보컬2개 문맥, 원곡믹스, 짧은 문맥을 대조해77개 시작 시각 보정. 48마디 모120.91→121.36, 테122.02→122.44초. Apple STT 테122.48초를 추가 근거로 사용.
+- src/lyric-timing.ts/data.ts와 활성화 시 마이그레이션 추가. 기존 브라우저 악보도 적용하며 원래 시각/fingerprint가 맞는 미확인 항목만 변경. 사용자 수정·다른 곡·다른 가사판본 보호. public/demo/song.json 반영, exports 미갱신.
+- docs/LYRIC-SYNC-CORRECTION.md에 기준과 한계 기록. 미변경479개는 전부 정확하다고 판정한 것이 아니다. 전 음절 청취 확인 및 iPad GUI 재생 검증 미수행, confirmed=false 유지.
+- 검증: 신규4개 포함 앱48테스트 PASS, build PASS, 실제자료77개 변경/재적용0개/validateSong PASS, localhost5173 HTTP200. 원본 백업·556개 감사목록·원시실험은 docs/experiments/syllable-sync에 보존.
