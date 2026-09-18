@@ -7,3 +7,4 @@
 - PRD.md와 사용자의 최신 결정에 따라 구현하며 변경·검증은 history.md에 기록한다.
 - Git에는 소스·설정·문서·테스트를 기록한다. 원본 미디어, 로컬 예제 자료, 분석 자료, 실험 출력, 생성 HTML, node_modules, dist는 제외한다. 제외된 파일은 삭제하지 않는다.
 - 현재 GUI 검증은 같은 로컬 앱·자료 범위에서 이미 승인되어 있다. 외부 공개·배포·원격 push는 별도 요청 없이는 수행하지 않는다.
+- iPad 화면 검증은 사용자가 지정한 Safari 응답형 디자인 모드와 iPad mini (A17 Pro) 시뮬레이터를 우선한다. 설정·기기 ID·검증 상태는 docs/IPAD-SIMULATOR.md를 따른다. Chromium 화면 크기 모사를 iPad Safari 검증으로 간주하지 않는다.

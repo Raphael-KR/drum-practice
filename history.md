@@ -189,3 +189,10 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 작업 지침: AGENTS.md, README, 원샷 v15에 웹앱 정본 및 요청 시에만 예제 HTML 내보내기를 명시. 이번 회차는 예제 HTML을 재생성하지 않았다. 내보내기 기능 자체는 유지.
 - Git 범위: 소스·문서·테스트·설정 44개 파일. 미디어·분석 자료·로컬 실험 출력·생성 HTML은 ignore하고 기존 파일은 보존. 원격 저장소 미설정, push/공개 없음.
 - 검증: 25개 테스트 PASS (`round18-tests.txt`), TypeScript 검사 PASS. 서버가 제공하는 /src/main.ts에서도 현재 한 줄 모드 크기 메뉴 조건을 확인했다. GUI 재검증 없음.
+
+## 회차 19 — Apple iPad mini 시뮬레이터 준비
+
+- 사용자 지정 Safari 응답형 디자인 모드/Simulator를 향후 개발·검증 경로로 채택.
+- Apple 공식 문서 확인, 설치된 iOS 18.6 런타임과 iPad mini A17 Pro 기기 유형 확인. 새 프로젝트 전용 시뮬레이터 생성·부팅, Safari로 localhost 웹앱 열기, 1488×2266 첫 화면 캡처 확인.
+- Simulator 앱 GUI 제어는 이름/예전 경로에서 Invalid app. 부팅·웹앱 로드는 simctl 경로로 확인했지만 가로 회전·연습 기능 및 Safari 응답형 모드 조작은 미검증. docs/IPAD-SIMULATOR.md에 현재 상태와 후속 검증 기록.
+- 앱 코드/HTML 변경 없음. 문서만 Git 기록. 원격 push 없음.
