@@ -819,5 +819,6 @@
       "lyricId": "v3-terminal-wa",
       "status": "pending"
     }
-  ]
+  ],
+  "positionPolicy": "nearest quarter beat; raw times retained as originalTime"
 }

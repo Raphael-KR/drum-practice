@@ -9,13 +9,13 @@ const song = { title: "테스트", artist: "가수", measures: [
 it("reports the fourth eighth-note slot with exact time", () => {
   const p = playbackPosition(song, 11.501);
   expect(p.label).toBe("15마디 · 2박 + ½");
-  expect(p.text).toContain("4번째 8분음표 구간");
+  expect(p.text).toContain("가장 가까운 ¼박 격자 기준");
   expect(p.text).toContain("11.501초");
 });
 it("handles measure changes, pre-roll, and the last beat in 5/4", () => {
   expect(playbackPosition(song, 0).label).toBe("15마디 · 1박");
   expect(playbackPosition(song, 14).label).toBe("16마디 · 1박");
-  expect(playbackPosition(song, 19).label).toBe("16마디 · 5박 + ¾");
+  expect(playbackPosition(song, 19).label).toBe("16마디 · 끝");
 });
 it("writes the supplied snapshot to Clipboard API", async () => {
   const writeText = vi.fn().mockResolvedValue(undefined);

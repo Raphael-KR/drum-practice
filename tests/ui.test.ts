@@ -369,3 +369,22 @@ it("opens the last practiced score instead of the bundled song", async () => {
   await vi.waitFor(() => expect(document.getElementById("song-title")!.textContent).toBe("독립 두 번째 곡"));
   expect(document.querySelectorAll(".measure")).toHaveLength(1);
 });
+it("edits lyric starts on a quarter-beat grid with an explicit free-time override", async () => {
+  await vi.waitFor(() => expect(document.getElementById("busy")!.textContent!.split("\n")[0]).toContain("저장"));
+  click("lyrics-button");click("show-all");
+  const select=document.querySelector<HTMLSelectElement>('#lyric-editor [data-field="grid-tick"]')!;
+  expect(select).not.toBeNull();select.value='5';select.dispatchEvent(new Event('change',{bubbles:true}));
+  await vi.waitFor(async()=>{
+    const r=(await allRecords()).find(r=>r.song.title==='독립 두 번째 곡')!;
+    expect(r.song.lyrics[0].grid?.tick).toBe(5);
+    expect(r.song.lyrics[0].time).toBeCloseTo(r.song.measures[0].start+(r.song.measures[0].end-r.song.measures[0].start)*1.25/4);
+  });
+  const toggle=document.querySelector<HTMLInputElement>('#lyric-editor [data-field="freeTiming"]')!;
+  toggle.checked=true;toggle.dispatchEvent(new Event('change',{bubbles:true}));
+  const seconds=document.querySelector<HTMLInputElement>('#lyric-editor [data-field="time"]')!;
+  expect(seconds).not.toBeNull();seconds.value='0.733';seconds.dispatchEvent(new Event('change',{bubbles:true}));
+  await vi.waitFor(async()=>{
+    const l=(await allRecords()).find(r=>r.song.title==='독립 두 번째 곡')!.song.lyrics[0];
+    expect(l.freeTiming).toBe(true);expect(l.time).toBe(.733);expect(l.grid).toBeUndefined();
+  });
+});

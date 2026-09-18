@@ -22,6 +22,9 @@ export interface Lyric {
   time: number;
   end: number;
   confirmed: boolean;
+  originalTime?: number;
+  grid?: { measureId: string; tick: number };
+  freeTiming?: boolean;
 }
 export interface Marker {
   id: string;
@@ -56,6 +59,7 @@ export interface Song {
   regions: Region[];
   lyrics: Lyric[];
   lyricRevision?: string;
+  lyricGridEnabled?: boolean;
   lyricArchive?: { revision: string; lyrics: Lyric[] }[];
   markers: Marker[];
   loops: Loop[];

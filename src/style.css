@@ -1215,3 +1215,5 @@ button.icon-button[hidden] { display:none; }
   #copy-position { width:150px; font-size:12px; }
   .transport-left { gap:4px !important; }
 }
+.lyric-grid-controls { display:flex; gap:4px; }
+.lyric-grid-controls select { min-height:44px; max-width:110px; padding:4px; }

@@ -1,15 +1,11 @@
-import { locate, type Song } from "./model";
+import { type Song } from "./model";
+import { nearestQuarterBeat, gridLabel } from "./lyric-grid";
 
-/** Show the containing sixteenth-note slot; copy the exact audio time as well. */
+/** The nearest quarter beat is the reporting/display coordinate, not a containing bin. */
 export function playbackPosition(song: Song, time: number) {
-  const { measure, beat } = locate(song, time);
-  if (!measure) throw Error("복사할 마디가 없습니다.");
-  const slot = Math.min(Math.ceil(measure.beats * 4) - 1, Math.floor(beat * 4 + 1e-7));
-  const fraction = ["", " + ¼", " + ½", " + ¾"][slot % 4];
-  const label = `${measure.label}마디 · ${Math.floor(slot / 4) + 1}박${fraction}`;
-  const eighth = measure.denominator === 4 && slot % 2 === 0
-    ? ` · ${Math.floor(slot / 2) + 1}번째 8분음표 구간` : "";
-  const text = `${song.artist ? song.artist + " - " : ""}${song.title}\n${label}${eighth} (${measure.beats}/${measure.denominator})\n음원 ${time.toFixed(3)}초 · 마디 시작 후 ${Math.max(0, time - measure.start).toFixed(3)}초 · 박 위치 ${(beat + 1).toFixed(3)} (1부터)\n표시는 현재 ¼박 구간 기준입니다.`;
+  const point = nearestQuarterBeat(song, time);
+  const label = gridLabel(point.measure, point.tick);
+  const text = `${song.artist ? song.artist + " - " : ""}${song.title}\n${label} (${point.measure.beats}/${point.measure.denominator})\n가장 가까운 ¼박 격자 기준\n참고: 원본 재생 시각 ${time.toFixed(3)}초 · 격자 시각 ${point.time.toFixed(3)}초`;
   return { label, text };
 }
 

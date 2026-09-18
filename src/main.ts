@@ -1,3 +1,4 @@
+import { enableLyricGrid, synchronizeLyricGrid, nearestQuarterBeat, setLyricGrid } from "./lyric-grid";
 import { applyListeningRevision } from "./listening-revision";
 import { applyEnglishLyrics } from "./english-lyrics";
 import { applyJapaneseReadings } from "./lyric-reading";
@@ -88,7 +89,7 @@ app.innerHTML = `
 <div class="panels"><section class="panel"><h2>구간 반복</h2><div class="flex"><label>시작 마디 <input id="loop-a" type="number" min="1" value="25"></label><label>박 <input id="loop-ab" type="number" min="1" step="0.25" value="1"></label><button id="set-a">현재 위치 A</button></div><div class="flex"><label>끝 마디 <input id="loop-b" type="number" min="1" value="29"></label><label>박 <input id="loop-bb" type="number" min="1" step="0.25" value="1"></label><button id="set-b">현재 위치 B</button></div><p class="subtle">끝 지점의 첫 음은 포함하지 않습니다. 25~28마디 반복은 끝을 29마디 1박으로 설정하세요.</p><div class="flex"><input id="loop-name" type="text" placeholder="예: 후렴 4마디" aria-label="반복 이름"><button id="save-loop">저장·반복</button><button id="new-loop">새 구간</button><button id="stop-loop">반복 끄기</button></div><div class="list" id="loops"></div></section><section class="panel"><h2>마커</h2><div class="flex"><input id="marker-name" type="text" placeholder="예: 어려운 필인" aria-label="마커 이름"><button id="add-marker">현재 위치 표시</button></div><div id="markers" class="list"></div><details><summary>백업·복원</summary><p class="subtle">백업에는 정렬·가사·연습 설정이 들어갑니다. 미디어를 포함하면 다른 기기에서도 바로 열 수 있습니다.</p><label><input id="include-media" type="checkbox" checked>PDF·음원 포함</label><div class="flex"><button id="export">백업 내보내기</button><label>가져오기 <input id="restore" type="file" accept=".zip"></label></div></details></section></div><p class="keyboard">스페이스: 재생/정지 · ←/→: 이전/다음 마디 · M: 마커 추가</p><p class="subtle" id="alignment-note">가사와 박 위치는 자동 추정 자료를 포함합니다. 어긋나는 곳은 ‘악보·가사 맞추기’에서 수정하세요.</p></section></main>
 <dialog id="library-dialog"><div class="dialoghead"><h2>내 악보 목록</h2><button id="new-button">＋ 곡 추가</button><button data-close="library-dialog">닫기</button></div><div id="library-list"></div></dialog>
 <dialog id="new-dialog"><div class="dialoghead"><h2>새 곡 준비</h2><button data-close="new-dialog">닫기</button></div><p>PDF와 음악을 골라 주세요. 마디 영역은 자동 제안 후 직접 수정할 수 있습니다.</p><form id="new-form"><p><label>가수 <input id="new-artist" type="text"></label><label>제목 <input id="new-title" required type="text" value="새 연습곡"></label></p><p><label>PDF <input id="pdf-file" required type="file" accept="application/pdf,.pdf"></label></p><p><label>음원 <input id="audio-file" required type="file" accept="audio/*,.mp3"></label></p><p><label>BPM <input id="new-bpm" type="number" min="20" max="300" value="94" required></label><label>첫 박(초) <input id="new-first" type="number" min="0" step="0.001" value="0" required></label><label>박자 <input id="new-beats" type="number" min="1" max="16" value="4" required>/ <select id="new-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></p><p><label>한글 발음 가사 — 한 줄에 한 구절</label><textarea id="new-lyrics" placeholder="스베테오 테니 이레테\n스베테오 우시낫테"></textarea></p><p class="subtle">가사 초기 위치는 임시 분배입니다. 노래를 들으며 실제 시작 시각을 맞춰 주세요.</p><button type="submit" class="primary">곡 만들기</button></form></dialog>
-<dialog id="editor-dialog"><div class="dialoghead"><h2>악보·가사 맞추기</h2><button data-close="editor-dialog">연습으로 돌아가기</button></div><div class="flex"><label>가수 <input id="edit-artist" type="text"></label><label>제목 <input id="edit-title" type="text"></label><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>첫 박(초) <input id="edit-first" type="number" min="0" step="0.001"></label><button id="reflow">이 템포로 전체 다시 맞추기</button><button id="estimate-tempo">음원 템포 추정</button><button id="tap-tempo">박자 탭</button><span id="tap-result"></span></div><p class="subtle">전체 다시 맞추기는 기존 시간 보정을 바꿉니다. 실행 전 백업을 권합니다. 음원과 가사 원본 시각은 별도로 확인하세요.</p><div class="editor"><section><div class="flex"><label>페이지 <select id="editor-page"></select></label><label>마디 <select id="measure-select"></select></label></div><p class="subtle">원본 위를 드래그하여 마디 영역을 지정한 후 추가하거나 선택한 마디에 적용하세요.</p><div class="pagebox"><canvas id="edit-canvas"></canvas></div><div class="flex"><button id="add-region">새 마디 추가</button><button id="apply-crop">선택 마디에 영역 적용</button></div></section><section><h3>선택한 마디</h3><div class="flex"><label>이름 <input id="measure-label" type="text" style="width:95px"></label><label>박 수 <input id="measure-beats" type="number" min="1" max="16"></label><label>분모 <select id="measure-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></div><div class="flex"><label>시작 초 <input id="measure-start" type="number" min="0" step="0.001"></label><label>끝 초 <input id="measure-end" type="number" min="0" step="0.001"></label><button id="apply-measure">마디 저장</button></div><label>내부 박 위치(0~1, 쉼표 구분)<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1" style="width:100%"></label><p class="subtle">마디 시작부터 끝까지 박 경계의 가로 위치입니다. 비우면 균등 간격을 사용합니다.</p><div class="flex"><button id="preview-measure">이 마디 듣기</button><button id="anchor-now">현재 음악 위치를 첫 박으로</button><button id="editor-play">재생/정지</button><span id="editor-time"></span></div><div class="flex"><button id="duplicate">뒤에 복제</button><button id="split">반으로 분할</button><button id="merge">다음과 합치기</button><button id="move-left">앞으로</button><button id="move-right">뒤로</button><button id="remove-measure" class="danger">마디 삭제</button></div><h3>가사 시각</h3><p class="subtle">시작·끝은 원곡 초 단위입니다. 문장을 음절로 나누어 더 세밀하게 맞출 수 있습니다.</p><div class="flex"><button id="add-lyric">현재 위치에 가사 추가</button><button id="show-near">현재 마디 가사</button><button id="show-all">전체 가사</button></div><div class="scroll"><table><thead><tr><th>발음</th><th>시작</th><th>끝</th><th>확인</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>
+<dialog id="editor-dialog"><div class="dialoghead"><h2>악보·가사 맞추기</h2><button data-close="editor-dialog">연습으로 돌아가기</button></div><div class="flex"><label>가수 <input id="edit-artist" type="text"></label><label>제목 <input id="edit-title" type="text"></label><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>첫 박(초) <input id="edit-first" type="number" min="0" step="0.001"></label><button id="reflow">이 템포로 전체 다시 맞추기</button><button id="estimate-tempo">음원 템포 추정</button><button id="tap-tempo">박자 탭</button><span id="tap-result"></span></div><p class="subtle">전체 다시 맞추기는 기존 시간 보정을 바꿉니다. 실행 전 백업을 권합니다. 음원과 가사 원본 시각은 별도로 확인하세요.</p><div class="editor"><section><div class="flex"><label>페이지 <select id="editor-page"></select></label><label>마디 <select id="measure-select"></select></label></div><p class="subtle">원본 위를 드래그하여 마디 영역을 지정한 후 추가하거나 선택한 마디에 적용하세요.</p><div class="pagebox"><canvas id="edit-canvas"></canvas></div><div class="flex"><button id="add-region">새 마디 추가</button><button id="apply-crop">선택 마디에 영역 적용</button></div></section><section><h3>선택한 마디</h3><div class="flex"><label>이름 <input id="measure-label" type="text" style="width:95px"></label><label>박 수 <input id="measure-beats" type="number" min="1" max="16"></label><label>분모 <select id="measure-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></div><div class="flex"><label>시작 초 <input id="measure-start" type="number" min="0" step="0.001"></label><label>끝 초 <input id="measure-end" type="number" min="0" step="0.001"></label><button id="apply-measure">마디 저장</button></div><label>내부 박 위치(0~1, 쉼표 구분)<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1" style="width:100%"></label><p class="subtle">마디 시작부터 끝까지 박 경계의 가로 위치입니다. 비우면 균등 간격을 사용합니다.</p><div class="flex"><button id="preview-measure">이 마디 듣기</button><button id="anchor-now">현재 음악 위치를 첫 박으로</button><button id="editor-play">재생/정지</button><span id="editor-time"></span></div><div class="flex"><button id="duplicate">뒤에 복제</button><button id="split">반으로 분할</button><button id="merge">다음과 합치기</button><button id="move-left">앞으로</button><button id="move-right">뒤로</button><button id="remove-measure" class="danger">마디 삭제</button></div><h3>가사 시각</h3><p class="subtle">시작은 가장 가까운 ¼박에 맞춥니다. 마디와 박을 선택하세요. 셋잇단음표 등은 자유 시각으로 보정할 수 있습니다. 끝은 원곡 초 단위입니다.</p><div class="flex"><button id="add-lyric">현재 위치에 가사 추가</button><button id="show-near">현재 마디 가사</button><button id="show-all">전체 가사</button></div><div class="scroll"><table><thead><tr><th>발음</th><th>시작 · ¼박</th><th>끝(초)</th><th>확인</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>
 <dialog id="original-dialog"><div class="dialoghead"><h2>원본 악보</h2><button data-close="original-dialog">닫기</button></div><div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>알림</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>`;
 document.getElementById("app")!.insertAdjacentHTML("beforeend", '<dialog id="tempo-dialog" aria-labelledby="tempo-heading"><div class="dialoghead"><h2 id="tempo-heading">연습 BPM</h2><button data-close="tempo-dialog">닫기</button></div><div id="tempo-options"></div><p class="subtle">숫자를 좌우로 드래그하면 1 BPM씩 조절하고, 두 번 탭하면 원곡 BPM으로 돌아갑니다.</p></dialog>');
 arrangeWorkspace();
@@ -191,6 +192,7 @@ async function activate(r: RecordData) {
   applyJapaneseReadings(r.song);
   applyEnglishLyrics(r.song);
   applyListeningRevision(r.song);
+  enableLyricGrid(r.song);
   validateSong(r.song);
   busy = true;
   try {
@@ -1037,6 +1039,9 @@ canvas.onpointercancel = () => (drawStart = undefined);
 function edit(mut: (s: Song) => void) {
   const draft = structuredClone(song());
   mut(draft);
+  const topology = (s:Song) => JSON.stringify(s.measures.map(m=>[m.id,m.beats,m.denominator]));
+  if(topology(draft)!==topology(song())) for(const l of draft.lyrics) delete l.grid;
+  if(draft.lyricGridEnabled) synchronizeLyricGrid(draft);
   validateSong(draft);
   engine().pause();
   record!.song = draft;
@@ -1254,6 +1259,14 @@ action("lyrics-next", () => {
   lyricPage++;
   renderLyricEditor(lyricNear, true);
 });
+function lyricGridEditor(l: Song["lyrics"][number]) {
+  if(l.freeTiming) return `<input data-field="time" type="number" min="0" step="0.01" value="${l.time.toFixed(3)}" aria-label="자유 시작 초">`;
+  const p=nearestQuarterBeat(song(),l.time), point=l.grid || {measureId:p.measure.id,tick:p.tick};
+  const m=song().measures.find(m=>m.id===point.measureId)!;
+  const measures=song().measures.map(x=>`<option value="${esc(x.id)}" ${x.id===m.id ? "selected" : ""}>${esc(x.label)}마디</option>`).join("");
+  const ticks=Array.from({length:m.beats*4},(_,tick)=>`<option value="${tick}" ${tick===point.tick ? "selected" : ""}>${Math.floor(tick/4)+1}박${[""," + ¼"," + ½"," + ¾"][tick%4]}</option>`).join("");
+  return `<div class="lyric-grid-controls"><select data-field="grid-measure" aria-label="가사 시작 마디">${measures}</select><select data-field="grid-tick" aria-label="가사 시작 박">${ticks}</select></div>`;
+}
 function renderLyricEditor(near: boolean, keepPage = false) {
   if (!keepPage) lyricPage = 0;
   lyricNear = near;
@@ -1275,7 +1288,7 @@ function renderLyricEditor(near: boolean, keepPage = false) {
     .slice(lyricPage * perPage, (lyricPage + 1) * perPage)
     .map(
       (l) =>
-        `<tr data-lyric="${esc(l.id)}"><td><input data-field="text" value="${esc(l.text)}" aria-label="가사"></td><td><input data-field="time" type="number" min="0" step="0.01" value="${l.time.toFixed(2)}" aria-label="시작 초"></td><td><input data-field="end" type="number" min="0" step="0.01" value="${l.end.toFixed(2)}" aria-label="끝 초"></td><td><input data-field="confirmed" type="checkbox" ${l.confirmed ? "checked" : ""} aria-label="확인됨"></td><td><button data-split-lyric="${esc(l.id)}" title="음절로 나누기">÷</button><button data-delete-lyric="${esc(l.id)}" aria-label="가사 삭제">×</button></td></tr>`,
+        `<tr data-lyric="${esc(l.id)}"><td><input data-field="text" value="${esc(l.text)}" aria-label="가사"></td><td>${lyricGridEditor(l)}<label><input data-field="freeTiming" type="checkbox" ${l.freeTiming ? "checked" : ""}>자유 시각</label></td><td><input data-field="end" type="number" min="0" step="0.01" value="${l.end.toFixed(2)}" aria-label="끝 초"></td><td><input data-field="confirmed" type="checkbox" ${l.confirmed ? "checked" : ""} aria-label="확인됨"></td><td><button data-split-lyric="${esc(l.id)}" title="음절로 나누기">÷</button><button data-delete-lyric="${esc(l.id)}" aria-label="가사 삭제">×</button></td></tr>`,
     )
     .join("");
 }
@@ -1288,11 +1301,19 @@ $("lyric-editor").onchange = (e) => {
     edit((s) => {
       const l = s.lyrics.find((l) => l.id === id)!;
       if (field === "text") l.text = input.value;
-      if (field === "time") l.time = Number(input.value);
+      if (field === "time") { l.originalTime ??= l.time; l.time = Number(input.value); l.end = Math.max(l.end,l.time); delete l.grid; }
+      if (field === "freeTiming") { l.freeTiming=input.checked; if(l.freeTiming) delete l.grid; }
+      if (field === "grid-measure" || field === "grid-tick") {
+        const point=l.grid || {measureId:nearestQuarterBeat(s,l.time).measure.id,tick:nearestQuarterBeat(s,l.time).tick};
+        const measureId=field==="grid-measure" ? input.value : point.measureId;
+        const measure=s.measures.find(m=>m.id===measureId)!;
+        setLyricGrid(s,l,{measureId,tick:Math.min(measure.beats*4-1,field==="grid-tick" ? Number(input.value) : point.tick)});
+      }
       if (field === "end") l.end = Number(input.value);
       if (field === "confirmed") l.confirmed = input.checked;
       s.lyrics.sort((a, b) => a.time - b.time);
     });
+    renderLyricEditor(false);
   } catch (e) {
     error(e);
     renderLyricEditor(false);
