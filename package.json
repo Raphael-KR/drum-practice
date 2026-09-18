@@ -1,0 +1,29 @@
+{
+  "name": "drum-practice-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "npm run portable && tsc --noEmit && vite build",
+    "test": "vitest run",
+    "preview": "vite preview --host 127.0.0.1",
+    "portable": "node scripts/build-portable.mjs",
+    "predev": "npm run portable"
+  },
+  "dependencies": {
+    "jszip": "^3.10.2",
+    "pdfjs-dist": "^6.3.289",
+    "soundtouchjs": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.3",
+    "esbuild": "^0.28.2",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.9.7",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "vitest": "^5.0.1"
+  }
+}

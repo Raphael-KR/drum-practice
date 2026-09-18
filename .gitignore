@@ -1,0 +1,14 @@
+node_modules/
+dist/
+public/demo/
+data/reference/
+*.log
+.DS_Store
+docs/experiments/*backup.zip
+exports/
+public/portable-template.html
+# Local experiment outputs can contain score images, lyrics, and media.
+docs/experiments/
+.env
+.env.*
+!.env.example
