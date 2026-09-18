@@ -250,3 +250,10 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 사용자 요청에 따라 scripts/build-portable.mjs --demo 실행. exports/바람과 언덕의 발라드-드럼연습.html 재생성(10.35 MiB).
 - 최신 템플릿과 내장 JavaScript/CSS 일치 확인, PDF·음원·3페이지 이미지 포함 및 110마디/가사 데이터/94 BPM 확인. 예제 원본 public/demo 데이터를 사용하며 브라우저별 개인 저장 상태는 포함하지 않는다.
 - 이번 검증은 생성물 구조·코드 동일성 검사이며 file URL/iPad 파일 실행 GUI는 재검증하지 않았다. HTML은 Git 제외, 내보내기 기록만 커밋.
+
+## 회차 26 — 무음 모드에서도 음악 재생용 세션 요청
+
+- 실물 iPad에서 사용자가 무음 모드를 끄면 소리가 나는 것을 확인. 사용자 요청으로 Web Audio 재생 직전 지원 환경의 navigator.audioSession.type을 playback으로 설정하도록 변경했다. 음악·메트로놈은 같은 AudioContext이므로 둘에 적용된다. 기기 무음 설정/볼륨 자체는 변경하지 않는다.
+- 매 재생 시 resume 전에 요청한다. API 미지원/설정 거부 시 기존 재생 경로를 유지하며 초기 로드에서 다른 앱의 오디오 세션을 건드리지 않는다. WebKit 근거: https://bugs.webkit.org/show_bug.cgi?id=237322#c6
+- 지원/미지원/거부 환경 및 두 번째 재생의 호출 순서 검사 추가.29테스트 PASS, TypeScript 포함 build PASS. 예제 HTML 재생성(10.35 MiB), 최신 템플릿 런타임 동일 및 audioSession 설정 포함 확인.
+- 실물 Edge/Sitecase에서 새 HTML로 무음 모드 청취는 아직 미검증. 기존에 복사한 파일에는 자동 반영되지 않으므로 새 파일 교체가 필요하다. 브라우저별 개인 연습 상태는 이번 예제 내보내기에 포함하지 않는다.

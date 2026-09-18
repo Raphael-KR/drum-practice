@@ -81,3 +81,34 @@ it("schedules adjacent audio sources on exact loop boundaries and cancels queued
   expect(p.playing).toBe(false);
   vi.unstubAllGlobals();
 });
+
+it.each(["supported", "missing", "rejected"])("plays with %s Audio Session API", async (support) => {
+  const order: string[] = [];
+  const session = {
+    set type(value: string) {
+      order.push(value);
+      if (support === "rejected") throw new Error("unsupported session policy");
+    },
+  };
+  vi.stubGlobal("navigator", support === "missing" ? {} : { audioSession: session });
+  vi.stubGlobal("AudioContext", class extends Context {
+    async resume() { order.push("resume"); }
+  });
+  vi.stubGlobal("window", { setInterval: () => 1 });
+  const p = new Player();
+  try {
+    p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+    p.original = { duration: 296.88 } as AudioBuffer;
+    p.rendered = {} as AudioBuffer;
+    await p.play(false);
+    expect(p.playing).toBe(true);
+    p.pause();
+    await p.play(false);
+    expect(order).toEqual(support === "missing"
+      ? ["resume", "resume"]
+      : ["playback", "resume", "playback", "resume"]);
+  } finally {
+    p.pause();
+    vi.unstubAllGlobals();
+  }
+});

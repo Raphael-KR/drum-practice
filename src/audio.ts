@@ -161,6 +161,15 @@ export class Player {
   async play(count = true) {
     if (!this.song?.measures.length || !this.rendered)
       throw Error("악보 마디와 음원을 먼저 준비하세요.");
+    // WebKit can otherwise treat Web Audio as ambient audio and obey silent mode.
+    // Request media playback on each play, before resuming the shared music/click context.
+    try {
+      const session = typeof navigator === "undefined" ? undefined :
+        (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+      if (session) session.type = "playback";
+    } catch {
+      // Older browsers and embedded viewers may not allow this optional API.
+    }
     await this.ctx.resume();
     if (this.renderRate !== this.song.settings.rate) {
       await this.setRate(this.song.settings.rate);
