@@ -1,4 +1,5 @@
 import "./style.css";
+import { chooseRecent, rememberScore } from "./recent-score";
 import { displayRegion } from "./score-view";
 import { arrangeIcons, iconButton } from "./icons";
 import { arrangeWorkspace, selectEditorPane, paginateList } from "./workspace";
@@ -221,6 +222,10 @@ async function activate(r: RecordData) {
     renderTrack();
     renderLists();
     await persist();
+    if (!isPortable) {
+      rememberScore(r.song.id);
+      $("demo-button").textContent = `${r.song.title} 열기`;
+    }
     status("");
   } finally {
     busy = false;
@@ -774,6 +779,7 @@ $("library-list").onclick = async (e) => {
         $("save-html").hidden = true;
       }
       await deleteRecord(deleting);
+      await refreshRecentScore();
       $<HTMLDialogElement>("library-dialog").close();
       await openLibrary();
     }
@@ -788,11 +794,14 @@ function openNew() {
 }
 action("new-button", openNew);
 action("welcome-new", openNew);
+async function refreshRecentScore() {
+  if (isPortable) return;
+  const recent = chooseRecent(await allRecords());
+  $("demo-button").textContent = recent ? `${recent.song.title} 열기` : "기본 악보 열기";
+}
 action("demo-button", async () => {
-  status("기존 연습곡을 불러오는 중…");
-  const existing = (await allRecords()).find(
-    (r) => r.song.id === "real-paradis",
-  );
+  status("최근 연습 악보를 불러오는 중…");
+  const existing = chooseRecent(await allRecords());
   if (existing) {
     await activate(existing);
     return;
@@ -1521,3 +1530,5 @@ if (isPortable) {
     status("파일에서 불러왔습니다. 재생을 눌러 시작하세요.");
   })().catch(error);
 }
+
+if (!isPortable) void refreshRecentScore().catch(error);

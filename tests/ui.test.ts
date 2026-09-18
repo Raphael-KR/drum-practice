@@ -363,3 +363,9 @@ it("prepares a distinct second song through the file form without code edits", a
     ).toBe(true),
   );
 });
+it("opens the last practiced score instead of the bundled song", async () => {
+  await vi.waitFor(() => expect(document.getElementById("demo-button")!.textContent).toBe("독립 두 번째 곡 열기"));
+  click("demo-button");
+  await vi.waitFor(() => expect(document.getElementById("song-title")!.textContent).toBe("독립 두 번째 곡"));
+  expect(document.querySelectorAll(".measure")).toHaveLength(1);
+});
