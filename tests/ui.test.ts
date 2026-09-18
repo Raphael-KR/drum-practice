@@ -98,6 +98,7 @@ it("loads demo, saves named markers and loops and applies exact 1 BPM step", asy
     expect(document.querySelectorAll(".measure")).toHaveLength(110),
   );
   expect(document.querySelectorAll(".measure")).toHaveLength(110);
+  await vi.waitFor(async () => expect((await allRecords()).some(r => r.song.id === "real-paradis")).toBe(true));
   set("marker-name", "DOM 테스트 필인");
   click("add-marker");
   expect(document.getElementById("markers")!.textContent).toContain(
@@ -257,6 +258,20 @@ it("fills played measures, advances within a measure and clears future shading a
   expect(fill(25)).toBe(0);
   expect(fill(26)).toBe(0);
   click("home");
+});
+it("keeps icon controls accessible and updates play and metronome states", async () => {
+  expect(document.querySelectorAll(".practice-dock button .ui-icon")).toHaveLength(8);
+  expect(document.querySelectorAll(".practice-dock .icon-caption")).toHaveLength(8);
+  expect(document.getElementById("jump")!.getAttribute("aria-label")).toContain("되감기");
+  click("play");
+  await vi.waitFor(() => expect(document.getElementById("play")!.getAttribute("aria-label")).toBe("일시정지"));
+  click("play");
+  expect(document.getElementById("play")!.getAttribute("aria-label")).toBe("재생");
+  const metronome = document.getElementById("click") as HTMLInputElement;
+  const initial = metronome.checked;
+  metronome.closest("label")!.click();
+  expect(metronome.checked).toBe(!initial);
+  metronome.closest("label")!.click();
 });
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("new-button");

@@ -1,4 +1,5 @@
 import "./style.css";
+import { arrangeIcons, iconButton } from "./icons";
 import { arrangeWorkspace, selectEditorPane, paginateList } from "./workspace";
 import { Player } from "./audio";
 import {
@@ -81,6 +82,7 @@ app.innerHTML = `
 <dialog id="editor-dialog"><div class="dialoghead"><h2>악보·가사 맞추기</h2><button data-close="editor-dialog">연습으로 돌아가기</button></div><div class="flex"><label>가수 <input id="edit-artist" type="text"></label><label>제목 <input id="edit-title" type="text"></label><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>첫 박(초) <input id="edit-first" type="number" min="0" step="0.001"></label><button id="reflow">이 템포로 전체 다시 맞추기</button><button id="estimate-tempo">음원 템포 추정</button><button id="tap-tempo">박자 탭</button><span id="tap-result"></span></div><p class="subtle">전체 다시 맞추기는 기존 시간 보정을 바꿉니다. 실행 전 백업을 권합니다. 음원과 가사 원본 시각은 별도로 확인하세요.</p><div class="editor"><section><div class="flex"><label>페이지 <select id="editor-page"></select></label><label>마디 <select id="measure-select"></select></label></div><p class="subtle">원본 위를 드래그하여 마디 영역을 지정한 후 추가하거나 선택한 마디에 적용하세요.</p><div class="pagebox"><canvas id="edit-canvas"></canvas></div><div class="flex"><button id="add-region">새 마디 추가</button><button id="apply-crop">선택 마디에 영역 적용</button></div></section><section><h3>선택한 마디</h3><div class="flex"><label>이름 <input id="measure-label" type="text" style="width:95px"></label><label>박 수 <input id="measure-beats" type="number" min="1" max="16"></label><label>분모 <select id="measure-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></div><div class="flex"><label>시작 초 <input id="measure-start" type="number" min="0" step="0.001"></label><label>끝 초 <input id="measure-end" type="number" min="0" step="0.001"></label><button id="apply-measure">마디 저장</button></div><label>내부 박 위치(0~1, 쉼표 구분)<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1" style="width:100%"></label><p class="subtle">마디 시작부터 끝까지 박 경계의 가로 위치입니다. 비우면 균등 간격을 사용합니다.</p><div class="flex"><button id="preview-measure">이 마디 듣기</button><button id="anchor-now">현재 음악 위치를 첫 박으로</button><button id="editor-play">재생/정지</button><span id="editor-time"></span></div><div class="flex"><button id="duplicate">뒤에 복제</button><button id="split">반으로 분할</button><button id="merge">다음과 합치기</button><button id="move-left">앞으로</button><button id="move-right">뒤로</button><button id="remove-measure" class="danger">마디 삭제</button></div><h3>가사 시각</h3><p class="subtle">시작·끝은 원곡 초 단위입니다. 문장을 음절로 나누어 더 세밀하게 맞출 수 있습니다.</p><div class="flex"><button id="add-lyric">현재 위치에 가사 추가</button><button id="show-near">현재 마디 가사</button><button id="show-all">전체 가사</button></div><div class="scroll"><table><thead><tr><th>발음</th><th>시작</th><th>끝</th><th>확인</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>
 <dialog id="original-dialog"><div class="dialoghead"><h2>원본 악보</h2><button data-close="original-dialog">닫기</button></div><div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>알림</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>`;
 arrangeWorkspace();
+arrangeIcons();
 function updateSongHeading() {
   const s = song();
   $("song-title").textContent = [s.artist, s.title].filter(Boolean).join(" - ");
@@ -135,7 +137,7 @@ function engine() {
     player = new Player();
     player.onprogress = status;
     player.onstate = () => {
-      $("play").textContent = player?.playing ? "Ⅱ 일시정지" : "▶ 재생";
+      iconButton("play", player?.playing ? "pause" : "play", player?.playing ? "일시정지" : "재생");
       if (!player?.playing && record) {
         record.song.settings.position = player?.position || 0;
         queueSave();
@@ -581,6 +583,7 @@ function addMarker() {
 action("add-marker", addMarker);
 function renderLists() {
   const s = song();
+  $("open-loop-dialog").classList.toggle("is-on", !!player?.loop);
   $("active-loop").textContent = player?.loop
     ? `반복 중 · ${player.loop.name}`
     : "반복 꺼짐";
