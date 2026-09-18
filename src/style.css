@@ -1174,3 +1174,6 @@ button.icon-button[hidden] { display:none; }
 .metronome-toggle input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; }
 .metronome-toggle:has(input:checked) { background:var(--accent); color:white; }
 .metronome-toggle:has(input:focus-visible) { outline:3px solid #d88a40; outline-offset:2px; }
+#library-dialog #new-button { margin-left:auto; }
+#library-dialog .dialoghead { gap:12px; }
+#library-dialog #new-button .icon-caption { font-size:14px; }
