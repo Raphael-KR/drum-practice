@@ -1208,3 +1208,10 @@ button.icon-button[hidden] { display:none; }
 .welcome-lead { font-size:20px; font-weight:600; }
 #welcome .icon-caption { font-size:16px; }
 #welcome .icon-button { gap:8px; padding:9px 15px; }
+
+/* Position reporting stays between rewind and the centered play control. */
+#copy-position { min-height:48px; width:172px; padding:6px; font-size:14px; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--accent); }
+@media (max-width: 1100px) {
+  #copy-position { width:150px; font-size:12px; }
+  .transport-left { gap:4px !important; }
+}
