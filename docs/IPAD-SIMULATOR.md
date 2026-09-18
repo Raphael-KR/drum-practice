@@ -22,6 +22,21 @@ xcrun simctl openurl CAC78C7B-F71D-4C5B-B03E-734479387F43 http://127.0.0.1:5173/
 
 향후 레이아웃은 Safari 응답형 모드에서 빠르게 확인하고, iPad 시뮬레이터에서 가로 방향, Safari 툴바/전체화면, 한 줄/두 줄 악보, 재생·탐색·반복을 검증한다. 실제 기기의 오디오 지연·성능·연주 평가는 별도다.
 
-현재 한계: 이 회차는 시뮬레이터 첫 화면만 확인했다. GUI 제어 도구에서 Simulator 앱 이름/기존 경로를 찾지 못했으며 창 표시·회전 및 연습 기능 검증은 아직 수행하지 않았다. Safari 응답형 디자인 모드도 아직 조작하지 않았다. Chromium viewport 검증을 iPad Safari 검증으로 소급하지 않는다.
+## Device Hub 재시작 및 제어 경로 (2026-09-18)
+
+- macOS 27.0 / Xcode 27.0에서 앱 경로는 `/Applications/Xcode.app/Contents/Applications/DeviceHub.app`, bundle ID는 `com.apple.dt.Devices`다. 기존 Simulator.app 이름/경로 탐색 실패는 이 경로로 정정한다.
+- 사용자는 Device Hub 창이 보인다고 확인했다. Computer Use의 앱 바인딩은 경로·bundle ID·이름에서 `timeoutReached`를 반환한다. 창 부재나 앱 미실행으로 단정하지 않는다.
+- 사용자 요청으로 Device Hub를 종료·재실행했다. SIGTERM 후에도 종료되지 않아 해당 프로세스만 SIGKILL 후 다시 실행했다. PID 96680 → 97314. 기기 데이터 초기화는 수행하지 않았다. 재실행 후에도 Computer Use 연결은 시간 초과했다.
+- CLI `devicectl`로 `landscapeLeft` 회전 설정 및 재조회 성공. 2266×1488 캡처에서 localhost 웹앱 첫 화면을 확인했다. 증거: `docs/experiments/ipad-mini-landscape-cli.png`.
+- 로컬 `xcrun mcpbridge`에서 initialize/tools-list 성공. Xcode MCP의 DeviceInteractionStartSession, DeviceInteractionSynthesize, DeviceInteractionEndSession을 확인했다. Codex 전역 MCP 설정은 변경하지 않았다. 실제 StartSession은 “This agent isn't approved to use Xcode's tools yet”로 거부되었다. 서버는 XcodeOpenWorkspace 또는 XcodeNewProject를 통한 프로젝트 폴더 접근 승인이 필요하다고 안내한다. 도구 목록 조회 성공을 터치 제어 성공으로 간주하지 않는다. 이 검사를 위해 프로젝트를 새로 생성하거나 권한 설정을 변경하지 않았다.
+
+```sh
+open /Applications/Xcode.app/Contents/Applications/DeviceHub.app
+xcrun devicectl device orientation set --device CAC78C7B-F71D-4C5B-B03E-734479387F43 landscapeLeft
+xcrun devicectl device orientation get --device CAC78C7B-F71D-4C5B-B03E-734479387F43
+xcrun simctl io CAC78C7B-F71D-4C5B-B03E-734479387F43 screenshot /tmp/ipad-mini.png
+```
+
+Safari 응답형 디자인 모드, 전체 연습 흐름, 실제 기기의 성능은 별도 검증 대상이다. Chromium viewport 검증을 iPad Safari 검증으로 소급하지 않는다.
 
 Apple 공식 안내: https://developer.apple.com/documentation/safari-developer-tools/adding-additional-simulators

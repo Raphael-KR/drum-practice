@@ -196,3 +196,14 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - Apple 공식 문서 확인, 설치된 iOS 18.6 런타임과 iPad mini A17 Pro 기기 유형 확인. 새 프로젝트 전용 시뮬레이터 생성·부팅, Safari로 localhost 웹앱 열기, 1488×2266 첫 화면 캡처 확인.
 - Simulator 앱 GUI 제어는 이름/예전 경로에서 Invalid app. 부팅·웹앱 로드는 simctl 경로로 확인했지만 가로 회전·연습 기능 및 Safari 응답형 모드 조작은 미검증. docs/IPAD-SIMULATOR.md에 현재 상태와 후속 검증 기록.
 - 앱 코드/HTML 변경 없음. 문서만 Git 기록. 원격 push 없음.
+
+
+## 회차 20 — Device Hub 재시작과 제어 경로 재검사
+
+- 목표: 사용자에게 보이는 Device Hub를 종료·재실행하고 Computer Use·CLI·Xcode MCP 제어 가능 여부를 실제로 구분한다.
+- 범위: 프로젝트 전용 iPad mini 시뮬레이터와 localhost 웹앱. 완료 조건은 재실행 및 각 제어 경로의 관측 결과 기록. 앱 코드·HTML·기기 데이터 초기화·전역 권한 변경은 제외.
+- 실행: 사용자 요청으로 Device Hub PID 96680에 TERM, 종료되지 않아 해당 PID에 KILL 후 재실행. 새 PID 97314 확인. 기존 기기 데이터와 부팅 상태 유지.
+- Computer Use: 경로·bundle ID·앱 이름을 통한 연결이 재실행 후에도 timeoutReached. 사용자는 창이 보인다고 확인했으므로 창 부재로 단정하지 않는다.
+- CLI: devicectl orientation set/get으로 landscapeLeft 설정·조회 성공. simctl screenshot의 2266×1488 이미지에서 iPad Safari localhost 첫 화면 확인. HTTP 200 확인. 증거: docs/experiments/ipad-mini-landscape-cli.png.
+- Xcode MCP: xcrun mcpbridge initialize와 tools/list 성공. Apple device-interaction 스킬에 따라 세션 시작 검사를 수행했으나 “This agent isn't approved to use Xcode's tools yet”로 거부. 프로젝트 열기/생성에 따른 Xcode 승인이 필요하다는 서버 안내. 터치·메뉴 조작은 실행하지 못했으며 성공으로 보고하지 않는다. 세션 키는 발급되지 않았다.
+- 결과: 재시작 완료. CLI 회전·캡처는 사용 가능, Computer Use 연결은 미해결, Xcode MCP 터치는 승인 단계에서 차단. docs/IPAD-SIMULATOR.md 갱신, 문서 diff 검사. 소스 변경이 없어 앱 테스트는 재실행하지 않았다. 원격 push 없음.
