@@ -192,37 +192,37 @@
       "number": "099",
       "aliases": [],
       "lyricId": "v2-l148",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "100",
       "aliases": [],
       "lyricId": "v2-l159",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "101",
       "aliases": [],
       "lyricId": "v2-l161",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "102",
       "aliases": [],
       "lyricId": "v2-l173",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "103",
       "aliases": [],
       "lyricId": "v2-l176",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "104",
       "aliases": [],
       "lyricId": "v2-l178",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "105",
@@ -822,5 +822,5 @@
   ],
   "positionPolicy": "nearest quarter beat; raw times retained as originalTime",
   "appliedTailShift": "v2-l25 inclusive through end +1 quarter-beat tick, 2026-09-19",
-  "appliedListeningBatch": "listening-through-m32-yo-2026-09-19"
+  "appliedListeningBatch": "listening-through-m36-ko-2026-09-19"
 }

@@ -1,3 +1,4 @@
+import { applyListeningFeedbackM36 } from './lyric-feedback-m36';
 import { applyListeningFeedbackM32 } from './lyric-feedback-m32';
 import { applyListeningFeedbackFollowup } from './lyric-feedback-followup';
 import { applyListeningFeedbackBatch } from './lyric-feedback-batch';
@@ -201,6 +202,7 @@ async function activate(r: RecordData) {
   applyListeningFeedbackBatch(r.song);
   applyListeningFeedbackFollowup(r.song);
   applyListeningFeedbackM32(r.song);
+  applyListeningFeedbackM36(r.song);
   validateSong(r.song);
   busy = true;
   try {
