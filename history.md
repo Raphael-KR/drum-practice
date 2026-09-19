@@ -958,3 +958,9 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 사용자 요청으로 docs/JAPANESE-CANONICAL-READINGS.md 일본어/한글 발음 표의 두 후렴 및 data/reference/japanese-canonical.json 현재 일본어 가사를 always bright로 수정. JSON에 사용자 정정 출처 기록.
 - PRD 및 현재 의심 목록 문맥도 동기화. 과거 비교 문서는 원문 유지 후 최신 정정 안내 추가, STT 실험 입력·archive는 보존. 앱 코드와 시간은 미변경.
 - 정본 두 후렴 및 한글 발음 표, JSON 파싱과 git diff --check 확인.
+
+## 2026-09-19 39마디 bright까지 누적 일괄 적용
+- 최신 사용자 좌표로 기존9개 시작 이동, always를 al-/ways로 분할(1항목 추가), bright=m39/tick0 재확인. 낫·시·로·36마디 노·무·38마디 노/히/와 포함.
+- 신규 migration을 활성화 체인 끝에 추가해 기존 저장곡에 한 번 적용. 기존 앞부분 위치와 bright 이후 가사 객체 보존, 원본 archive 기록. 로컬 demo 동일 함수로 적용.
+- 확인 목록7행 완료 처리(고유번호 유지), 남은84행. 확인 경계 bright까지 반영.
+- 91 tests 통과, TypeScript·portable·Vite build 통과. localhost 신규 모듈 HTTP200. 실기기 청취/GUI 재검증은 하지 않음.
