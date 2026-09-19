@@ -1041,3 +1041,12 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 실제 UI: 기존 별도 QA 곡을 대상으로 이전/재열기, 초 입력 없음, 보컬 파트 가져오기, 이전 가사 이력 보존, 시작 박 수정 후 XML 재읽기 확인. 원곡 사용자 레코드는 이 QA에서 수정하지 않음. iPad mini iOS27 Safari HTML 화면: docs/experiments/canonical/ipad-lyrics.png.
 - 경계: PDF만 있는 곡에 드럼 음표를 추정해 만들지 않음. 이미 보관된 MusicXML 악보는 정본 기반으로 보존. 보컬 PDF 채보, 반복 자동 펼치기, 모든 가사의 음원 청취 재검증은 이 작업에 포함하지 않음. OSMD 유지; SVG 전환/Verovio 동일 기기 비교는 미실행. Apple STT/AFM은 결정적인 위치/스키마 변환 작업에 필요하지 않아 사용하지 않았으며 신규 도구 실측 발견 없음.
 - 최종 집중 재검증: canonical-xml/lyric-grid/ui 3파일 29테스트 통과(15:33), 이후 build 통과. 스키마/DOM/오디오 위치 근거와 실제 청취·실기기 검증을 구분했다.
+
+## 2026-09-19 — PNG/SVG 동일 악보 비교
+
+- 요청: 렌더링 시간·저장 공간 비교. 앱 소스와 사용자 데이터는 변경하지 않았다.
+- 구현: scripts/benchmark-renderer.{ts,html}, build-renderer-benchmark.mjs, benchmark-renderer-server.py. 별도 5187 로컬 서버/IndexedDB에서 동일 110마디 XML을 형식별 3회씩 두 환경에서 측정.
+- 결과: Safari iPad mini iOS27 시뮬레이터 중앙값 PNG/SVG 생성 288/187ms, 재표시 153/70ms, 원본 1.329/3.771MB, gzip 0.998/0.655MB. 진행선/음영 미세 실험 둘 다 약 60fps. 실제 iPad 하드웨어 및 전체 음악 재생 부하는 미검증.
+- 검증: 12개 표본 모두 오류 없음, 110마디/4페이지, 동일 XML 해시, 이미지 디코딩 성공. 영역 좌표 차이는 약 0.2 CSS px 이내. Safari SVG 화면 확인. 상세 docs/PNG-SVG-BENCHMARK.md, 원시 docs/experiments/renderer-benchmark/{desktop,simulator}.json.
+- 실험 문제: 최초 esbuild IIFE에서 top-level await 오류 → async 함수로 감싸 재빌드. Mac 브라우저 RAF ~1Hz 제한으로 재표시/프레임 결과 판정 제외. open -a Simulator는 앱 이름 탐색 실패했으나 부팅된 simulator/simctl 경로의 Safari 검증은 정상 완료.
+- 판단: 단순 SVG 교체는 용량 증가. 압축 SVG 캐시를 다음 후보로 권장하되 압축 해제/전체 앱/독립 HTML/실기기 검증 후 전환. 현재 PNG 유지.
