@@ -38,3 +38,17 @@ export function applyEnglishLyrics(song: Song): boolean {
   song.lyricRevision = 'japanese-canonical-english-2026-09-19-v4';
   return true;
 }
+
+// Correct the user-confirmed typo on already migrated songs as well.
+export function correctBrightSpelling(song: Song): boolean {
+  if (song.id !== source.songId) return false;
+  const targets = song.lyrics.filter(l =>
+    ['v2-l192', 'v2-l530'].includes(l.id) && l.text === 'blight');
+  if (!targets.length) return false;
+  song.lyricArchive = [...(song.lyricArchive || []), {
+    revision: 'before-bright-spelling-2026-09-19',
+    lyrics: structuredClone(song.lyrics),
+  }];
+  for (const lyric of targets) lyric.text = 'bright';
+  return true;
+}

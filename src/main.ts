@@ -6,7 +6,7 @@ import { applyListeningFeedbackBatch } from './lyric-feedback-batch';
 import { applyTookuTailShift } from "./lyric-tail-shift";
 import { lyricMeasureId, enableLyricGrid, synchronizeLyricGrid, nearestQuarterBeat, setLyricGrid } from "./lyric-grid";
 import { applyListeningRevision } from "./listening-revision";
-import { applyEnglishLyrics } from "./english-lyrics";
+import { applyEnglishLyrics, correctBrightSpelling } from "./english-lyrics";
 import { applyJapaneseReadings } from "./lyric-reading";
 import { applyLyricRevision } from "./lyric-revision";
 import { playbackPosition, copyPosition } from "./playback-position";
@@ -205,6 +205,7 @@ async function activate(r: RecordData) {
   applyListeningFeedbackM32(r.song);
   applyListeningFeedbackM36(r.song);
   applyBar34AcousticReview(r.song);
+  correctBrightSpelling(r.song);
   validateSong(r.song);
   busy = true;
   try {

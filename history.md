@@ -947,3 +947,8 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 원본 PDF 음표/쉼표 열과 이미지 기준으로37개 패턴의 정박 좌표 생성(41 포함). 기호마디11개는 명시적 균등 기준. 기존62개 보존, 전체110개 beats+1 표시 좌표 확보.
 - source crop 완전 일치 및 빈 beatXs 조건으로만 보정. 원본/사용자 지정값 보존. 84마디5/4는6개 좌표.
 - 전체88 tests 및 TypeScript·portable·Vite build 통과, localhost 보정모듈 HTTP200 확인. docs/BEAT-ANCHOR-AUDIT.md 갱신. HTML 재내보내기/실기기 검증 미실시.
+
+## 2026-09-19 bright 표기 교정 / 39마디 시작 누적
+- 사용자 명시 정정에 따라 첫·마지막 후렴 blight를 bright로 수정. 기존 저장곡에도 활성화 시 적용하며 사용자 편집 텍스트·시간·confirmed와 과거 archive 보존. 로컬 demo 현재 가사 두 항목도 수정.
+- bright(v2-l192) 시작 m39/tick0, 원본97.400초/격자97.408초 접수. 위치 및 앞선 누적 싱크는 다음 일괄 반영 대기.
+- 영어 교정 회귀 포함89 tests 및 TypeScript·portable·Vite build 통과.
