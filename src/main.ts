@@ -1,3 +1,4 @@
+import { activeScore, songScores, useScore } from "./song-scores";
 import { scoreFormat, scoreArchivePath, applyXMLTiming, replaceWithMusicXML } from "./score-import";
 import { applyListeningFeedbackM48 } from './lyric-feedback-m48';
 import { applyListeningFeedbackM39 } from './lyric-feedback-m39';
@@ -53,6 +54,8 @@ import JSZip from "jszip";
 import {
   isPortable,
   packSong,
+  packScores,
+  unpackScores,
   unpackSong,
   makePortableHTML,
   shellFromDocument,
@@ -805,12 +808,13 @@ $("loops").onclick = (e) => {
 for (const b of document.querySelectorAll<HTMLElement>("[data-close]"))
   b.onclick = () => $<HTMLDialogElement>(b.dataset.close!).close();
 async function openLibrary() {
+  if (record) await persist();
   library = await allRecords();
   $("library-list").innerHTML = library.length
     ? library
         .map(
           (r, i) =>
-            `<div class="panel flex"><button data-open="${i}" class="primary">${esc(r.song.title)}</button><small>${r.song.measures.length}마디 · ${r.song.bpm} BPM</small><button data-delete="${i}" class="danger">삭제</button></div>`,
+            `<div class="panel song-card"><div class="song-card-heading"><button data-open="${i}" class="song-card-title">${esc(r.song.title)}</button><small>${r.song.artist ? esc(r.song.artist)+' · ' : ''}${r.song.measures.length}마디 · ${r.song.bpm} BPM</small></div><div class="song-card-types" aria-label="저장된 악보 유형">${songScores(r).map(score => `<button class="score-type score-type-${score.format}" data-open="${i}" data-score="${score.format}" aria-label="${esc(r.song.title)} ${score.format==='pdf'?'PDF':'MusicXML'} 열기">${score.format==='pdf'?'PDF':'MusicXML'}</button>`).join('')}${r.song.lyrics.length ? `<button class="score-type score-type-lyrics" data-open="${i}" data-lyrics="true">가사</button>` : ''}</div><div class="song-card-actions" ${isPortable ? 'hidden' : ''}><button data-attach="${i}" aria-label="${esc(r.song.title)}에 악보 추가">+ 악보 추가</button><button data-delete="${i}" class="danger">삭제</button></div></div>`,
         )
         .join("")
     : "<p>아직 저장한 곡이 없습니다.</p>";
@@ -823,8 +827,16 @@ $("library-list").onclick = async (e) => {
   if (!b) return;
   try {
     if (b.dataset.open) {
-      await activate(library[Number(b.dataset.open)]);
+      const selected = library[Number(b.dataset.open)];
+      const target = b.dataset.score && songScores(selected).find(s => s.format === b.dataset.score);
+      await activate(target ? useScore(selected,target) : selected);
       $<HTMLDialogElement>("library-dialog").close();
+      if (b.dataset.lyrics) { selectEditorPane("lyrics"); await openEditor(); }
+    }
+    if (b.dataset.attach) {
+      await activate(library[Number(b.dataset.attach)]);
+      $<HTMLDialogElement>("library-dialog").close();
+      replaceDialog.showModal();
     }
     if (
       b.dataset.delete &&
@@ -1464,6 +1476,7 @@ action("export", async () => {
     zip.file(scoreArchivePath(song()), record!.pdf);
     record!.pages.forEach((page,i)=>zip.file(`pages/${i}.png`,page));
     zip.file("media/audio", record!.audio);
+    zip.file("other-scores.json", JSON.stringify(await packScores(record!.otherScores)));
   }
   const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
   const u = URL.createObjectURL(blob),
@@ -1512,7 +1525,9 @@ val("restore").onchange = async () => {
     const savedPages=await Promise.all(Array.from({length:s.pageCount},(_,i)=>zip.file(`pages/${i}.png`)?.async("blob")));
     const pages=savedPages.every(Boolean)?savedPages as Blob[]:(await renderScore(pdf,s.scoreFormat,s.scorePartId)).pages;
     if(pages.length!==s.pageCount)throw Error("백업과 악보 페이지 수가 다릅니다.");
-    await activate({ song: s, pdf, audio, pages });
+    const otherText = await zip.file("other-scores.json")?.async("string");
+    const otherScores = otherText ? unpackScores(JSON.parse(otherText)) : (await allRecords()).find(r => r.song.id===s.id)?.otherScores;
+    await activate({ song: s, pdf, audio, pages, otherScores });
     tell("백업을 복원했습니다.");
   } catch (e) {
     error(e);
@@ -1623,10 +1638,8 @@ action("save-html", async () => {
 });
 if (isPortable) {
   for (const id of [
-    "library-button",
     "new-button",
     "welcome-new",
-    "welcome-library",
     "demo-button",
   ])
     $(id).hidden = true;
@@ -1654,9 +1667,9 @@ if (!isPortable) void refreshRecentScore().catch(error);
 
 const replaceDialog=document.createElement('dialog');
 replaceDialog.id='replace-score-dialog';
-replaceDialog.innerHTML='<div class="dialoghead"><h2>MusicXML로 악보 교체</h2><button id="replace-close">닫기</button></div><p>마디 수와 박자표가 같으면 현재 음원·가사·마커·구간 반복 위치를 유지합니다.</p><label>MusicXML <input type="file" id="replace-score-file" accept=".musicxml,.xml,.mxl"></label><p><label>파트 <select id="replace-score-part"></select></label></p><p id="replace-score-note" class="subtle"></p><button id="replace-score-apply" class="primary" disabled>악보 교체</button>';
+replaceDialog.innerHTML='<div class="dialoghead"><h2>이 곡에 악보 추가</h2><button id="replace-close">닫기</button></div><p>PDF와 MusicXML을 곡 안에 함께 보관합니다. 같은 유형을 다시 넣으면 해당 유형만 갱신합니다. 마디 수와 순서는 현재 곡과 같아야 합니다.</p><label>악보 <input type="file" id="replace-score-file" accept=".pdf,.musicxml,.xml,.mxl"></label><p><label>파트 <select id="replace-score-part"></select></label></p><p id="replace-score-note" class="subtle"></p><button id="replace-score-apply" class="primary" disabled>추가</button>';
 document.body.append(replaceDialog);
-const replaceButton=document.createElement('button');replaceButton.id='replace-score-button';replaceButton.textContent='MusicXML로 악보 교체';
+const replaceButton=document.createElement('button');replaceButton.id='replace-score-button';replaceButton.textContent='이 곡에 악보 추가';
 $('backup-dialog').append(replaceButton);
 replaceButton.hidden=isPortable;
 replaceButton.onclick=()=>{if(!record)return;engine().pause();replaceDialog.showModal();};
@@ -1665,7 +1678,7 @@ let replaceGeneration=0;
 val('replace-score-file').onchange=async()=>{
   const gen=++replaceGeneration;val('replace-score-apply').disabled=true;$('replace-score-part').innerHTML='';
   const file=val('replace-score-file').files?.[0];if(!file)return;
-  try{const xml=await xmlModule(),info=xml.parseMusicXML(await xml.readMusicXML(file),undefined,true);if(gen!==replaceGeneration)return;
+  try{if(scoreFormat(file.name)==='pdf'){$('replace-score-note').textContent='PDF에서 감지한 마디 수가 현재 곡과 같은지 확인한 뒤 추가합니다.';val('replace-score-apply').disabled=false;return;}const xml=await xmlModule(),info=xml.parseMusicXML(await xml.readMusicXML(file),undefined,true);if(gen!==replaceGeneration)return;
     $('replace-score-part').innerHTML=info.parts.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
     $('replace-score-note').textContent=info.warnings.join(' ');val('replace-score-apply').disabled=false;
   }catch(e){error(e);}
@@ -1674,10 +1687,20 @@ $('replace-score-apply').onclick=async()=>{
   const file=val('replace-score-file').files?.[0];if(!file||!record)return;
   const original=record;val('replace-score-apply').disabled=true;
   try{
-    const r=await (await xmlModule()).renderMusicXML(file,status,val('replace-score-part').value);
+    const format=scoreFormat(file.name);
+    if(songScores(original).some(s=>s.format===format) && !confirm(`이 곡의 기존 ${format==='pdf'?'PDF':'MusicXML'} 악보를 새 파일로 갱신할까요? 다른 유형과 가사는 유지됩니다.`)) return;
+    const r=await renderScore(file,format,val('replace-score-part').value);
     if(record!==original)throw Error('연습곡이 바뀌었습니다. 다시 선택하세요.');
-    const updated=replaceWithMusicXML(original.song,r,file.name);
-    await activate({song:updated,pdf:file,audio:original.audio,pages:r.pages});
-    replaceDialog.close();tell(`MusicXML ${updated.measures.length}마디로 교체했습니다. 가사와 음원 시간은 유지했습니다. ${r.parsed.warnings.join(' ')}`);
+    let updated: Song;
+    if(r.parsed) updated=replaceWithMusicXML(original.song,{...r,parsed:r.parsed},file.name);
+    else {
+      if(r.regions.length!==original.song.measures.length) throw Error(`PDF에서 감지한 마디 수가 다릅니다 (현재 ${original.song.measures.length}, PDF ${r.regions.length}). 마디 구성을 확인하세요.`);
+      updated=structuredClone(original.song);updated.regions=r.regions;updated.pageCount=r.pages.length;
+      updated.measures.forEach((m,i)=>{m.regionId=r.regions[i].id;});
+      updated.scoreFormat='pdf';updated.scorePartId=undefined;updated.pdfName=file.name;
+    }
+    const target=activeScore({song:updated,pdf:file,audio:original.audio,pages:r.pages});
+    await activate(useScore(original,target));
+    replaceDialog.close();tell(`${format==='pdf'?'PDF':'MusicXML'}를 이 곡에 저장했습니다. 가사와 음원 시간은 유지했습니다. ${r.parsed?.warnings.join(' ') ?? ''}`);
   }catch(e){error(e);}finally{val('replace-score-apply').disabled=false;}
 };

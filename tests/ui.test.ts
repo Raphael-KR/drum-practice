@@ -393,3 +393,16 @@ it("edits lyric starts on a quarter-beat grid with an explicit free-time overrid
     expect(l.freeTiming).toBe(true);expect(l.time).toBe(.733);expect(l.grid).toBeUndefined();
   });
 });
+it('lists one card per song and only the content types actually saved',async()=>{
+  for(const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]'))d.close();
+  click('library-button');
+  await vi.waitFor(()=>expect((document.getElementById('library-dialog') as HTMLDialogElement).open).toBe(true));
+  const records=await allRecords();
+  expect(document.querySelectorAll('.song-card')).toHaveLength(records.length);
+  const cards=[...document.querySelectorAll('.song-card')];
+  for(const [i,r] of records.entries()) {
+    expect(cards[i].querySelector('.score-type-pdf')).not.toBeNull();
+    expect(cards[i].querySelector('.score-type-musicxml')).toBeNull();
+    expect(!!cards[i].querySelector('.score-type-lyrics')).toBe(r.song.lyrics.length>0);
+  }
+});

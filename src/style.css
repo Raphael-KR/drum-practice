@@ -1217,3 +1217,16 @@ button.icon-button[hidden] { display:none; }
 }
 .lyric-grid-controls { display:flex; gap:4px; }
 .lyric-grid-controls select { min-height:44px; max-width:110px; padding:4px; }
+
+/* One library card per song; only stored content types are shown. */
+.song-card { display:flex; align-items:center; flex-wrap:wrap; gap:16px 24px; }
+.song-card-heading { flex:1 1 240px; min-width:0; display:grid; gap:4px; }
+.song-card-title { border:0; background:transparent; color:var(--ink,#243248); padding:8px 0; text-align:left; font-weight:700; overflow-wrap:anywhere; }
+.song-card-types,.song-card-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.score-type { min-height:44px; padding:6px 12px; border:2px solid transparent; border-radius:10px; font-weight:600; }
+.score-type-pdf { background:#ebe1f4; color:#5b4371; }
+.score-type-musicxml { background:#f6e0e8; color:#713e53; }
+.score-type-lyrics { background:#d7e6fb; color:#315980; }
+.score-type:hover { filter:brightness(.96); }
+.score-type:focus-visible { outline:3px solid #3f74d4; outline-offset:2px; }
+@media(max-width:700px) { .song-card-heading { flex-basis:100%; } .song-card-actions { margin-left:auto; } }

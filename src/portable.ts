@@ -1,4 +1,5 @@
 import { validateSong, type Song } from "./model";
+import type { ScoreVariant } from "./song-scores";
 import type { RecordData } from "./storage";
 
 export const isPortable =
@@ -7,7 +8,12 @@ interface Asset {
   type: string;
   base64: string;
 }
+export interface PackedScore extends Omit<ScoreVariant, "source" | "pages"> {
+  source: Asset;
+  pages: Asset[];
+}
 export interface PortableSong {
+  otherScores?: PackedScore[];
   version: 1;
   song: Song;
   pdf: Asset;
@@ -36,10 +42,29 @@ function decode(asset: Asset) {
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return new Blob([bytes], { type: asset.type });
 }
+export async function packScores(
+  scores: ScoreVariant[] = [],
+): Promise<PackedScore[]> {
+  return Promise.all(
+    scores.map(async (s) => ({
+      ...s,
+      source: await encode(s.source),
+      pages: await Promise.all(s.pages.map(encode)),
+    })),
+  );
+}
+export function unpackScores(scores: PackedScore[] = []): ScoreVariant[] {
+  return scores.map((s) => {
+    if (!["pdf", "musicxml"].includes(s.format) || !s.pages.length)
+      throw Error("저장된 악보 유형 또는 페이지가 올바르지 않습니다.");
+    return { ...s, source: decode(s.source), pages: s.pages.map(decode) };
+  });
+}
 export async function packSong(record: RecordData): Promise<PortableSong> {
   validateSong(record.song);
   return {
     version: 1,
+    otherScores: await packScores(record.otherScores),
     song: structuredClone(record.song),
     pdf: await encode(record.pdf),
     audio: await encode(record.audio),
@@ -53,6 +78,7 @@ export function unpackSong(data: PortableSong): RecordData {
     throw Error("악보 페이지가 누락되었습니다.");
   return {
     song: data.song,
+    otherScores: unpackScores(data.otherScores),
     pdf: decode(data.pdf),
     audio: decode(data.audio),
     pages: data.pages.map(decode),
