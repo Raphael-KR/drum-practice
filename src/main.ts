@@ -1,3 +1,4 @@
+import { applyBar34AcousticReview } from './lyric-bar34-review';
 import { applyListeningFeedbackM36 } from './lyric-feedback-m36';
 import { applyListeningFeedbackM32 } from './lyric-feedback-m32';
 import { applyListeningFeedbackFollowup } from './lyric-feedback-followup';
@@ -203,6 +204,7 @@ async function activate(r: RecordData) {
   applyListeningFeedbackFollowup(r.song);
   applyListeningFeedbackM32(r.song);
   applyListeningFeedbackM36(r.song);
+  applyBar34AcousticReview(r.song);
   validateSong(r.song);
   busy = true;
   try {

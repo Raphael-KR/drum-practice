@@ -818,6 +818,24 @@
       "aliases": [],
       "lyricId": "v3-terminal-wa",
       "status": "confirmed"
+    },
+    {
+      "number": "214",
+      "aliases": [],
+      "lyricId": "v2-l158",
+      "status": "pending"
+    },
+    {
+      "number": "215",
+      "aliases": [],
+      "lyricId": "v2-l162",
+      "status": "pending"
+    },
+    {
+      "number": "216",
+      "aliases": [],
+      "lyricId": "v2-l163",
+      "status": "pending"
     }
   ],
   "positionPolicy": "nearest quarter beat; raw times retained as originalTime",
