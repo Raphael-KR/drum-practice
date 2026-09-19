@@ -306,7 +306,7 @@ BPM 숫자는 더블클릭 또는 빠른 두 번 탭으로 원곡 BPM으로 복�
 
 ### 일본어 정본·발음 표기 (2026-09-19)
 - 사용자가 마지막 제공한 J-Lyric 일본어 본문을 정본으로 한다. 전체 한글 발음을 대조·교정한다.
-- 일본어는 한글 발음, 영어는 영어 원문(Ah, why?, once again, believe myself, always blight)으로 표시한다.
+- 일본어는 한글 발음, 영어는 영어 원문(Ah, why?, once again, believe myself, always bright)으로 표시한다.
 - 본문·발음 교정으로 이미 확인한 시작 시각을 밀지 않는다. 누락된 와의 복원 시각은 별도 미확정 항목으로 둔다.
 - 정본과 전체 발음 대조표는 docs/JAPANESE-CANONICAL-READINGS.md.
 

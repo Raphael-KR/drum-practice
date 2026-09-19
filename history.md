@@ -952,3 +952,9 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 사용자 명시 정정에 따라 첫·마지막 후렴 blight를 bright로 수정. 기존 저장곡에도 활성화 시 적용하며 사용자 편집 텍스트·시간·confirmed와 과거 archive 보존. 로컬 demo 현재 가사 두 항목도 수정.
 - bright(v2-l192) 시작 m39/tick0, 원본97.400초/격자97.408초 접수. 위치 및 앞선 누적 싱크는 다음 일괄 반영 대기.
 - 영어 교정 회귀 포함89 tests 및 TypeScript·portable·Vite build 통과.
+
+
+## 2026-09-19 가사 정본 파일 bright 동기화
+- 사용자 요청으로 docs/JAPANESE-CANONICAL-READINGS.md 일본어/한글 발음 표의 두 후렴 및 data/reference/japanese-canonical.json 현재 일본어 가사를 always bright로 수정. JSON에 사용자 정정 출처 기록.
+- PRD 및 현재 의심 목록 문맥도 동기화. 과거 비교 문서는 원문 유지 후 최신 정정 안내 추가, STT 실험 입력·archive는 보존. 앱 코드와 시간은 미변경.
+- 정본 두 후렴 및 한글 발음 표, JSON 파싱과 git diff --check 확인.

@@ -27,3 +27,6 @@ src/lyric-revision.ts가 기존 곡 ID와 구판 전체 가사 지문/개수를 
 public/demo/song.json 갱신. 개발 웹앱은 새로고침 후 해당 악보를 열면 저장된 구판을 전환한다. 이전에 내보낸 독립 HTML 파일은 변경하지 않았다.
 
 로컬 재현 자료: docs/experiments/lyrics-v2/ 아래 user-source.json, song-before.json, manifest.json, units.json, kana.json, Apple 결과, aligned-*.json, evidence.json, new-lyrics.json, apply.ts. 원문·음원·실험 자료는 Git 제외 경로에 보존했다. 절차 스크립트는 scripts/apple-local/align_syllables.py 및 reconcile_alignment.py이다.
+
+
+최신 정정(2026-09-19): 사용자가 영어 오기를 명시적으로 정정하여 현재 정본은 **always bright**이다. 위의 blight 보존 설명은 당시 비교 기록이며 현재 표기 지침이 아니다.
