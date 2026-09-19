@@ -340,3 +340,7 @@ BPM 숫자는 더블클릭 또는 빠른 두 번 탭으로 원곡 BPM으로 복�
 ## MusicXML 정본과 가사 리듬 (2026-09-19 후속 결정)
 
 악보·제목/제작자·독립 가사 리듬 성부를 MusicXML에 일원화한다. 가사 초 단위 편집을 폐기하고 마디·박 및 음악적 길이로 편집한다. 음원 시각은 별도의 악보-음원 연결 데이터이며 MusicXML 앱 확장 필드에 보관한다. 보컬 MusicXML이 있으면 그 음가를 가져오고, 없으면 청취하며 마디·박을 지정한다. 세부 저장 계약·PDF 전환 경계·검증은 docs/MUSICXML-CANONICAL.md를 따른다. OSMD는 유지하며 SVG 재사용 및 Verovio 성능 비교는 별도 표시 최적화 작업이다.
+
+### 2026-09-19 결정 — MusicXML SVG 캐시
+
+MusicXML 악보는 OSMD SVG로 렌더링한다. 페이지는 gzip 압축 바이트로 저장하고 표시할 때 SVG 이미지로 복원한다. PDF/기존 PNG는 호환한다. HTML·ZIP·IndexedDB에서 형식과 바이트를 보존한다. 기존 MusicXML PNG 캐시는 웹앱에서 열 때 갱신하되 음원 시간·가사 악보 위치·기존 마디 영역 보정을 유지한다. 상세 계약: docs/SVG-RENDERING.md.

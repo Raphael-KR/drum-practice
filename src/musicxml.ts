@@ -1,3 +1,4 @@
+import { compressSVG } from "./score-pages";
 import JSZip from "jszip";
 import { uid, type Region } from "./model";
 
@@ -317,7 +318,7 @@ export async function renderMusicXML(
   document.body.append(host);
   try {
     const osmd = new OpenSheetMusicDisplay(host, {
-      backend: "canvas",
+      backend: "svg",
       autoResize: false,
       pageFormat: "A4_P",
       drawTitle: true,
@@ -331,18 +332,14 @@ export async function renderMusicXML(
     osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures = false;
     await osmd.load(parsed.document);
     osmd.render();
-    const canvases = Array.from(host.querySelectorAll("canvas"));
-    if (!canvases.length) throw Error("MusicXML 악보를 그릴 수 없습니다.");
+    const svgs = Array.from(host.querySelectorAll("svg"));
+    if (!svgs.length) throw Error("MusicXML 악보를 그릴 수 없습니다.");
     const pages = await Promise.all(
-      canvases.map(
-        (c) =>
-          new Promise<Blob>((ok, no) =>
-            c.toBlob(
-              (b) => (b ? ok(b) : no(Error("악보 이미지 생성 실패"))),
-              "image/png",
-            ),
-          ),
-      ),
+      svgs.map((svg) => {
+        const copy = svg.cloneNode(true) as SVGSVGElement;
+        copy.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        return compressSVG(new XMLSerializer().serializeToString(copy));
+      }),
     );
     const regions: Region[] = [];
     for (let i = 0; i < parsed.measures.length; i++) {
@@ -350,20 +347,20 @@ export async function renderMusicXML(
       if (!g) throw Error(`${i + 1}마디의 악보 위치가 없습니다.`);
       const page = g.ParentMusicSystem.Parent,
         pi = page.PageNumber - 1,
-        canvas = canvases[pi];
-      if (!canvas) throw Error("악보 페이지 좌표를 찾지 못했습니다.");
+        svg = svgs[pi];
+      if (!svg) throw Error("악보 페이지 좌표를 찾지 못했습니다.");
       const box = g.PositionAndShape,
         p = box.AbsolutePosition,
         pp = page.PositionAndShape.AbsolutePosition;
-      // OSMD uses ten CSS pixels per engraving unit, canvas backing may use a device scale.
-      const sx =
-          canvas.width / (parseFloat(canvas.style.width) || canvas.width),
-        sy = canvas.height / (parseFloat(canvas.style.height) || canvas.height);
+      // OSMD SVG viewBox coordinates use ten units per engraving unit.
+      const width = svg.viewBox.baseVal.width,
+        height = svg.viewBox.baseVal.height;
+      if (!(width > 0 && height > 0))
+        throw Error("SVG 페이지 크기가 올바르지 않습니다.");
+      const sx = 1,
+        sy = 1;
       const x = Math.max(0, (p.x - pp.x + box.BorderLeft) * 10 * sx),
-        right = Math.min(
-          canvas.width,
-          (p.x - pp.x + box.BorderRight) * 10 * sx,
-        );
+        right = Math.min(width, (p.x - pp.x + box.BorderRight) * 10 * sx);
       const top =
         Math.min(
           box.BorderTop,
@@ -373,7 +370,7 @@ export async function renderMusicXML(
         ) - 1;
       const y = Math.max(0, (p.y - pp.y + top) * 10 * sy),
         bottom = Math.min(
-          canvas.height,
+          height,
           (p.y - pp.y + (Math.max(box.BorderBottom, 9) + 0.5)) * 10 * sy,
         );
       const w = right - x,
@@ -412,10 +409,10 @@ export async function renderMusicXML(
       regions.push({
         id: `xml-r${i + 1}`,
         page: pi,
-        x: x / canvas.width,
-        y: y / canvas.height,
-        w: w / canvas.width,
-        h: h / canvas.height,
+        x: x / width,
+        y: y / height,
+        w: w / width,
+        h: h / height,
         beatXs,
       });
     }

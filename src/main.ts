@@ -1,3 +1,4 @@
+import { displayPage, SVG_GZIP, pageExtension } from "./score-pages";
 import { importedCanonical, hasDrumNotation, ensureCanonical, saveCanonical, verifyCanonicalAudio, vocalLyrics, withVocalSource, readCanonical, writeCanonical } from "./canonical-xml";
 import { advanceLyricPosition, migrateLyricPositions, projectLyrics, lyricDurationBeats } from "./lyric-score";
 import { activeScore, songScores, useScore } from "./song-scores";
@@ -231,6 +232,14 @@ async function activate(r: RecordData) {
   validateSong(r.song);
   busy = true;
   try {
+    if (!isPortable && r.song.scoreFormat === 'musicxml' && r.pages.some(p => p.type !== SVG_GZIP)) {
+      const rendered = await renderScore(r.pdf, 'musicxml', r.song.scorePartId);
+      if (!rendered.parsed) throw Error('MusicXML 렌더링 결과가 없습니다.');
+      replaceWithMusicXML(r.song, { ...rendered, parsed: rendered.parsed }, r.song.pdfName);
+      if (rendered.pages.length !== r.song.pageCount) throw Error('기존 악보와 페이지 수가 달라 자동 갱신할 수 없습니다.');
+      // Same OSMD layout: keep normalized crops and any user beat-position edits.
+      r = { ...r, pages: rendered.pages };
+    }
     engine().pause();
     clearTimeout(saveTimer);
     if (record) await saveRecord(record);
@@ -244,7 +253,7 @@ async function activate(r: RecordData) {
     // Materialize persisted blobs before image decoding; Safari may not load
     // an object URL backed directly by an IndexedDB blob after a reload.
     urls = await Promise.all(r.pages.map(async (b) =>
-      URL.createObjectURL(new Blob([await b.arrayBuffer()], { type: b.type })),
+      URL.createObjectURL(await displayPage(b)),
     ));
     pageRatios = await Promise.all(
       urls.map(async (u, index) => {
@@ -1492,7 +1501,8 @@ action("export", async () => {
   );
   if (val("include-media").checked) {
     zip.file(scoreArchivePath(song()), record!.pdf);
-    record!.pages.forEach((page,i)=>zip.file(`pages/${i}.png`,page));
+    zip.file("pages/manifest.json", JSON.stringify(record!.pages.map((page,i)=>({path:`pages/${i}.${pageExtension(page)}`,type:page.type}))));
+    record!.pages.forEach((page,i)=>zip.file(`pages/${i}.${pageExtension(page)}`,page));
     zip.file("media/audio", record!.audio);
     zip.file("other-scores.json", JSON.stringify(await packScores(record!.otherScores)));
   }
@@ -1542,7 +1552,10 @@ val("restore").onchange = async () => {
       }
     }
     await verifyMedia(identity, pdf, audio);
-    const savedPages=await Promise.all(Array.from({length:s.pageCount},(_,i)=>zip.file(`pages/${i}.png`)?.async("blob")));
+    const manifestText = await zip.file("pages/manifest.json")?.async("string");
+    const manifest: {path:string;type:string}[] = manifestText ? JSON.parse(manifestText) : Array.from({length:s.pageCount},(_,i)=>({path:`pages/${i}.png`,type:'image/png'}));
+    if(manifest.length!==s.pageCount)throw Error("백업 페이지 목록이 올바르지 않습니다.");
+    const savedPages=await Promise.all(manifest.map(async p=>{const bytes=await zip.file(p.path)?.async("arraybuffer");return bytes ? new Blob([bytes],{type:p.type}) : undefined;}));
     const pages=savedPages.every(Boolean)?savedPages as Blob[]:(await renderScore(pdf,s.scoreFormat,s.scorePartId)).pages;
     if(pages.length!==s.pageCount)throw Error("백업과 악보 페이지 수가 다릅니다.");
     const otherText = await zip.file("other-scores.json")?.async("string");

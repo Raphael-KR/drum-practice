@@ -1050,3 +1050,13 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 검증: 12개 표본 모두 오류 없음, 110마디/4페이지, 동일 XML 해시, 이미지 디코딩 성공. 영역 좌표 차이는 약 0.2 CSS px 이내. Safari SVG 화면 확인. 상세 docs/PNG-SVG-BENCHMARK.md, 원시 docs/experiments/renderer-benchmark/{desktop,simulator}.json.
 - 실험 문제: 최초 esbuild IIFE에서 top-level await 오류 → async 함수로 감싸 재빌드. Mac 브라우저 RAF ~1Hz 제한으로 재표시/프레임 결과 판정 제외. open -a Simulator는 앱 이름 탐색 실패했으나 부팅된 simulator/simctl 경로의 Safari 검증은 정상 완료.
 - 판단: 단순 SVG 교체는 용량 증가. 압축 SVG 캐시를 다음 후보로 권장하되 압축 해제/전체 앱/독립 HTML/실기기 검증 후 전환. 현재 PNG 유지.
+
+## 2026-09-19 — MusicXML SVG 렌더링 적용
+
+- 승인된 비교 결과에 따라 OSMD backend를 SVG로 변경. score-pages.ts에서 gzip 캐시/표시용 압축 해제. 이미지 URL은 image/svg+xml이며 원본 XML은 정본 유지.
+- 웹앱에서 기존 MusicXML PNG 캐시를 열 때 갱신. 마디 구성/페이지 수 검증 후 기존 정규화 영역·박 위치 보정·가사·음원 시간을 유지. PDF 및 과거 HTML PNG는 호환.
+- ZIP 페이지 manifest로 MIME/경로 보존, 기존 pages/N.png 백업 읽기 유지. HTML/IndexedDB는 기존 바이트 코덱으로 압축 형식 보존. 소스 src/main.ts, src/musicxml.ts, src/score-pages.ts. 계약 docs/SVG-RENDERING.md 및 PRD 반영.
+- 검증: 전체 32파일 116테스트 통과. SVG 압축/해제→IndexedDB→HTML 코덱 왕복, 기존 PNG 및 손상된 gzip 실패 검사 추가. 최초 타입 검사에서 optional parsed 오류를 수정한 뒤 build 통과. 기존 OSMD 번들 크기 경고 유지.
+- localhost 기존 별도 QA MusicXML 곡 PNG 4쪽→SVG gzip 4쪽(640,977bytes) 갱신, 110마디 음원 시간 및 모든 가사 text/scorePosition 보존 확인. 기존 canonical 재읽기로 파생 originalTime 필드 하나가 제거되었으나 가사 시작·길이·악보 위치 불변. 원곡 사용자 레코드 대신 QA 곡 사용.
+- 새 HTML을 file:로 열어 8마디 SVG 이미지 MIME 확인. iOS27 iPad mini Safari 시뮬레이터에서 같은 HTML의 41–48마디·가사·진행선 표시 확인: docs/experiments/renderer-benchmark/svg-app-ipad.png. 테스트 HTML public/demo/qa/svg-portable.html은 Git 제외. 과거 exports 파일은 변경하지 않음.
+- 실물 iPad에서의 오프라인 재생/음질은 이번 검증에 포함하지 않음. Apple STT/AFM 신규 실험은 없음.
