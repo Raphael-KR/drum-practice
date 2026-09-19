@@ -378,6 +378,11 @@ function layoutLyrics() {
   for (const items of rows.values()) {
     const positions = packLabels(
       items.map(({ rect }) => ({ left: rect.left, width: rect.width })),
+      2,
+      // Clamp to the row content edge, not the moving viewport in ribbon mode.
+      song().settings.view === "rows"
+        ? $("stage").getBoundingClientRect().left + 4
+        : $("ribbon").getBoundingClientRect().left + 4,
     );
     const baseline = Math.max(...items.map(({ rect }) => rect.top));
     items.forEach(({ el, rect }, i) => {

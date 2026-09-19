@@ -1,6 +1,6 @@
 // Least-squares horizontal adjustment, keeping text order and a single baseline.
 // Time anchors are untouched; only the label boxes move to avoid collisions.
-export function packLabels(items: { left: number; width: number }[], gap = 2) {
+export function packLabels(items: { left: number; width: number }[], gap = 2, minLeft = -Infinity) {
   const offsets: number[] = [];
   const blocks: { start: number; end: number; sum: number; count: number }[] =
     [];
@@ -24,6 +24,6 @@ export function packLabels(items: { left: number; width: number }[], gap = 2) {
   const positions: number[] = [];
   for (const b of blocks)
     for (let i = b.start; i <= b.end; i++)
-      positions[i] = b.sum / b.count + offsets[i];
+      positions[i] = Math.max(b.sum / b.count, minLeft) + offsets[i];
   return positions;
 }
