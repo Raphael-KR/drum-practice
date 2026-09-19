@@ -17,3 +17,16 @@ it('does not replace explicit placements or apply to unrelated XML',()=>{
  expect(correctMeasureFiveRests('<score-partwise/>').changed).toBe(false);
  const text=readFileSync('public/demo/score.musicxml','utf8');expect(correctMeasureFiveRests(text).changed).toBe(false);
 });
+
+import {fixAllDrumRestPositions} from '../src/score-rest-correction';
+it('fixes every rest to one of three audited lanes without changing rhythm or notes',()=>{
+ const text=readFileSync('public/demo/qa/musicxml-candidate.musicxml','utf8');
+ const result=fixAllDrumRestPositions(text);
+ expect(result.counts).toEqual({cymbal:15,drum:15,kick:237});
+ const a=new DOMParser().parseFromString(text,'application/xml'),b=new DOMParser().parseFromString(result.text,'application/xml');
+ for(const r of b.querySelectorAll('part[id="P1"] rest'))expect(['A5','B4','D4']).toContain(r.textContent);
+ for(const d of [a,b])for(const r of d.querySelectorAll('rest'))r.replaceChildren();
+ expect(new XMLSerializer().serializeToString(b)).toBe(new XMLSerializer().serializeToString(a));
+ expect(fixAllDrumRestPositions(result.text).changed).toBe(false);
+ expect(fixAllDrumRestPositions(readFileSync('public/demo/score.musicxml','utf8')).changed).toBe(false);
+});

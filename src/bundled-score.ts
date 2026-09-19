@@ -5,7 +5,7 @@ import { writeCanonical, hasDrumNotation } from "./canonical-xml";
 const sourcePDFHash =
   "33a98caa89daee7c5d9d56f272f73f0f8f6e9cb6526fe80af6c5f798807bcefd";
 const bundledXMLHash =
-  "3f67fc08df3471fba4dc19b4cdf907c45a1f29c835221670ac4be3d303de3fbf";
+  "57aa0d483c6ea7d35a6ef0700c5ec1019b9da9e03289c2e48528e18d0c9a1bd7";
 async function hash(blob: Blob) {
   return Array.from(
     new Uint8Array(
