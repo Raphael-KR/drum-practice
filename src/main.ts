@@ -1,3 +1,4 @@
+import { ScoreReview, reviewPair, copyReviewImage } from "./score-review";
 import { displayPage, SVG_GZIP, pageExtension } from "./score-pages";
 import { importedCanonical, hasDrumNotation, ensureCanonical, saveCanonical, verifyCanonicalAudio, vocalLyrics, withVocalSource, readCanonical, writeCanonical } from "./canonical-xml";
 import { advanceLyricPosition, migrateLyricPositions, projectLyrics, lyricDurationBeats } from "./lyric-score";
@@ -101,8 +102,8 @@ app.innerHTML = `
 <header><div class="brand"><div class="logo" aria-hidden="true">♩</div><div><h1>드럼 연습실</h1><small id="song-title">악보를 따라, 나의 속도로</small></div></div><div class="actions"><button id="library-button">내 악보 목록</button><button id="save-html" hidden>HTML 한 파일로 저장</button><button id="edit-button" hidden>악보·가사 맞추기</button></div></header>
 <main><section class="welcome" id="welcome"><span class="tag">PDF / MusicXML · 음악 · 가사</span><h2>드럼 연습실</h2><p class="welcome-lead">다음 마디를 미리 보고, 어려운 부분은 천천히.</p><p>움직이는 악보와 바로 아래 가사를 한눈에 보세요.<br>연습할 구간을 정하고, 나에게 맞는 속도로 반복합니다.</p><div class="actions"><button class="primary" id="demo-button">바람과 언덕의 발라드 열기</button><button id="welcome-library">내 악보 목록</button><button id="welcome-new">＋ 악보 추가</button></div><p class="subtle">파일과 연습 기록은 이 브라우저에 저장됩니다. 다른 기기로 옮기거나 보관하려면 백업을 내보내세요.</p></section>
 <div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>한 곡 파일 · 변경 사항은 이 화면에서만 유지됩니다. 보관하려면 “HTML 한 파일로 저장”을 눌러 새 파일로 저장하세요.</p>
-<section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option></select><button id="original-button">원본 보기</button></div></div>
-<div class="stage" id="stage"><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
+<section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option><option value="compare">PDF · MusicXML 검수</option></select><button id="original-button">원본 보기</button></div></div>
+<div id="review-tools" hidden><span id="review-message">스페이스: 정지·캡처 복사 / 다시 누르면 재생</span><button id="review-copy">정지·캡처 복사</button><button id="review-save" hidden>캡처 저장</button></div><div class="stage" id="stage"><canvas id="review-canvas" hidden aria-label="위 PDF, 아래 MusicXML 같은 마디 비교"></canvas><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
 <div class="transport"><div class="flex transport-left"><button id="home" aria-label="처음으로">↤</button><label><select id="goto" aria-label="앞으로 이동할 마디 수">${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label><button id="jump">앞으로</button><button id="copy-position" title="현재 마디와 위치 복사" aria-label="현재 마디와 위치 복사">위치 복사</button></div><button id="play" class="primary play">▶ 재생</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">BPM</button><button id="slower" aria-label="5 BPM 느리게">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="재생 BPM: 좌우 드래그로 조절, 두 번 탭하면 원곡 BPM" aria-orientation="horizontal" title="좌우 드래그: 1 BPM씩 조절 · 두 번 탭: 원곡 BPM"><button id="faster" aria-label="5 BPM 빠르게">+5</button><label><input id="click" type="checkbox" checked>클릭</label></div></div>
 <details><summary>소리·카운트인·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>준비 <select id="count"><option value="0">없음</option><option value="1">1마디</option><option value="2">2마디</option></select></label><label><input id="count-each" type="checkbox">반복마다 준비</label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
@@ -360,10 +361,56 @@ function positionInMeasure(index: number, beat: number, width: number) {
     width + (next ? widthOf(next) * xAtBeat(nextRegion!, next, 0) : 0);
   return continuousX(r, m, beat, width, end);
 }
+let review: ScoreReview | undefined;
+let reviewGeneration = 0;
+let reviewPNG: Promise<Blob> | undefined;
+async function prepareReview() {
+  const generation=++reviewGeneration;
+  review?.dispose();review=undefined;
+  $('review-copy').setAttribute('disabled','');
+  try {
+    const sourceRecord=record!;
+    const pair=reviewPair(sourceRecord);
+    if(pair[1].pages.some(p=>p.type!==SVG_GZIP && p.type!=='image/svg+xml')){
+      if(isPortable)throw Error('SVG 캐시가 없는 과거 HTML입니다. 웹앱에서 검수 모드를 연 뒤 HTML을 다시 저장해 주세요.');
+      const rendered=await renderScore(pair[1].source,'musicxml',pair[1].partId);
+      if(!rendered.parsed)throw Error('MusicXML 렌더링 결과가 없습니다.');
+      replaceWithMusicXML(sourceRecord.song,{...rendered,parsed:rendered.parsed},pair[1].name);
+      if(rendered.pages.length!==pair[1].pages.length)throw Error('악보 페이지 수가 달라 자동 갱신할 수 없습니다.');
+      if(generation!==reviewGeneration)return;
+      pair[1]={...pair[1],pages:rendered.pages};
+      if(sourceRecord.song.scoreFormat==='musicxml')sourceRecord.pages=rendered.pages;
+      else sourceRecord.otherScores=sourceRecord.otherScores?.map(s=>s.format==='musicxml'?pair[1]:s);
+      await saveRecord(sourceRecord);
+    }
+    if(generation!==reviewGeneration)return;
+    const candidate=new ScoreReview($<HTMLCanvasElement>('review-canvas'),song(),pair);
+    try { await candidate.load(); } catch(e) {candidate.dispose();throw e;}
+    if(generation!==reviewGeneration){candidate.dispose();return;}
+    review=candidate;review.draw(engine().current());$('review-copy').removeAttribute('disabled');
+  } catch(e){if(generation===reviewGeneration){$('review-message').textContent=String(e);error(e);}}
+}
+function captureReview() {
+  engine().pause();
+  if(!review){$('review-message').textContent='악보를 준비 중입니다. 준비 후 캡처 버튼을 눌러 주세요.';return;}
+  const time=engine().current();
+  reviewPNG=review.snapshot(time);
+  $('review-save').hidden=false;
+  void copyReviewImage(reviewPNG).then(()=>{$('review-message').textContent='캡처 복사됨 — 대화에 붙여넣으세요.';},()=>{$('review-message').textContent='클립보드 복사가 차단되었습니다. 캡처 저장을 눌러 주세요.';});
+  void reviewPNG.catch(error);
+}
+action('review-copy',captureReview);
+action('review-save',async()=>{if(!reviewPNG)return;const url=URL.createObjectURL(await reviewPNG),a=document.createElement('a');a.href=url;a.download='악보-검수.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 function renderTrack() {
   if (!record) return;
   const s = song();
-  $("practice").classList.toggle("two-rows", s.settings.view === "rows");
+  const comparing=s.settings.view==='compare';
+  $('practice').classList.toggle('score-review',comparing);
+  $('review-tools').hidden=$('review-canvas').hidden=!comparing;
+  $("practice").classList.toggle("two-rows", s.settings.view !== "ribbon");
+  val('zoom').closest('label')!.hidden=s.settings.view!=='ribbon';
+  if(comparing){$('stage').style.removeProperty('height');void prepareReview();return;}
+  reviewGeneration++;review?.dispose();review=undefined;
   val("zoom").closest("label")!.hidden = s.settings.view !== "ribbon";
   rowWindow = -1;
   trackOffsets = [];
@@ -453,7 +500,9 @@ function frame() {
     $("playhead-bar").textContent = `${m.label} 마디`;
     $("playhead-beat").textContent = `${count ? "준비 " : ""}${count || Math.min(m.beats, Math.floor(beat) + 1)}`;
     $("playhead-signature").textContent = `${m.beats}/${m.denominator}`;
-    if (s.settings.view === "ribbon") {
+    if (s.settings.view === "compare") {
+      review?.draw(t);
+    } else if (s.settings.view === "ribbon") {
       const x =
         trackOffsets[index] +
         positionInMeasure(index, beat, trackWidths[index]);
@@ -494,7 +543,7 @@ requestAnimationFrame(frame);
 async function toggle() {
   if (busy) return;
   if (engine().playing) {
-    engine().pause();
+    if(song().settings.view==='compare')captureReview();else engine().pause();
     return;
   }
   busy = true;
@@ -671,6 +720,10 @@ for (const id of [
     s.countIn = num("count");
     s.countEach = val("count-each").checked;
     s.zoom = num("zoom");
+    if(val('view').value==='compare'){
+      try{reviewPair(record);}catch(e){val('view').value=s.view;error(e);return;}
+      if(s.view!=='compare')engine().pause();
+    }
     s.view = val("view").value as typeof s.view;
     engine().volumes();
     if (["view", "zoom"].includes(id)) renderTrack();
@@ -1609,6 +1662,7 @@ document.addEventListener("keydown", (e) => {
     return;
   if (e.code === "Space") {
     e.preventDefault();
+    if(e.repeat)return;
     void toggle().catch(error);
   }
   if (e.key === "m" || e.key === "M") addMarker();

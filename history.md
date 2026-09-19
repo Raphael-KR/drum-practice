@@ -1060,3 +1060,12 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - localhost 기존 별도 QA MusicXML 곡 PNG 4쪽→SVG gzip 4쪽(640,977bytes) 갱신, 110마디 음원 시간 및 모든 가사 text/scorePosition 보존 확인. 기존 canonical 재읽기로 파생 originalTime 필드 하나가 제거되었으나 가사 시작·길이·악보 위치 불변. 원곡 사용자 레코드 대신 QA 곡 사용.
 - 새 HTML을 file:로 열어 8마디 SVG 이미지 MIME 확인. iOS27 iPad mini Safari 시뮬레이터에서 같은 HTML의 41–48마디·가사·진행선 표시 확인: docs/experiments/renderer-benchmark/svg-app-ipad.png. 테스트 HTML public/demo/qa/svg-portable.html은 Git 제외. 과거 exports 파일은 변경하지 않음.
 - 실물 iPad에서의 오프라인 재생/음질은 이번 검증에 포함하지 않음. Apple STT/AFM 신규 실험은 없음.
+
+## 2026-09-19 — PDF / MusicXML 검수 및 스페이스 캡처
+
+- 화면 메뉴에 PDF·MusicXML 검수 모드 추가. 위 PDF, 아래 SVG 같은 네 마디, 독립적인 악보 박 좌표 진행선 및 곡명·마디·박·시각 표시. 두 형식과 마디 구성을 검증한다. PDF 활성 상태에서 남아 있는 XML PNG 캐시도 필요할 때 SVG로 갱신한다.
+- 재생 중 스페이스/일시정지 버튼은 정지 후 캡처 복사. 다시 스페이스는 기존 해당 마디 처음부터 재생 규칙 유지. 반복 keydown 무시. 터치 정지·캡처 버튼, 이미지 복사 거부 시 동일 캡처 저장. PNG Promise를 사용자 이벤트 안에서 ClipboardItem에 전달하고 프레임은 즉시 별도 Canvas에 고정한다.
+- 검증: 33파일 119테스트, build 통과. 마디 연결/불일치 거부/원본 불변/동기 clipboard.write 호출/미지원 오류 테스트 추가. 기존 번들 크기 경고 유지.
+- 실제 localhost QA 곡에서 화면 모드 선택, 재생→물리 키 입력 API Space→정지·복사됨 확인. macOS clipboard info에서 PNGf 197,017 bytes 확인. 검수 Canvas 3052×880의 5–8마디 PDF/SVG 및 정지 위치 시각 확인: docs/experiments/renderer-benchmark/review.png.
+- iOS27 iPad mini Safari에서 두 악보를 포함한 새 HTML의 41–44마디 검수 화면 확인: docs/experiments/score-review/ipad.png. 시뮬레이터에서는 표시 확인이며 클립보드 쓰기 성공 증거는 Mac 브라우저 측정이다. 실물 iPad 클립보드 권한/파일 실행 앱 동작은 별도.
+- 승인된 local 앱 및 별도 QA 곡만 사용. 사용자 원곡 레코드나 과거 HTML을 덮어쓰지 않았다. 자동 음표 수정/청취 검수는 포함하지 않음. 상세 docs/SCORE-REVIEW.md.

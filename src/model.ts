@@ -47,7 +47,7 @@ export interface Settings {
   countIn: number;
   countEach: boolean;
   zoom: number;
-  view: "ribbon" | "rows";
+  view: "ribbon" | "rows" | "compare";
   position: number;
 }
 export interface Song {
@@ -307,7 +307,7 @@ export function validateSong(x: unknown): asserts x is Song {
     !finite(t.zoom) ||
     t.zoom < 0.5 ||
     t.zoom > 2 ||
-    !["ribbon", "rows"].includes(t.view)
+    !["ribbon", "rows", "compare"].includes(t.view)
   )
     throw Error("연습 설정이 올바르지 않습니다.");
 }

@@ -1230,3 +1230,11 @@ button.icon-button[hidden] { display:none; }
 .score-type:hover { filter:brightness(.96); }
 .score-type:focus-visible { outline:3px solid #3f74d4; outline-offset:2px; }
 @media(max-width:700px) { .song-card-heading { flex-basis:100%; } .song-card-actions { margin-left:auto; } }
+
+/* Same musical window, PDF above and SVG below. */
+#review-tools { display:flex; align-items:center; gap:8px; min-height:44px; }
+#review-tools[hidden], #review-canvas[hidden] { display:none; }
+#review-message { flex:1; font-size:13px; }
+#review-tools button { min-height:40px; padding:6px 12px; font-size:13px; }
+.score-review #ribbon, .score-review .playhead, .score-review #playhead-status { display:none !important; }
+#review-canvas { display:block; width:100%; height:100%; }
