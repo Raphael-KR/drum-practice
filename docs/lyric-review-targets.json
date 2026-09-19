@@ -258,91 +258,91 @@
       "number": "113",
       "aliases": [],
       "lyricId": "v2-l196",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "114",
       "aliases": [],
       "lyricId": "v2-l199",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "115",
       "aliases": [],
       "lyricId": "v2-l201",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "116",
       "aliases": [],
       "lyricId": "v2-l208",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "117",
       "aliases": [],
       "lyricId": "v2-l211",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "118",
       "aliases": [],
       "lyricId": "v2-l214",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "119",
       "aliases": [],
       "lyricId": "v2-l216",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "120",
       "aliases": [],
       "lyricId": "v2-l220",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "121",
       "aliases": [],
       "lyricId": "v2-l221",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "122",
       "aliases": [],
       "lyricId": "v2-l225",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "123",
       "aliases": [],
       "lyricId": "v2-l227",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "124",
       "aliases": [],
       "lyricId": "v2-l229",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "125",
       "aliases": [],
       "lyricId": "v2-l230",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "126",
       "aliases": [],
       "lyricId": "v2-l239",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "127",
       "aliases": [],
       "lyricId": "v2-l246",
-      "status": "pending"
+      "status": "confirmed"
     },
     {
       "number": "128",
@@ -840,5 +840,5 @@
   ],
   "positionPolicy": "nearest quarter beat; raw times retained as originalTime",
   "appliedTailShift": "v2-l25 inclusive through end +1 quarter-beat tick, 2026-09-19",
-  "appliedListeningBatch": "listening-through-m39-bright-2026-09-19"
+  "appliedListeningBatch": "listening-through-m48-gat-2026-09-19"
 }
