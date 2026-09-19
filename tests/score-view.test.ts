@@ -16,7 +16,8 @@ it('trims verified clef prefixes without changing source data or note page coord
   expect(displayRegion(song, song.regions[25])).toBe(song.regions[25]);
 });
 it('preserves the opening title, clef and meter', () => {
-  expect(displayRegion(song, song.regions[0])).toBe(song.regions[0]);
+  const d=displayRegion(song,song.regions[0]);
+  for(const key of ['x','y','w','h','page'] as const)expect(d[key]).toBe(song.regions[0][key]);
 });
 it('does not guess at trimming an unrelated score', () => {
   expect(displayRegion({ ...song, id: 'other' }, song.regions[24])).toBe(song.regions[24]);
@@ -30,4 +31,20 @@ it('anchors m41 beat one to the printed first note after trimming',()=>{
  expect(r).toEqual(before);
  const custom={...r,beatXs:[.2,.4,.6,.8,1]};
  expect(displayRegion(song,custom).x+displayRegion(song,custom).w*displayRegion(song,custom).beatXs[0]).toBeCloseTo(r.x+r.w*.2);
+});
+
+it('covers every measure and preserves source data and custom crops',()=>{
+ const before=JSON.stringify(song);
+ for(const m of song.measures){
+  const r=song.regions.find(r=>r.id===m.regionId)!,d=displayRegion(song,r);
+  expect(d.beatXs.length,m.label).toBe(m.beats+1);
+  for(let i=0;i<d.beatXs.length;i++){
+   expect(d.beatXs[i]).toBeGreaterThanOrEqual(0);expect(d.beatXs[i]).toBeLessThanOrEqual(1);
+   if(i)expect(d.beatXs[i]).toBeGreaterThan(d.beatXs[i-1]);
+  }
+ }
+ expect(JSON.stringify(song)).toBe(before);
+ const r=song.regions[41];
+ expect(displayRegion(song,{...r,y:r.y+.001}).beatXs).toEqual([]);
+ expect(displayRegion(song,song.regions[83]).beatXs.length).toBe(6);
 });
