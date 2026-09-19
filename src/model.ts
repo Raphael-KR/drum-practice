@@ -66,7 +66,10 @@ export interface Song {
   loops: Loop[];
   settings: Settings;
   audioName: string;
+  /** Original score filename; legacy name retained for saved-record compatibility. */
   pdfName: string;
+  scoreFormat?: "pdf" | "musicxml";
+  scorePartId?: string;
   pageCount: number;
 }
 export const uid = () => crypto.randomUUID();
@@ -198,7 +201,9 @@ export function validateSong(x: unknown): asserts x is Song {
     s.pageCount < 1 ||
     s.pageCount > 500 ||
     typeof s.audioName !== "string" ||
-    typeof s.pdfName !== "string"
+    typeof s.pdfName !== "string" ||
+    (s.scoreFormat !== undefined && !["pdf", "musicxml"].includes(s.scoreFormat)) ||
+    (s.scorePartId !== undefined && typeof s.scorePartId !== "string")
   )
     throw Error("곡 정보 또는 BPM이 올바르지 않습니다.");
   for (const k of [

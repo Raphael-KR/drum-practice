@@ -15,10 +15,12 @@
   },
   "dependencies": {
     "jszip": "^3.10.2",
+    "opensheetmusicdisplay": "^2.1.2",
     "pdfjs-dist": "^6.3.289",
     "soundtouchjs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^22.20.3",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",

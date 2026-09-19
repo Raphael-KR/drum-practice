@@ -30,6 +30,6 @@ export async function verifyMedia(
   const actual = await mediaIdentity(pdf, audio);
   if (actual.pdf !== expected.pdf || actual.audio !== expected.audio)
     throw Error(
-      "백업에 사용한 원본 PDF·음원과 다릅니다. 같은 파일을 선택하세요.",
+      "백업에 사용한 원본 악보·음원과 다릅니다. 같은 파일을 선택하세요.",
     );
 }

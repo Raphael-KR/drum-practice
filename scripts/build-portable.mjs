@@ -29,6 +29,8 @@ const runtime = await build({
       name: "portable-authoring-boundary",
       setup(b) {
         b.onLoad({ filter: /\.css$/ }, () => ({ contents: "", loader: "js" }));
+        b.onResolve({ filter: /^\.\/musicxml$/ }, () => ({path: "musicxml", namespace: "portable-xml"}));
+        b.onLoad({filter: /.*/, namespace: "portable-xml"}, () => ({contents: 'export async function renderMusicXML(){throw Error("MusicXML 가져오기는 원래 웹앱에서 해 주세요.")} export const readMusicXML=renderMusicXML; export const parseMusicXML=renderMusicXML;',loader: "js"}));
         b.onResolve({ filter: /^\.\/pdf$/ }, () => ({
           path: "pdf",
           namespace: "portable",
