@@ -65,6 +65,7 @@ export function useScore(record: RecordData, target: ScoreVariant): RecordData {
   validateSong(song);
   return {
     song,
+    canonicalXML: record.canonicalXML,
     pdf: target.source,
     pages: target.pages,
     audio: record.audio,

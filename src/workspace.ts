@@ -127,7 +127,7 @@ export function arrangeWorkspace() {
     .forEach((b) => (b.onclick = () => selectEditorPane(b.dataset.pane!)));
   metadata.insertAdjacentHTML(
     "beforeend",
-    '<button id="save-metadata">가수 · 제목 저장</button>',
+    '<button id="save-metadata">곡 정보 저장</button>',
   );
   lyricPane.insertAdjacentHTML(
     "beforeend",

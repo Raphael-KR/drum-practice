@@ -3,6 +3,7 @@ import type { ScoreVariant } from "./song-scores";
 import { isPortable } from "./portable";
 const portableRecords = new Map<string, RecordData>();
 export interface RecordData {
+  canonicalXML?: string;
   song: Song;
   otherScores?: ScoreVariant[];
   pdf: Blob;
@@ -18,6 +19,7 @@ interface StoredScore extends Omit<ScoreVariant, "source" | "pages"> {
   pages: StoredMedia[];
 }
 interface StoredRecord {
+  canonicalXML?: string;
   otherScores?: StoredScore[];
   song: Song;
   mediaFormat: "bytes-v1";
@@ -33,6 +35,7 @@ function restoreRecord(value: StoredRecord | RecordData): RecordData {
   const blob = (m: StoredMedia) => new Blob([m.bytes], { type: m.type });
   return {
     song: value.song,
+    canonicalXML: value.canonicalXML,
     pdf: blob(value.pdf),
     audio: blob(value.audio),
     pages: value.pages.map(blob),
@@ -74,6 +77,7 @@ export async function saveRecord(record: RecordData) {
   );
   const stored: StoredRecord = {
     song: structuredClone(record.song),
+    canonicalXML: record.canonicalXML,
     mediaFormat: "bytes-v1",
     pdf,
     audio,

@@ -2,6 +2,7 @@
 // @vitest-environment jsdom
 import "fake-indexeddb/auto";
 import { beforeAll, it, expect, vi } from "vitest";
+import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { Blob as NativeBlob, File as NativeFile } from "node:buffer";
 import { allRecords } from "../src/storage";
@@ -57,6 +58,7 @@ const set = (id: string, v: string) => {
   (document.getElementById(id) as HTMLInputElement).value = v;
 };
 beforeAll(async () => {
+  vi.stubGlobal("crypto",webcrypto);
   // jsdom lacks Blob.arrayBuffer; use the standard implementation for media reads.
   vi.stubGlobal("Blob", NativeBlob);
   vi.stubGlobal("File", NativeFile);
@@ -374,7 +376,7 @@ it("opens the last practiced score instead of the bundled song", async () => {
   await vi.waitFor(() => expect(document.getElementById("song-title")!.textContent).toBe("독립 두 번째 곡"));
   expect(document.querySelectorAll(".measure")).toHaveLength(1);
 });
-it("edits lyric starts on a quarter-beat grid with an explicit free-time override", async () => {
+it("edits lyric starts and duration in musical units without free-time controls", async () => {
   await vi.waitFor(() => expect(document.getElementById("busy")!.textContent!.split("\n")[0]).toContain("저장"));
   click("lyrics-button");click("show-all");
   const select=document.querySelector<HTMLSelectElement>('#lyric-editor [data-field="grid-tick"]')!;
@@ -384,14 +386,11 @@ it("edits lyric starts on a quarter-beat grid with an explicit free-time overrid
     expect(r.song.lyrics[0].grid?.tick).toBe(5);
     expect(r.song.lyrics[0].time).toBeCloseTo(r.song.measures[0].start+(r.song.measures[0].end-r.song.measures[0].start)*1.25/4);
   });
-  const toggle=document.querySelector<HTMLInputElement>('#lyric-editor [data-field="freeTiming"]')!;
-  toggle.checked=true;toggle.dispatchEvent(new Event('change',{bubbles:true}));
-  const seconds=document.querySelector<HTMLInputElement>('#lyric-editor [data-field="time"]')!;
-  expect(seconds).not.toBeNull();seconds.value='0.733';seconds.dispatchEvent(new Event('change',{bubbles:true}));
-  await vi.waitFor(async()=>{
-    const l=(await allRecords()).find(r=>r.song.title==='독립 두 번째 곡')!.song.lyrics[0];
-    expect(l.freeTiming).toBe(true);expect(l.time).toBe(.733);expect(l.grid).toBeUndefined();
-  });
+  expect(document.querySelector('[data-field="freeTiming"]')).toBeNull();
+  expect(document.querySelector('[data-field="time"]')).toBeNull();
+  const duration=document.querySelector<HTMLInputElement>('#lyric-editor [data-field="duration-beats"]')!;
+  duration.value='0.5';duration.dispatchEvent(new Event('change',{bubbles:true}));
+  await vi.waitFor(async()=>{const r=(await allRecords()).find(r=>r.song.title==='독립 두 번째 곡')!;expect(r.song.lyrics[0].scorePosition!.durationQuarters).toBe(.5);expect(r.canonicalXML).toContain('DrumPracticeLyrics');});
 });
 it('lists one card per song and only the content types actually saved',async()=>{
   for(const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]'))d.close();

@@ -22,6 +22,8 @@ export interface Lyric {
   time: number;
   end: number;
   confirmed: boolean;
+  /** Authoritative musical position; time/end above are playback projections. */
+  scorePosition?: { measureId: string; quarterOffset: number; durationQuarters: number };
   originalTime?: number;
   grid?: { measureId: string; tick: number };
   freeTiming?: boolean;
@@ -53,6 +55,9 @@ export interface Song {
   id: string;
   title: string;
   artist?: string;
+  originalTitle?: string;
+  composer?: string;
+  lyricist?: string;
   bpm: number;
   firstBeat: number;
   measures: Measure[];

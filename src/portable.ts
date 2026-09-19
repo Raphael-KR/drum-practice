@@ -13,6 +13,7 @@ export interface PackedScore extends Omit<ScoreVariant, "source" | "pages"> {
   pages: Asset[];
 }
 export interface PortableSong {
+  canonicalXML?: string;
   otherScores?: PackedScore[];
   version: 1;
   song: Song;
@@ -66,6 +67,7 @@ export async function packSong(record: RecordData): Promise<PortableSong> {
     version: 1,
     otherScores: await packScores(record.otherScores),
     song: structuredClone(record.song),
+    canonicalXML: record.canonicalXML,
     pdf: await encode(record.pdf),
     audio: await encode(record.audio),
     pages: await Promise.all(record.pages.map(encode)),
@@ -78,6 +80,7 @@ export function unpackSong(data: PortableSong): RecordData {
     throw Error("악보 페이지가 누락되었습니다.");
   return {
     song: data.song,
+    canonicalXML: data.canonicalXML,
     otherScores: unpackScores(data.otherScores),
     pdf: decode(data.pdf),
     audio: decode(data.audio),

@@ -1030,3 +1030,14 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 실제 localhost UI: 별도 QA 곡에 PDF 이후 110마디 MusicXML 추가, 한 카드의 PDF/MusicXML/가사 버튼 확인, PDF→MusicXML 왕복 후 가사 객체·마디 시간·마커·반복 동일 확인. 가사 버튼으로 편집창 열림 확인. 사용자 원곡 데이터는 바꾸지 않았다.
 - iOS27 iPad mini(A17 Pro) Safari: 두 형식 포함 HTML 테스트 산출물의 한 곡 카드/세 유형 버튼 확인. docs/experiments/song-library-ipad.png. QA용 자동 열기 스크립트 최초 삽입은 번들 문자열에도 치환되어 실패, 마지막 body 닫힘에만 삽입하도록 고쳐 재검증했다. 앱 소스 결함과 구분한다.
 - 한계: 과거 교체로 이미 사라진 파일은 복구하지 않는다. PDF 감지 마디 수가 다르면 자동 연결하지 않는다. 미디어 없는 백업은 원본 파일 별도 보관 필요. 실제 iPad 파일 앱 검증이나 외부 배포는 수행하지 않았다.
+
+## 2026-09-19 — MusicXML 정본 및 독립 가사 리듬 성부
+
+- 사용자 결정: 가사 초 단위 편집 폐기. 보컬 악보 또는 청취 교정을 악보 위치로 저장. 악보·메타정보·가사와 음원 연결점을 MusicXML 정본에 보존.
+- 구현: canonical-xml.ts, lyric-score.ts. XML 원문 보존 + 독립 unpitched 가사 파트 + 메타정보/오디오 연결 확장. Song은 파생 편집/재생 모델. 기존 시각 자유 입력 제거, 길이(박) 추가, 원제/작사/작곡 편집, 보컬 파트 가져오기, XML 직접 저장과 재가져오기, ZIP/HTML/IndexedDB 보존. 원본 음원 SHA-256 대조.
+- 보존 검사: 기존 515개 음절 시작 위치 변경 0. 가사/메타정보 캐시를 지운 후 XML에서 복원. 마디-음원 연결을 5초 이동해도 가사의 음악적 위치 불변. 기존 끝 시각은 음악적 길이로 이전하며 청취로 새 발음 길이를 측정한 것으로 주장하지 않는다.
+- 집중/전체 검사: 31파일 114테스트 통과. 추가 storage/portable 테스트 첫 실행은 jsdom Blob에 arrayBuffer가 없는 테스트 환경 문제로 실패, Node 표준 Blob을 주입하여 재검증했다. build 통과, 기존 OSMD 청크 크기 경고 유지.
+- XSD: 가사 전용 110마디/515음절 및 실제 브라우저의 전체 XML 모두 MusicXML 4.0 스키마 PASS. 최초 스키마 로드는 XML namespace import 로컬 resolver가 없어 실패했고 로컬 xsd resolver를 적용했다. XML 자체의 검사 실패와 구분한다. 증거 docs/experiments/canonical/{xsd.txt,browser-xsd.txt,browser.musicxml}.
+- 실제 UI: 기존 별도 QA 곡을 대상으로 이전/재열기, 초 입력 없음, 보컬 파트 가져오기, 이전 가사 이력 보존, 시작 박 수정 후 XML 재읽기 확인. 원곡 사용자 레코드는 이 QA에서 수정하지 않음. iPad mini iOS27 Safari HTML 화면: docs/experiments/canonical/ipad-lyrics.png.
+- 경계: PDF만 있는 곡에 드럼 음표를 추정해 만들지 않음. 이미 보관된 MusicXML 악보는 정본 기반으로 보존. 보컬 PDF 채보, 반복 자동 펼치기, 모든 가사의 음원 청취 재검증은 이 작업에 포함하지 않음. OSMD 유지; SVG 전환/Verovio 동일 기기 비교는 미실행. Apple STT/AFM은 결정적인 위치/스키마 변환 작업에 필요하지 않아 사용하지 않았으며 신규 도구 실측 발견 없음.
+- 최종 집중 재검증: canonical-xml/lyric-grid/ui 3파일 29테스트 통과(15:33), 이후 build 통과. 스키마/DOM/오디오 위치 근거와 실제 청취·실기기 검증을 구분했다.

@@ -19,14 +19,16 @@ export function gridLabel(measure:Measure,tick:number) {
 }
 export function setLyricGrid(song:Song,lyric:Lyric,point:GridPoint) {
   const m=song.measures.find(m=>m.id===point.measureId);
-  if(!m || !Number.isInteger(point.tick) || point.tick<0 || point.tick>m.beats*4) throw Error('¼박 위치를 확인하세요.');
+  if(!m || (!Number.isFinite(point.tick) || (!lyric.scorePosition && !Number.isInteger(point.tick))) || point.tick<0 || point.tick>m.beats*4) throw Error('¼박 위치를 확인하세요.');
   lyric.originalTime ??= lyric.time;
   const nextTime=beatTime(m,point.tick/4), delta=nextTime-lyric.time;
   lyric.grid={...point};lyric.freeTiming=false;
+  if(lyric.scorePosition) {lyric.scorePosition.measureId=m.id;lyric.scorePosition.quarterOffset=point.tick/m.denominator;}
   lyric.time=nextTime;lyric.end=Math.max(nextTime,lyric.end+delta);
 }
 export function synchronizeLyricGrid(song:Song) {
   for(const l of song.lyrics) {
+    if(l.scorePosition) continue;
     if(l.freeTiming) {delete l.grid;continue;}
     let point=l.grid;
     const m=point && song.measures.find(m=>m.id===point!.measureId);
@@ -39,7 +41,7 @@ export function synchronizeLyricGrid(song:Song) {
   // Multiple fast syllables may share a point. Do not push them to invented later beats.
   for(let i=0;i<song.lyrics.length;i++) {
     const l=song.lyrics[i],next=song.lyrics.slice(i+1).find(n=>n.time>l.time+1e-8);
-    if(next && !l.freeTiming) l.end=Math.max(l.time,Math.min(l.end,next.time));
+    if(next && !l.freeTiming && !l.scorePosition) l.end=Math.max(l.time,Math.min(l.end,next.time));
   }
 }
 export function enableLyricGrid(song:Song) {
