@@ -38,6 +38,23 @@ export function arrangeWorkspace() {
   soundBody.append(...sound.children);
   sound.remove();
   const screenBody = panel("screen-dialog", "화면");
+  const viewChoices=document.createElement('fieldset');
+  viewChoices.id='view-choices';
+  viewChoices.innerHTML='<legend>보기</legend>'+[
+    ['ribbon','한 줄로 이어 보기'],['rows','두 줄 고정 비교'],['compare','PDF · MusicXML 검수']
+  ].map(([value,label])=>`<label><input type="radio" name="score-view" value="${value}"><span>${label}</span></label>`).join('');
+  el('view').hidden=true;
+  screenBody.append(viewChoices);
+  viewChoices.addEventListener('change',e=>{
+    const radio=e.target as HTMLInputElement;
+    if(radio.name!=='score-view')return;
+    (el('view') as HTMLSelectElement).value=radio.value;
+    el('view').dispatchEvent(new Event('change'));
+  });
+  const reviewHelp=document.createElement('div');reviewHelp.id='review-help';
+  reviewHelp.innerHTML='<p id="review-availability"></p><button id="review-add-score">이 곡에 악보 추가</button>';
+  screenBody.append(reviewHelp);
+
   screenBody.append(
     el("view"),
     el("zoom").closest("label")!,

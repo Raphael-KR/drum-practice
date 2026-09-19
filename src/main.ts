@@ -1,3 +1,4 @@
+import { attachBundledScore } from "./bundled-score";
 import { ScoreReview, reviewPair, copyReviewImage } from "./score-review";
 import { displayPage, SVG_GZIP, pageExtension } from "./score-pages";
 import { importedCanonical, hasDrumNotation, ensureCanonical, saveCanonical, verifyCanonicalAudio, vocalLyrics, withVocalSource, readCanonical, writeCanonical } from "./canonical-xml";
@@ -233,6 +234,7 @@ async function activate(r: RecordData) {
   validateSong(r.song);
   busy = true;
   try {
+    if(!isPortable)r=await attachBundledScore(r,status);
     if (!isPortable && r.song.scoreFormat === 'musicxml' && r.pages.some(p => p.type !== SVG_GZIP)) {
       const rendered = await renderScore(r.pdf, 'musicxml', r.song.scorePartId);
       if (!rendered.parsed) throw Error('MusicXML 렌더링 결과가 없습니다.');
@@ -293,7 +295,22 @@ async function activate(r: RecordData) {
     busy = false;
   }
 }
+function syncViewChoices() {
+  if(!record)return;
+  const formats=songScores(record).map(s=>s.format);
+  const missing=['pdf','musicxml'].filter(f=>!formats.includes(f as 'pdf'|'musicxml'));
+  document.querySelectorAll<HTMLInputElement>('input[name="score-view"]').forEach(r=>{
+    r.checked=r.value===song().settings.view;
+    r.disabled=r.value==='compare' && missing.length>0;
+    if(r.value==='compare')r.setAttribute('aria-describedby','review-availability');
+  });
+  $('review-availability').textContent=missing.length
+    ? `검수하려면 이 곡에 ${missing.map(f=>f==='pdf'?'PDF':'MusicXML').join('와 ')} 악보를 추가해 주세요. 현재 저장된 악보: ${formats.map(f=>f==='pdf'?'PDF':'MusicXML').join(', ')}.${isPortable?' 웹앱에서 추가한 뒤 HTML을 다시 저장하세요.':''}`
+    : '위쪽 PDF · 아래쪽 SVG로 같은 마디를 비교합니다.';
+  $('review-add-score').hidden=isPortable || !missing.length;
+}
 function syncSettings() {
+  syncViewChoices();
   const s = song().settings;
   val("rate").value = String(Number((s.rate * song().bpm).toFixed(2)));
   val("rate").min = String(song().bpm * 0.5);
@@ -721,10 +738,11 @@ for (const id of [
     s.countEach = val("count-each").checked;
     s.zoom = num("zoom");
     if(val('view').value==='compare'){
-      try{reviewPair(record);}catch(e){val('view').value=s.view;error(e);return;}
+      try{reviewPair(record);}catch(e){val('view').value=s.view;syncViewChoices();error(e);return;}
       if(s.view!=='compare')engine().pause();
     }
     s.view = val("view").value as typeof s.view;
+    syncViewChoices();
     engine().volumes();
     if (["view", "zoom"].includes(id)) renderTrack();
     queueSave();
@@ -1763,6 +1781,7 @@ const replaceButton=document.createElement('button');replaceButton.id='replace-s
 $('backup-dialog').append(replaceButton);
 replaceButton.hidden=isPortable;
 replaceButton.onclick=()=>{if(!record)return;engine().pause();replaceDialog.showModal();};
+$('review-add-score').onclick=()=>{$<HTMLDialogElement>('screen-dialog').close();replaceButton.click();};
 $('replace-close').onclick=()=>replaceDialog.close();
 let replaceGeneration=0;
 val('replace-score-file').onchange=async()=>{

@@ -1069,3 +1069,12 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 실제 localhost QA 곡에서 화면 모드 선택, 재생→물리 키 입력 API Space→정지·복사됨 확인. macOS clipboard info에서 PNGf 197,017 bytes 확인. 검수 Canvas 3052×880의 5–8마디 PDF/SVG 및 정지 위치 시각 확인: docs/experiments/renderer-benchmark/review.png.
 - iOS27 iPad mini Safari에서 두 악보를 포함한 새 HTML의 41–44마디 검수 화면 확인: docs/experiments/score-review/ipad.png. 시뮬레이터에서는 표시 확인이며 클립보드 쓰기 성공 증거는 Mac 브라우저 측정이다. 실물 iPad 클립보드 권한/파일 실행 앱 동작은 별도.
 - 승인된 local 앱 및 별도 QA 곡만 사용. 사용자 원곡 레코드나 과거 HTML을 덮어쓰지 않았다. 자동 음표 수정/청취 검수는 포함하지 않음. 상세 docs/SCORE-REVIEW.md.
+
+## 2026-09-19 — 보기 라디오 및 기본 곡 MusicXML 누락 수정
+
+- 원인: 비교 기능은 QA 곡에만 PDF/XML을 연결해 확인했고, 사용자의 기본 real-paradis 레코드에는 PDF만 있었다. 이를 사용자가 직접 추가해야 하는 상태로 남긴 구현 누락 수정.
+- 화면 보기 세 항목을 라디오 버튼으로 노출. 값/설정 동기화, 기타 곡의 누락 형식 안내 및 직접 추가 경로. 기본 곡에는 변환 작업 14:47 MusicXML을 public/demo/score.musicxml로 제공하고 일치하는 PDF의 기존 곡을 열 때 자동 연결. 기존 사용자 XML은 덮어쓰지 않음.
+- 변환 작업 산출물/해시는 docs/SCORE-REVIEW.md에 기록. 미디어는 기존 정책대로 Git 제외. 현재 5173 및 빌드 자료에는 포함.
+- 브라우저에서 실제 real-paradis가 PDF만 가진 상태를 재현한 뒤 열어서 PDF+MusicXML(SVG gzip 4쪽) 자동 연결 및 라디오 검수 전환 확인. 음원 마디 시간 불변. 오래 열지 않았던 브라우저 레코드는 기존 앱의 가사 마이그레이션도 함께 실행되었으므로 전체 activate 전후와 XML 첨부 단계 자체를 구분함.
+- 테스트: 기존 119개 통과 후 자동 첨부 보존 테스트 추가. 첫 테스트가 writeCanonical의 이전 가사 정규화 부수 효과를 발견해, 첨부 시 복제본에 XML을 작성하도록 수정. PDF/페이지/마디/가사 불변·재첨부 안 함·다른 PDF 제외 및 라디오 DOM 계약 검증.
+- 수정 후 집중 2파일 16테스트 통과, 최종 build 통과. 기존 OSMD 큰 청크 경고 유지. 공개 배포나 원격 push 없음.

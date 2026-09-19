@@ -189,6 +189,13 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   set("goto", "1");
   errorSpy.mockRestore();
   expect(document.getElementById("view")!.closest("#screen-dialog")).not.toBeNull();
+  expect(document.querySelectorAll('input[name="score-view"]')).toHaveLength(3);
+  expect(document.getElementById('view')!.hidden).toBe(true);
+  (document.querySelector('input[name="score-view"][value="rows"]') as HTMLInputElement).click();
+  expect((document.querySelector('input[name="score-view"][value="rows"]') as HTMLInputElement).checked).toBe(true);
+  expect((document.querySelector('input[name="score-view"][value="compare"]') as HTMLInputElement).disabled).toBe(true);
+  expect(document.getElementById('review-availability')!.textContent).toContain('MusicXML');
+
   set("view", "rows");
   document.getElementById("view")!.dispatchEvent(new Event("change"));
   expect(document.getElementById("practice")!.classList.contains("two-rows")).toBe(true);
