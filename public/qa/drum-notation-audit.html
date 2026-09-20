@@ -1,0 +1,21 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>드럼 표기 지원 검수</title><style>body{font:16px system-ui;margin:20px;max-width:1120px}h1{font-size:24px}#score{width:1100px}pre{white-space:pre-wrap}</style><h1>드럼 표기 지원 검수</h1><p id="version"></p><div id="score"></div><pre id="status">렌더링 중</pre><script type="module">
+const patched=new URLSearchParams(location.search).has('patched');
+let OpenSheetMusicDisplay;
+if(patched){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='/qa/osmd-upstream-fixed.js';s.onload=resolve;s.onerror=reject;document.head.append(s)});({OpenSheetMusicDisplay}=window.opensheetmusicdisplay)}
+else {({OpenSheetMusicDisplay}=(await import('/node_modules/.vite/deps/opensheetmusicdisplay.js')).default)}
+document.querySelector('#version').textContent=patched?'develop 0502732 + b62a6ca 패치':'설치된 OSMD 2.1.2 원본';
+const cases=[
+['베이스 드럼','F',4,'normal','',37,'down'],['스네어','C',5,'normal','',39],['크로스 스틱','C',5,'x','',38],['고스트 (괄호)','C',5,'normal','parentheses="yes"',39],
+['탐 1','E',5,'normal','',49],['탐 2','D',5,'normal','',46],['플로어 탐','A',4,'normal','',42],['하이햇','G',5,'x','',43],
+['오픈: circle-x','G',5,'circle-x','',47],['오픈: 위에 ○','G',5,'x','',47,'up','<open-string placement="above"/>'],['닫기: 위에 +','G',5,'x','',43,'up','<stopped placement="above"/>'],['풋 하이햇','D',4,'x','',45,'down'],
+['크래시','A',5,'circle-x','',50],['라이드','F',5,'x','',52],['라이드 벨','F',5,'triangle','filled="yes"',54],['R/L fingering','C',5,'normal','',39,'up','<fingering placement="above">R</fingering><fingering placement="above">L</fingering>'],
+['빈 타원 filled=no','G',5,'normal','filled="no"',47],['R other-technical','C',5,'normal','',39,'up','<other-technical placement="above">R</other-technical>'],['R words','C',5,'normal','',39,'up','',true],['고스트 작은 음량','C',5,'normal','parentheses="yes"',39]
+];
+const esc=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;');
+window.auditXML=`<?xml version="1.0"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>Drums</part-name>${cases.map((c,i)=>`<score-instrument id="I${i}"><instrument-name>${esc(c[0])}</instrument-name></score-instrument>`).join('')}${cases.map((c,i)=>`<midi-instrument id="I${i}"><midi-channel>10</midi-channel><midi-unpitched>${c[5]}</midi-unpitched></midi-instrument>`).join('')}</score-part></part-list><part id="P1">${cases.map((c,i)=>`<measure number="${i+1}">${i%4===0?'<print new-system="yes"/>':''}${i===0?'<attributes><divisions>4</divisions><time><beats>1</beats><beat-type>4</beat-type></time><clef><sign>percussion</sign></clef><staff-details><staff-lines>5</staff-lines></staff-details></attributes>':''}<direction placement="above"><direction-type><words font-size="11">${esc(c[0])}</words></direction-type></direction>${c[8]?'<direction placement="above"><direction-type><words default-y="35">R</words></direction-type></direction>':''}<note${i===19?' dynamics="20"':''}><unpitched><display-step>${c[1]}</display-step><display-octave>${c[2]}</display-octave></unpitched><duration>4</duration><instrument id="I${i}"/><type>quarter</type><stem>${c[6]||'up'}</stem><notehead ${c[4]}>${c[3]}</notehead>${c[7]?`<notations><technical>${c[7]}</technical></notations>`:''}</note></measure>`).join('')}</part></score-partwise>`;
+try{const osmd=new OpenSheetMusicDisplay('score',{backend:'svg',autoResize:false,drawTitle:false,drawPartNames:false});
+osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem=4;osmd.EngravingRules.PercussionOneLineCutoff=0;osmd.EngravingRules.PercussionUseXMLDisplayStep=true;
+await osmd.load(window.auditXML);osmd.render();window.auditOsmd=osmd;
+window.auditResult=osmd.GraphicSheet.MeasureList.map(([m],i)=>({name:cases[i][0],notes:m.staffEntries.flatMap(e=>e.graphicalVoiceEntries.flatMap(v=>v.notes.map(n=>({filled:n.sourceNote.Notehead?.Filled,shape:n.sourceNote.Notehead?.Shape,keys:n.vfnote[0].keys,head:n.vfnote[0].note_heads[n.vfnote[1]].glyph_code,articulations:v.parentVoiceEntry.Articulations.map(a=>a.articulationEnum),tech:v.parentVoiceEntry.TechnicalInstructions.map(t=>t.value)}))))}));
+document.querySelector('#status').textContent='20개 항목 렌더링 완료 (앱 보정 없음)';}catch(e){document.querySelector('#status').textContent=e.stack;}
+</script></html>

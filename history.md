@@ -1143,3 +1143,12 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - TypeScript, ESLint and production build pass (three bundle warnings). Build originally lacked optional jsPDF demo dependencies; installed locally without package changes. Manual Karma start/run sequencing corrected before final suite comparison.
 - Compiled SVG screenshot inspected: explicit hollow heads remain hollow with duration-specific stems/flags, controls stay filled. Evidence: docs/experiments/osmd-hollow-report/fixed.png.
 - Local patch and exact PR body prepared: docs/osmd-normal-notehead-fill.patch and docs/OSMD-HOLLOW-NOTEHEAD-PR.md. No copyrighted song/audio included. Public fork/push/PR not yet performed; awaiting final-body approval required by user external communication instructions.
+
+## 2026-09-20 — 첨부 드럼 표기 범례 지원 조사 (제출 보류)
+
+- 사용자 요청에 따라 upstream PR 제출을 보류하고 TIFF/PNG 범례를 확인했다.
+- MusicXML 공식 문서와 OSMD 소스 조사 후 합성 20사례를 Safari에서 원본 2.1.2 / develop+fill 패치로 실제 SVG 렌더링하고 스크린샷과 내부 glyph/위치 값을 비교했다.
+- 기본 악기 위치, x/circle-x/triangle, 위쪽 원/플러스 정상. 첨부 open hi-hat은 circle-x로, 기존 PDF의 normal filled=no와 다름.
+- 추가 누락 확인: parentheses=yes 고스트 괄호, other-technical R 텍스트. words/fingering의 R/L은 표시됨. 별도 수정은 수행하지 않았다.
+- 조사 정본 docs/DRUM-NOTATION-SUPPORT-AUDIT.md, 재현 public/qa/drum-notation-audit.html, 실험 출력 docs/experiments/osmd-hollow-report/drum-*.json 및 drum-audit-*.png.
+- 앱 소스/곡 데이터/기존 upstream 패치 변경 없음. 재생 음색 검증 없음. 이 조사는 STT/AFM 추론보다 표준 문서·소스·SVG 실행 증거가 직접적이어서 로컬 AI는 사용하지 않았다.
