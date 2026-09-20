@@ -22,3 +22,21 @@ Device Hub는 Xcode 접근 승인 후 실제 iPad mini A17 Pro 시뮬레이터�
 운용 판단: 반복적인 DOM/버튼 검사는 ego에서 필요한 상태만 반환하면 텍스트 비용을 줄일 수 있다. iPad Safari의 실제 화면·터치·오디오 검증은 Device Hub에서 수행하고 hierarchy를 로컬에서 필터링한다. 같은 해상도 이미지를 같은 횟수로 읽을 때의 이미지 토큰 차이는 이번 측정으로 알 수 없다.
 
 로컬 원시 증거 및 계수 스크립트: docs/experiments/gui-cost/ (Git 제외). counts.json, ego-{ready,menu,closed}.txt, device-{ready,menu,closed}.txt, device-menu.png. 승인/초기 연결 실험은 별도 JSON에 보존.
+
+## Safari MCP 추가 비교 (2026-09-20)
+
+사용자 요청대로 ego는 다시 실행하지 않고 기존 3,141/200 측정값을 재사용했다. macOS Safari MCP에서 localhost:5173 기본 곡을 열고, 기존 ego와 같은 PDF·MusicXML 검수 보기로 준비한 뒤 화면 메뉴 열기 → 세 선택지 확인 → 닫기를 실행했다. 시작/메뉴/종료 세 상태의 entire_page textTree를 사용했으며, page_interactions는 fullText:true로 diff를 끄고 원문 전체를 반환하게 했다. 같은 o200k_base 및 동일 키워드 필터로 본문 content만 계수했다.
+
+| 상태 | 기존 ego | Safari MCP |
+|---|---:|---:|
+| 시작 | 1,003 | 641 |
+| 화면 메뉴 | 1,135 | 824 |
+| 닫은 뒤 | 1,003 | 641 |
+| 합계 | 3,141 | 2,106 |
+| 키워드 필터 합계 | 200 | 207 |
+
+Safari 원문이 32.95% 적었고 필터 후에는 거의 같았다. 두 도구의 표현 형식(들여쓰기, 역할, 속성 중복 등)이 달라 나타나는 출력량 차이다. Safari는 이번 screenshot 호출도 성공했고 직접 이미지로 세 라디오 항목과 검수 선택 상태를 확인했다. 기존 ego 캡처 실패 결과는 재시험하지 않았다.
+
+실제 모델 청구/추론/이미지 토큰·설정 준비·도구 JSON 포장은 여전히 제외한다. Safari는 macOS 데스크톱이며 iPad 검증이 아니다. 곡 위치는 Safari 0초/기존 ego 3.8초, 창 크기는 통제하지 않았다. 단일 시나리오이므로 모든 웹앱에서 Safari가 저렴하다는 결론은 내리지 않는다. 기본 diff 반환을 사용하면 추가 절감 여지가 있지만 이번 수치에는 포함하지 않았다.
+
+이번 결과로 ego가 항상 최저 비용이라는 앞선 가정은 지지되지 않는다. 이 앱의 메뉴 검사에서는 Safari MCP가 더 작은 원문과 성공한 화면 캡처를 제공했다. 원시 증거: docs/experiments/gui-cost/safari-{ready,menu,closed}.txt, safari-counts.json, safari-menu.png. 새로운 Safari 테스트 탭에서만 진행했고 앱 소스는 변경하지 않았다.
