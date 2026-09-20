@@ -95,6 +95,12 @@ beforeAll(async () => {
   await import("../src/main");
 });
 it("shows the app name and score library action on the home screen", async () => {
+  expect(document.getElementById('review-help')!.hidden).toBe(true);
+  expect(document.getElementById('review-add-score')!.hidden).toBe(true);
+  expect(document.getElementById('view-description')!.textContent).toContain('옆으로 이어집니다');
+  set('view','rows'); document.getElementById('view')!.dispatchEvent(new Event('change'));
+  expect(document.getElementById('view-description')!.textContent).toContain('두 줄');
+  set('view','ribbon'); document.getElementById('view')!.dispatchEvent(new Event('change'));
   expect(document.getElementById("song-title")!.textContent).toBe("드럼 연습실");
   expect(document.querySelector("#welcome h2")!.textContent).toBe("드럼 연습실");
   expect(document.getElementById("original-tempo")!.hidden).toBe(true);

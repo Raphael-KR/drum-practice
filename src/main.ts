@@ -1,4 +1,4 @@
-import { savePreferPDF, scorePreference } from "./score-preference";
+import { preferPDF, savePreferPDF, scorePreference } from "./score-preference";
 import { readPlaybackPreferences, savePlaybackPreferences } from "./playback-preferences";
 import { centeredRange, loopMeasureRange, scrubTime } from "./practice-controls";
 import { autoFullscreenEnabled, saveAutoFullscreen, enterFullscreen } from "./fullscreen";
@@ -131,7 +131,7 @@ function songControlsAvailable(enabled: boolean) {
   val("click").closest("label")!.hidden = !enabled;
   for (const id of ['click','zoom','original-button','edit-button','lyrics-button','metadata-button','export','save-html','review-add-score'])
     ($<HTMLButtonElement>(id)).disabled = !enabled;
-  if (!enabled) document.querySelectorAll<HTMLInputElement>('input[name="score-view"]').forEach(r => r.disabled = true);
+  syncViewChoices();
 }
 songControlsAvailable(false);
 function updateSongHeading() {
@@ -328,7 +328,19 @@ async function activate(r: RecordData) {
 }
 function syncViewChoices() {
   updateViewWidth();
-  if(!record)return;
+  const view=record ? song().settings.view : val('view').value;
+  $('view-description').textContent = view === 'compare' ? '위쪽 PDF · 아래쪽 SVG로 같은 마디를 비교합니다.' : view === 'rows' ? '두 줄의 악보를 고정하고 재생 위치를 표시합니다.' : '진행선에 맞춰 악보가 옆으로 이어집니다.';
+  if(!record){
+    $('review-help').hidden=true;
+    $('review-add-score').hidden=true;
+    $('review-availability').textContent='';
+    ($('view') as HTMLSelectElement).querySelector<HTMLOptionElement>('option[value="compare"]')!.disabled=true;
+    $('pdf-view-row').hidden=false;
+    val('prefer-pdf').checked=preferPDF(); val('prefer-pdf').disabled=true;
+    $('pdf-view-status').textContent='모든 곡에 공통으로 적용합니다.';
+    val('zoom').closest('label')!.hidden=view!=='ribbon';
+    return;
+  }
   const formats=songScores(record).map(s=>s.format);
   const missing=['pdf','musicxml'].filter(f=>!formats.includes(f as 'pdf'|'musicxml'));
   const compare = song().settings.view === 'compare';
@@ -339,7 +351,7 @@ function syncViewChoices() {
   $('pdf-view-status').textContent = preference.message;
   $('pdf-view-row').hidden = compare;
   $('review-help').hidden = !compare;
-  $('view-description').textContent = compare ? '위쪽 PDF · 아래쪽 SVG로 같은 마디를 비교합니다.' : song().settings.view === 'rows' ? '두 줄의 악보를 고정하고 재생 위치를 표시합니다.' : '진행선에 맞춰 악보가 옆으로 이어집니다.';
+
   $('review-availability').textContent=missing.length
     ? `검수하려면 이 곡에 ${missing.map(f=>f==='pdf'?'PDF':'MusicXML').join('와 ')} 악보를 추가해 주세요. 현재 저장된 악보: ${formats.map(f=>f==='pdf'?'PDF':'MusicXML').join(', ')}.${isPortable?' 웹앱에서 추가한 뒤 HTML을 다시 저장하세요.':''}`
     : '';
@@ -880,7 +892,7 @@ for (const id of [
   "view",
 ])
   val(id).onchange = () => {
-    if (!record) return;
+    if (!record) { syncViewChoices(); return; }
     const s = song().settings;
     s.click = val("click").checked;
     s.musicVolume = num("music-volume");
