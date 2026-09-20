@@ -1128,3 +1128,7 @@ ego 재실행 없이 기존 결과 재사용. Safari MCP에서 같은 검수 보
 - 변경: OSMD SVG 생성 뒤 해당 쉼표 기호의 수평 좌표만 중앙으로 보정. 부분 쉼표·세로 위치·재생 앵커 보존. 기존 저장 곡의 SVG 캐시 자동 갱신 및 버전 확인 추가.
 - 검증: Safari MCP에서 기존 곡 재열기 → 1~4마디 중앙 배치 직접 화면 확인. 저장 SVG 전체 4페이지에서 중앙 배치 표식 4/0/0/1개 확인. 테스트 37파일/128개 및 빌드 통과. 캐시 갱신 후 원본·음원·가사·수동 영역 보존 및 재열기 중복 생성 방지 테스트 포함.
 - 증거: docs/experiments/gui-cost/centered-rests.png, rest-tests.log, rest-build.log. 앱 개발 소스 반영이며 기존 내보낸 HTML은 재생성하지 않음.
+
+## 2026-09-20 — 오픈 하이햇 빈 머리 렌더링 수정
+
+MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 검은 머리로 출력했다. 짧은 normal 음표의 명시적 빈 머리를 SVG에서 보정하고 기존 캐시 갱신 버전을 변경했다. Safari 15·16마디에서 빈 하이햇/검은 스네어 구분 직접 확인. 원본 빈 머리 지정 268개와 SVG 표식 268개 일치. 테스트 128개 및 빌드 통과. 원본/정본 MusicXML 변경 없음. 증거: docs/experiments/gui-cost/open-hihat.png, hihat-tests.log, hihat-build.log.

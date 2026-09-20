@@ -47,3 +47,11 @@ XML SHA-256: d5033d473bef0a63d2ded5f2e09234b168b7306d1872fdce9981d9864516f8f6.
 ## 2026-09-20: 마디 전체 쉼표 중앙 배치
 
 쉼표만 있는 단일 시작점 마디에서, 마디 전체 길이의 쉼표 SVG 기호를 마디 영역의 수평 중앙으로 이동한다. 명시적인 display-step/display-octave가 있는 쉼표는 OSMD의 자동 중앙 배치에서 제외되어 시작 쪽에 남는 문제를 렌더링 단계에서 보정했다. 세로 높이·마디 길이·재생 앵커·원본 MusicXML은 유지한다. 마디 일부의 2분/점2분쉼표는 이동하지 않는다. 생성 SVG에 배치 버전을 기록하고 기존 곡을 열 때 이전 캐시만 다시 생성한다. 수동 마디 영역과 가사·싱크는 유지한다.
+
+## 2026-09-20: 오픈 하이햇의 빈 음표머리
+
+원본 MusicXML은 이미 P1-hh-open 악기(이름 Open hi-hat, midi-unpitched 47)와 `<notehead filled="no">normal</notehead>`로 지정되어 있었다. OSMD 2.1.2가 짧은 normal 음표머리의 filled=no를 검은 기호로 출력해, SVG 단계에서 해당 chord member의 음표머리만 빈 윤곽으로 보정한다. 스네어 등 동시 음표의 머리·기둥·리듬·악기 정보는 보존한다. 캐시 버전을 갱신해 기존 저장곡에도 적용한다.
+
+MusicXML은 타악기의 악기 식별, 오선 위치, 음표머리 모양·채움 정보를 표현한다. 모든 출판사의 드럼 표기 관례를 하나로 고정하는 규격은 아니다. 사용자가 제공할 표기표를 이 악보의 범례로 참고한다.
+
+근거: https://www.w3.org/2021/06/musicxml40/tutorial/percussion/ 및 https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/notehead/ (filled 속성).

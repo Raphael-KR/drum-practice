@@ -335,6 +335,43 @@ export async function renderMusicXML(
     osmd.render();
     const svgs = Array.from(host.querySelectorAll("svg"));
     if (!svgs.length) throw Error("MusicXML 악보를 그릴 수 없습니다.");
+    // OSMD 2.1.2 ignores filled="no" for normal short-note heads.
+    // Select the specific chord member so neighboring snare/tom heads stay filled.
+    for (const row of osmd.GraphicSheet.MeasureList)
+      for (const g of row) {
+        for (const entry of g.staffEntries)
+          for (const voice of entry.graphicalVoiceEntries)
+            for (const note of voice.notes) {
+              const head = note.sourceNote.Notehead;
+              if (
+                !head ||
+                head.Shape !== 2 ||
+                head.Filled !== false ||
+                note.sourceNote.Length.RealValue >= 0.5 ||
+                note.sourceNote.isRest()
+              )
+                continue;
+              const vf = note as unknown as {
+                vfnote: [unknown, number];
+                getNoteheadSVGs(): HTMLElement[];
+              };
+              const glyph = vf.getNoteheadSVGs()[vf.vfnote[1]];
+              if (!glyph)
+                throw Error("빈 음표머리의 SVG 위치를 찾지 못했습니다.");
+              glyph.setAttribute("data-hollow-notehead", "true");
+              for (const path of glyph.querySelectorAll("path")) {
+                path.setAttribute("fill", "white");
+                path.setAttribute(
+                  "stroke",
+                  note.sourceNote.NoteheadColor || "#000000",
+                );
+                path.setAttribute("stroke-width", "1.1");
+                (path as SVGElement).style.fill = "white";
+                (path as SVGElement).style.stroke =
+                  note.sourceNote.NoteheadColor || "#000000";
+              }
+            }
+      }
     // Explicit rest display pitches bypass OSMD's automatic whole-rest centering.
     // Move only full-bar silence glyphs; keep staff entries and playback anchors intact.
     for (const row of osmd.GraphicSheet.MeasureList)
