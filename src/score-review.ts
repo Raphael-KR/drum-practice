@@ -1,3 +1,4 @@
+import { detectStaff } from "./staff-geometry";
 import { locate, xAtBeat, type Song } from "./model";
 import { songScores, type ScoreVariant } from "./song-scores";
 import type { RecordData } from "./storage";
@@ -30,6 +31,7 @@ export function reviewPair(record: RecordData): [ScoreVariant, ScoreVariant] {
 export class ScoreReview {
   private urls: string[] = [];
   private images: HTMLImageElement[][] = [];
+  private staffs: { top: number; gap: number }[][] = [];
   private base = document.createElement("canvas");
   private window = -1;
   private width = 0;
@@ -55,7 +57,56 @@ export class ScoreReview {
         ),
       ),
     );
+    const analyze = (expected?: number[][]) =>
+      this.pair.map((score, row) =>
+        score.measures.map((m) => {
+          const r = score.regions.find((r) => r.id === m.regionId)!,
+            image = this.images[row][r.page];
+          const c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(r.w * image.naturalWidth));
+          c.height = Math.max(1, Math.round(r.h * image.naturalHeight));
+          const ctx = c.getContext("2d", { willReadFrequently: true })!;
+          ctx.drawImage(
+            image,
+            r.x * image.naturalWidth,
+            r.y * image.naturalHeight,
+            r.w * image.naturalWidth,
+            r.h * image.naturalHeight,
+            0,
+            0,
+            c.width,
+            c.height,
+          );
+          const staff = detectStaff(
+            ctx.getImageData(0, 0, c.width, c.height).data,
+            c.width,
+            c.height,
+            expected?.[row][r.page],
+          );
+          if (!staff)
+            throw Error(
+              `${row ? "SVG" : "PDF"} ${m.id}마디의 오선 위치를 찾지 못했습니다.`,
+            );
+          const ratio = (r.h * image.naturalHeight) / c.height;
+          return { top: staff.top * ratio, gap: staff.gap * ratio };
+        }),
+      );
+    const initial = analyze();
+    const expected = this.pair.map((score, row) =>
+      score.pages.map((_, page) => {
+        const gaps = score.measures
+          .flatMap((m, i) =>
+            score.regions.find((r) => r.id === m.regionId)!.page === page
+              ? [initial[row][i].gap]
+              : [],
+          )
+          .sort((a, b) => a - b);
+        return gaps[Math.floor(gaps.length / 2)];
+      }),
+    );
+    this.staffs = analyze(expected);
   }
+
   dispose() {
     this.urls.forEach((u) => URL.revokeObjectURL(u));
     this.urls = [];
@@ -85,7 +136,8 @@ export class ScoreReview {
         w - 24,
       );
       const rowH = (h - 62) / 2,
-        cellW = (w - 24) / 4;
+        cellW = (w - 24) / 4,
+        staffGap = Math.min((rowH - 44) / 13, cellW / 25);
       this.pair.forEach((score, row) => {
         const y = 62 + row * rowH;
         c.fillStyle = "#3f74d4";
@@ -98,7 +150,8 @@ export class ScoreReview {
           const x = 12 + j * cellW,
             sw = r.w * image.naturalWidth,
             sh = r.h * image.naturalHeight,
-            scale = Math.min((cellW - 8) / sw, (rowH - 48) / sh);
+            staff = this.staffs[row][start + j],
+            scaleY = staffGap / staff.gap;
           c.fillStyle = "#627189";
           c.font = "12px system-ui";
           c.fillText(
@@ -106,6 +159,10 @@ export class ScoreReview {
             x,
             y + 34,
           );
+          c.save();
+          c.beginPath();
+          c.rect(x, y + 40, cellW, rowH - 40);
+          c.clip();
           c.drawImage(
             image,
             r.x * image.naturalWidth,
@@ -113,10 +170,11 @@ export class ScoreReview {
             sw,
             sh,
             x,
-            y + 40,
-            sw * scale,
-            sh * scale,
+            y + 40 + 5 * staffGap - staff.top * scaleY,
+            cellW,
+            sh * scaleY,
           );
+          c.restore();
           c.strokeStyle = "#d5dfed";
           c.beginPath();
           c.moveTo(x, y + 38);
@@ -143,21 +201,17 @@ export class ScoreReview {
     this.pair.forEach((score, row) => {
       const m = score.measures[loc.index],
         r = score.regions.find((r) => r.id === m.regionId)!,
-        image = this.images[row][r.page],
-        sw = r.w * image.naturalWidth,
-        sh = r.h * image.naturalHeight,
-        scale = Math.min((cellW - 8) / sw, (rowH - 48) / sh),
         x = 12 + j * cellW,
         y = 62 + row * rowH + 40;
       c.fillStyle = "rgba(63,116,212,0.10)";
-      c.fillRect(x, y, sw * scale, sh * scale);
+      c.fillRect(x, y, cellW, rowH - 40);
       const px =
-        x + xAtBeat(r, this.song.measures[loc.index], loc.beat) * sw * scale;
+        x + xAtBeat(r, this.song.measures[loc.index], loc.beat) * cellW;
       c.strokeStyle = "#3f74d4";
       c.lineWidth = 2;
       c.beginPath();
       c.moveTo(px, y);
-      c.lineTo(px, y + sh * scale);
+      c.lineTo(px, y + rowH - 40);
       c.stroke();
     });
   }
