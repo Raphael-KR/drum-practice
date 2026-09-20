@@ -1244,3 +1244,12 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자가 Safari 수정 화면 확인 후 “그래 이제 되었다 확정”으로 승인.
 - 확정 매핑 정본에 승인 화면/구현 커밋/표기 및 words 단일 저장 결정을 기록했다.
 - 이번 턴은 승인 기록만 변경. 메인 앱/곡 적용 상태와 구분. git diff --check 확인.
+
+## 2026-09-20 — 확정 범례 메인 앱 적용
+
+- src/drum-notation.ts: 고스트 parentheses=yes 음표머리 양옆 괄호, words R/L을 시간/성부로 대상 음표에 연결하여 줄기 위 한 글자 배치. XML 복제본에 임시 식별색을 주고 정확한 glyph를 찾은 뒤 원래 색 복원. 저장 정본/가사는 보존.
+- src/musicxml.ts 렌더링에 연결. 예제 곡 정상화는 ID+악기명 일치 시에만 하이햇/라이드/크래시 적용. 기존 source/canonicalXML 및 캐시 갱신 경로에 연결.
+- 회귀검사: 성부/backup 타이밍과 가사 보존, 알 수 없는 악기 보존, 정규화 멱등성. 전체 38 files / 131 tests 통과. 최종 문서 복제 수정 후 build 재통과.
+- Safari 실제 renderMusicXML 결과에서 고스트 괄호 2개, R/L 각각 1개 출력 및 스크린샷 확인. docs/experiments/production-drum-notation.png.
+- 메인 앱 곡 열기 후 저장 데이터 확인: 오픈 하이햇 268개 모두 circle-x, approved-drum-notation-v4 캐시 확인.
+- standalone HTML 재내보내기/원격 push/upstream 제출 없음. 단위 범례와 앱 저장 갱신 검증이며 모든 합주 성부 충돌 조합/음향 주법 합성을 검증한 것은 아님.

@@ -1,3 +1,4 @@
+import { normalizeBundledDrumNotation } from "./drum-notation";
 import type { RecordData } from "./storage";
 import { songScores } from "./song-scores";
 /** Exact reviewed bar only. Respect explicit placements from later user edits. */
@@ -142,9 +143,13 @@ export async function correctStoredRests(
   const xml = songScores(record).find((s) => s.format === "musicxml");
   if (!xml) return record;
   const { readMusicXML, renderMusicXML } = await import("./musicxml");
-  const fixed = fixAllDrumRestPositions(await readMusicXML(xml.source));
+  const normalize = (text: string) => {
+    const a = fixAllDrumRestPositions(text), b = normalizeBundledDrumNotation(a.text);
+    return { text: b.text, changed: a.changed || b.changed };
+  };
+  const fixed = normalize(await readMusicXML(xml.source));
   const canonical = record.canonicalXML
-    ? fixAllDrumRestPositions(record.canonicalXML)
+    ? normalize(record.canonicalXML)
     : undefined;
   if (!fixed.changed && !canonical?.changed) return record;
   let result = {

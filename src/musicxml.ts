@@ -1,3 +1,4 @@
+import { prepareDrumDecorations, applyDrumDecorations } from "./drum-notation";
 import { REST_LAYOUT_VERSION, restCenterShift } from "./whole-rest-layout";
 import { compressSVG } from "./score-pages";
 import JSZip from "jszip";
@@ -331,8 +332,11 @@ export async function renderMusicXML(
     osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 4;
     osmd.EngravingRules.RenderMultipleRestMeasures = false;
     osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures = false;
-    await osmd.load(parsed.document);
+    const renderDocument = parsed.document.cloneNode(true) as Document;
+    const decorations = prepareDrumDecorations(renderDocument);
+    await osmd.load(renderDocument);
     osmd.render();
+    applyDrumDecorations(host, osmd, decorations);
     const svgs = Array.from(host.querySelectorAll("svg"));
     if (!svgs.length) throw Error("MusicXML 악보를 그릴 수 없습니다.");
     // OSMD 2.1.2 ignores filled="no" for normal short-note heads.
