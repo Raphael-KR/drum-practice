@@ -1132,3 +1132,14 @@ ego 재실행 없이 기존 결과 재사용. Safari MCP에서 같은 검수 보
 ## 2026-09-20 — 오픈 하이햇 빈 머리 렌더링 수정
 
 MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 검은 머리로 출력했다. 짧은 normal 음표의 명시적 빈 머리를 SVG에서 보정하고 기존 캐시 갱신 버전을 변경했다. Safari 15·16마디에서 빈 하이햇/검은 스네어 구분 직접 확인. 원본 빈 머리 지정 268개와 SVG 표식 268개 일치. 테스트 128개 및 빌드 통과. 원본/정본 MusicXML 변경 없음. 증거: docs/experiments/gui-cost/open-hihat.png, hihat-tests.log, hihat-build.log.
+
+
+## 2026-09-20 — OSMD upstream hollow normal notehead fix and proposal
+
+- User requested confirmation/report of the open-hi-hat rendering defect, then a source fix proposed upstream. OSMD is BSD-3-Clause. Investigation: docs/OSMD-HOLLOW-NOTEHEAD-INVESTIGATION.md.
+- Isolated upstream checkout: /Users/raphael/Playground/osmd-hollow-fix, base 0502732adb3d352705af18d353849130f46503b2, source commit b62a6ca on fix/normal-notehead-fill. App workaround/dependency unchanged.
+- NORMAL dropped fill override; removed ineffective chord-wide late quarter-head mutation and routed mismatched fill through per-note N1/N2 glyphs. Added seven synthetic rendering regressions.
+- Safari: new tests baseline 2 pass/5 fail, fixed 7 pass; focused 21 pass. Full suite fixed 418 pass/2 skipped/1 fail vs baseline 413 pass/2 skipped/6 fail. Same unrelated tablature geometric/raster test fails identically in both versions.
+- TypeScript, ESLint and production build pass (three bundle warnings). Build originally lacked optional jsPDF demo dependencies; installed locally without package changes. Manual Karma start/run sequencing corrected before final suite comparison.
+- Compiled SVG screenshot inspected: explicit hollow heads remain hollow with duration-specific stems/flags, controls stay filled. Evidence: docs/experiments/osmd-hollow-report/fixed.png.
+- Local patch and exact PR body prepared: docs/osmd-normal-notehead-fill.patch and docs/OSMD-HOLLOW-NOTEHEAD-PR.md. No copyrighted song/audio included. Public fork/push/PR not yet performed; awaiting final-body approval required by user external communication instructions.

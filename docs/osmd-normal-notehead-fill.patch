@@ -1,0 +1,138 @@
+From b62a6ca1d451e8cb5e9e70b271cb520ff1526e2c Mon Sep 17 00:00:00 2001
+From: Raphael-KR <bolones@gmail.com>
+Date: Sun, 20 Sep 2026 15:03:10 +0900
+Subject: [PATCH] fix: honor normal MusicXML notehead fill overrides
+
+---
+ .../Graphical/VexFlow/VexFlowConverter.ts     | 16 ++---
+ src/VexFlowPatch/src/tables.js                |  4 ++
+ .../VexFlow/VexFlowNormalNotehead_Test.ts     | 68 +++++++++++++++++++
+ 3 files changed, 79 insertions(+), 9 deletions(-)
+ create mode 100644 test/MusicalScore/Graphical/VexFlow/VexFlowNormalNotehead_Test.ts
+
+diff --git a/src/MusicalScore/Graphical/VexFlow/VexFlowConverter.ts b/src/MusicalScore/Graphical/VexFlow/VexFlowConverter.ts
+index d2e991f..0fc4ae5 100644
+--- a/src/MusicalScore/Graphical/VexFlow/VexFlowConverter.ts
++++ b/src/MusicalScore/Graphical/VexFlow/VexFlowConverter.ts
+@@ -203,8 +203,13 @@ export class VexFlowConverter {
+         const codeStart: string = "/";
+         const codeFilled: string = notehead.Filled ? "2" : "1"; // filled/unfilled notehead code in most vexflow glyphs
+         switch (notehead.Shape) {
+-            case NoteHeadShape.NORMAL:
+-                return "";
++            case NoteHeadShape.NORMAL: {
++                // Preserve duration-specific whole/breve heads unless the fill differs from the default.
++                // Use the written type for tuplets and tremolos, not their performed duration.
++                const length: Fraction = notehead.SourceNote?.TypeLength ?? notehead.SourceNote?.Length;
++                const normallyFilled: boolean = !length || length.RealValue < 0.5;
++                return notehead.Filled === normallyFilled ? "" : codeStart + "N" + codeFilled;
++            }
+             case NoteHeadShape.NONE:
+                 return ""; // none noteheads are invisible, handled via transparency
+             case NoteHeadShape.DIAMOND:
+@@ -724,13 +729,6 @@ export class VexFlowConverter {
+             }
+         }
+ 
+-        // half note tremolo: set notehead to half note (Vexflow otherwise takes the notehead from duration) (Hack)
+-        if (firstNote.Length.RealValue === 0.25 && firstNote.Notehead && firstNote.Notehead.Filled === false) {
+-            const keyProps: Object[] = vfnote.getKeyProps();
+-            for (let i: number = 0; i < keyProps.length; i++) {
+-                (<any>keyProps[i]).code = "v81";
+-            }
+-        }
+         // too early for this to be set, unless we read the custom notehead from XML, so this might be useful in future:
+         //   (currently, custom notehead is set in VexFlowVoiceEntry.applyCustomNoteheads(), which happens after load(), unlike this)
+         // for (let i: number = 0; i < notes.length; i++) {
+diff --git a/src/VexFlowPatch/src/tables.js b/src/VexFlowPatch/src/tables.js
+index 85afd8b..d089d67 100644
+--- a/src/VexFlowPatch/src/tables.js
++++ b/src/VexFlowPatch/src/tables.js
+@@ -180,6 +180,10 @@ Flow.keyProperties.note_values = {
+ 
+ // Custom note heads
+ Flow.keyProperties.customNoteHeads = {
++  /* Normal heads with explicit fill, independent of rhythmic duration. */
++  'N1': { code: 'v81', shift_right: 0 },
++  'N2': { code: 'vb', shift_right: 0 },
++
+   /* Diamond */
+   'D0': {
+     code: 'v27',
+diff --git a/test/MusicalScore/Graphical/VexFlow/VexFlowNormalNotehead_Test.ts b/test/MusicalScore/Graphical/VexFlow/VexFlowNormalNotehead_Test.ts
+new file mode 100644
+index 0000000..1ee06be
+--- /dev/null
++++ b/test/MusicalScore/Graphical/VexFlow/VexFlowNormalNotehead_Test.ts
+@@ -0,0 +1,68 @@
++import { expect } from "chai";
++import { OpenSheetMusicDisplay } from "../../../../src/OpenSheetMusicDisplay/OpenSheetMusicDisplay";
++import { VexFlowGraphicalNote } from "../../../../src/MusicalScore/Graphical/VexFlow/VexFlowGraphicalNote";
++
++// Synthetic MusicXML: no score assets or application-specific SVG post-processing.
++describe("Normal notehead fill", () => {
++    let container: HTMLElement;
++    beforeEach(() => {
++        container = document.createElement("div");
++        container.style.width = "800px";
++        document.body.appendChild(container);
++    });
++    afterEach(() => container.remove());
++
++    function note(type: string, duration: number, fill?: string, chord: boolean = false): string {
++        return `<note>${chord ? "<chord/>" : ""}<unpitched><display-step>${chord ? "C" : "G"}</display-step>
++            <display-octave>5</display-octave></unpitched><duration>${duration}</duration><type>${type}</type>
++            <stem>up</stem><notehead${fill ? ` filled="${fill}"` : ""}>normal</notehead></note>`;
++    }
++
++    async function render(notes: string): Promise<VexFlowGraphicalNote[]> {
++        const osmd: OpenSheetMusicDisplay = new OpenSheetMusicDisplay(container, {backend: "svg", autoResize: false});
++        await osmd.load(`<?xml version="1.0"?><score-partwise version="4.0"><part-list><score-part id="P1">
++            <part-name>Percussion</part-name></score-part></part-list><part id="P1"><measure number="1">
++            <attributes><divisions>4</divisions><time><beats>4</beats><beat-type>4</beat-type></time>
++            <clef><sign>percussion</sign></clef></attributes>${notes}</measure></part></score-partwise>`);
++        osmd.render();
++        return osmd.GraphicSheet.MeasureList[0][0].staffEntries.flatMap(entry =>
++            entry.graphicalVoiceEntries.flatMap(voice => voice.notes as VexFlowGraphicalNote[]));
++    }
++
++    function glyph(graphicalNote: VexFlowGraphicalNote): string {
++        const [staveNote, index] = graphicalNote.vfnote;
++        return (staveNote as any).note_heads[index].glyph_code;
++    }
++
++    for (const [type, duration] of [["quarter", 4], ["eighth", 2], ["16th", 1]] as [string, number][]) {
++        it(`renders hollow ${type} without changing rhythmic duration`, async () => {
++            const notes: VexFlowGraphicalNote[] = await render(note(type, duration, "no") + note(type, duration));
++            expect(glyph(notes[0])).to.equal("v81");
++            expect(glyph(notes[1])).to.equal("vb");
++            expect(notes[0].sourceNote.Length.RealValue).to.equal(duration / 16);
++            expect(notes[0].vfnote[0].getTicks().value()).to.equal(notes[1].vfnote[0].getTicks().value());
++            expect(notes[0].getNoteheadSVGs().length).to.equal(1);
++        });
++    }
++
++    it("does not hollow a default-filled chord member", async () => {
++        const notes: VexFlowGraphicalNote[] = await render(note("eighth", 2, "no") + note("eighth", 2, undefined, true));
++        for (const n of notes) {
++            expect(glyph(n)).to.equal(n.sourceNote.Notehead?.Filled === false ? "v81" : "vb");
++        }
++        expect(notes.length).to.equal(2);
++    });
++
++    for (const [type, duration, expected] of [["half", 8, "v81"], ["whole", 16, "v1d"]] as [string, number, string][]) {
++        it(`preserves default ${type} head with filled=no`, async () => {
++            const notes: VexFlowGraphicalNote[] = await render(note(type, duration, "no"));
++            expect(glyph(notes[0])).to.equal(expected);
++        });
++    }
++
++    it("supports filled=yes on a half note", async () => {
++        const notes: VexFlowGraphicalNote[] = await render(note("half", 8, "yes"));
++        expect(glyph(notes[0])).to.equal("vb");
++        expect(notes[0].sourceNote.Length.RealValue).to.equal(0.5);
++    });
++});
+-- 
+2.55.0
+
