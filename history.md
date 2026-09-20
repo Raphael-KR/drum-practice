@@ -1226,3 +1226,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - Tom 4=플로어 탐, 싱글 킥=Right Bass/더블 킥에 Left Bass 추가. 한쪽만 있는 항목은 해당 범례를 따르는 사용자 결정을 정본에 기록.
 - 문서 갱신 후 비교 페이지에 확정 기준 추가. 원본 두 열은 비교용으로 보존. 기존 곡 변환 및 OSMD 미지원 주법 구현은 수행하지 않음.
 - 검증: Safari에서 확정 기준/원본 비교 구분과 Tom 4 별칭 표시 확인. git diff --check 통과.
+
+## 2026-09-20 — 확정 범례 24개 Safari 렌더링 검증
+
+- OSMD 2.1.2 원본으로 MusicXML 24개 사례 렌더링. 추가 악기/탐/킥/하이햇 상태 및 동작/롤/RL 검사.
+- 실제 스크린샷과 노트 속성 확인. Ghost 괄호와 other-technical R 누락 재현; words R/L 및 나머지 기호 표시 확인. 초크 점은 placement=above 필요. 의미/음향 검증과 구분.
+- 결과 docs/DRUM-KEY-RENDER-RESULTS.md, 재현 public/qa/drum-key-final-audit.html. 증거 docs/experiments/drum-key-final-audit.{png,json}. 실제 곡/매핑 정본 변경 없음.
