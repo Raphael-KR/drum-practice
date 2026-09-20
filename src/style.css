@@ -1412,3 +1412,9 @@ button.icon-button[hidden] { display:none; }
 .settings-switch:has(input:disabled) { color:var(--muted); }
 .view-select-row select { appearance:none; -webkit-appearance:none; background:#fff; border:1px solid var(--line); font:inherit; padding-right:42px; }
 .view-select-row::after { content:''; pointer-events:none; position:absolute; right:18px; top:20px; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); }
+
+.license-section { display:block; width:100%; min-width:0; }
+.license-section details { margin:8px 0; padding:12px; border:1px solid var(--line); border-radius:10px; }
+.license-section summary { cursor:pointer; overflow-wrap:anywhere; }
+.license-section pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; max-height:320px; overflow:auto; }
+.license-section a { display:inline-block; padding:10px 0; color:var(--accent); }

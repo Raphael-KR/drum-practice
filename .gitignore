@@ -19,3 +19,4 @@ __pycache__/
 
 # Generated once per build; embedded in web and portable bundles.
 src/build-info.generated.json
+src/third-party.generated.json

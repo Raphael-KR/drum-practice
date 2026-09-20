@@ -12,7 +12,7 @@
     "predev": "npm run portable",
     "review:local": "python3 scripts/apple-local/workflow.py",
     "test:local": "python3 -m unittest discover -s scripts/apple-local -p \"test_*.py\"",
-    "pretest": "node scripts/build-info.mjs"
+    "pretest": "node scripts/third-party.mjs && node scripts/build-info.mjs"
   },
   "dependencies": {
     "jszip": "^3.10.2",

@@ -1,3 +1,4 @@
+import { licenseSection } from "./licenses";
 import buildInfo from "./build-info.generated.json";
 import packageInfo from "../package.json";
 // Arrange existing controls without duplicating their state or event handlers.
@@ -184,6 +185,7 @@ export function arrangeWorkspace() {
   el('app-build').textContent=buildInfo.number;
   el('app-built-at').textContent=new Date(buildInfo.builtAt).toLocaleString('ko-KR', {timeZone:'Asia/Seoul'}) + ' KST';
   el('app-source').textContent=buildInfo.source;
+  info.append(licenseSection());
   info.append(practice.querySelector(".keyboard")!);
   const log = document.createElement("section");
   log.className = "work-log";

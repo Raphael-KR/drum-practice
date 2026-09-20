@@ -1,3 +1,5 @@
+import { writeThirdParty } from "./third-party.mjs";
+await writeThirdParty();
 import { writeBuildInfo } from "./build-info.mjs";
 await writeBuildInfo();
 import { build } from "esbuild";
