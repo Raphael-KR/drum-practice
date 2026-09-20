@@ -1105,3 +1105,7 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 ## 2026-09-20 — ego / Device Hub GUI 반환 텍스트 비용 비교
 
 화면 메뉴 열기·확인·닫기를 양쪽에서 실행했다. full_page snapshot/hierarchy 세 상태를 o200k_base로 계수: ego 3,141, Device Hub 47,865 토큰. 같은 키워드 필터 적용 후 200/967. 실제 청구·추론·이미지 토큰은 측정하지 못했다. ego 전체 캡처 시간 초과, Device Hub 캡처 성공 및 시각 확인. 연결 세션 종료 확인. 자세한 조건·한계·증거는 docs/GUI-COST-COMPARISON.md. 앱 코드와 사용자 설정은 변경하지 않음.
+
+## 2026-09-20 — Device Hub 승인 유효기간 기록
+
+사용자가 알려준 Device Hub 제어 승인 24시간 유효기간을 docs/IPAD-SIMULATOR.md 및 명시적으로 요청한 지속 기억 업데이트 노트에 기록했다. 사용자 제공 정보와 실측 검증을 구분했다.
