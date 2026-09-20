@@ -1238,3 +1238,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자 지시에 따라 정본에 words 단일 경로, 음표 줄기 위 한 글자, 머리 양옆 괄호 규칙 기록 후 검수 페이지 수정.
 - 진단 라벨과 other-technical 사례 제거. parentheses=yes 대상 머리 bbox에 괄호 경로 보완. words 출력은 stem bbox 위로 정렬하고 이 예제의 동일 글자 중복 SVG 제거.
 - Safari 재검증: 괄호 2개, R/L 각각 1개, 스크린샷 확인. 증거 docs/experiments/drum-key-ghost-sticking-fixed.png. 이번 구현은 검수 예제에 한정하며 메인 앱/실제 곡 및 upstream OSMD는 변경하지 않음.
+
+## 2026-09-20 — 고스트/스티킹 사용자 최종 승인
+
+- 사용자가 Safari 수정 화면 확인 후 “그래 이제 되었다 확정”으로 승인.
+- 확정 매핑 정본에 승인 화면/구현 커밋/표기 및 words 단일 저장 결정을 기록했다.
+- 이번 턴은 승인 기록만 변경. 메인 앱/곡 적용 상태와 구분. git diff --check 확인.
