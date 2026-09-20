@@ -1101,3 +1101,7 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 실험: PDF 9마디 회색 선과 100마디 음표에 합쳐진 선에서 감지 실패를 발견해 밝기 기준·페이지 간격 기반 탐색을 보정했다. 세로 높이만으로 크기를 정하면 글자가 과도하게 늘어나는 문제도 셀 너비 제한으로 수정했다.
 - 검증: 로컬 Chromium 캔버스 1133/744px 너비, 첫 4마디 및 97–100마디 렌더링 확인. 두 악보 220마디 감지 완료. 실제 iPad Safari 회전 검증은 이번 회차에서 미실시.
 - 증거: docs/experiments/score-review/ 아래 aligned 이미지, final-fill.png 및 alignment-tests.log, alignment-build.log. HTML 내보내기는 별도 요청 때 생성한다.
+
+## 2026-09-20 — ego / Device Hub GUI 반환 텍스트 비용 비교
+
+화면 메뉴 열기·확인·닫기를 양쪽에서 실행했다. full_page snapshot/hierarchy 세 상태를 o200k_base로 계수: ego 3,141, Device Hub 47,865 토큰. 같은 키워드 필터 적용 후 200/967. 실제 청구·추론·이미지 토큰은 측정하지 못했다. ego 전체 캡처 시간 초과, Device Hub 캡처 성공 및 시각 확인. 연결 세션 종료 확인. 자세한 조건·한계·증거는 docs/GUI-COST-COMPARISON.md. 앱 코드와 사용자 설정은 변경하지 않음.
