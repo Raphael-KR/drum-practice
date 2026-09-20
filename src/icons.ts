@@ -1,6 +1,8 @@
 // Original SVG drawings using familiar Apple-style action metaphors.
 // Embedded paths work offline and do not depend on an installed symbol font.
 const paths: Record<string, string> = {
+  settings: '<path d="m10 3-.6 2.1-2 .9-2-.7-2 3.4 1.5 1.5-.2 2.2L3 14l2 3.4 2-.7 2 .9.6 2.1h4l.6-2.1 2-.9 2 .7 2-3.4-1.5-1.5.2-2.2L21 10l-2-3.4-2 .7-2-.9L14 3Z"/><circle cx="12" cy="11.5" r="3"/>',
+  recenter: '<circle cx="12" cy="12" r="7"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/>',
   play: '<path d="m8 4 13 8-13 8Z" fill="currentColor" stroke="none"/>',
   pause: '<path d="M7 5h3v14H7zm7 0h3v14h-3z" fill="currentColor" stroke="none"/>',
   start: '<path d="M5 5v14m14-14L8 12l11 7Z"/>',
@@ -33,14 +35,15 @@ export function iconButton(id: string, name: string, label: string, caption?: st
 export function arrangeIcons() {
   const items = [
     ['home','start','처음으로'], ['play','play','재생'], ['jump','rewind','선택한 마디 수만큼 되감기'],
-    ['slower','minus','5 BPM 느리게','5'], ['faster','plus','5 BPM 빠르게','5'],
     ['welcome-library','library','내 악보 목록','내 악보 목록'], ['welcome-new','plus','악보 추가','악보 추가'],
     ['library-button','library','내 악보 목록'], ['new-button','plus','곡 추가','곡 추가'],
-    ['save-html','export','HTML 한 파일로 저장'], ['fullscreen','expand','전체화면'],
-    ['open-loop-dialog','repeat','구간 반복','반복'], ['open-marker-dialog','bookmark','마커','마커'],
+    ['save-html','export','HTML 한 파일로 저장','HTML 저장'], ['fullscreen','expand','전체화면','전체화면'],
+    ['open-settings-dialog','settings','설정'], ['quick-add-marker','plus','현재 위치에 마커 추가','현재 위치 표시'],
+    ['open-score-settings','pencil','악보 설정','악보'], ['open-lyrics-settings','lyrics','가사 설정','가사'], ['open-info-settings','info','곡 정보 설정','곡 정보'],
+    ['open-loop-dialog','repeat','반복 구간 조정','조정'], ['open-marker-dialog','bookmark','마커','마커'],
     ['open-sound-dialog','sliders','소리·준비','소리'], ['open-screen-dialog','screen','화면','화면'],
-    ['edit-button','pencil','악보 편집','악보'], ['lyrics-button','lyrics','가사 편집','가사'],
-    ['metadata-button','info','곡 정보','정보'], ['open-backup-dialog','folder','파일·안내','파일'],
+    ['edit-button','pencil','악보 편집','악보 편집'], ['lyrics-button','lyrics','가사 편집','가사 편집'],
+    ['metadata-button','info','곡 정보 편집','곡 정보 편집'], ['open-backup-dialog','folder','파일·안내','파일'],
   ];
   items.forEach(([id,name,label,caption]) => iconButton(id,name,label,caption));
   const input = document.getElementById('click') as HTMLInputElement;
@@ -50,5 +53,5 @@ export function arrangeIcons() {
   input.setAttribute('aria-label', '메트로놈');
   for (const child of [...label.childNodes]) if (child !== input) child.remove();
   label.insertAdjacentHTML('beforeend', icon('metronome'));
-  document.addEventListener('fullscreenchange', () => iconButton('fullscreen', document.fullscreenElement ? 'collapse' : 'expand', document.fullscreenElement ? '전체화면 종료' : '전체화면'));
+  document.addEventListener('fullscreenchange', () => iconButton('fullscreen', document.fullscreenElement ? 'collapse' : 'expand', document.fullscreenElement ? '전체화면 종료' : '전체화면', document.fullscreenElement ? '전체화면 종료' : '전체화면'));
 }

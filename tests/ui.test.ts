@@ -104,7 +104,7 @@ it("shows the app name and score library action on the home screen", async () =>
   await vi.waitFor(() => expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(true));
   (document.getElementById("library-dialog") as HTMLDialogElement).close();
 });
-it("loads demo, saves named markers and loops and applies exact 5 BPM step", async () => {
+it("loads demo, saves named markers and loops and applies the selected BPM", async () => {
   click("demo-button");
   await vi.waitFor(() =>
     expect(document.querySelectorAll(".measure")).toHaveLength(110),
@@ -121,7 +121,8 @@ it("loads demo, saves named markers and loops and applies exact 5 BPM step", asy
   set("loop-name", "DOM 후렴");
   click("save-loop");
   expect(document.getElementById("loops")!.textContent).toContain("DOM 후렴");
-  click("slower");
+  set("rate", "89");
+  document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() =>
     expect((document.getElementById("rate") as HTMLInputElement).value).toBe(
       "89",
@@ -138,11 +139,12 @@ it("renders the boundary ru once in measure 11, never at the end of measure 10",
  expect(text(9)).not.toContain('루');
  expect(text(10).filter(t=>t==='루')).toHaveLength(1);
 });
-it("accepts BPM input, increments by five BPM and clamps to supported audio range", async () => {
+it("accepts BPM input and clamps to the supported audio range", async () => {
   set("rate", "80");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("80"));
-  click("faster");
+  set("rate", "85");
+  document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("85"));
   await vi.waitFor(async () => {
     const r = (await allRecords()).find(r => r.song.id === "real-paradis")!;
@@ -155,7 +157,7 @@ it("accepts BPM input, increments by five BPM and clamps to supported audio rang
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("94"));
 });
-it("resets playback BPM through the original tempo heading without seeking", async () => {
+it("opens practice BPM from the heading and resets through the explicit original tempo action", async () => {
   const heading = document.getElementById("original-tempo") as HTMLButtonElement;
   expect(heading.tagName).toBe("BUTTON");
   expect(heading.disabled).toBe(false);
@@ -165,7 +167,11 @@ it("resets playback BPM through the original tempo heading without seeking", asy
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(80 / 94));
   click("original-tempo");
+  expect((document.getElementById("tempo-dialog") as HTMLDialogElement).open).toBe(true);
+  expect((document.getElementById("rate") as HTMLInputElement).value).toBe("80");
+  click("tempo-reset");
   await vi.waitFor(() => expect((document.getElementById("rate") as HTMLInputElement).value).toBe("94"));
+  (document.getElementById("tempo-dialog") as HTMLDialogElement).close();
   animationFrame(0);
   expect((document.getElementById("seek") as HTMLInputElement).value).toBe("70");
   click("home");
@@ -175,7 +181,11 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
     "Real Paradis -",
   );
   expect(document.getElementById("original-tempo-value")!.textContent).toBe("= 94");
-  expect(document.querySelectorAll(".practice-dock > button")).toHaveLength(8);
+  expect(document.querySelector(".practice-dock")).toBeNull();
+  expect(document.querySelectorAll("#repeat-controls [data-loop-radius]")).toHaveLength(4);
+  expect(document.getElementById("open-sound-dialog")!.closest(".transport-right")).not.toBeNull();
+  expect(document.getElementById("progress-percent")!.closest(".transport-right")).not.toBeNull();
+  expect(document.getElementById("seek")!.closest<HTMLElement>(".seekrow")!.hidden).toBe(true);
   expect(document.querySelectorAll("#practice details")).toHaveLength(0);
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   set("goto", "0");
@@ -230,6 +240,20 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
     expect(s.artist).toBe("Real Paradis");
     expect(s.measures[0].start).toBe(before);
   });
+});
+it("groups screen, score, lyrics, metadata and files in one settings dialog", () => {
+  for (const dialog of document.querySelectorAll<HTMLDialogElement>("dialog[open]")) dialog.close();
+  click("open-settings-dialog");
+  expect((document.getElementById("settings-dialog") as HTMLDialogElement).open).toBe(true);
+  expect(document.querySelectorAll("[data-settings-category]")).toHaveLength(5);
+  expect(document.querySelectorAll("[data-settings-panel]:not([hidden])")).toHaveLength(1);
+  expect(document.getElementById("auto-fullscreen")!.closest("#screen-dialog")).not.toBeNull();
+  click("open-backup-dialog");
+  expect(document.getElementById("backup-dialog")!.hidden).toBe(false);
+  expect(document.getElementById("screen-dialog")!.hidden).toBe(true);
+  click("open-score-settings");
+  expect(document.getElementById("edit-button")!.closest<HTMLElement>("[data-settings-panel]")!.hidden).toBe(false);
+  (document.getElementById("settings-dialog") as HTMLDialogElement).close();
 });
 it("returns to earlier measures and stops at the first measure", () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
@@ -299,8 +323,12 @@ it("fills played measures, advances within a measure and clears future shading a
   click("home");
 });
 it("keeps icon controls accessible and updates play and metronome states", async () => {
-  expect(document.querySelectorAll(".practice-dock button .ui-icon")).toHaveLength(8);
-  expect(document.querySelectorAll(".practice-dock .icon-caption")).toHaveLength(8);
+  expect(document.getElementById("open-settings-dialog")!.getAttribute("aria-label")).toBe("설정");
+  expect(document.getElementById("click")!.closest("label")!.nextElementSibling!.id).toBe("library-button");
+  expect(document.getElementById("fullscreen")!.closest("#settings-dialog")).not.toBeNull();
+  expect(document.getElementById("save-html")!.closest("#backup-dialog")).not.toBeNull();
+  expect(document.getElementById("rate")!.closest("#tempo-dialog")).not.toBeNull();
+  for (const id of ["tempo-presets", "slower", "faster"]) expect(document.getElementById(id)).toBeNull();
   expect(document.getElementById("jump")!.getAttribute("aria-label")).toContain("되감기");
   click("play");
   await vi.waitFor(() => expect(document.getElementById("play")!.getAttribute("aria-label")).toBe("일시정지"));
@@ -313,7 +341,7 @@ it("keeps icon controls accessible and updates play and metronome states", async
   metronome.closest("label")!.click();
 });
 it("offers tempo presets and previews single-BPM dragging until release", async () => {
-  click("tempo-presets");
+  click("original-tempo");
   expect(document.getElementById("tempo-dialog")!.hasAttribute("open")).toBe(true);
   expect(document.querySelectorAll("#tempo-options button")).toHaveLength(6);
   (document.querySelector('[data-tempo="75"]') as HTMLButtonElement).click();
@@ -322,9 +350,9 @@ it("offers tempo presets and previews single-BPM dragging until release", async 
   input.setPointerCapture = () => {};
   input.hasPointerCapture = () => false;
   const pointer = (name: string, x: number) => {
-    const e = new Event(name);
-    Object.assign(e, { pointerId: 1, pointerType: "touch", clientX: x, clientY: 100 });
-    (input as any)[`on${name}`]?.(e);
+    const e = new Event(name, { bubbles: true, cancelable: true });
+    Object.assign(e, { pointerId: 1, pointerType: "touch", clientX: x, clientY: 100, button: 0, isPrimary: true });
+    input.dispatchEvent(e);
   };
   pointer("pointerdown", 100);
   pointer("pointermove", 116);
@@ -342,7 +370,57 @@ it("offers tempo presets and previews single-BPM dragging until release", async 
   expect(input.value).toBe("77");
   pointer("pointerdown", 100);
   pointer("pointerup", 100);
+  expect(input.value).toBe("77");
+  click("tempo-reset");
   await vi.waitFor(() => expect(input.value).toBe("94"));
+  (document.getElementById("tempo-dialog") as HTMLDialogElement).close();
+});
+it("keeps centred repeat anchored when changing radius and uses inclusive end bars", () => {
+  const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+  set("seek", String(song.measures[24].start + .2));
+  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  (document.querySelector('[data-loop-radius="2"]') as HTMLButtonElement).click();
+  expect(document.getElementById('loop-summary')!.textContent).toBe('23–27마디 · 5마디 반복');
+  set('seek', String(song.measures[25].start));
+  document.getElementById('seek')!.dispatchEvent(new Event('input'));
+  (document.querySelector('[data-loop-radius="1"]') as HTMLButtonElement).click();
+  expect(document.getElementById('loop-summary')!.textContent).toBe('24–26마디 · 3마디 반복');
+  click('open-loop-dialog');
+  expect((document.getElementById('loop-b') as HTMLInputElement).value).toBe('26');
+  set('loop-a','25'); set('loop-b','28'); click('apply-loop');
+  expect(document.getElementById('loop-summary')!.textContent).toBe('25–28마디 · 4마디 반복');
+  click('home');
+  expect(document.getElementById('loop-summary')!.textContent).toBe('반복 꺼짐');
+});
+it("separates tap playback, percent drag, marker activation and cancelled gestures", async () => {
+  const stage = document.getElementById('stage')!;
+  const fire = (el: HTMLElement, name: string, x: number, y=100) => {
+    const e = new Event(name,{bubbles:true,cancelable:true});
+    Object.assign(e,{pointerId:1,pointerType:'touch',isPrimary:true,button:0,clientX:x,clientY:y});
+    el.dispatchEvent(e);
+  };
+  fire(stage,'pointerdown',100); fire(stage,'pointerup',100);
+  document.dispatchEvent(new KeyboardEvent('keydown',{code:'Space',bubbles:true}));
+  await new Promise(ok=>setTimeout(ok,300));
+  expect(document.getElementById('play')!.getAttribute('aria-label')).toBe('일시정지');
+  fire(stage,'pointerdown',100); fire(stage,'pointerup',100);
+  expect(document.getElementById('play')!.getAttribute('aria-label')).toBe('재생');
+  fire(stage,'pointerdown',100); fire(stage,'pointerup',100);
+  await new Promise(ok=>setTimeout(ok,300));
+  expect(document.getElementById('play')!.getAttribute('aria-label')).toBe('일시정지');
+  click('play');
+  const percent = document.getElementById('progress-percent') as HTMLInputElement;
+  animationFrame(0); const initial=Number(percent.value);
+  fire(percent,'pointerdown',100); fire(percent,'pointermove',180); fire(percent,'pointerup',180);
+  animationFrame(0);
+  expect(Number(percent.value)).toBe(initial+10);
+  expect(Number((document.getElementById('seek') as HTMLInputElement).value)).toBeCloseTo((initial+10)*3);
+  fire(percent,'pointerdown',100); fire(percent,'pointermove',100,84); fire(percent,'pointercancel',100,84);
+  animationFrame(0); expect(Number(percent.value)).toBe(initial+10);
+  await new Promise(ok=>setTimeout(ok,510));
+  percent.click(); expect((document.getElementById('marker-dialog') as HTMLDialogElement).open).toBe(true);
+  (document.getElementById('marker-dialog') as HTMLDialogElement).close();
+  click('home');
 });
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("library-button");

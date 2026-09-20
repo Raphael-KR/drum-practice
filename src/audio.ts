@@ -8,6 +8,7 @@ import {
   type Loop,
 } from "./model";
 import { portableWorkerURL } from "./portable";
+import { createMixLimiterCurve, MIX_INPUT_GAIN } from "./audio-levels";
 export class Player {
   ctx: AudioContext;
   music: GainNode;
@@ -24,15 +25,23 @@ export class Player {
   timer = 0;
   nextClick = new Map<Cycle, number>();
   generation = 0;
+  private playRequest = 0;
   worker?: Worker;
+  private cancelRender?: () => void;
   onstate = () => {};
   onprogress = (s: string) => {};
   constructor() {
     this.ctx = new AudioContext({ sampleRate: 32000 });
     this.music = this.ctx.createGain();
     this.click = this.ctx.createGain();
-    this.music.connect(this.ctx.destination);
-    this.click.connect(this.ctx.destination);
+    const mix = this.ctx.createGain();
+    const limiter = this.ctx.createWaveShaper();
+    mix.gain.value = MIX_INPUT_GAIN;
+    limiter.curve = createMixLimiterCurve();
+    this.music.connect(mix);
+    this.click.connect(mix);
+    mix.connect(limiter);
+    limiter.connect(this.ctx.destination);
     this.ctx.onstatechange = () => {
       if (this.playing && this.ctx.state !== "running") {
         this.pause();
@@ -44,7 +53,7 @@ export class Player {
     this.pause(false);
     this.loop = undefined;
     const generation = ++this.generation;
-    this.worker?.terminate();
+    this.cancelStretch();
     const buffer = await this.ctx.decodeAudioData(await blob.arrayBuffer());
     if (generation !== this.generation) return;
     this.original = buffer;
@@ -85,6 +94,12 @@ export class Player {
       : 0;
   }
   pause(notify = true) {
+    // A user pause/seek/load also cancels play requests still awaiting WebKit
+    // activation or a time-stretch result, before any source has been started.
+    ++this.playRequest;
+    this.stopPlayback(notify);
+  }
+  private stopPlayback(notify = true) {
     this.position = this.current();
     this.playing = false;
     clearInterval(this.timer);
@@ -102,10 +117,22 @@ export class Player {
   async setRate(rate: number) {
     const was = this.playing;
     this.pause();
-    const gen = ++this.generation;
+    const request = this.playRequest;
+    if (!await this.renderAtRate(rate) || request !== this.playRequest) return;
+    if (was) await this.play(false, false);
+    this.onstate();
+  }
+  private cancelStretch() {
+    this.cancelRender?.();
+    this.cancelRender = undefined;
     this.worker?.terminate();
     this.worker = undefined;
-    if (!this.original || !this.song) return;
+  }
+  private async renderAtRate(rate: number) {
+    const gen = ++this.generation;
+    this.cancelStretch();
+    if (!this.original || !this.song) return false;
+    const original = this.original;
     this.song.settings.rate = rate;
     if (rate === 1) {
       this.rendered = this.original;
@@ -123,31 +150,38 @@ export class Player {
             type: "module",
           });
       this.worker = worker;
-      const result = await new Promise<{
-        left: Float32Array;
-        right: Float32Array;
-      }>((resolve, reject) => {
-        worker.onmessage = (e) => {
-          if (e.data.progress !== undefined) {
-            this.onprogress(`속도 준비 ${Math.round(e.data.progress * 100)}%`);
-            return;
-          }
-          if (e.data.error) reject(Error(e.data.error));
-          else resolve(e.data);
-        };
-        worker.onerror = (e) => reject(Error(e.message));
-        worker.postMessage(
-          { left: l, right: r, sr: this.original!.sampleRate, rate },
-          [l.buffer, r.buffer],
-        );
-      });
-      worker.terminate();
-      if (portableURL) URL.revokeObjectURL(portableURL);
-      if (gen !== this.generation) return;
+      let result: { left: Float32Array; right: Float32Array } | undefined;
+      try {
+        result = await new Promise<typeof result>((resolve, reject) => {
+          this.cancelRender = () => resolve(undefined);
+          worker.onmessage = (e) => {
+            if (gen !== this.generation) return;
+            if (e.data.progress !== undefined) {
+              this.onprogress(`속도 준비 ${Math.round(e.data.progress * 100)}%`);
+              return;
+            }
+            if (e.data.error) reject(Error(e.data.error));
+            else resolve(e.data);
+          };
+          worker.onerror = (e) => reject(Error(e.message));
+          worker.postMessage(
+            { left: l, right: r, sr: original.sampleRate, rate },
+            [l.buffer, r.buffer],
+          );
+        });
+      } finally {
+        worker.terminate();
+        if (portableURL) URL.revokeObjectURL(portableURL);
+        if (this.worker === worker) {
+          this.worker = undefined;
+          this.cancelRender = undefined;
+        }
+      }
+      if (!result || gen !== this.generation) return false;
       const b = this.ctx.createBuffer(
         2,
         result.left.length,
-        this.original.sampleRate,
+        original.sampleRate,
       );
       b.copyToChannel(result.left as Float32Array<ArrayBuffer>, 0);
       b.copyToChannel(result.right as Float32Array<ArrayBuffer>, 1);
@@ -155,12 +189,9 @@ export class Player {
       this.renderRate = rate;
     }
     this.onprogress("준비되었습니다.");
-    if (was) await this.play(false, false);
-    this.onstate();
+    return true;
   }
-  async play(count = true, fromMeasureStart = true) {
-    if (!this.song?.measures.length || !this.rendered)
-      throw Error("악보 마디와 음원을 먼저 준비하세요.");
+  async prepare() {
     // WebKit can otherwise treat Web Audio as ambient audio and obey silent mode.
     // Request media playback on each play, before resuming the shared music/click context.
     try {
@@ -171,10 +202,18 @@ export class Player {
       // Older browsers and embedded viewers may not allow this optional API.
     }
     await this.ctx.resume();
+  }
+  async play(count = true, fromMeasureStart = true) {
+    if (!this.song?.measures.length || !this.rendered)
+      throw Error("악보 마디와 음원을 먼저 준비하세요.");
+    const request = ++this.playRequest;
+    await this.prepare();
+    if (request !== this.playRequest) return;
+    this.stopPlayback(false);
     if (this.renderRate !== this.song.settings.rate) {
-      await this.setRate(this.song.settings.rate);
+      if (!await this.renderAtRate(this.song.settings.rate)) return;
+      if (request !== this.playRequest) return;
     }
-    this.pause();
     if (
       this.loop &&
       (this.position < this.loop.start || this.position >= this.loop.end)
@@ -227,14 +266,24 @@ export class Player {
     const o = this.ctx.createOscillator(),
       g = this.ctx.createGain();
     o.frequency.value = accent ? 1500 : 1000;
-    g.gain.setValueAtTime(count ? 0.3 : 0.22, at);
-    g.gain.exponentialRampToValueAtTime(0.001, at + 0.045);
+    if (count) {
+      // Count-in is heard without music and keeps its independent volume.
+      g.gain.setValueAtTime(0.3, at);
+      g.gain.exponentialRampToValueAtTime(0.001, at + 0.045);
+    } else {
+      // A short attack/hold makes the click audible over a mastered song;
+      // the user's click gain still controls its entire level, including mute.
+      g.gain.setValueAtTime(0, at);
+      g.gain.linearRampToValueAtTime(0.8, at + 0.001);
+      g.gain.setValueAtTime(0.8, at + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, at + 0.075);
+    }
     o.connect(g);
     g.connect(count ? this.ctx.destination : this.click);
     this.track(o);
     o.addEventListener("ended", () => g.disconnect());
     o.start(at);
-    o.stop(at + 0.05);
+    o.stop(at + (count ? 0.05 : 0.08));
   }
   tick() {
     if (!this.playing || !this.song) return;

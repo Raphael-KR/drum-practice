@@ -1,3 +1,7 @@
+import { centeredRange, loopMeasureRange, scrubTime } from "./practice-controls";
+import { autoFullscreenEnabled, saveAutoFullscreen, enterFullscreen } from "./fullscreen";
+import { attachScoreGestures } from "./score-gestures";
+import { bindNumericDrag, installNumericInputs } from "./numeric-drag";
 import { measurePageStaff, practiceStaffLayout, practicePage, type StaffPosition } from "./practice-staff-layout";
 import { correctStoredRests, ensureCenteredRestCache } from "./score-rest-correction";
 import { attachBundledScore } from "./bundled-score";
@@ -27,7 +31,7 @@ import { applyLyricTimingPatch, applyUserLyricAnchors } from "./lyric-timing";
 import { chooseRecent, rememberScore } from "./recent-score";
 import { displayRegion } from "./score-view";
 import { arrangeIcons, iconButton } from "./icons";
-import { arrangeWorkspace, selectEditorPane, paginateList } from "./workspace";
+import { arrangeWorkspace, selectEditorPane, paginateList, closeSettings } from "./workspace";
 import { Player } from "./audio";
 import {
   allRecords,
@@ -97,6 +101,8 @@ let saveTimer = 0,
   busy = false,
   rowWindow = -1;
 let editingLoopId: string | undefined;
+let repeatCenter: number | undefined, repeatRadius: number | undefined;
+let lastPracticeLoop: Loop | undefined;
 let pageRatios: number[] = [];
 let practiceStaffs = new Map<string, StaffPosition>();
 let trackOffsets: number[] = [],
@@ -119,12 +125,19 @@ app.innerHTML = `
 document.getElementById("app")!.insertAdjacentHTML("beforeend", '<dialog id="tempo-dialog" aria-labelledby="tempo-heading"><div class="dialoghead"><h2 id="tempo-heading">연습 BPM</h2><button data-close="tempo-dialog">닫기</button></div><div id="tempo-options"></div><p class="subtle">숫자를 좌우로 드래그하면 1 BPM씩 조절하고, 두 번 탭하면 원곡 BPM으로 돌아갑니다.</p></dialog>');
 arrangeWorkspace();
 arrangeIcons();
+function songControlsAvailable(enabled: boolean) {
+  for (const id of ['click','zoom','original-button','edit-button','lyrics-button','metadata-button','export','save-html','review-add-score'])
+    ($<HTMLButtonElement>(id)).disabled = !enabled;
+  if (!enabled) document.querySelectorAll<HTMLInputElement>('input[name="score-view"]').forEach(r => r.disabled = true);
+}
+songControlsAvailable(false);
 function updateSongHeading() {
   const s = song();
   $("song-title").textContent = [s.artist, s.title].filter(Boolean).join(" - ");
   $("original-tempo").hidden = false;
-  $("original-tempo-value").textContent = `= ${s.bpm}`;
-  $("original-tempo").setAttribute("aria-label", `원곡 ${s.bpm} BPM으로 돌아가기`);
+  $("original-tempo-value").textContent = `= ${Number((s.bpm * s.settings.rate).toFixed(2))}`;
+  $("original-tempo").setAttribute("aria-label", `연습 BPM ${Number((s.bpm * s.settings.rate).toFixed(2))} 설정`);
+  $("original-tempo").title = "연습 BPM 설정";
   ($("original-tempo") as HTMLButtonElement).disabled = false;
   document.title = $("song-title").textContent!;
 }
@@ -175,6 +188,7 @@ function engine() {
     player = new Player();
     player.onprogress = status;
     player.onstate = () => {
+      $("stage").classList.toggle("is-playing", !!player?.playing);
       iconButton("play", player?.playing ? "pause" : "play", player?.playing ? "일시정지" : "재생");
       if (!player?.playing && record) {
         record.song.settings.position = player?.position || 0;
@@ -211,6 +225,10 @@ function song() {
   return record.song;
 }
 async function activate(r: RecordData) {
+  scoreGestures.cancel();
+  if (autoFullscreenEnabled() && !document.fullscreenElement) requestScoreFullscreen();
+  repeatCenter = repeatRadius = undefined;
+  lastPracticeLoop = undefined;
   validateSong(r.song);
   if (r.canonicalXML) {await verifyCanonicalAudio(r);readCanonical(r.canonicalXML,r.song);}
   else {
@@ -285,10 +303,12 @@ async function activate(r: RecordData) {
     $("practice").hidden = false;
     $("edit-button").hidden = false;
     $("save-html").hidden = false;
+    songControlsAvailable(true);
     updateSongHeading();
     val("seek").max = String(engine().duration);
     $("duration").textContent = time(engine().duration);
     syncSettings();
+    for (const id of ["loop-a", "loop-b"]) val(id).max = String(song().measures.length);
     renderTrack();
     renderLists();
     await persist();
@@ -318,9 +338,10 @@ function syncViewChoices() {
 function syncSettings() {
   syncViewChoices();
   const s = song().settings;
+  updateSongHeading();
   val("rate").value = String(Number((s.rate * song().bpm).toFixed(2)));
-  val("rate").min = String(song().bpm * 0.5);
-  val("rate").max = String(song().bpm * 1.2);
+  val("rate").min = String(Math.ceil(song().bpm * 0.5));
+  val("rate").max = String(Math.floor(song().bpm * 1.2));
   val("rate").setAttribute("aria-valuenow", val("rate").value);
   val("rate").setAttribute("aria-valuemin", val("rate").min);
   val("rate").setAttribute("aria-valuemax", val("rate").max);
@@ -331,6 +352,10 @@ function syncSettings() {
   val("count-each").checked = s.countEach;
   val("zoom").value = String(s.zoom);
   val("view").value = s.view;
+  document.querySelectorAll<HTMLButtonElement>('[data-tempo]').forEach(b => {
+    const selected = Math.abs(Number(b.dataset.tempo) - s.rate * song().bpm) < .01;
+    b.classList.toggle('primary', selected); b.setAttribute('aria-pressed', String(selected));
+  });
   engine().volumes();
 }
 function practiceRegion(s:Song,region:Region) {
@@ -423,6 +448,7 @@ action('review-copy',captureReview);
 action('review-save',async()=>{if(!reviewPNG)return;const url=URL.createObjectURL(await reviewPNG),a=document.createElement('a');a.href=url;a.download='악보-검수.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 function renderTrack() {
   if (!record) return;
+  scoreGestures.cancel();
   const s = song();
   const comparing=s.settings.view==='compare';
   $('practice').classList.toggle('score-review',comparing);
@@ -452,10 +478,7 @@ function renderTrack() {
   if (!s.measures.length)
     $("ribbon").innerHTML =
       "<p>악보·가사 맞추기에서 마디 영역을 추가하세요.</p>";
-  $("ribbon").onclick = (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-index]");
-    if (t) engine().seek(s.measures[Number(t.dataset.index)].start);
-  };
+
 }
 function renderRows(index: number) {
   const windowIndex = Math.floor(index / 4);
@@ -545,6 +568,10 @@ function frame() {
         e.style.setProperty("--played", `${progress * 100}%`);
         e.classList.toggle("progress-edge", playedThrough >= measureIndex && playedThrough < measureIndex + 1);
       }
+      const loop = player!.loop, bar = s.measures[measureIndex];
+      e.classList.toggle('in-loop',!!loop && bar.end>loop.start && bar.start<loop.end);
+      e.classList.toggle('loop-start',!!loop && loop.start>=bar.start && loop.start<bar.end);
+      e.classList.toggle('loop-end',!!loop && loop.end>bar.start && loop.end<=bar.end);
       e.classList.toggle("active", active);
       if (active) {
         e.querySelector(".measure-beat")!.textContent =
@@ -553,6 +580,11 @@ function frame() {
     });
   }
   $("elapsed").textContent = time(t);
+  if (!gestureScrub) {
+    val("progress-percent").value = String(Math.round(clamp(t / (player.duration || 1), 0, 1) * 100));
+    val("progress-percent").setAttribute("aria-valuenow", val("progress-percent").value);
+  }
+  val("progress-percent").setAttribute("aria-valuetext", `${val("progress-percent").value}% · ${time(t)} / ${time(player.duration)}`);
   if (!scrubbing) {
     val("seek").value = String(t);
     val("seek").setAttribute("aria-valuetext", `${loc.measure?.label || "1"} 마디`);
@@ -588,7 +620,8 @@ async function rate(bpm: number) {
     busy = false;
   }
 }
-action("original-tempo", () => rate(song().bpm));
+action("original-tempo", openTempo);
+action("tempo-reset", () => rate(song().bpm));
 action("copy-position", async () => {
   const snapshot = playbackPosition(song(), engine().current());
   await copyPosition(snapshot.text);
@@ -596,85 +629,146 @@ action("copy-position", async () => {
   $("copy-position").textContent = "복사됨 ✓";
 });
 action("play", toggle);
-action("home", () => engine().seek(0));
+action("home", () => seekFreely(0));
 action("jump", () => {
   const count = num("goto");
   if (!Number.isSafeInteger(count) || count < 1 || count > 10)
     throw Error("이동할 마디 수를 1~10 중에서 선택하세요.");
   const measures = song().measures;
   const index = locate(song(), engine().current()).index;
-  engine().seek(measures[Math.max(index - count, 0)].start);
+  seekFreely(measures[Math.max(index - count, 0)].start);
 });
-action("slower", () => rate(Number((song().settings.rate * song().bpm - 5).toFixed(2))));
-action("faster", () => rate(Number((song().settings.rate * song().bpm + 5).toFixed(2))));
 val("rate").onchange = () => rate(num("rate")).catch(error);
-action("tempo-presets", () => {
+function openTempo() {
+  if (!record) return;
   const original = song().bpm;
   const presets = [...new Set([0.5, 0.6, 0.7, 0.8, 0.9].map(f => Math.round(original * f))), original];
   $("tempo-options").innerHTML = presets.map(bpm => `<button data-tempo="${bpm}" class="${Math.abs(bpm - original * song().settings.rate) < 0.01 ? "primary" : ""}">${bpm} BPM${bpm === original ? " · 원곡" : ""}</button>`).join("");
+  $("tempo-reset").textContent = `원곡 ${original} BPM`;
   $<HTMLDialogElement>("tempo-dialog").showModal();
-});
+}
 $("tempo-options").onclick = e => {
   const b = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-tempo]");
   if (!b) return;
-  $<HTMLDialogElement>("tempo-dialog").close();
   void rate(Number(b.dataset.tempo)).catch(error);
 };
-let tempoDrag: { id: number; x: number; y: number; bpm: number; moved: boolean; started: number } | undefined;
-let lastTempoTap: { time: number; x: number; y: number } | undefined;
-const tempoInput = val("rate");
-tempoInput.onpointerdown = e => {
-  if (busy || !record || (e.pointerType === "mouse" && e.button !== 0)) return;
-  tempoDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, bpm: Number(tempoInput.value), moved: false, started: Date.now() };
-  tempoInput.setPointerCapture(e.pointerId);
-  tempoInput.classList.add("dragging");
-};
-tempoInput.onpointermove = e => {
-  if (!tempoDrag || tempoDrag.id !== e.pointerId) return;
-  if (Math.abs(e.clientX - tempoDrag.x) > 3 || Math.abs(e.clientY - tempoDrag.y) > 3) {
-    tempoDrag.moved = true;
-    lastTempoTap = undefined;
+bindNumericDrag(val("rate"));
+
+// Score and percentage scrubbing share one preview/commit/cancel lifecycle.
+let gestureScrub: { start: number; resume: boolean; loop?: Loop; center?: number; radius?: number } | undefined;
+function prepareGestureAudio() { if (record && !busy) void engine().prepare?.().catch(error); }
+function seekFreely(t: number) {
+  const p = engine();
+  if (p.loop && (t < p.loop.start || t >= p.loop.end)) {
+    lastPracticeLoop = p.loop;
+    p.loop = undefined;
+    repeatCenter = repeatRadius = undefined;
+    renderLists();
+    status("반복 구간 밖으로 이동해 반복을 껐습니다.");
   }
-  const bpm = Math.round(tempoDrag.bpm) + Math.round((e.clientX - tempoDrag.x) / 8);
-  tempoInput.value = String(clamp(bpm, Math.ceil(song().bpm * 0.5), Math.floor(song().bpm * 1.2)));
-  tempoInput.setAttribute("aria-valuenow", tempoInput.value);
-};
-function endTempoDrag(e: PointerEvent, apply: boolean) {
-  if (!tempoDrag || tempoDrag.id !== e.pointerId) return;
-  const drag = tempoDrag;
-  tempoDrag = undefined;
-  tempoInput.classList.remove("dragging");
-  if (tempoInput.hasPointerCapture(e.pointerId)) tempoInput.releasePointerCapture(e.pointerId);
-  if (!apply) {
-    lastTempoTap = undefined;
-    syncSettings();
-  } else if (drag.moved) {
-    lastTempoTap = undefined;
-    void rate(num("rate")).catch(error);
-  } else {
-    const now = Date.now();
-    syncSettings();
-    if (now - drag.started > 350) { lastTempoTap = undefined; return; }
-    if (lastTempoTap && now - lastTempoTap.time <= 350 &&
-        Math.hypot(e.clientX - lastTempoTap.x, e.clientY - lastTempoTap.y) <= 24) {
-      lastTempoTap = undefined;
-      void rate(song().bpm).catch(error);
-    } else lastTempoTap = { time: now, x: e.clientX, y: e.clientY };
-  }
+  p.seek(t);
 }
-tempoInput.onpointerup = e => endTempoDrag(e, true);
-tempoInput.onpointercancel = e => endTempoDrag(e, false);
-tempoInput.onlostpointercapture = e => endTempoDrag(e, false);
-tempoInput.ondblclick = e => {
+function beginGestureScrub() {
+  if (!record || busy) return;
+  const p = engine();
+  gestureScrub = { start:p.current(), resume:p.playing, loop:p.loop, center:repeatCenter, radius:repeatRadius };
+  p.pause();
+}
+function previewGestureScrub(t: number) {
+  if (!gestureScrub) return;
+  seekFreely(t);
+  val("progress-percent").value = String(Math.round(clamp(t / (engine().duration || 1), 0, 1) * 100));
+}
+function endGestureScrub(cancel = false) {
+  const state = gestureScrub;
+  gestureScrub = undefined;
+  if (!state) return;
+  if (cancel) {
+    engine().pause();
+    engine().loop = state.loop;
+    repeatCenter = state.center; repeatRadius = state.radius;
+    engine().seek(state.start);
+    renderLists();
+  } else if (state.resume && engine().current() < engine().duration) {
+    void engine().play(false, false).catch(error);
+  }
+  queueSave();
+}
+const scoreGestures = attachScoreGestures<number>($("stage"), {
+  isPlaying: () => !!player?.playing,
+  getTarget: e => {
+    if (!record || busy || document.querySelector('dialog[open]')) return null;
+    const measure = (e.target as HTMLElement).closest?.<HTMLElement>('[data-index]');
+    if (measure) return Number(measure.dataset.index);
+    if (song().settings.view === 'compare') {
+      const bounds = $('stage').getBoundingClientRect();
+      const column = Math.floor(clamp((e.clientX - bounds.left - 12) / Math.max(1, bounds.width - 24), 0, .9999) * 4);
+      return Math.min(song().measures.length - 1, Math.floor(locate(song(), engine().current()).index / 4) * 4 + column);
+    }
+    return locate(song(), engine().current()).index;
+  },
+  prepareAudio: prepareGestureAudio,
+  pause: () => { if (record && !busy) { if (song().settings.view === 'compare') captureReview(); else engine().pause(); } },
+  play: () => { if (record) void toggle().catch(error); },
+  seek: (index, resume) => {
+    if (!record || busy) return;
+    engine().pause();
+    seekFreely(song().measures[index].start);
+    if (resume) void engine().play(false, false).catch(error);
+  },
+  scrubStart: beginGestureScrub,
+  scrubMove: delta => {
+    if (!gestureScrub) return;
+    const width = song().settings.view === 'ribbon' ? trackWidths[locate(song(), gestureScrub.start).index] : $('stage').clientWidth / 4;
+    previewGestureScrub(scrubTime(song(), gestureScrub.start, delta, width, engine().duration));
+  },
+  scrubEnd: () => endGestureScrub(),
+  scrubCancel: () => endGestureScrub(true),
+});
+$('stage').addEventListener('wheel', e => {
+  if (!record || busy || document.querySelector('dialog[open]') || e.ctrlKey) return;
   e.preventDefault();
-  lastTempoTap = undefined;
-  if (record && song().settings.rate !== 1) void rate(song().bpm).catch(error);
-};
-tempoInput.onkeydown = e => {
-  if (!["ArrowLeft", "ArrowDown", "ArrowRight", "ArrowUp"].includes(e.key)) return;
-  e.preventDefault();
-  void rate(num("rate") + (["ArrowLeft", "ArrowDown"].includes(e.key) ? -1 : 1)).catch(error);
-};
+  if (engine().playing) return;
+  scoreGestures.cancel();
+  const delta = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? $('stage').clientHeight : 1);
+  seekFreely(scrubTime(song(), engine().current(), -delta, Math.max(150, $('stage').clientWidth / 4), engine().duration));
+}, { passive: false });
+// Keyboard and assistive-technology activation remains available without pointer gestures.
+$('stage').tabIndex = 0;
+$('stage').setAttribute('aria-label', '악보. 한 번 탭 재생·정지, 두 번 탭 마디 이동, 좌우 드래그 탐색. 정지 중 휠로 탐색');
+$('stage').addEventListener('click', e => { if (e.detail === 0 && record) void toggle().catch(error); });
+bindNumericDrag(val('progress-percent'), {
+  onStart: beginGestureScrub,
+  onPreview: percent => previewGestureScrub(engine().duration * percent / 100),
+  onCommit: percent => { if (gestureScrub) endGestureScrub(); else if (record) seekFreely(engine().duration * percent / 100); },
+  onCancel: () => endGestureScrub(true),
+  onTap: () => { if (record) $<HTMLDialogElement>('marker-dialog').showModal(); },
+});
+const disposeNumericInputs = installNumericInputs(document);
+if (import.meta.hot) import.meta.hot.dispose(() => { disposeNumericInputs(); scoreGestures.dispose(); });
+document.addEventListener('pointerdown', e => {
+  if (!(e.target instanceof Element) || $('stage').contains(e.target)) return;
+  scoreGestures.cancel();
+}, true);
+
+let fullscreenRequest: Promise<boolean> | undefined;
+const fullscreenReport = (message: string) => { $('fullscreen-status').textContent = message; };
+function requestScoreFullscreen() {
+  if (!autoFullscreenEnabled() || document.fullscreenElement || fullscreenRequest) return;
+  fullscreenRequest = enterFullscreen(fullscreenReport);
+  void fullscreenRequest.finally(() => { fullscreenRequest = undefined; });
+}
+val('auto-fullscreen').checked = autoFullscreenEnabled();
+val('auto-fullscreen').onchange = () => saveAutoFullscreen(val('auto-fullscreen').checked);
+action('fullscreen', async () => {
+  if (document.fullscreenElement) await document.exitFullscreen();
+  else await enterFullscreen(fullscreenReport);
+});
+// Request before asynchronous file/IndexedDB work consumes transient activation.
+document.addEventListener('click', e => {
+  if ((e.target as Element).closest('#demo-button, #library-list [data-open]')) requestScoreFullscreen();
+}, true);
+document.addEventListener('submit', e => { if ((e.target as HTMLElement).id === 'new-form') requestScoreFullscreen(); }, true);
 
 let scrubbing = false,
   resumeAfterScrub = false;
@@ -697,12 +791,12 @@ seek.onpointerdown = () => {
 seek.oninput = () => {
   if (!record) return;
   showSeekPosition();
-  engine().seek(num("seek"));
+  seekFreely(num("seek"));
 };
 async function finishScrub() {
   if (!scrubbing) return;
   scrubbing = false;
-  engine().seek(num("seek"));
+  seekFreely(num("seek"));
   $("seek-position").hidden = true;
   const resume = resumeAfterScrub;
   resumeAfterScrub = false;
@@ -710,12 +804,12 @@ async function finishScrub() {
   queueSave();
 }
 window.addEventListener("pointerup", () => finishScrub().catch(error));
-window.addEventListener("pointercancel", () => finishScrub().catch(error));
+window.addEventListener("pointercancel", () => { scrubbing = false; resumeAfterScrub = false; $("seek-position").hidden = true; });
 // Native Safari range controls may dispatch input after pointerup.
 seek.onchange = () => {
   $("seek-position").hidden = true;
   if (!scrubbing) {
-    engine().seek(num("seek"));
+    seekFreely(num("seek"));
     queueSave();
   }
 };
@@ -750,71 +844,112 @@ for (const id of [
     if (["view", "zoom"].includes(id)) renderTrack();
     queueSave();
   };
+val('loop-precise').onchange = () => {
+  $('loop-beat-controls').hidden = !val('loop-precise').checked;
+  $('loop-range-help').textContent = val('loop-precise').checked ? '시작 박부터 끝 경계 직전까지 반복합니다.' : '시작 마디부터 끝 마디까지 모두 반복합니다.';
+};
 function loopPoint(prefix: string) {
-  const s = song(),
-    i = num(prefix) - 1,
-    b = num(prefix === "loop-a" ? "loop-ab" : "loop-bb") - 1;
-  if (i === s.measures.length && b === 0) return s.measures.at(-1)!.end;
+  const s = song(), i = num(prefix) - 1;
+  const precise = val('loop-precise').checked;
   const m = s.measures[i];
-  if (!m || b < 0 || b > m.beats)
-    throw Error("반복 마디와 박 번호를 확인하세요.");
-  return beatTime(m, b);
+  if (!Number.isInteger(i) || !m) throw Error("반복 마디를 확인하세요.");
+  if (!precise) return prefix === 'loop-a' ? m.start : m.end;
+  const beat = num(prefix === 'loop-a' ? 'loop-ab' : 'loop-bb') - 1;
+  if (!Number.isFinite(beat) || beat < 0 || beat > m.beats) throw Error('반복 박 번호를 확인하세요.');
+  return beatTime(m, beat);
 }
-function useLoop(l?: Loop) {
-  const p = engine(),
-    was = p.playing;
+function fillLoop(l: Loop) {
+  const a = locate(song(), l.start), range = loopMeasureRange(song(), l.start, l.end);
+  const last = song().measures[range.last];
+  const endBeat = (l.end - last.start) / (last.end - last.start) * last.beats;
+  const precise = Math.abs(l.start - a.measure.start) > 1e-5 || Math.abs(l.end - last.end) > 1e-5;
+  val('loop-precise').checked = precise;
+  val('loop-precise').dispatchEvent(new Event('change'));
+  val('loop-a').value = String(a.index + 1);
+  val('loop-ab').value = String(Number((a.beat + 1).toFixed(4)));
+  val('loop-b').value = String(range.last + 1);
+  val('loop-bb').value = String(Number((endBeat + 1).toFixed(4)));
+  val('loop-name').value = l.name;
+  updateLoopBeatBounds();
+}
+function updateLoopBeatBounds() {
+  for (const [bar,beat] of [['loop-a','loop-ab'],['loop-b','loop-bb']]) {
+    const m = record && song().measures[num(bar)-1];
+    if (!m) continue;
+    val(beat).max = String(m.beats + (bar === 'loop-b' ? 1 : 0));
+    val(beat).value = String(clamp(num(beat),1,Number(val(beat).max)));
+  }
+}
+for (const id of ['loop-a','loop-b']) val(id).addEventListener('change',updateLoopBeatBounds);
+function useLoop(l?: Loop, preservePosition = false) {
+  scoreGestures.cancel();
+  const p = engine(), was = p.playing;
   p.pause();
+  if (p.loop) lastPracticeLoop = p.loop;
   p.loop = l;
   if (l) {
-    p.position = l.start;
-    editingLoopId = l.id;
-    val("loop-name").value = l.name;
-    const a = locate(song(), l.start),
-      b = locate(song(), l.end);
-    val("loop-a").value = String(a.index + 1);
-    val("loop-ab").value = String(a.beat + 1);
-    val("loop-b").value = String(b.index + 1);
-    val("loop-bb").value = String(b.beat + 1);
-    $("save-loop").textContent = "수정·반복";
+    lastPracticeLoop = l;
+    if (!preservePosition || p.position < l.start || p.position >= l.end) p.position = l.start;
+    editingLoopId = song().loops.some(saved=>saved.id===l.id) ? l.id : undefined;
+    fillLoop(l);
+    $('save-loop').textContent = editingLoopId ? '이름·구간 저장' : '구간 저장';
   }
   renderLists();
-  if (was) void p.play().catch(error);
+  if (was) void p.play(false, false).catch(error);
 }
-action("save-loop", () => {
-  const start = loopPoint("loop-a"),
-    end = loopPoint("loop-b");
-  if (end - start < 0.15 || end > engine().duration + 0.01)
-    throw Error("반복 끝은 시작 뒤, 음원 끝 이전이어야 합니다.");
-  const l = {
-    id: editingLoopId || uid(),
-    name:
-      val("loop-name").value.trim() || `${num("loop-a")}~${num("loop-b")}마디`,
-    start,
-    end,
-  };
-  const at = song().loops.findIndex((x) => x.id === l.id);
-  if (at < 0) song().loops.push(l);
-  else song().loops[at] = l;
-  useLoop(l);
-  queueSave();
+function loopFromForm(): Loop {
+  const start = loopPoint('loop-a'), end = loopPoint('loop-b');
+  if (end - start < .15 || end > engine().duration + .01) throw Error('반복 끝은 시작 뒤, 음원 끝 이전이어야 합니다.');
+  return {id:editingLoopId || uid(),name:val('loop-name').value.trim() || `${num('loop-a')}–${num('loop-b')}마디`,start,end};
+}
+action('apply-loop',()=> {
+  const l = loopFromForm();
+  repeatCenter = repeatRadius = undefined;
+  useLoop(l,true);
+  $<HTMLDialogElement>('loop-dialog').close();
 });
-action("stop-loop", () => useLoop());
-action("new-loop", () => {
+action('save-loop',()=> {
+  const l = loopFromForm();
+  const at = song().loops.findIndex(x=>x.id===l.id);
+  if (at < 0) song().loops.push(l); else song().loops[at] = l;
+  repeatCenter = repeatRadius = undefined;
+  useLoop(l,true); queueSave();
+});
+function stopPracticeLoop() { repeatCenter = repeatRadius = undefined; useLoop(); }
+action('stop-loop',stopPracticeLoop);
+action('quick-stop-loop',stopPracticeLoop);
+function quickRepeat(radius: number, recenter = false) {
+  if (!record || busy) return;
+  const center = recenter || repeatCenter === undefined || !engine().loop ? locate(song(),engine().current()).index : repeatCenter;
+  const range = centeredRange(song().measures,center,radius,engine().duration);
+  if (range.end <= range.start) throw Error('이 위치에서는 반복할 음원이 없습니다.');
+  repeatCenter = range.center; repeatRadius = radius;
+  useLoop({id:uid(),name:`${range.first+1}–${range.last+1}마디`,start:range.start,end:range.end},true);
+}
+$('repeat-controls').addEventListener('click',e=> {
+  const b = (e.target as Element).closest<HTMLElement>('[data-loop-radius]');
+  if (b) quickRepeat(Number(b.dataset.loopRadius));
+});
+action('recenter-loop',()=>quickRepeat(repeatRadius || 1,true));
+action('new-loop',()=> {
   editingLoopId = undefined;
-  val("loop-name").value = "";
-  $("save-loop").textContent = "저장·반복";
+  val('loop-name').value='';
+  $('save-loop').textContent='구간 저장';
 });
-for (const [id, prefix] of [
-  ["set-a", "loop-a"],
-  ["set-b", "loop-b"],
-])
-  action(id, () => {
-    const l = locate(song(), engine().current());
-    val(prefix).value = String(l.index + 1);
-    val(prefix === "loop-a" ? "loop-ab" : "loop-bb").value = String(
-      Math.floor(l.beat * 4) / 4 + 1,
-    );
-  });
+$('open-loop-dialog').addEventListener('click',()=> {
+  if (!record) return;
+  if (engine().loop || lastPracticeLoop) fillLoop((engine().loop || lastPracticeLoop)!);
+  else {
+    const range = centeredRange(song().measures,locate(song(),engine().current()).index,1,engine().duration);
+    fillLoop({id:'',name:'',start:range.start,end:range.end});
+  }
+});
+for (const [id,prefix] of [['set-a','loop-a'],['set-b','loop-b']]) action(id,()=>{
+  const loc = locate(song(),engine().current());
+  val(prefix).value=String(loc.index+1);
+  val(prefix === 'loop-a' ? 'loop-ab' : 'loop-bb').value=String(Math.floor(loc.beat*4)/4+1);
+  updateLoopBeatBounds();
+});
 function addMarker() {
   const name =
     val("marker-name").value.trim() ||
@@ -825,9 +960,19 @@ function addMarker() {
   queueSave();
 }
 action("add-marker", addMarker);
+action("quick-add-marker", addMarker);
 function renderLists() {
   const s = song();
   $("open-loop-dialog").classList.toggle("is-on", !!player?.loop);
+  const loop = player?.loop;
+  const range = loop && loopMeasureRange(s,loop.start,loop.end);
+  $('loop-summary').textContent = range ? `${range.first+1}–${range.last+1}마디 · ${range.last-range.first+1}마디 반복` : '반복 꺼짐';
+  $('quick-stop-loop').hidden = !loop;
+  $('recenter-loop').hidden = !loop;
+  document.querySelectorAll<HTMLButtonElement>('[data-loop-radius]').forEach(b=> {
+    const active = !!loop && Number(b.dataset.loopRadius) === repeatRadius;
+    b.classList.toggle('primary',active); b.setAttribute('aria-pressed',String(active));
+  });
   $("active-loop").textContent = player?.loop
     ? `반복 중 · ${player.loop.name}`
     : "반복 꺼짐";
@@ -859,7 +1004,7 @@ $("quick-markers").onclick = (e) => {
     "[data-quick-marker]",
   )?.dataset.quickMarker;
   const marker = song().markers.find((m) => m.id === id);
-  if (marker) engine().seek(marker.time);
+  if (marker) seekFreely(marker.time);
 };
 $("markers").onclick = (e) => {
   const t = e.target as HTMLElement;
@@ -868,7 +1013,7 @@ $("markers").onclick = (e) => {
   const s = song();
   if (b.dataset.marker) {
     const m = s.markers.find((m) => m.id === b.dataset.marker)!;
-    engine().seek(m.time);
+    seekFreely(m.time);
   }
   if (b.dataset.renameMarker) {
     const m = s.markers.find((m) => m.id === b.dataset.renameMarker)!;
@@ -884,7 +1029,7 @@ $("loops").onclick = (e) => {
   const b = (e.target as HTMLElement).closest("button");
   if (!b) return;
   const s = song();
-  if (b.dataset.loop) useLoop(s.loops.find((l) => l.id === b.dataset.loop));
+  if (b.dataset.loop) { repeatCenter = repeatRadius = undefined; useLoop(s.loops.find((l) => l.id === b.dataset.loop)); }
   if (b.dataset.renameLoop) {
     const l = s.loops.find((l) => l.id === b.dataset.renameLoop)!;
     const n = prompt("반복 이름", l.name);
@@ -949,6 +1094,7 @@ $("library-list").onclick = async (e) => {
         $("edit-button").hidden = true;
         document.body.classList.remove("has-song");
         $("save-html").hidden = true;
+        songControlsAvailable(false);
       }
       await deleteRecord(deleting);
       await refreshRecentScore();
@@ -1087,6 +1233,8 @@ $("new-form").onsubmit = async (e) => {
 };
 async function openEditor() {
   if (!record) return;
+  closeSettings();
+  scoreGestures.cancel();
   selected = locate(song(), engine().current()).index;
   selected = clamp(selected, 0, song().measures.length - 1);
   engine().pause();
@@ -1556,6 +1704,7 @@ function showOriginalPage() {
   };
 }
 action("original-button", () => {
+  closeSettings();
   originalPage = 0;
   showOriginalPage();
   $<HTMLDialogElement>("original-dialog").showModal();
@@ -1682,24 +1831,26 @@ document.addEventListener("keydown", (e) => {
   )
     return;
   if (e.code === "Space") {
+    scoreGestures.cancel();
     e.preventDefault();
     if(e.repeat)return;
     void toggle().catch(error);
   }
-  if (e.key === "m" || e.key === "M") addMarker();
+  if (e.key === "m" || e.key === "M") { scoreGestures.cancel(); addMarker(); }
   if (["ArrowLeft", "ArrowRight"].includes(e.key)) {
+    scoreGestures.cancel();
     e.preventDefault();
     const i =
       locate(song(), engine().current()).index +
       (e.key === "ArrowRight" ? 1 : -1);
-    engine().seek(
-      song().measures[clamp(i, 0, song().measures.length - 1)].start,
-    );
+    seekFreely(song().measures[clamp(i, 0, song().measures.length - 1)].start);
   }
 });
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden && player?.playing) {
-    player.pause();
+  if (document.hidden) {
+    scoreGestures.cancel();
+    if (gestureScrub) endGestureScrub(true);
+    player?.pause();
     status("화면을 떠나 일시정지했습니다.");
   }
 });
@@ -1783,8 +1934,8 @@ document.body.append(replaceDialog);
 const replaceButton=document.createElement('button');replaceButton.id='replace-score-button';replaceButton.textContent='이 곡에 악보 추가';
 $('backup-dialog').append(replaceButton);
 replaceButton.hidden=isPortable;
-replaceButton.onclick=()=>{if(!record)return;engine().pause();replaceDialog.showModal();};
-$('review-add-score').onclick=()=>{$<HTMLDialogElement>('screen-dialog').close();replaceButton.click();};
+replaceButton.onclick=()=>{if(!record)return;closeSettings();engine().pause();replaceDialog.showModal();};
+$('review-add-score').onclick=()=>{closeSettings();replaceButton.click();};
 $('replace-close').onclick=()=>replaceDialog.close();
 let replaceGeneration=0;
 val('replace-score-file').onchange=async()=>{
