@@ -16,3 +16,6 @@ docs/experiments/
 # Python local preprocessing caches
 __pycache__/
 *.pyc
+
+# Generated once per build; embedded in web and portable bundles.
+src/build-info.generated.json

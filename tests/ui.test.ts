@@ -258,6 +258,8 @@ it("groups screen, playback, score management and app info in settings", () => {
   click('open-info-settings');
   expect(document.getElementById('busy')!.closest('#info-settings')).not.toBeNull();
   expect(document.getElementById('app-version')!.textContent).toBe(JSON.parse(readFileSync('package.json','utf8')).version);
+  expect(document.getElementById('app-build')!.textContent).toMatch(/^\d{17}$/);
+  expect(document.getElementById('app-source')!.textContent).toMatch(/^[a-f0-9]{12}$/);
   click('open-playback-settings');
   expect((document.getElementById('restart-measure') as HTMLInputElement).checked).toBe(true);
   expect((document.getElementById('count-off') as HTMLInputElement).checked).toBe(true);

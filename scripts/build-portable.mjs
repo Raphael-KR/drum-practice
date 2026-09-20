@@ -1,3 +1,5 @@
+import { writeBuildInfo } from "./build-info.mjs";
+await writeBuildInfo();
 import { build } from "esbuild";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 
