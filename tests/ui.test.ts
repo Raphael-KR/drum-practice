@@ -199,11 +199,11 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   set("goto", "1");
   errorSpy.mockRestore();
   expect(document.getElementById("view")!.closest("#screen-dialog")).not.toBeNull();
-  expect(document.querySelectorAll('input[name="score-view"]')).toHaveLength(3);
-  expect(document.getElementById('view')!.hidden).toBe(true);
-  (document.querySelector('input[name="score-view"][value="rows"]') as HTMLInputElement).click();
-  expect((document.querySelector('input[name="score-view"][value="rows"]') as HTMLInputElement).checked).toBe(true);
-  expect((document.querySelector('input[name="score-view"][value="compare"]') as HTMLInputElement).disabled).toBe(true);
+  expect(document.querySelectorAll('input[name="score-view"]')).toHaveLength(0);
+  expect(document.getElementById('view')!.hidden).toBe(false);
+  expect((document.querySelector('#view option[value="compare"]') as HTMLOptionElement).disabled).toBe(true);
+  expect((document.getElementById('prefer-pdf') as HTMLInputElement).checked).toBe(true);
+  expect((document.getElementById('prefer-pdf') as HTMLInputElement).disabled).toBe(true);
   expect(document.getElementById('review-availability')!.textContent).toContain('MusicXML');
 
   set("view", "rows");
@@ -338,7 +338,7 @@ it("fills played measures, advances within a measure and clears future shading a
 it("keeps icon controls accessible and updates play and metronome states", async () => {
   expect(document.getElementById("open-settings-dialog")!.getAttribute("aria-label")).toBe("설정");
   expect(document.getElementById("click")!.closest("label")!.nextElementSibling!.id).toBe("library-button");
-  expect(document.getElementById("fullscreen")!.closest("#settings-dialog")).not.toBeNull();
+  expect(document.getElementById("fullscreen")).toBeNull();
   expect(document.getElementById("save-html")!.closest("#backup-dialog")).not.toBeNull();
   expect(document.getElementById("rate")!.closest("#tempo-dialog")).not.toBeNull();
   for (const id of ["tempo-presets", "slower", "faster"]) expect(document.getElementById(id)).toBeNull();
@@ -502,4 +502,21 @@ it('lists one card per song and only the content types actually saved',async()=>
     expect(cards[i].querySelector('.score-type-musicxml')).toBeNull();
     expect(!!cards[i].querySelector('.score-type-lyrics')).toBe(r.song.lyrics.length>0);
   }
+});
+
+it('dismisses settings only for an outside gesture and uses icon close controls', () => {
+  click('open-settings-dialog');
+  const dialog = document.getElementById('settings-dialog') as HTMLDialogElement;
+  const rect = vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({left:100,top:100,right:800,bottom:600} as DOMRect);
+  const gesture = (startX:number,endX:number) => {
+    dialog.dispatchEvent(new MouseEvent('pointerdown',{bubbles:true,clientX:startX,clientY:200}));
+    dialog.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:endX,clientY:200}));
+  };
+  gesture(200,20); expect(dialog.open).toBe(true);
+  gesture(20,20); expect(dialog.open).toBe(false);
+  const close = dialog.querySelector('[data-close]')!;
+  expect(close.getAttribute('aria-label')).toBe('닫기');
+  expect(close.textContent).toBe('');
+  expect(close.querySelector('svg')).not.toBeNull();
+  rect.mockRestore();
 });

@@ -1,3 +1,4 @@
+import { savePreferPDF, scorePreference } from "./score-preference";
 import { readPlaybackPreferences, savePlaybackPreferences } from "./playback-preferences";
 import { centeredRange, loopMeasureRange, scrubTime } from "./practice-controls";
 import { autoFullscreenEnabled, saveAutoFullscreen, enterFullscreen } from "./fullscreen";
@@ -257,6 +258,8 @@ async function activate(r: RecordData) {
   busy = true;
   try {
     if(!isPortable){r=await attachBundledScore(r,status);r=await correctStoredRests(r,status);r=await ensureCenteredRestCache(r,status);}
+    const preferred = scorePreference(r).format;
+    if (preferred !== (r.song.scoreFormat ?? 'pdf')) r = useScore(r, songScores(r).find(s => s.format === preferred)!);
     if (!isPortable && r.song.scoreFormat === 'musicxml' && r.pages.some(p => p.type !== SVG_GZIP)) {
       const rendered = await renderScore(r.pdf, 'musicxml', r.song.scorePartId);
       if (!rendered.parsed) throw Error('MusicXML 렌더링 결과가 없습니다.');
@@ -326,16 +329,53 @@ function syncViewChoices() {
   if(!record)return;
   const formats=songScores(record).map(s=>s.format);
   const missing=['pdf','musicxml'].filter(f=>!formats.includes(f as 'pdf'|'musicxml'));
-  document.querySelectorAll<HTMLInputElement>('input[name="score-view"]').forEach(r=>{
-    r.checked=r.value===song().settings.view;
-    r.disabled=r.value==='compare' && missing.length>0;
-    if(r.value==='compare')r.setAttribute('aria-describedby','review-availability');
-  });
+  const compare = song().settings.view === 'compare';
+  ($('view') as HTMLSelectElement).querySelector<HTMLOptionElement>('option[value="compare"]')!.disabled = missing.length > 0;
+  const preference = scorePreference(record);
+  val('prefer-pdf').checked = preference.checked;
+  val('prefer-pdf').disabled = preference.disabled;
+  $('pdf-view-status').textContent = preference.message;
+  $('pdf-view-row').hidden = compare;
+  $('review-help').hidden = !compare;
+  $('view-description').textContent = compare ? '위쪽 PDF · 아래쪽 SVG로 같은 마디를 비교합니다.' : song().settings.view === 'rows' ? '두 줄의 악보를 고정하고 재생 위치를 표시합니다.' : '진행선에 맞춰 악보가 옆으로 이어집니다.';
   $('review-availability').textContent=missing.length
     ? `검수하려면 이 곡에 ${missing.map(f=>f==='pdf'?'PDF':'MusicXML').join('와 ')} 악보를 추가해 주세요. 현재 저장된 악보: ${formats.map(f=>f==='pdf'?'PDF':'MusicXML').join(', ')}.${isPortable?' 웹앱에서 추가한 뒤 HTML을 다시 저장하세요.':''}`
-    : '위쪽 PDF · 아래쪽 SVG로 같은 마디를 비교합니다.';
+    : '';
   $('review-add-score').hidden=isPortable || !missing.length;
 }
+// Prepare geometry before swapping it, leaving audio and loop scheduling intact.
+val('prefer-pdf').onchange = async () => {
+  if (!record || busy) { if (record) syncViewChoices(); return; }
+  const original = record;
+  const wanted = val('prefer-pdf').checked;
+  if (scorePreference(original).disabled) { syncViewChoices(); return; }
+  busy = true;
+  val('prefer-pdf').disabled = true;
+  const nextUrls: string[] = [];
+  try {
+    const target = songScores(original).find(s => s.format === (wanted ? 'pdf' : 'musicxml'))!;
+    const next = useScore(original, target);
+    const staffs = new Map<string, StaffPosition>();
+    const ratios: number[] = [];
+    for (const [index, page] of next.pages.entries()) {
+      const url = URL.createObjectURL(await practicePage(page)); nextUrls.push(url);
+      const img = new Image(); img.src = url; await img.decode();
+      ratios.push(img.naturalHeight / img.naturalWidth);
+      if (target.format === 'musicxml')
+        for (const [id, staff] of measurePageStaff(img, next.song.regions.filter(r => r.page === index))) staffs.set(id, staff);
+    }
+    if (record !== original) throw Error('곡이 바뀌었습니다. 다시 선택해 주세요.');
+    // Settings may have changed while the images decoded; retain the latest values.
+    next.song.settings = original.song.settings;
+    for (const url of urls) URL.revokeObjectURL(url);
+    urls = nextUrls; pageRatios = ratios;
+    practiceStaffs.clear(); for (const [id, staff] of staffs) practiceStaffs.set(id, staff);
+    record = next; engine().song = next.song;
+    savePreferPDF(wanted);
+    renderTrack(); queueSave();
+  } catch (e) { for (const url of nextUrls) if (!urls.includes(url)) URL.revokeObjectURL(url); error(e); }
+  finally { busy = false; syncViewChoices(); }
+};
 function syncSettings() {
   syncViewChoices();
   const s = song().settings;
@@ -766,11 +806,17 @@ function requestScoreFullscreen() {
   void fullscreenRequest.finally(() => { fullscreenRequest = undefined; });
 }
 val('auto-fullscreen').checked = autoFullscreenEnabled();
-val('auto-fullscreen').onchange = () => saveAutoFullscreen(val('auto-fullscreen').checked);
-action('fullscreen', async () => {
-  if (document.fullscreenElement) await document.exitFullscreen();
-  else await enterFullscreen(fullscreenReport);
-});
+val('auto-fullscreen').onchange = async () => {
+  const enabled = val('auto-fullscreen').checked;
+  saveAutoFullscreen(enabled);
+  try {
+    if (enabled && record) await enterFullscreen(fullscreenReport);
+    else if (!enabled) {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      fullscreenReport('');
+    }
+  } catch (e) { error(e); }
+};
 // Request before asynchronous file/IndexedDB work consumes transient activation.
 document.addEventListener('click', e => {
   if ((e.target as Element).closest('#demo-button, #library-list [data-open]')) requestScoreFullscreen();
@@ -1069,6 +1115,7 @@ $("library-list").onclick = async (e) => {
     if (b.dataset.open) {
       const selected = library[Number(b.dataset.open)];
       const target = b.dataset.score && songScores(selected).find(s => s.format === b.dataset.score);
+      if (target && songScores(selected).length > 1) savePreferPDF(target.format === "pdf");
       await activate(target ? useScore(selected,target) : selected);
       $<HTMLDialogElement>("library-dialog").close();
       if (b.dataset.lyrics) { selectEditorPane("lyrics"); await openEditor(); }

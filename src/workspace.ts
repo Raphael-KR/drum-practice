@@ -118,6 +118,17 @@ export function arrangeWorkspace() {
   settings.setAttribute("aria-labelledby", "settings-heading");
   settings.innerHTML = '<div class="dialoghead"><h2 id="settings-heading">설정</h2><button data-close="settings-dialog">닫기</button></div><div class="settings-layout"><nav class="settings-nav" aria-label="설정 분류"></nav><div class="settings-detail"><h3 id="settings-detail-heading">화면</h3></div></div>';
   el("app").append(settings);
+  // Require both ends of the gesture outside; dragging a slider out must not dismiss.
+  let outsideStart = false;
+  const outside = (e: MouseEvent) => {
+    const r = settings.getBoundingClientRect();
+    return e.target === settings && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom);
+  };
+  settings.addEventListener('pointerdown', e => { outsideStart = outside(e); });
+  settings.addEventListener('click', e => {
+    if (outsideStart && outside(e)) { e.preventDefault(); e.stopPropagation(); settings.close(); }
+    outsideStart = false;
+  });
   const gear = document.createElement("button");
   gear.id = "open-settings-dialog";
   gear.textContent = "설정";
@@ -140,24 +151,18 @@ export function arrangeWorkspace() {
     return section;
   };
   const screenBody = settingsPanel("screen", "screen-dialog", "open-screen-dialog");
-  const viewChoices = document.createElement("fieldset");
-  viewChoices.id = "view-choices";
-  viewChoices.innerHTML = '<legend>보기</legend>' + [
-    ["ribbon", "한 줄로 이어 보기"], ["rows", "두 줄 고정 비교"], ["compare", "PDF · MusicXML 검수"],
-  ].map(([value, label]) => `<label><input type="radio" name="score-view" value="${value}"><span>${label}</span></label>`).join("");
-  el("view").hidden = true;
-  screenBody.append(viewChoices);
-  viewChoices.addEventListener("change", e => {
-    const radio = e.target as HTMLInputElement;
-    if (radio.name !== "score-view") return;
-    (el("view") as HTMLSelectElement).value = radio.value;
-    el("view").dispatchEvent(new Event("change"));
-  });
+  const viewRow = document.createElement("label");
+  viewRow.className = "view-select-row";
+  viewRow.innerHTML = '<span>보기</span>';
+  el("view").hidden = false;
+  viewRow.append(el("view"));
+  screenBody.append(viewRow);
+  screenBody.insertAdjacentHTML("beforeend", '<p id="view-description" class="subtle"></p><label id="pdf-view-row" class="settings-switch"><span><strong>악보를 PDF로 보기</strong><small id="pdf-view-status">모든 곡에 공통으로 적용합니다.</small></span><input id="prefer-pdf" type="checkbox" role="switch" disabled></label>');
   const reviewHelp = document.createElement("div");
   reviewHelp.id = "review-help";
   reviewHelp.innerHTML = '<p id="review-availability"></p><button id="review-add-score">이 곡에 악보 추가</button>';
-  screenBody.append(reviewHelp, el("view"), el("zoom").closest("label")!);
-  screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>악보를 열 때 전체화면으로 전환합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><button id="fullscreen" type="button">전체화면</button><p id="fullscreen-status" class="subtle" role="status"></p></div>');
+  screenBody.append(reviewHelp, el("zoom").closest("label")!);
+  screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>현재 악보와 다음에 여는 악보에 적용합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><p id="fullscreen-status" class="subtle" role="status"></p></div>');
   const playback = settingsPanel("playback", "playback-settings", "open-playback-settings");
   playback.innerHTML = '<label class="settings-switch"><span><strong>마디 처음부터 다시 재생</strong><small>끄면 일시정지한 위치에서 이어서 재생합니다.</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>카운트오프 (Count-off)</strong><small>현재 연습 BPM으로 4분음표 스틱 소리 네 번 후 시작합니다.</small></span><input id="count-off" type="checkbox" role="switch"></label><p class="subtle">모든 곡에 공통으로 적용하며, 다음 재생부터 사용합니다.</p><p id="playback-settings-status" class="subtle" role="status"></p>';
   const scoreSettings = settingsPanel("score", "score-settings", "open-score-settings");

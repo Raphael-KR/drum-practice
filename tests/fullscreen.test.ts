@@ -11,7 +11,7 @@ it('requests native fullscreen and reports browser rejection without failing son
   const report=vi.fn();
   document.documentElement.requestFullscreen=vi.fn().mockRejectedValue(new Error('activation required'));
   expect(await enterFullscreen(report)).toBe(false);
-  expect(report).toHaveBeenCalledWith(expect.stringContaining('전체화면 버튼'));
+  expect(report).toHaveBeenCalledWith(expect.stringContaining('옵션을 껐다가'));
   document.documentElement.requestFullscreen=vi.fn().mockResolvedValue(undefined);
   expect(await enterFullscreen(report)).toBe(true);
 });

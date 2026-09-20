@@ -1,6 +1,7 @@
 // Original SVG drawings using familiar Apple-style action metaphors.
 // Embedded paths work offline and do not depend on an installed symbol font.
 const paths: Record<string, string> = {
+  close: '<path d="m6 6 12 12M18 6 6 18"/>',
   settings: '<path d="m10 3-.6 2.1-2 .9-2-.7-2 3.4 1.5 1.5-.2 2.2L3 14l2 3.4 2-.7 2 .9.6 2.1h4l.6-2.1 2-.9 2 .7 2-3.4-1.5-1.5.2-2.2L21 10l-2-3.4-2 .7-2-.9L14 3Z"/><circle cx="12" cy="11.5" r="3"/>',
   recenter: '<circle cx="12" cy="12" r="7"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/>',
   play: '<path d="m8 4 13 8-13 8Z" fill="currentColor" stroke="none"/>',
@@ -37,7 +38,7 @@ export function arrangeIcons() {
     ['home','start','처음으로'], ['play','play','재생'], ['jump','rewind','선택한 마디 수만큼 되감기'],
     ['welcome-library','library','내 악보 목록','내 악보 목록'], ['welcome-new','plus','악보 추가','악보 추가'],
     ['library-button','library','내 악보 목록'], ['new-button','plus','곡 추가','곡 추가'],
-    ['save-html','export','HTML 한 파일로 저장','HTML 저장'], ['fullscreen','expand','전체화면','전체화면'],
+    ['save-html','export','HTML 한 파일로 저장','HTML 저장'],
     ['open-settings-dialog','settings','설정'], ['quick-add-marker','plus','현재 위치에 마커 추가','현재 위치 표시'],
     ['open-score-settings','library','악보 관리','악보'], ['open-playback-settings','play','재생 설정','재생'], ['open-info-settings','info','프로그램 정보','정보'],
     ['open-loop-dialog','repeat','반복 구간 조정','조정'], ['open-marker-dialog','bookmark','마커','마커'],
@@ -53,5 +54,9 @@ export function arrangeIcons() {
   input.setAttribute('aria-label', '메트로놈');
   for (const child of [...label.childNodes]) if (child !== input) child.remove();
   label.insertAdjacentHTML('beforeend', icon('metronome'));
-  document.addEventListener('fullscreenchange', () => iconButton('fullscreen', document.fullscreenElement ? 'collapse' : 'expand', document.fullscreenElement ? '전체화면 종료' : '전체화면', document.fullscreenElement ? '전체화면 종료' : '전체화면'));
+  document.querySelectorAll<HTMLButtonElement>('[data-close]').forEach(b => {
+    b.innerHTML = icon('close'); b.setAttribute('aria-label', '닫기'); b.title = '닫기';
+    b.classList.add('icon-button', 'close-button');
+  });
+
 }
