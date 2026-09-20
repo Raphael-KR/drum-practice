@@ -40,3 +40,7 @@ Safari 원문이 32.95% 적었고 필터 후에는 거의 같았다. 두 도구�
 실제 모델 청구/추론/이미지 토큰·설정 준비·도구 JSON 포장은 여전히 제외한다. Safari는 macOS 데스크톱이며 iPad 검증이 아니다. 곡 위치는 Safari 0초/기존 ego 3.8초, 창 크기는 통제하지 않았다. 단일 시나리오이므로 모든 웹앱에서 Safari가 저렴하다는 결론은 내리지 않는다. 기본 diff 반환을 사용하면 추가 절감 여지가 있지만 이번 수치에는 포함하지 않았다.
 
 이번 결과로 ego가 항상 최저 비용이라는 앞선 가정은 지지되지 않는다. 이 앱의 메뉴 검사에서는 Safari MCP가 더 작은 원문과 성공한 화면 캡처를 제공했다. 원시 증거: docs/experiments/gui-cost/safari-{ready,menu,closed}.txt, safari-counts.json, safari-menu.png. 새로운 Safari 테스트 탭에서만 진행했고 앱 소스는 변경하지 않았다.
+
+## 채택한 운영 지침
+
+2026-09-20 사용자 결정: 앞으로 이 프로젝트의 웹앱 테스트는 Safari MCP를 우선 사용하고, Safari에서 실패하면 ego-browser를 검토한다. 앞선 ego 우선 운용 제안은 이 결정으로 대체한다. iPad 기기 특성의 최종 검증은 기존 Device Hub 절차를 유지한다. 실행 지침은 AGENTS.md에 반영했다.
