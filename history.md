@@ -1117,3 +1117,7 @@ ego 재실행 없이 기존 결과 재사용. Safari MCP에서 같은 검수 보
 ## 2026-09-20 — Safari 우선 테스트 지침 채택
 
 사용자 요청에 따라 AGENTS.md를 Safari MCP 우선, 실패 시 ego-browser 검토로 변경했다. 비교 보고서에도 최종 결정을 기록했다. iPad 기기 검증 절차는 유지한다. 문서 diff 확인 완료; 앱 코드 변경 없음.
+
+## 2026-09-20 — Safari 미지원 기능의 직접 ego 사용
+
+사용자 보완 결정: Safari MCP 미지원 기능은 실패를 기다리지 않고 처음부터 ego-browser를 사용한다. 지원 기능의 실패 시 ego 검토 규칙과 구분해 AGENTS.md에 반영했다.
