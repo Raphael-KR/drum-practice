@@ -68,3 +68,34 @@ MusicXML은 악기 의미(instrument), 표시 높이(unpitched/display-step/disp
 - https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/other-technical/
 - 로컬 upstream: src/MusicalScore/ScoreIO/VoiceGenerator.ts (notehead 읽기), ScoreIO/MusicSymbolModules/ArticulationReader.ts (technical 매핑), Graphical/VexFlow/VexFlowConverter.ts (X2/X3/T2 및 ○/＋ 변환).
 - 실험 출력: docs/experiments/osmd-hollow-report/drum-{stock,patched}.json; drum-audit-{stock,patched}.png.
+
+## 추가 확인: 온마디쉼표 및 스티킹 명칭 정정
+
+### 온마디쉼표 (2026-09-20)
+
+원인은 앱의 SVG 자르기가 아니라 OSMD 2.1.2의 명시적 쉼표 높이 처리 경로로 재현했다. 현재 develop VexFlowConverter.ts에도 같은 조기 break가 있다.
+
+- `note.sourceNote.Pitch`가 존재하면 keys에 해당 높이를 넣고 break한다.
+- 뒤쪽의 온마디쉼표 판정/`alignCenter=true`에 도달하지 못한다.
+- public/demo/score.musicxml의 1~4마디에는 `<rest measure="yes"><display-step>B</display-step><display-octave>4</display-octave></rest>`가 실제로 들어 있다.
+- 이는 쉼표 높이를 지정하는 유효한 MusicXML이다. 이전 높이 고정 작업이 이 버그의 발생 조건을 만들었지만, 높이 지정 때문에 가로 중앙 정렬까지 없어져서는 안 된다.
+- 앱 보정을 전혀 쓰지 않는 `/qa/rest-sticking-audit.html`에서 높이 정보만 다른 온마디쉼표를 렌더링했다.
+- 높이 미지정: 두 마디 모두 `isCenterAligned()=true`.
+- B4 지정: 두 마디 모두 `isCenterAligned()=false`, noteStartX+12 위치. 두 번째 마디 x는 각각 261.755 / 229.255로 다르다.
+- 우리 앱 src/musicxml.ts의 full-bar glyph 중앙 이동은 이 문제를 우회하는 코드다. 이번 조사는 해당 코드를 변경하지 않았다.
+- 2분쉼표/점2분쉼표를 일반적으로 쉬는 구간 가운데로 옮긴다는 규칙은 아니다. 이 버그는 온마디쉼표의 중앙 배치에 관한 것이다.
+- 근거: https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/rest/
+
+### R/L은 fingering이 아니라 sticking
+
+- 드럼의 오른손/왼손 지시는 **스티킹(sticking)**이다. Fingering은 손가락 운지 지시를 뜻한다.
+- 앞선 `R/L fingering` 사례는 XML 요소가 문자열을 출력하는지를 검사한 것으로, 실제 드럼 표기의 권장 인코딩이나 정확한 명칭으로 제시하면 안 된다.
+- 앞선 범례 그림의 R/L을 한 음표에 쌓아 놓은 재현은 실제 연주 순서 예제로 부적절했다. 각 타격 음표에 R 또는 L을 연결한다. 범례의 겹친 R/L은 선택 가능한 기호 설명으로 볼 수 있으며, 해당 그림만으로 두 번의 연주 순서를 뜻한다고 볼 수 없다.
+- 새 예제는 네 개 사분음표 각각에 R, L, R, L을 words로 배치했다. Safari SVG에서 각각 다른 음표 아래에 네 글자가 대응하는 것을 확인했다.
+- 장래 앱 데이터는 `sticking`으로 명명하고 음표 ID/성부/악보 위치에 연결하는 것이 타당하다. words는 시각적 MusicXML 호환 경로이며, 이것만으로 모든 프로그램이 손 의미를 구조적으로 인식한다고 보장하지 않는다.
+- Soundslice 공식 설명은 sticking을 given note에 사용할 손으로 정의하며 R/L/B를 구분한다. 다음 음표로 이동하면서 개별 입력하고, MusicXML의 타악기 R/L 텍스트를 인식한다고 명시한다.
+- https://www.soundslice.com/blog/212/native-support-for-drum-sticking/
+- https://ae.vicfirth.com/education/webrhythms/webrhythms-lesson-04/
+- https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/fingering/
+
+실측 화면: docs/experiments/osmd-hollow-report/rest-sticking.png. 공개 PR 제출과 신규 upstream 수정은 이번 조사에서 수행하지 않았다.

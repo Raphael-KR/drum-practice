@@ -1,0 +1,17 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>온마디쉼표와 스티킹 검수</title><style>body{font:16px system-ui;margin:20px}.score{width:950px}h2{font-size:20px}pre{white-space:pre-wrap}</style><h1>OSMD 2.1.2 원본 — 앱 SVG 보정 없음</h1><script type="module">
+import OSMD from '/node_modules/.vite/deps/opensheetmusicdisplay.js';
+const attrs='<attributes><divisions>4</divisions><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>percussion</sign></clef><staff-details><staff-lines>5</staff-lines></staff-details></attributes>';
+const xml=ms=>`<?xml version="1.0"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>Drums</part-name></score-part></part-list><part id="P1">${ms.map((m,i)=>`<measure number="${i+1}">${i===0?attrs:''}${m}</measure>`).join('')}</part></score-partwise>`;
+window.results=[];
+for(const [label,body] of [['높이 미지정: 중앙', '<rest measure="yes"/>'],['높이 B4 지정: 왼쪽 문제','<rest measure="yes"><display-step>B</display-step><display-octave>4</display-octave></rest>']]){
+const h=document.createElement('h2');h.textContent=label;document.body.append(h);const div=document.createElement('div');div.className='score';document.body.append(div);
+const osmd=new OSMD.OpenSheetMusicDisplay(div,{backend:'svg',autoResize:false,drawTitle:false,drawPartNames:false});osmd.EngravingRules.PercussionOneLineCutoff=0;
+await osmd.load(xml([1,2].map(()=>`<note>${body}<duration>16</duration><voice>1</voice></note>`)));osmd.render();
+window.results.push({label,measures:osmd.GraphicSheet.MeasureList.map(([m])=>{const n=m.staffEntries[0].graphicalVoiceEntries[0].notes[0];const vf=n.vfnote[0];return {whole:n.sourceNote.IsWholeMeasureRest,keys:vf.keys,center:vf.isCenterAligned(),x:vf.getAbsoluteX(),noteStart:vf.getStave().getNoteStartX(),noteEnd:vf.getStave().getNoteEndX()}})});
+}
+const h=document.createElement('h2');h.textContent='스티킹: 각 음표에 R · L · R · L (words)';document.body.append(h);const div=document.createElement('div');div.className='score';document.body.append(div);
+const osmd=new OSMD.OpenSheetMusicDisplay(div,{backend:'svg',autoResize:false,drawTitle:false,drawPartNames:false});osmd.EngravingRules.PercussionOneLineCutoff=0;
+await osmd.load(xml([['R','L','R','L'].map(s=>`<direction placement="below"><direction-type><words>${s}</words></direction-type><voice>1</voice></direction><note><unpitched><display-step>C</display-step><display-octave>5</display-octave></unpitched><duration>4</duration><voice>1</voice><type>quarter</type><stem>up</stem></note>`).join('')]));osmd.render();
+window.stickingCount=div.querySelectorAll('text').length;
+const pre=document.createElement('pre');pre.textContent=JSON.stringify(window.results,null,2);document.body.append(pre);
+</script></html>

@@ -1152,3 +1152,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 추가 누락 확인: parentheses=yes 고스트 괄호, other-technical R 텍스트. words/fingering의 R/L은 표시됨. 별도 수정은 수행하지 않았다.
 - 조사 정본 docs/DRUM-NOTATION-SUPPORT-AUDIT.md, 재현 public/qa/drum-notation-audit.html, 실험 출력 docs/experiments/osmd-hollow-report/drum-*.json 및 drum-audit-*.png.
 - 앱 소스/곡 데이터/기존 upstream 패치 변경 없음. 재생 음색 검증 없음. 이 조사는 STT/AFM 추론보다 표준 문서·소스·SVG 실행 증거가 직접적이어서 로컬 AI는 사용하지 않았다.
+
+## 2026-09-20 — 온마디쉼표 원인 확정 및 sticking 정정
+
+- 사용자 요청에 따라 인터넷 공식 표준/교육 자료와 로컬 OSMD 소스를 비교했다.
+- 앱 보정 없는 OSMD 2.1.2에서 높이 미지정 온마디쉼표는 center=true, B4 지정은 center=false로 재현. sourceNote.Pitch 분기의 조기 break가 중앙 정렬을 건너뛴다. 실제 곡 1~4마디에 B4 rest display가 존재한다. 앱의 자르기 이전에 발생하는 OSMD 결함이며 앱의 중앙 이동 보정은 우회책이다.
+- R/L의 명칭은 sticking. 앞선 fingering 명칭/한 음표에 R/L을 쌓은 시연의 한계를 정정했다. words로 네 음표에 R L R L을 각각 배치한 Safari SVG 확인.
+- 재현 public/qa/rest-sticking-audit.html, 상세 docs/DRUM-NOTATION-SUPPORT-AUDIT.md에 추가. 화면 docs/experiments/osmd-hollow-report/rest-sticking.png. 앱/악보/기존 upstream 패치 변경 및 공개 제출 없음.
