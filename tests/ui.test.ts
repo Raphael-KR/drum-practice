@@ -378,7 +378,9 @@ it("keeps icon controls accessible and updates play and metronome states", async
 it("offers tempo presets and previews single-BPM dragging until release", async () => {
   click("original-tempo");
   expect(document.getElementById("tempo-dialog")!.hasAttribute("open")).toBe(true);
-  expect(document.querySelectorAll("#tempo-options button")).toHaveLength(6);
+  expect(document.querySelectorAll("#tempo-options button")).toHaveLength(5);
+  expect(document.querySelectorAll('#tempo-dialog [data-tempo="94"]')).toHaveLength(0);
+  expect(document.getElementById("tempo-reset")).not.toBeNull();
   (document.querySelector('[data-tempo="75"]') as HTMLButtonElement).click();
   await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(75 / 94));
   const input = document.getElementById("rate") as HTMLInputElement;

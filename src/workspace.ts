@@ -138,7 +138,7 @@ export function arrangeWorkspace() {
     label.childNodes[0].textContent = title + " ";
     precise.lastElementChild!.append(label);
   }
-  precise.lastElementChild!.insertAdjacentHTML("beforeend", '<span class="subtle">정밀 모드에서는 끝 경계의 음을 포함하지 않습니다.</span>');
+
   el("set-a").textContent = "현재 마디부터";
   el("set-b").textContent = "현재 마디까지";
   el("save-loop").before(Object.assign(document.createElement("button"), { id: "apply-loop", className: "primary", textContent: "구간 적용" }));
@@ -275,7 +275,14 @@ export function arrangeWorkspace() {
   }
   const metaPane = document.createElement("section");
   metaPane.id = "editor-meta";
-  metaPane.append(metadata, metadataNote);
+  metadata.className = "metadata-fields";
+  const timing = document.createElement("section");
+  timing.className = "metadata-timing";
+  timing.innerHTML = "<h3>음원과 악보 연결</h3><div class='timing-fields'></div><div class='timing-actions'></div>";
+  for (const id of ["edit-bpm", "edit-first"]) timing.querySelector('.timing-fields')!.append(el(id).closest('label')!);
+  for (const id of ["reflow", "estimate-tempo", "tap-tempo", "tap-result"]) timing.querySelector('.timing-actions')!.append(el(id));
+  timing.append(metadataNote);
+  metaPane.append(metadata, timing);
   score.id = "editor-score";
   editor.append(metaPane, lyricPane);
   const tabs = document.createElement("div");
@@ -294,6 +301,10 @@ export function arrangeWorkspace() {
     "beforeend",
     '<div class="pager"><button id="lyrics-prev">이전</button><span id="lyrics-page"></span><button id="lyrics-next">다음</button></div>',
   );
+  const scrollBody = document.createElement("div");
+  scrollBody.className = "editor-body";
+  scrollBody.append(score, lyricPane, metaPane);
+  editor.append(scrollBody);
   selectEditorPane("score");
 }
 export function selectEditorPane(name: string) {

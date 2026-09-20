@@ -67,3 +67,29 @@ it("round trips all songs, media, XML, drafts and histories in a library archive
   expect(await loaded.records[0].audio.text()).toBe("audio");
   expect(loaded.preferences["drum-practice.playback"]).toContain("false");
 });
+
+it("renders syllables for reading without changing stored lyric text or positions", () => {
+  const r = make();
+  r.song.lyricText = undefined;
+  const words = ["나", "다", "라", "카", "나", "once", "a-", "gain"];
+  r.song.lyrics = words.map((text, i) => ({ id: String(i), text, time: i, end: i+1, confirmed: false }));
+  const before = JSON.stringify(r.song);
+  expect(lyricDocument(r)).toBe("나다라카나 once again");
+  expect(JSON.stringify(r.song)).toBe(before);
+});
+it("honors matching MusicXML word and line boundaries", () => {
+  const r = make();
+  r.song.lyricText = undefined;
+  r.song.lyrics = ["hel", "lo", "world"].map((text, i) => ({ id: String(i), text, time: i, end:i+1, confirmed:false }));
+  const canonicalXML = '<score-partwise><part><measure><note><lyric><syllabic>begin</syllabic><text>hel</text></lyric></note><note><lyric><syllabic>end</syllabic><text>lo</text><end-line/></lyric></note><note><lyric><text>world</text></lyric></note></measure></part></score-partwise>';
+  expect(lyricDocument({...r, canonicalXML})).toBe("hello\nworld");
+});
+
+it("separates actual rehearsal sections without inventing lyric section names", () => {
+  const r = make(); r.song.lyricText = undefined;
+  r.song.measures = [{id:"a"}, {id:"b"}];
+  r.song.lyrics = ["나", "다"].map((text,i) => ({text,scorePosition:{measureId:i ? "b" : "a",quarterOffset:0,durationQuarters:1}}));
+  const canonicalXML = '<score-partwise><part><measure/><measure><direction><direction-type><rehearsal>B</rehearsal></direction-type></direction></measure></part></score-partwise>';
+  expect(lyricDocument({...r,canonicalXML})).toBe("나\n\n다");
+  expect(lyricDocument({...r,canonicalXML:canonicalXML.replace(">B<", ">Interlude<")})).toBe("나다");
+});

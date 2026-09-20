@@ -1466,3 +1466,79 @@ button.icon-button[hidden] { display:none; }
 #lyric-upload-dialog textarea { width:100%; min-height:220px; margin-top:10px; }
 #original-button,#full-lyrics-button { margin-bottom:18px; }
 @media(max-width:600px){ .editor-history-tools{flex-wrap:wrap} .editor-history-tools small{width:100%} }
+
+/* Shared visual baseline: scoped to app dialogs and musical asset types. */
+:root {
+  --xml-bg:#e4eeff; --xml-fg:#285dac;
+  --pdf-bg:#ffe8e7; --pdf-fg:#a43835;
+  --lyrics-bg:#e0f3e8; --lyrics-fg:#236744;
+  --audio-bg:#eee5fb; --audio-fg:#72439e;
+}
+.asset-musicxml,.score-type-musicxml { background:var(--xml-bg); color:var(--xml-fg); }
+.asset-pdf,.score-type-pdf { background:var(--pdf-bg); color:var(--pdf-fg); }
+.asset-lyrics,.score-type-lyrics { background:var(--lyrics-bg); color:var(--lyrics-fg); }
+.asset-audio,.score-type-audio { background:var(--audio-bg); color:var(--audio-fg); }
+.asset-missing { color:#7a818c; background:#e8ebef; }
+dialog select { appearance:none; -webkit-appearance:none; height:48px; min-height:48px; padding:8px 30px 8px 12px; border:1px solid var(--line); border-radius:10px; background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='m3 5 4 4 4-4' fill='none' stroke='%23677992' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 10px center; color:var(--ink); font:inherit; max-width:100%; }
+dialog .dialoghead { position:sticky; top:0; z-index:3; background:var(--surface,#f4f7fc); flex-shrink:0; }
+.touch-workspace #settings-dialog[open] { display:flex; flex-direction:column; height:min(620px,94dvh); overflow:hidden; }
+#settings-dialog .settings-layout { flex:1; min-height:0; align-items:stretch; }
+#settings-dialog .settings-nav { overflow:auto; }
+#settings-dialog .settings-detail { overflow:auto; padding:4px 4px 12px 0; }
+#score-settings { display:flex; flex-direction:column; }
+#score-settings > #score-summary,#score-settings > .management-actions { width:100%; }
+#score-summary h3 { font-size:18px; }
+#score-summary .asset-chips { margin-bottom:8px; }
+#editor-dialog[open] { display:flex; flex-direction:column; overflow:hidden; }
+#editor-dialog > .editor-tabs,#editor-dialog > .editor-history-tools { flex:none; margin:0 0 10px; }
+.editor-body { flex:1; min-height:0; overflow:auto; padding:4px; }
+#editor-score { height:auto; min-height:100%; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-content:start; }
+.score-source-tools { grid-column:1 / -1; display:flex; justify-content:flex-end; }
+#editor-score #original-button { width:auto; min-height:48px; height:48px; margin:0; padding:8px 14px; border:1px solid var(--line); border-radius:12px; }
+#editor-score > section { min-width:0; display:flex; flex-direction:column; }
+#editor-score .pagebox { min-height:250px; max-height:380px; flex:none; }
+#editor-score label { align-items:center; }
+#editor-lyrics table { table-layout:fixed; width:100%; font-size:15px; }
+#editor-lyrics th:nth-child(1) { width:24%; }
+#editor-lyrics th:nth-child(2) { width:34%; }
+#editor-lyrics th:nth-child(3) { width:16%; }
+#editor-lyrics th:nth-child(4) { width:10%; }
+#editor-lyrics th:nth-child(5) { width:16%; }
+#editor-lyrics td input:not([type=checkbox]) { width:100%; min-width:0; font:inherit; }
+#editor-lyrics td select { width:calc(50% - 4px); font:inherit; }
+#editor-lyrics .scroll { max-height:none; overflow:visible; }
+#editor-lyrics td input[type=checkbox] { min-height:44px !important; width:44px !important; height:44px; cursor:pointer; }
+#editor-lyrics td:has(input[type=checkbox]) { text-align:center; }
+.metadata-fields,.timing-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.metadata-fields label,.timing-fields label,.form-field { display:flex; flex-direction:column; align-items:stretch; gap:6px; margin:0; }
+.metadata-fields input,.timing-fields input { width:100%; }
+#save-metadata { grid-column:1 / -1; justify-self:end; }
+.metadata-timing { margin-top:28px; padding-top:20px; border-top:1px solid var(--line); }
+.timing-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+.touch-workspace #sound-dialog,.compact-dialog { width:min(440px,calc(100vw - 32px)); }
+#sound-dialog .panel { grid-template-columns:1fr; }
+#sound-dialog .panel label { display:grid; grid-template-columns:80px minmax(0,1fr); align-items:center; }
+#new-dialog,#vocal-dialog,#replace-score-dialog,#loop-dialog { width:min(640px,calc(100vw - 32px)); }
+#new-form > p:not(.subtle) { display:flex; flex-wrap:wrap; align-items:start; gap:14px; }
+#new-form label,#replace-score-dialog > label,#replace-score-dialog > p > label { display:flex; flex:1; flex-direction:column; align-items:stretch; gap:6px; min-width:120px; }
+#new-form input:not([type=checkbox]),#new-form textarea,#new-form select { max-width:100%; width:100%; }
+#new-form > p:has(#new-lyrics) { display:block; }
+#new-form button[type=submit],#replace-score-apply,#vocal-apply { display:block; margin:18px 0 0 auto; }
+#vocal-dialog > input[type=file] { width:100%; margin:12px 0 16px; }
+#vocal-dialog label { width:100%; }
+#lyric-upload-dialog > .form-field { margin-top:16px; }
+.form-footer { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:20px; }
+#loop-dialog .panel > .flex:has(#loop-a),#loop-dialog .panel > .flex:has(#loop-b) { display:grid; grid-template-columns:1fr 150px; gap:12px; }
+#loop-dialog .panel > .flex > label:has(#loop-a),#loop-dialog .panel > .flex > label:has(#loop-b) { display:grid; grid-template-columns:90px 86px; gap:10px; align-items:center; }
+#loop-dialog .flex:has(#loop-name) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+#loop-dialog #loop-name { grid-column:1 / -1; width:100%; }
+#loop-beat-controls { display:grid; grid-template-columns:1fr 1fr; }
+#loop-beat-controls label { display:flex; flex-direction:column; align-items:start; gap:6px; }
+#full-lyrics-content { max-width:36em; margin:0 auto; font-size:18px; line-height:2; word-break:normal; }
+.touch-workspace #practice:not(.two-rows) > .stage { margin-block:auto; flex-shrink:0; }
+@media(max-width:700px) {
+  #editor-score { grid-template-columns:1fr; }
+  #editor-lyrics table { min-width:700px; }
+  #editor-lyrics .scroll { overflow-x:auto; }
+  .metadata-fields,.timing-fields { grid-template-columns:1fr; }
+}

@@ -13,12 +13,37 @@ export const escapeHTML = (s: unknown) =>
   );
 export function lyricDocument(r: RecordData) {
   if (r.song.lyricText) return r.song.lyricText;
-  // Existing rhythm lyrics preserve their sequence; do not invent verse boundaries.
-  return r.song.lyrics
-    .map((l) => l.text)
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Display only: preserve canonical order and explicit MusicXML line/word boundaries.
+  const doc = r.canonicalXML ? new DOMParser().parseFromString(r.canonicalXML, "application/xml") : undefined;
+  const parts = [...(doc?.querySelectorAll("part") || [])];
+  const nodes = parts.map(p => [...p.querySelectorAll("note > lyric")].filter(n => n.querySelector("text")))
+    .find(ns => ns.length === r.song.lyrics.length && ns.every((n,i) => n.querySelector("text")?.textContent === r.song.lyrics[i].text));
+  const measureIndex = new Map(r.song.measures.map((m, i) => [m.id, i]));
+  const sectionStarts = new Set<number>();
+  parts.forEach(part => [...part.querySelectorAll(":scope > measure")].forEach((m, i) => {
+    const mark = m.querySelector("rehearsal")?.textContent?.trim();
+    if (mark && !/^(intro|interlude|ending|outro)$/i.test(mark)) sectionStarts.add(i);
+  }));
+  let result = "", previous = "", previousSyllabic = "", previousMeasure = -1;
+  r.song.lyrics.forEach((l,i) => {
+    const t = l.text.trim(), n = nodes?.[i];
+    const syllabic = n?.querySelector("syllabic")?.textContent || "single";
+    if (!t) return;
+    const continuation = /-$/.test(previous) && /^[a-z]/i.test(t) || ["begin","middle"].includes(previousSyllabic);
+    const cjk = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]$/u.test(previous) && /^[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/u.test(t);
+    const measure = l.scorePosition ? measureIndex.get(l.scorePosition.measureId) : undefined;
+    // Rehearsal marks are real score structure, not inferred verse labels.
+    const newSection = measure !== undefined && [...sectionStarts].some(i => i > previousMeasure && i <= measure);
+    if (result && newSection && !continuation) result = result.trimEnd() + "\n\n";
+    if (measure !== undefined) previousMeasure = measure;
+    if (continuation) result = result.replace(/-$/, "");
+    else if (result && !result.endsWith("\n") && !cjk) result += " ";
+    result += t;
+    if (n?.querySelector("end-paragraph")) result += "\n\n";
+    else if (n?.querySelector("end-line")) result += "\n";
+    previous = t; previousSyllabic = syllabic;
+  });
+  return result.trim();
 }
 export function scoreChips(r?: RecordData) {
   const formats = r ? songScores(r).map((s) => s.format) : [];
@@ -166,7 +191,10 @@ export function setupScoreManagement(h: Host) {
   const original = $("original-button");
   original.textContent = "원본 악보 보기";
   original.className = "management-row";
-  $("editor-score").prepend(original);
+  const originalTools = document.createElement("div");
+  originalTools.className = "score-source-tools";
+  originalTools.append(original);
+  $("editor-score").prepend(originalTools);
   $("editor-dialog").querySelector("h2")!.textContent = "편집";
   $("save-metadata").textContent = "곡 정보 적용";
   $("apply-measure").textContent = "마디 적용";
@@ -175,7 +203,7 @@ export function setupScoreManagement(h: Host) {
   $("lyrics-button").hidden = $("metadata-button").hidden = true;
   upload.insertAdjacentHTML(
     "beforeend",
-    '<label>텍스트 파일 <input id="lyric-text-file" type="file" accept=".txt,text/plain"></label><label for="lyric-text-upload">가사 텍스트</label><textarea id="lyric-text-upload" rows="10" placeholder="가사를 붙여넣으세요. 1절·후렴 등의 섹션과 줄바꿈을 유지합니다."></textarea><p class="subtle">가사 텍스트를 저장합니다. 마디·박 위치는 별도로 교정합니다.</p><button id="lyric-upload-apply" class="icon-button primary" aria-label="가사 업로드 적용">✓</button>',
+    '<label class="form-field">텍스트 파일 <input id="lyric-text-file" type="file" accept=".txt,text/plain"></label><label class="form-field" for="lyric-text-upload">가사 텍스트</label><textarea id="lyric-text-upload" rows="10" placeholder="가사를 붙여넣으세요. 1절·후렴 등의 섹션과 줄바꿈을 유지합니다."></textarea><p class="subtle">가사 텍스트를 저장합니다. 마디·박 위치는 별도로 교정합니다.</p><div class="form-footer"><button id="lyric-upload-apply" class="icon-button primary" aria-label="가사 업로드 적용">✓</button></div>',
   );
   ($("lyric-text-file") as HTMLInputElement).onchange = run(async () => {
     const f = ($("lyric-text-file") as HTMLInputElement).files?.[0];

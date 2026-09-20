@@ -1,3 +1,4 @@
+import { icon } from "./icons";
 import {
   EditHistory,
   snapshot,
@@ -49,11 +50,13 @@ export function editorSession(host: SessionHost) {
   dialog.querySelector(".editor-tabs")!.after(controls);
   const confirmDialog = document.createElement("dialog");
   confirmDialog.id = "edit-exit-dialog";
+  confirmDialog.className = "compact-dialog";
   confirmDialog.innerHTML =
-    '<h2>변경 내용을 저장할까요?</h2><p>편집 내용은 별도 초안으로 임시저장됩니다.</p><div class="flex"><button data-answer="discard">변경 버리기</button><button data-answer="continue">계속 편집</button><button data-answer="save" class="primary">저장</button></div>';
+    '<h2>변경 내용을 저장할까요?</h2><p>편집 내용은 별도 초안으로 임시저장됩니다.</p><div class="form-footer"><button data-answer="discard" class="danger">변경 버리기</button><button data-answer="continue" autofocus>계속 편집</button><button data-answer="save" class="primary">저장</button></div>';
   document.body.append(confirmDialog);
   const versions = document.createElement("dialog");
   versions.id = "edit-versions-dialog";
+  versions.className = "management-dialog";
   document.body.append(versions);
   function dirty() {
     const r = host.get();
@@ -219,10 +222,13 @@ export function editorSession(host: SessionHost) {
     const h = document.createElement("h2");
     h.textContent = "이전 저장본";
     const close = document.createElement("button");
-    close.textContent = "×";
+    close.innerHTML = icon("close");
+    close.className = "icon-button close-button";
     close.setAttribute("aria-label", "닫기");
     close.onclick = () => versions.close();
-    versions.append(h, close);
+    const head = document.createElement("div");
+    head.className = "dialoghead"; head.append(h, close);
+    versions.append(head);
     for (const v of [...(r.revisions || [])].reverse()) {
       const b = document.createElement("button");
       b.className = "management-row";
