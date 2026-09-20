@@ -27,7 +27,9 @@ export function selectSettingsCategory(category: SettingsCategory) {
     button.classList.toggle("primary", active);
     button.setAttribute("aria-current", active ? "page" : "false");
   }
-  document.getElementById("settings-detail-heading")!.textContent = category === "info" ? "드럼 연습실" : settingsTitles[category];
+  const heading=document.getElementById("settings-detail-heading")!;
+  heading.textContent = category === "info" ? "드럼 연습실" : settingsTitles[category];
+  heading.hidden = category !== "info";
 }
 export function openSettings(category: SettingsCategory = rememberedCategory()) {
   selectSettingsCategory(category);
@@ -185,7 +187,7 @@ export function arrangeWorkspace() {
   const screenBody = settingsPanel("screen", "screen-dialog", "open-screen-dialog");
   const viewRow = document.createElement("label");
   viewRow.className = "view-select-row";
-  viewRow.innerHTML = '<span>보기</span>';
+  viewRow.innerHTML = '<strong class="settings-item-title">보기</strong>';
   el("view").hidden = false;
   const viewControl=document.createElement('span'); viewControl.className='view-select-control';
   viewControl.innerHTML='<span id="view-selected-text" aria-hidden="true"></span>';
@@ -197,8 +199,12 @@ export function arrangeWorkspace() {
   const reviewHelp = document.createElement("div");
   reviewHelp.id = "review-help";
   reviewHelp.innerHTML = '<p id="review-availability"></p><button id="review-add-score">이 곡에 악보 추가</button>';
-  screenBody.append(reviewHelp, el("zoom").closest("label")!);
+  const zoomLabel=el("zoom").closest("label")!;
+  const zoomTitle=document.createElement('strong'); zoomTitle.className='settings-item-title'; zoomTitle.textContent='악보 크기';
+  zoomLabel.childNodes[0].replaceWith(zoomTitle);
+  screenBody.append(reviewHelp, zoomLabel);
   screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>현재 악보와 다음에 여는 악보에 적용합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><p id="fullscreen-status" class="subtle" role="status"></p></div>');
+  el('auto-fullscreen').closest('.settings-group')!.prepend(el('pdf-view-row'));
   const playback = settingsPanel("playback", "playback-settings", "open-playback-settings");
   playback.innerHTML = '<label class="settings-switch"><span><strong>마디 처음부터 다시 재생</strong><small>끄면 일시정지한 위치에서 이어서 재생합니다.</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>카운트오프 (Count-off)</strong><small>현재 연습 BPM으로 4분음표 스틱 소리 네 번 후 시작합니다.</small></span><input id="count-off" type="checkbox" role="switch"></label><p id="playback-settings-status" class="subtle" role="status"></p>';
   const scoreSettings = settingsPanel("score", "score-settings", "open-score-settings");

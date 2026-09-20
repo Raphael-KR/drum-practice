@@ -553,3 +553,17 @@ it('remembers the settings category and returns from a child only when opened th
   expect(document.getElementById('playback-settings')!.textContent).not.toContain('모든 곡에 공통으로 적용하며');
   settings.close();
 });
+
+it('keeps only the app heading and groups PDF with fullscreen below the divider', async () => {
+  const {selectSettingsCategory}=await import('../src/workspace');
+  for(const category of ['screen','playback','score'] as const){
+    selectSettingsCategory(category);
+    expect(document.getElementById('settings-detail-heading')!.hidden).toBe(true);
+  }
+  selectSettingsCategory('info'); expect(document.getElementById('settings-detail-heading')!.hidden).toBe(false);
+  const pdf=document.getElementById('pdf-view-row')!;
+  expect(pdf.parentElement!.classList.contains('settings-group')).toBe(true);
+  expect(pdf.nextElementSibling!.contains(document.getElementById('auto-fullscreen'))).toBe(true);
+  expect(document.querySelector('.view-select-row > strong')!.textContent).toBe('보기');
+  expect(document.getElementById('zoom')!.closest('label')!.querySelector('strong')!.textContent).toBe('악보 크기');
+});
