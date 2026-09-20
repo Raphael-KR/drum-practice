@@ -1,3 +1,5 @@
+import { readNoteHighlight, saveNoteHighlight } from "./note-highlight-preference";
+import { highlightPage, updateNoteHighlights, notePulseBeats, type HighlightPage } from "./note-highlight";
 import {editorSession} from "./editor-session";
 import {snapshot,retainRevision,type EditSnapshot,type EditorForm} from "./edit-history";
 import {setupScoreManagement,scoreChips} from "./score-management";
@@ -110,11 +112,16 @@ let selected = 0,
 let saveTimer = 0,
   busy = false,
   rowWindow = -1;
+let pausedBrowseIndex = -1;
+let playbackRowOrigin = 0;
+let stationarySelectionTime: number | undefined;
 let editingLoopId: string | undefined;
 let repeatCenter: number | undefined, repeatRadius: number | undefined;
 let lastPracticeLoop: Loop | undefined;
 let pageRatios: number[] = [];
 let practiceStaffs = new Map<string, StaffPosition>();
+let highlightPages: (HighlightPage | undefined)[] = [];
+let noteHighlightEnabled = readNoteHighlight();
 let trackOffsets: number[] = [],
   trackWidths: number[] = [];
 const app = $("app");
@@ -122,7 +129,7 @@ app.innerHTML = `
 <header><div class="brand"><div class="logo" aria-hidden="true">♩</div><div><h1>드럼 연습실</h1><small id="song-title">악보를 따라, 나의 속도로</small></div></div><div class="actions"><button id="library-button">내 악보 목록</button><button id="save-html" hidden>HTML 한 파일로 저장</button><button id="edit-button" hidden>악보·가사 맞추기</button></div></header>
 <main><section class="welcome" id="welcome"><span class="tag">PDF / MusicXML · 음악 · 가사</span><h2>드럼 연습실</h2><p class="welcome-lead">다음 마디를 미리 보고, 어려운 부분은 천천히.</p><p>움직이는 악보와 바로 아래 가사를 한눈에 보세요.<br>연습할 구간을 정하고, 나에게 맞는 속도로 반복합니다.</p><div class="actions"><button class="primary" id="demo-button">바람과 언덕의 발라드 열기</button><button id="welcome-library">내 악보 목록</button><button id="welcome-new">＋ 악보 추가</button></div><p class="subtle">파일과 연습 기록은 이 브라우저에 저장됩니다. 다른 기기로 옮기거나 보관하려면 백업을 내보내세요.</p></section>
 <div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>한 곡 파일 · 변경 사항은 이 화면에서만 유지됩니다. 보관하려면 “HTML 한 파일로 저장”을 눌러 새 파일로 저장하세요.</p>
-<section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두줄로 고정 보기</option><option value="compare">PDF · MusicXML 검수</option></select><button id="original-button">원본 보기</button></div></div>
+<section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 스타일"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두줄로 고정 보기</option><option value="compare">PDF · MusicXML 검수</option></select><button id="original-button">원본 보기</button></div></div>
 <div id="review-tools" hidden><span id="review-message">스페이스: 정지·캡처 복사 / 다시 누르면 재생</span><button id="review-copy">정지·캡처 복사</button><button id="review-save" hidden>캡처 저장</button></div><div class="stage" id="stage"><canvas id="review-canvas" hidden aria-label="위 PDF, 아래 MusicXML 같은 마디 비교"></canvas><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
 <div class="transport"><div class="flex transport-left"><button id="home" aria-label="처음으로">↤</button><label><select id="goto" aria-label="되감을 마디 수">${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label><button id="jump">앞으로</button><button id="copy-position" title="현재 마디와 위치 복사" aria-label="현재 마디와 위치 복사">위치 복사</button></div><button id="play" class="primary play">▶ 재생</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">BPM</button><button id="slower" aria-label="5 BPM 느리게">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="재생 BPM: 좌우 드래그로 조절, 두 번 탭하면 원곡 BPM" aria-orientation="horizontal" title="좌우 드래그: 1 BPM씩 조절 · 두 번 탭: 원곡 BPM"><button id="faster" aria-label="5 BPM 빠르게">+5</button><label><input id="click" type="checkbox" checked>클릭</label></div></div>
@@ -131,7 +138,7 @@ app.innerHTML = `
 <dialog id="library-dialog"><div class="dialoghead"><h2>내 악보 목록</h2><button id="new-button">＋ 곡 추가</button><button data-close="library-dialog">닫기</button></div><div id="library-list"></div></dialog>
 <dialog id="new-dialog"><div class="dialoghead"><h2>새 곡 준비</h2><button data-close="new-dialog">닫기</button></div><p>PDF 또는 MusicXML과 음악을 골라 주세요. MusicXML은 마디·박자·템포를 자동으로 읽습니다.</p><form id="new-form"><p><label>가수 <input id="new-artist" type="text"></label><label>제목 <input id="new-title" required type="text" value="새 연습곡"></label></p><p><label>악보 <input id="pdf-file" required type="file" accept="application/pdf,.pdf,.musicxml,.xml,.mxl"></label></p><p id="xml-part-row" hidden><label>악기 파트 <select id="xml-part"></select></label><span class="subtle">박자표는 MusicXML 값을 사용합니다. 선택한 단일 오선 파트를 가져옵니다.</span></p><p><label>음원 <input id="audio-file" required type="file" accept="audio/*,.mp3"></label></p><p><label>BPM <input id="new-bpm" type="number" min="20" max="300" value="94" required></label><label>첫 박(초) <input id="new-first" type="number" min="0" step="0.001" value="0" required></label><label>박자 <input id="new-beats" type="number" min="1" max="16" value="4" required></label><label>분모 <select id="new-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></p><p><label>한글 발음 가사 — 한 줄에 한 구절</label><textarea id="new-lyrics" placeholder="스베테오 테니 이레테\n스베테오 우시낫테"></textarea></p><p class="subtle">텍스트 가사는 MusicXML에 보관하며, 실제 시작 마디·박은 별도로 교정합니다.</p><button type="submit" class="primary">곡 만들기</button></form></dialog>
 <dialog id="editor-dialog"><div class="dialoghead"><h2>악보·가사 맞추기</h2><button data-close="editor-dialog">연습으로 돌아가기</button></div><div class="flex"><label>가수 <input id="edit-artist" type="text"></label><label>표시 제목 <input id="edit-title" type="text"></label><label>원제 <input id="edit-original-title" type="text"></label><label>작사 <input id="edit-lyricist" type="text"></label><label>작곡 <input id="edit-composer" type="text"></label><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>첫 박(초) <input id="edit-first" type="number" min="0" step="0.001"></label><button id="reflow">이 템포로 전체 다시 맞추기</button><button id="estimate-tempo">음원 템포 추정</button><button id="tap-tempo">박자 탭</button><span id="tap-result"></span></div><p class="subtle">전체 다시 맞추기는 기존 시간 보정을 바꿉니다. 실행 전 백업을 권합니다. 가사는 악보 위치를 유지하며 음원과의 연결만 바뀝니다.</p><div class="editor"><section><div class="flex"><label>페이지 <select id="editor-page"></select></label><label>마디 <select id="measure-select"></select></label></div><p class="subtle">원본 위를 드래그하여 마디 영역을 지정한 후 추가하거나 선택한 마디에 적용하세요.</p><div class="pagebox"><canvas id="edit-canvas"></canvas></div><div class="flex"><button id="add-region">새 마디 추가</button><button id="apply-crop">선택 마디에 영역 적용</button></div></section><section><h3>선택한 마디</h3><div class="flex"><label>이름 <input id="measure-label" type="text" style="width:95px"></label><label>박 수 <input id="measure-beats" type="number" min="1" max="16"></label><label>분모 <select id="measure-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></div><div class="flex"><label>시작 초 <input id="measure-start" type="number" min="0" step="0.001"></label><label>끝 초 <input id="measure-end" type="number" min="0" step="0.001"></label><button id="apply-measure">마디 저장</button></div><label>내부 박 위치(0~1, 쉼표 구분)<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1" style="width:100%"></label><p class="subtle">마디 시작부터 끝까지 박 경계의 가로 위치입니다. 비우면 균등 간격을 사용합니다.</p><div class="flex"><button id="preview-measure">이 마디 듣기</button><button id="anchor-now">현재 음악 위치를 첫 박으로</button><button id="editor-play">재생/정지</button><span id="editor-time"></span></div><div class="flex"><button id="duplicate">뒤에 복제</button><button id="split">반으로 분할</button><button id="merge">다음과 합치기</button><button id="move-left">앞으로</button><button id="move-right">뒤로</button><button id="remove-measure" class="danger">마디 삭제</button></div><h3>가사 리듬</h3><p class="subtle">시작 마디·박과 길이를 지정합니다. 보컬 악보의 세부 음가도 보존합니다. 가사 위치는 음원 시각과 독립적으로 MusicXML에 저장됩니다.</p><div class="flex"><button id="add-lyric">현재 위치에 가사 추가</button><button id="show-near">현재 마디 가사</button><button id="show-all">전체 가사</button></div><div class="scroll"><table><thead><tr><th>발음</th><th>시작 · ¼박</th><th>길이(박)</th><th>확인</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>
-<dialog id="original-dialog"><div class="dialoghead"><h2>원본 악보</h2><button data-close="original-dialog">닫기</button></div><div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>알림</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>`;
+<dialog id="original-dialog"><div class="dialoghead"><h2>PDF 전체 악보 보기</h2><button data-close="original-dialog">닫기</button></div><div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>알림</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>`;
 document.getElementById("app")!.insertAdjacentHTML("beforeend", '<dialog id="tempo-dialog" aria-labelledby="tempo-heading"><div class="dialoghead"><h2 id="tempo-heading">연습 BPM</h2><button data-close="tempo-dialog">닫기</button></div><div id="tempo-options"></div><p class="subtle">숫자를 좌우로 드래그하면 1 BPM씩 조절하고, 두 번 탭하면 원곡 BPM으로 돌아갑니다.</p></dialog>');
 arrangeWorkspace();
 arrangeIcons();
@@ -200,6 +207,11 @@ function engine() {
     player = new Player();
     player.onprogress = status;
     player.onstate = () => {
+      if (player?.playing && !$("stage").classList.contains("is-playing") && record) {
+        playbackRowOrigin = Math.floor(locate(song(), player.current()).index / 4);
+        rowWindow = -1;
+        stationarySelectionTime = undefined;
+      }
       $("stage").classList.toggle("is-playing", !!player?.playing);
       iconButton("play", player?.playing ? "pause" : "play", player?.playing ? "일시정지" : "재생");
       if (!player?.playing && record) {
@@ -295,6 +307,7 @@ async function activate(r: RecordData) {
     urls = await Promise.all(r.pages.map(async (b) =>
       URL.createObjectURL(await practicePage(b)),
     ));
+    highlightPages = await Promise.all(r.pages.map(highlightPage));
     practiceStaffs.clear();
     pageRatios = await Promise.all(
       urls.map(async (u, index) => {
@@ -338,6 +351,7 @@ async function activate(r: RecordData) {
   }
 }
 function syncViewChoices() {
+  syncNoteHighlightControl();
   updateViewWidth();
   const view=record ? song().settings.view : val('view').value;
   $('view-description').textContent = view === 'compare' ? '위쪽 PDF · 아래쪽 SVG로 같은 마디를 비교합니다.' : view === 'rows' ? '두 줄의 악보를 고정하고 재생 위치를 표시합니다.' : '진행선에 맞춰 악보가 옆으로 이어집니다.';
@@ -380,6 +394,7 @@ val('prefer-pdf').onchange = async () => {
   try {
     const target = songScores(original).find(s => s.format === (wanted ? 'pdf' : 'musicxml'))!;
     const next = useScore(original, target);
+    const highlights = await Promise.all(next.pages.map(highlightPage));
     const staffs = new Map<string, StaffPosition>();
     const ratios: number[] = [];
     for (const [index, page] of next.pages.entries()) {
@@ -393,7 +408,7 @@ val('prefer-pdf').onchange = async () => {
     // Settings may have changed while the images decoded; retain the latest values.
     next.song.settings = original.song.settings;
     for (const url of urls) URL.revokeObjectURL(url);
-    urls = nextUrls; pageRatios = ratios;
+    urls = nextUrls; pageRatios = ratios; highlightPages = highlights;
     practiceStaffs.clear(); for (const [id, staff] of staffs) practiceStaffs.set(id, staff);
     record = next; engine().song = next.song;
     savePreferPDF(wanted);
@@ -428,13 +443,18 @@ function practiceRegion(s:Song,region:Region) {
 }
 function xmlPracticeLayout(s: Song, r: Region, width: number) {
   const staff = practiceStaffs.get(r.id);
-  if (s.scoreFormat !== 'musicxml' || s.settings.view !== 'rows' || !staff) return undefined;
-  const style = getComputedStyle($('ribbon'));
-  const budget = ($('stage').clientHeight - (parseFloat(style.top) || 24) - (parseFloat(style.rowGap) || 54) - 24) / 2 - 24;
+  if (s.scoreFormat !== 'musicxml' || !staff) return undefined;
+  // One engraving scale for playing and paused rows, independent of grid state.
+  const budget = s.settings.view === "rows" ? clamp(width * 0.52, 100, 180) : clamp($("stage").clientWidth * .245, 170, 340) * s.settings.zoom / 2;
   return practiceStaffLayout(r, staff, width, budget);
 }
 function widthOf(m: Measure) {
   const r = practiceRegion(song(), song().regions.find((r) => r.id === m.regionId)!);
+  const staff = practiceStaffs.get(r.id);
+  if (song().scoreFormat === "musicxml" && staff) {
+    const height = clamp($("stage").clientWidth * .245, 170, 340) * song().settings.zoom / 2;
+    return r.w * height / (15 * staff.gap * (pageRatios[r.page] || 1.294));
+  }
   return (
     (clamp($("stage").clientWidth * 0.245, 170, 340) *
       song().settings.zoom *
@@ -449,6 +469,22 @@ function measureHTML(m: Measure, i: number, width: number) {
   const layout=xmlPracticeLayout(s,r,width);
   const height =
     layout?.height ?? (width > 1 ? (width / r.w) * r.h * (pageRatios[r.page] || 1.294) : 165);
+  // Two-row alignment keeps a shared height; mask ink outside this source system.
+  let trim = "";
+  if (layout) {
+    const pageHeight = parseFloat(layout.size.split(" ")[1]);
+    const offset = parseFloat(layout.position.split(" ")[1]);
+    const top = Math.max(0, r.y * pageHeight + offset);
+    const bottom = Math.max(0, height - ((r.y + r.h) * pageHeight + offset));
+    trim = `clip-path:inset(${top}px 0 ${bottom}px 0);`;
+  }
+  const highlight = highlightPages[r.page];
+  let overlay = '';
+  if (s.scoreFormat === 'musicxml' && highlight?.measures.has(i)) {
+    const scaledHeight = layout ? Number(layout.size.split(' ')[1].replace('px','')) : height/r.h;
+    const offsetY = layout ? Number(layout.position.split(' ')[1].replace('px','')) : -r.y*scaledHeight;
+    overlay = `<svg class="note-highlight" aria-hidden="true" data-highlight-measure="${i}" preserveAspectRatio="none" viewBox="${r.x*highlight.width} ${-offsetY/scaledHeight*highlight.height} ${r.w*highlight.width} ${height/scaledHeight*highlight.height}">${highlight.measures.get(i)}</svg>`;
+  }
   const syl = ly
     .map((l) => {
       const b = ((l.time - m.start) / (m.end - m.start)) * m.beats;
@@ -459,7 +495,7 @@ function measureHTML(m: Measure, i: number, width: number) {
       return `<span class="syllable" title="${l.confirmed ? "확인됨" : "추정"}" style="left:${x * 100}%;${l.text.length > 4 ? "font-size:14px;white-space:normal;max-width:95%;transform:none;" : ""}">${esc(l.text)}</span>`;
     })
     .join("");
-  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label"><span class="measure-marker" aria-label="마킹된 마디" ${markedMeasureIndices(s).has(i) ? "" : "hidden"}>⚑</span>${esc(m.label)} 마디<span class="measure-beat" aria-label="현재 박">1</span><small class="measure-signature">${m.beats}/${m.denominator}</small></span><div class="crop" style="width:${width}px;height:${height}px;background-image:url('${urls[r.page]}');background-size:${layout?.size ?? `${100 / r.w}% ${100 / r.h}%`};background-position:${layout?.position ?? `${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%`}"></div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
+  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label"><span class="measure-marker" aria-label="마킹된 마디" ${markedMeasureIndices(s).has(i) ? "" : "hidden"}>⚑</span>${esc(m.label)} 마디<span class="measure-beat" aria-label="현재 박">1</span><small class="measure-signature">${m.beats}/${m.denominator}</small></span><div class="crop" style="${trim}width:${width}px;height:${height}px;background-image:url('${urls[r.page]}');background-size:${layout?.size ?? `${100 / r.w}% ${100 / r.h}%`};background-position:${layout?.position ?? `${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%`}">${overlay}</div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
 }
 function positionInMeasure(index: number, beat: number, width: number) {
   const s = song(),
@@ -515,6 +551,10 @@ function renderTrack() {
   if (!record) return;
   scoreGestures.cancel();
   const s = song();
+  $("stage").classList.remove("paused-score-scroll");
+  $("stage").scrollTop = 0;
+  pausedBrowseIndex = -1;
+  stationarySelectionTime = undefined;
   const comparing=s.settings.view==='compare';
   $('practice').classList.toggle('score-review',comparing);
   $('review-tools').hidden=$('review-canvas').hidden=!comparing;
@@ -529,7 +569,7 @@ function renderTrack() {
   let x = 0;
   const html = s.measures.map((m, i) => {
     trackOffsets.push(x);
-    const w = widthOf(m);
+    const w = s.settings.view === "rows" ? $("stage").clientWidth / 4 : widthOf(m);
     trackWidths.push(w);
     x += w;
     return measureHTML(m, i, w);
@@ -538,7 +578,13 @@ function renderTrack() {
   if (s.settings.view === "ribbon")
     $("stage").style.height =
       `${(clamp($("stage").clientWidth * 0.245, 170, 340) * s.settings.zoom) / 2 + 94}px`;
-  else $("stage").style.removeProperty("height");
+  else {
+    const cropHeight = Math.max(100, ...Array.from($("ribbon").querySelectorAll<HTMLElement>(".crop"), e => parseFloat(e.style.height)));
+    const rowHeight = cropHeight + 30; // lyric baseline and line height
+    $("stage").style.setProperty("--row-content-height", `${rowHeight}px`);
+    $("stage").style.setProperty("--browse-row-pitch", `${rowHeight + 28}px`);
+    $("stage").style.height = `${rowHeight * 2 + 28 * 3}px`;
+  }
   layoutLyrics();
   if (!s.measures.length)
     $("ribbon").innerHTML =
@@ -546,12 +592,37 @@ function renderTrack() {
 
 }
 function renderRows(index: number) {
+  const stage = $("stage"), ribbon = $("ribbon");
+  if (!player?.playing && !gestureScrub) {
+    if (rowWindow !== -2) {
+      rowWindow = -2;
+      pausedBrowseIndex = -1;
+      stage.classList.add("paused-score-scroll");
+
+      ribbon.innerHTML = song().measures.map((m, i) => measureHTML(m, i, stage.clientWidth / 4)).join("");
+      layoutLyrics();
+    }
+    // Anchor only when playback position changes; native scrolling must survive frames.
+    if (pausedBrowseIndex !== index) {
+      pausedBrowseIndex = index;
+      const row = ribbon.querySelector<HTMLElement>(`[data-index="${Math.floor(index / 4) * 4}"]`);
+      stage.scrollTop = Math.max(0, (row?.offsetTop || 0) - 28);
+    }
+    return;
+  }
+  if (stage.classList.contains("paused-score-scroll")) {
+    stage.classList.remove("paused-score-scroll");
+    stage.scrollTop = 0;
+    pausedBrowseIndex = -1;
+    rowWindow = -1;
+  }
   const windowIndex = Math.floor(index / 4);
   if (windowIndex === rowWindow) return;
   rowWindow = windowIndex;
   const s = song();
-  const upper = windowIndex % 2 === 0 ? windowIndex : windowIndex + 1,
-    lower = windowIndex % 2 === 0 ? windowIndex + 1 : windowIndex;
+  const currentOnTop = (windowIndex - playbackRowOrigin) % 2 === 0;
+  const upper = currentOnTop ? windowIndex : windowIndex + 1,
+    lower = currentOnTop ? windowIndex + 1 : windowIndex;
   const indices = [
     ...Array.from({ length: 4 }, (_, j) => upper * 4 + j),
     ...Array.from({ length: 4 }, (_, j) => lower * 4 + j),
@@ -614,11 +685,12 @@ function frame() {
       const x =
         trackOffsets[index] +
         positionInMeasure(index, beat, trackWidths[index]);
-      $("ribbon").style.transform =
+      if (player.playing || stationarySelectionTime !== t) $("ribbon").style.transform =
         `translateX(${$("stage").clientWidth / 3 - x}px)`;
     } else {
       renderRows(index);
     }
+    updateNoteHighlights($("ribbon"), index, beat, !!count, noteHighlightEnabled, notePulseBeats(m.beats,m.end-m.start,s.settings.rate));
     const region = practiceRegion(s, s.regions.find(r => r.id === m.regionId)!);
     const next = s.measures[index + 1];
     const nextRegion = next && practiceRegion(s, s.regions.find(r => r.id === next.regionId)!);
@@ -719,6 +791,30 @@ $("tempo-options").onclick = e => {
 };
 bindNumericDrag(val("rate"));
 
+function syncNoteHighlightControl() {
+  const comparing = record?.song.settings.view === 'compare';
+  const pdf = record && (record.song.scoreFormat ?? 'pdf') !== 'musicxml';
+  const unavailable = !!(comparing || pdf);
+  val('note-highlight').disabled = unavailable;
+  val('note-highlight').checked = noteHighlightEnabled && !unavailable;
+  $('note-highlight-description').textContent = comparing
+    ? '검수 보기에서는 사용하지 않습니다. 한 줄 또는 두 줄 보기로 전환해 주세요.'
+    : pdf
+      ? songScores(record!).some(s=>s.format==='musicxml')
+        ? 'PDF 보기에서는 사용할 수 없습니다. 아래 ‘악보를 PDF로 보기’를 꺼 주세요.'
+        : 'MusicXML 악보가 있어야 사용할 수 있습니다.'
+      : 'MusicXML 악보의 음표가 박자에 맞춰 잠깐 빛납니다.';
+}
+syncNoteHighlightControl();
+val('note-highlight').onchange = () => {
+  if (val('note-highlight').disabled) { syncNoteHighlightControl(); return; }
+  noteHighlightEnabled = val('note-highlight').checked;
+  saveNoteHighlight(noteHighlightEnabled);
+  if (record && player) {
+    const {index,beat,measure:m} = locate(song(),player.current());
+    updateNoteHighlights($('ribbon'),index,beat,!!player.count(),noteHighlightEnabled,notePulseBeats(m.beats,m.end-m.start,song().settings.rate));
+  }
+};
 const playbackPreferences = readPlaybackPreferences();
 val('restart-measure').checked = playbackPreferences.restartMeasure;
 val('count-off').checked = playbackPreferences.countOff;
@@ -731,6 +827,7 @@ for (const id of ['restart-measure','count-off']) val(id).onchange = () => {
 let gestureScrub: { start: number; resume: boolean; loop?: Loop; center?: number; radius?: number } | undefined;
 function prepareGestureAudio() { if (record && !busy) void engine().prepare?.().catch(error); }
 function seekFreely(t: number) {
+  stationarySelectionTime = undefined;
   const p = engine();
   if (p.loop && (t < p.loop.start || t >= p.loop.end)) {
     lastPracticeLoop = p.loop;
@@ -782,12 +879,16 @@ const scoreGestures = attachScoreGestures<number>($("stage"), {
   },
   prepareAudio: prepareGestureAudio,
   pause: () => { if (record && !busy) { if (song().settings.view === 'compare') captureReview(); else engine().pause(); } },
-  play: () => { if (record) void toggle().catch(error); },
   seek: (index, resume) => {
     if (!record || busy) return;
     engine().pause();
     seekFreely(song().measures[index].start);
-    if (resume) void engine().play(false, false).catch(error);
+    if (!resume) {
+      // Selection changes the playhead, not the paused browsing viewport.
+      pausedBrowseIndex = index;
+      stationarySelectionTime = engine().current();
+    }
+    if (resume) void engine().play(true, false).catch(error);
   },
   scrubStart: beginGestureScrub,
   scrubMove: delta => {
@@ -800,6 +901,11 @@ const scoreGestures = attachScoreGestures<number>($("stage"), {
 });
 $('stage').addEventListener('wheel', e => {
   if (!record || busy || document.querySelector('dialog[open]') || e.ctrlKey) return;
+  if (!engine().playing && song().settings.view === 'rows' && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) {
+    scoreGestures.cancel();
+    renderRows(locate(song(), engine().current()).index);
+    return; // Native vertical scroll browses notation without seeking the audio.
+  }
   e.preventDefault();
   if (engine().playing) return;
   scoreGestures.cancel();
@@ -808,8 +914,8 @@ $('stage').addEventListener('wheel', e => {
 }, { passive: false });
 // Keyboard and assistive-technology activation remains available without pointer gestures.
 $('stage').tabIndex = 0;
-$('stage').setAttribute('aria-label', '악보. 한 번 탭 재생·정지, 두 번 탭 마디 이동, 좌우 드래그 탐색. 정지 중 휠로 탐색');
-$('stage').addEventListener('click', e => { if (e.detail === 0 && record) void toggle().catch(error); });
+$('stage').setAttribute('aria-label', '악보. 재생 중 한 번 탭 정지, 정지 중 한 번 탭 마디 선택, 두 번 탭 해당 마디부터 재생, 좌우 드래그 탐색. 정지된 두 줄 보기에서 상하 스크롤로 전체 악보 읽기');
+$('stage').addEventListener('click', e => { if (e.detail === 0 && record && player?.playing) void toggle().catch(error); });
 bindNumericDrag(val('progress-percent'), {
   onStart: beginGestureScrub,
   onPreview: percent => previewGestureScrub(engine().duration * percent / 100),
@@ -1769,7 +1875,7 @@ action("add-lyric", () => {
 let originalPage = 0;
 let originalURLs:string[]=[];
 function showOriginalPage() {
-  $("page-original").innerHTML = `<img src="${originalURLs[originalPage]}" alt="원본 PDF 악보 ${originalPage+1}쪽"><div class="pager"><button id="original-prev" ${originalPage===0?'disabled':''}>이전 쪽</button><span>${originalPage+1} / ${originalURLs.length}</span><button id="original-next" ${originalPage===originalURLs.length-1?'disabled':''}>다음 쪽</button></div>`;
+  $("page-original").innerHTML = `<img src="${originalURLs[originalPage]}" alt="PDF 전체 악보 ${originalPage+1}쪽"><div class="pager"><button id="original-prev" ${originalPage===0?'disabled':''}>이전 쪽</button><span>${originalPage+1} / ${originalURLs.length}</span><button id="original-next" ${originalPage===originalURLs.length-1?'disabled':''}>다음 쪽</button></div>`;
   $('original-prev').onclick=()=>{originalPage--;showOriginalPage();};$('original-next').onclick=()=>{originalPage++;showOriginalPage();};
 }
 action('original-button',async()=>{

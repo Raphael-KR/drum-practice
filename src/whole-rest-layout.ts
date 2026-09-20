@@ -1,5 +1,5 @@
 /** Full-bar silence is centered visually; its rhythmic onset stays at beat zero. */
-export const REST_LAYOUT_VERSION = "svg-geometry-sync-v5";
+export const REST_LAYOUT_VERSION = "svg-geometry-sync-v17";
 export function restCenterShift(
   left: number,
   right: number,

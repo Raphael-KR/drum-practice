@@ -1542,3 +1542,48 @@ dialog .dialoghead { position:sticky; top:0; z-index:3; background:var(--surface
   #editor-lyrics .scroll { overflow-x:auto; }
   .metadata-fields,.timing-fields { grid-template-columns:1fr; }
 }
+
+/* Paused two-row mode is a chronological score document, independent of audio. */
+.two-rows .stage.paused-score-scroll { overflow-y:auto; overflow-x:hidden; overscroll-behavior-y:contain; }
+.two-rows .paused-score-scroll .ribbon {
+  position:relative; top:0; height:auto; min-height:100%;
+  padding:28px 0 28px; box-sizing:border-box;
+  grid-auto-rows:var(--browse-row-pitch); row-gap:0; align-content:start;
+}
+
+/* Exact rhythmic glyph overlay; staff lines and source-page colors stay intact. */
+.crop { position:relative; }
+.note-highlight { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; color:#bdf6ff; fill:currentColor; filter:drop-shadow(0 0 1px #1687af) drop-shadow(0 0 3px #39c9ef); display:none; overflow:hidden; }
+
+/* White-hot noteheads, a cool rim and a broad local halo; no score-wide tint. */
+.note-highlight [data-light-head] {
+  color:#fffefa;
+  filter:drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 3px #5fe0ff) drop-shadow(0 2px 5px #168fca);
+}
+.note-highlight [data-highlight-beam] { color:#dafaff; opacity:.72; }
+
+/* Same compact row geometry while playing and browsing a paused score. */
+.two-rows:not(.score-review) .stage { flex-shrink:0; }
+.two-rows:not(.score-review) .ribbon {
+  top:28px; gap:28px 0; grid-auto-rows:var(--row-content-height); align-content:start;
+}
+.two-rows:not(.score-review) .measure { height:var(--row-content-height); }
+.two-rows:not(.score-review) .paused-score-scroll .ribbon {
+  top:0; padding:28px 0; grid-auto-rows:var(--row-content-height); row-gap:28px;
+}
+
+#svg-full-dialog { width:min(1100px,96vw); max-height:92dvh; overflow:auto; }
+#svg-full-dialog .dialoghead { position:sticky; top:0; z-index:1; background:var(--panel,#f5f7fc); }
+.full-svg-pages figure { margin:0 0 20px; }
+.full-svg-pages figcaption { color:var(--muted); font-size:13px; margin:8px 0; }
+.full-svg-pages img { display:block; width:100%; height:auto; background:white; }
+.score-source-tools { display:flex; flex-wrap:wrap; gap:8px; }
+
+.full-svg-surface { position:relative; }
+.full-svg-measure-label { position:absolute; transform:translate(calc(-100% - 6px),-50%); color:var(--muted); font-size:12px; font-weight:600; line-height:1; pointer-events:none; }
+/* Keep scrolling notation out of the whole-score header's top inset. */
+#svg-full-dialog .dialoghead { box-shadow:0 -24px 0 0 var(--panel,#f5f7fc); }
+/* The paused browser may scroll further, but its resting frame shows two rows. */
+.two-rows:not(.score-review) .stage.paused-score-scroll {
+  mask-image:linear-gradient(to bottom,#000 0,#000 calc(100% - 27px),transparent calc(100% - 27px));
+}

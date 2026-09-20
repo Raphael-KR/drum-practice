@@ -1,3 +1,4 @@
+import { annotateNoteHighlights, NOTE_HIGHLIGHT_VERSION } from "./note-highlight";
 import { prepareDrumDecorations, applyDrumDecorations } from "./drum-notation";
 import { REST_LAYOUT_VERSION, restCenterShift } from "./whole-rest-layout";
 import { compressSVG } from "./score-pages";
@@ -316,7 +317,7 @@ export async function renderMusicXML(
   const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
   const host = document.createElement("div");
   host.style.cssText =
-    "position:fixed;left:-20000px;top:0;width:1100px;pointer-events:none;";
+    "position:fixed;left:-20000px;top:0;width:1500px;pointer-events:none;";
   document.body.append(host);
   try {
     const osmd = new OpenSheetMusicDisplay(host, {
@@ -324,19 +325,60 @@ export async function renderMusicXML(
       autoResize: false,
       pageFormat: "A4_P",
       drawTitle: true,
+      drawComposer: false,
+      drawLyricist: false,
+      drawMetronomeMarks: false,
       drawMeasureNumbers: false,
       drawLyrics: false,
       drawPartNames: false,
       drawPartAbbreviations: false,
     });
-    osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 4;
+    // XML owns system boundaries; do not impose a fixed measure count.
+    osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 0;
+    osmd.EngravingRules.NewSystemAtXMLNewSystemAttribute = true;
+    osmd.EngravingRules.NewPageAtXMLNewPageAttribute = true;
+    // Keep rehearsal boxes above cymbal stems, inside the seven-space top margin.
+    osmd.EngravingRules.RehearsalMarkYOffset = 25;
     osmd.EngravingRules.RenderMultipleRestMeasures = false;
     osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures = false;
     const renderDocument = parsed.document.cloneNode(true) as Document;
+    // Suppress textual BPM labels only in the engraving copy; keep tempo data.
+    for (const words of renderDocument.querySelectorAll("direction-type > words")) {
+      if (/^\s*BPM\s*[:=]?\s*\d+(?:\.\d+)?\s*$/i.test(words.textContent || "")) words.remove();
+    }
     const decorations = prepareDrumDecorations(renderDocument);
     await osmd.load(renderDocument);
+    // MusicXML owns first-system spacing. OSMD 2.1.2 does not apply this
+    // standard value to the system position, so translate tenths to its units.
+    const firstMeasure = renderDocument.querySelector('part > measure');
+    const topDistance = firstMeasure?.querySelector('print > system-layout > top-system-distance')
+      ?? renderDocument.querySelector('defaults > system-layout > top-system-distance');
+    const tenths = topDistance ? Number(topDistance.textContent) : NaN;
+    if (Number.isFinite(tenths) && tenths >= 0 && osmd.EngravingRules.RenderTitle) {
+      const rules = osmd.EngravingRules;
+      rules.TitleBottomDistance = Math.max(0, tenths / 10 - rules.TitleTopDistance - rules.SheetTitleHeight);
+    }
     osmd.render();
     applyDrumDecorations(host, osmd, decorations);
+    // This drum practice viewer omits percussion clef glyphs, including system
+    // repeats. Keep source XML and all barline/repeat glyphs unchanged.
+    const clefSigns = Array.from(renderDocument.querySelectorAll("part > measure > attributes > clef > sign"));
+    if (clefSigns.length && clefSigns.every(sign => sign.textContent?.trim() === "percussion")) {
+      host.querySelectorAll(".vf-clef").forEach(clef => clef.remove());
+    }
+    // VexFlow places rehearsal boxes differently at system starts. Normalize
+    // their visible top edge to the practice viewport's seven-space headroom.
+    for (const text of host.querySelectorAll<SVGTextElement>(".vf-measure > text")) {
+      let frame = text.previousElementSibling;
+      if (frame?.tagName === "path" && !frame.getAttribute("d")) frame = frame.previousElementSibling;
+      const staff = text.parentElement?.querySelector<SVGPathElement>("path");
+      if (frame?.tagName !== "rect" || frame.getAttribute("fill") !== "none" || !staff) continue;
+      const dy = staff.getBBox().y - 70 - Number(frame.getAttribute("y"));
+      for (const element of [frame, text]) {
+        element.setAttribute("y", String(Number(element.getAttribute("y")) + dy));
+        element.setAttribute("data-section-top", "safe");
+      }
+    }
     const svgs = Array.from(host.querySelectorAll("svg"));
     if (!svgs.length) throw Error("MusicXML 악보를 그릴 수 없습니다.");
     // OSMD 2.1.2 ignores filled="no" for normal short-note heads.
@@ -418,8 +460,38 @@ export async function renderMusicXML(
             glyph.setAttribute("data-full-measure-rest", "centered");
           }
       }
-    for (const svg of svgs)
+    annotateNoteHighlights(osmd, parsed.measures.map(m => m.denominator));
+    for (const svg of svgs) {
       svg.setAttribute("data-rest-layout", REST_LAYOUT_VERSION);
+      svg.setAttribute("data-note-highlight", NOTE_HIGHLIGHT_VERSION);
+    }
+    // Retain titles in whole-score SVG, but identify them for practice-only removal.
+    const headings = new Set(Array.from(parsed.document.querySelectorAll("work-title, movement-title, credit-words")).map(e => e.textContent?.trim()).filter(Boolean));
+    for (const svg of svgs) for (const text of svg.querySelectorAll("text")) {
+      if (headings.has(text.textContent?.trim()) && !text.closest(".vf-measure")) text.setAttribute("data-score-heading", "true");
+    }
+    // Crop against actual system ink, not a fixed nine-space lower margin.
+    const systemBounds = svgs.map(svg => {
+      const rows = new Map<number, { top: number; bottom: number }>();
+      for (const measure of svg.querySelectorAll<SVGGraphicsElement>(".vf-measure")) {
+        const line = Array.from(measure.children).find(e => e.localName === "path" && /^M[\d. -]+L[\d. -]+$/.test(e.getAttribute("d") || ""));
+        const points = line?.getAttribute("d")?.match(/-?\d+(?:\.\d+)?/g)?.map(Number);
+        if (!points || points.length !== 4 || Math.abs(points[1] - points[3]) > .01) continue;
+        const key = Math.round(points[1] * 100), box = measure.getBBox(), previous = rows.get(key);
+        rows.set(key, { top: Math.min(previous?.top ?? Infinity, box.y), bottom: Math.max(previous?.bottom ?? -Infinity, box.y + box.height) });
+      }
+      return rows;
+    });
+    // Keep XML page/row boundaries; trim only the unused SVG canvas below ink.
+    // Regions below are normalized against these final page dimensions.
+    for (const svg of svgs) {
+      const ink = svg.getBBox(), view = svg.viewBox.baseVal;
+      const bottom = Math.min(view.height, Math.ceil(ink.y + ink.height + 30));
+      if (bottom > 0) {
+        svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.width} ${bottom}`);
+        svg.setAttribute('height', String(bottom));
+      }
+    }
     const pages = await Promise.all(
       svgs.map((svg) => {
         const copy = svg.cloneNode(true) as SVGSVGElement;
@@ -447,18 +519,10 @@ export async function renderMusicXML(
         sy = 1;
       const x = Math.max(0, (p.x - pp.x + box.BorderLeft) * 10 * sx),
         right = Math.min(width, (p.x - pp.x + box.BorderRight) * 10 * sx);
-      const top =
-        Math.min(
-          box.BorderTop,
-          g.ParentStaffLine.PositionAndShape.BorderTop,
-          ...g.ParentStaffLine.SkyLine,
-          -4,
-        ) - 1;
-      const y = Math.max(0, (p.y - pp.y + top) * 10 * sy),
-        bottom = Math.min(
-          height,
-          (p.y - pp.y + (Math.max(box.BorderBottom, 9) + 0.5)) * 10 * sy,
-        );
+      const staffY = (p.y - pp.y) * 10;
+      const bounds = systemBounds[pi].get(Math.round(staffY * 100));
+      const y = Math.max(0, bounds ? bounds.top - 5 : staffY - 50),
+        bottom = Math.min(height, bounds ? bounds.bottom + 5 : staffY + 95);
       const w = right - x,
         h = bottom - y;
       if (w <= 0 || h <= 0)

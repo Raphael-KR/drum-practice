@@ -19,9 +19,9 @@ export function measurePageStaff(image: HTMLImageElement, regions: Region[]): Ma
   return result;
 }
 export function practiceStaffLayout(region: Region, staff: StaffPosition, width: number, budget: number) {
-  const gap = Math.min(Math.max(50, budget) / 13, width / 25);
+  const gap = Math.min(Math.max(50, budget) / 15, width / 25);
   const pageWidth = width / region.w, pageHeight = gap / staff.gap;
-  return { height: gap * 13, size: `${pageWidth}px ${pageHeight}px`, position: `${-region.x * pageWidth}px ${5 * gap - staff.top * pageHeight}px` };
+  return { height: gap * 15, size: `${pageWidth}px ${pageHeight}px`, position: `${-region.x * pageWidth}px ${7 * gap - staff.top * pageHeight}px` };
 }
 
 /** CSS scales page width and height independently to align variable-width bars. */
@@ -30,5 +30,6 @@ export async function practicePage(blob: Blob): Promise<Blob> {
   if (page.type !== 'image/svg+xml') return page;
   const doc = new DOMParser().parseFromString(await page.text(), 'image/svg+xml');
   doc.documentElement.setAttribute('preserveAspectRatio', 'none');
+  doc.querySelectorAll('[data-score-heading]').forEach(e => e.remove());
   return new Blob([new XMLSerializer().serializeToString(doc)], { type: page.type });
 }

@@ -194,7 +194,7 @@ export function arrangeWorkspace() {
   const screenBody = settingsPanel("screen", "screen-dialog", "open-screen-dialog");
   const viewRow = document.createElement("label");
   viewRow.className = "view-select-row";
-  viewRow.innerHTML = '<strong class="settings-item-title">보기</strong>';
+  viewRow.innerHTML = '<strong class="settings-item-title">악보 스타일</strong>';
   el("view").hidden = false;
   const viewControl=document.createElement('span'); viewControl.className='view-select-control';
   viewControl.innerHTML='<span id="view-selected-text" aria-hidden="true"></span>';
@@ -212,6 +212,7 @@ export function arrangeWorkspace() {
   const zoomTitle=document.createElement('strong'); zoomTitle.className='settings-item-title'; zoomTitle.textContent='악보 크기';
   zoomLabel.childNodes[0].replaceWith(zoomTitle);
   screenBody.append(reviewHelp, zoomLabel);
+  screenBody.insertAdjacentHTML("beforeend", '<label class="settings-switch"><span><strong>음표 따라가기</strong><small id="note-highlight-description">MusicXML 악보의 음표가 박자에 맞춰 잠깐 빛납니다.</small></span><input id="note-highlight" type="checkbox" role="switch" checked></label>');
   screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>현재 악보와 다음에 여는 악보에 적용합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><p id="fullscreen-status" class="subtle" role="status"></p></div>');
   el('auto-fullscreen').closest('.settings-group')!.prepend(el('pdf-view-row'));
   el('auto-fullscreen').closest('label')!.querySelector('span')!.append(el('fullscreen-status'));
@@ -255,7 +256,7 @@ export function arrangeWorkspace() {
   wrap.append(seek);
   wrap.insertAdjacentHTML("beforeend", '<output id="seek-position" hidden></output>');
   (seek.closest(".seekrow") as HTMLElement).hidden = true;
-  practice.insertAdjacentHTML("beforeend", '<p id="score-gesture-hint" class="subtle">악보 탭: 재생·정지 · 두 번 탭: 해당 마디로 · 드래그: 앞뒤 이동 · 정지 중 스크롤: 악보 탐색</p>');
+  practice.insertAdjacentHTML("beforeend", '<p id="score-gesture-hint" class="subtle">재생 중 탭: 정지 · 정지 중 탭: 마디 선택 · 두 번 탭: 해당 마디부터 재생 · 드래그: 앞뒤 이동 · 정지 중 스크롤: 악보 탐색</p>');
   el("stage").setAttribute("aria-describedby", "score-gesture-hint");
 
   // Editing has explicit tabs; lyrics and metadata no longer sit below a PDF page.

@@ -1,3 +1,4 @@
+import { matchBundledPDFLayout } from "./score-system-layout";
 import type { RecordData } from "./storage";
 import { activeScore, songScores } from "./song-scores";
 import { replaceWithMusicXML } from "./score-import";
@@ -38,6 +39,7 @@ export async function attachBundledScore(
       throw Error("앱에 포함된 MusicXML 악보의 버전이 다릅니다.");
     text = await blob.text();
   }
+  text = matchBundledPDFLayout(text).text;
   const source = new Blob([text], {
     type: "application/vnd.recordare.musicxml+xml",
   });

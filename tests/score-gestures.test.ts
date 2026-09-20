@@ -66,12 +66,13 @@ describe("score playback gestures", () => {
     expect(callbacks.play).not.toHaveBeenCalled();
   });
 
-  it("waits 260 ms before treating a paused tap as play", () => {
+  it("selects a paused tap measure without ever starting playback", () => {
     tap();
     vi.advanceTimersByTime(259);
     expect(callbacks.play).not.toHaveBeenCalled();
     vi.advanceTimersByTime(1);
-    expect(callbacks.play).toHaveBeenCalledOnce();
+    expect(callbacks.seek).toHaveBeenCalledWith(1, false);
+    expect(playing).toBe(false);
   });
 
   it("double tap seeks the first-down measure and resumes the initial playing state", () => {
@@ -87,12 +88,13 @@ describe("score playback gestures", () => {
     expect(callbacks.pause).toHaveBeenCalledOnce();
   });
 
-  it("double tap while paused seeks without a stray play", () => {
+  it("double tap while paused starts the touched measure without a delayed selection", () => {
     tap();
     vi.advanceTimersByTime(100);
     tap();
     vi.runAllTimers();
-    expect(callbacks.seek).toHaveBeenCalledWith(1, false);
+    expect(callbacks.seek).toHaveBeenCalledExactlyOnceWith(1, true);
+    expect(playing).toBe(true);
     expect(callbacks.play).not.toHaveBeenCalled();
     expect(callbacks.pause).not.toHaveBeenCalled();
   });
@@ -102,8 +104,8 @@ describe("score playback gestures", () => {
     vi.advanceTimersByTime(100);
     tap(340);
     vi.runAllTimers();
-    expect(callbacks.seek).not.toHaveBeenCalled();
-    expect(callbacks.play).toHaveBeenCalledOnce();
+    expect(callbacks.seek).toHaveBeenCalledExactlyOnceWith(3, false);
+    expect(playing).toBe(false);
   });
 
   it("starts scrub only after horizontal intent and passes cumulative signed distance", () => {
@@ -180,7 +182,8 @@ describe("score playback gestures", () => {
     expect(callbacks.play).not.toHaveBeenCalled();
     tap();
     vi.runAllTimers();
-    expect(callbacks.play).toHaveBeenCalledOnce();
+    expect(callbacks.seek).toHaveBeenCalledExactlyOnceWith(1, false);
+    expect(playing).toBe(false);
   });
 
   it("cancels a scrub when another finger lands outside the score", () => {

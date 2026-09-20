@@ -9,7 +9,6 @@ export interface ScoreGestureCallbacks<T> {
   /** Resume/unlock AudioContext while pointer-down still has user activation. */
   prepareAudio?(): void;
   pause(): void;
-  play(): void;
   seek(target: T, resumePlaying: boolean): void;
   scrubStart(wasPlaying: boolean): void;
   /** Cumulative horizontal distance from pointer-down. Right is positive/earlier. */
@@ -163,15 +162,15 @@ export function attachScoreGestures<T>(
     // Browsers can coalesce pointermove events. A moved pointer is never a tap.
     if (Math.hypot(event.clientX - finished.x, event.clientY - finished.y) >= DRAG_THRESHOLD) return;
     if (finished.secondTap) {
-      callbacks.seek(finished.target, finished.wasPlaying);
+      callbacks.seek(finished.target, true);
       return;
     }
     if (finished.wasPlaying) callbacks.pause();
     const timer = setTimeout(() => {
       if (pending?.timer !== timer) return;
-      const wasPlaying = pending.wasPlaying;
+      const tap = pending;
       pending = undefined;
-      if (!wasPlaying) callbacks.play();
+      if (!tap.wasPlaying) callbacks.seek(tap.target, false);
     }, TAP_DELAY);
     pending = {
       x: finished.x,

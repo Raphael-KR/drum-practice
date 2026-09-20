@@ -1,3 +1,5 @@
+import { matchBundledPDFLayout } from "./score-system-layout";
+import { NOTE_HIGHLIGHT_VERSION } from "./note-highlight";
 import { normalizeBundledDrumNotation } from "./drum-notation";
 import type { RecordData } from "./storage";
 import type { Region } from "./model";
@@ -146,8 +148,9 @@ export async function correctStoredRests(
   const { readMusicXML, renderMusicXML } = await import("./musicxml");
   const normalize = (text: string) => {
     const a = fixAllDrumRestPositions(text),
-      b = normalizeBundledDrumNotation(a.text);
-    return { text: b.text, changed: a.changed || b.changed };
+      b = normalizeBundledDrumNotation(a.text),
+      c = matchBundledPDFLayout(b.text);
+    return { text: c.text, changed: a.changed || b.changed || c.changed };
   };
   const fixed = normalize(await readMusicXML(xml.source));
   const canonical = record.canonicalXML
@@ -163,8 +166,6 @@ export async function correctStoredRests(
       type: "application/vnd.recordare.musicxml+xml",
     });
     const rendered = await renderMusicXML(source, progress, xml.partId);
-    if (rendered.pages.length !== xml.pages.length)
-      throw Error("쉼표 보정 후 페이지 수가 달라 적용을 중단했습니다.");
     if (record.song.scoreFormat === "musicxml")
       result = {
         ...result,
@@ -172,6 +173,7 @@ export async function correctStoredRests(
         pages: rendered.pages,
         song: {
           ...result.song,
+          pageCount: rendered.pages.length,
           regions: refreshedRegions(xml.regions, rendered.regions),
         },
       };
@@ -216,21 +218,22 @@ export async function ensureCenteredRestCache(
   const { displayPage } = await import("./score-pages");
   const { REST_LAYOUT_VERSION } = await import("./whole-rest-layout");
   const first = await displayPage(xml.pages[0]);
+  const markup = first.type === "image/svg+xml" ? await first.text() : "";
   if (
-    first.type === "image/svg+xml" &&
-    (await first.text()).includes(`data-rest-layout="${REST_LAYOUT_VERSION}"`)
+    markup.includes(`data-rest-layout="${REST_LAYOUT_VERSION}"`) &&
+    markup.includes(`data-note-highlight="${NOTE_HIGHLIGHT_VERSION}"`)
   )
     return record;
   const { renderMusicXML } = await import("./musicxml");
   const rendered = await renderMusicXML(xml.source, progress, xml.partId);
-  if (rendered.pages.length !== xml.pages.length)
-    throw Error("쉼표 배치 갱신 후 페이지 수가 달라 적용을 중단했습니다.");
+  // Pagination may change; refreshedRegions validates stable measure identities.
   return record.song.scoreFormat === "musicxml"
     ? {
         ...record,
         pages: rendered.pages,
         song: {
           ...record.song,
+          pageCount: rendered.pages.length,
           regions: refreshedRegions(xml.regions, rendered.regions),
         },
       }

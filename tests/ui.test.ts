@@ -429,6 +429,43 @@ it("keeps centred repeat anchored when changing radius and uses inclusive end ba
   click('home');
   expect(document.getElementById('loop-summary')!.textContent).toBe('반복 꺼짐');
 });
+it("selects a measure on single tap and plays that measure on double tap", async () => {
+  const view = document.getElementById('view') as HTMLSelectElement;
+  const oldView = view.value;
+  view.value='rows'; view.dispatchEvent(new Event('change'));
+  animationFrame(0);
+  const stage = document.getElementById('stage')!;
+  stage.scrollTop=375;
+  const measure = document.querySelector<HTMLElement>('#ribbon [data-index="6"]')!;
+  expect(measure).not.toBeNull();
+  const tap = () => {
+    for (const type of ['pointerdown','pointerup']) {
+      const e = new Event(type,{bubbles:true,cancelable:true});
+      Object.assign(e,{pointerId:1,pointerType:'touch',isPrimary:true,button:0,clientX:210,clientY:100});
+      measure.dispatchEvent(e);
+    }
+  };
+  tap();
+  await new Promise(ok=>setTimeout(ok,300));
+  animationFrame(0);
+  const song = JSON.parse(readFileSync('public/demo/song.json','utf8'));
+  expect(Number((document.getElementById('seek') as HTMLInputElement).value)).toBeCloseTo(song.measures[6].start);
+  expect(document.getElementById('play')!.getAttribute('aria-label')).toBe('재생');
+  expect(stage.scrollTop).toBe(375);
+  expect(measure.classList.contains('active')).toBe(true);
+  tap(); tap();
+  await new Promise(ok=>setTimeout(ok,300));
+  animationFrame(0);
+  expect(Number((document.getElementById('seek') as HTMLInputElement).value)).toBeCloseTo(song.measures[6].start);
+  expect(document.getElementById('play')!.getAttribute('aria-label')).toBe('일시정지');
+  expect([...stage.querySelectorAll<HTMLElement>('[data-index]')].slice(0,4).map(el=>Number(el.dataset.index))).toEqual([4,5,6,7]);
+  click('play'); animationFrame(0);
+  // Starting with the dedicated play button must also put an odd row on top.
+  click('play'); animationFrame(0);
+  expect([...stage.querySelectorAll<HTMLElement>('[data-index]')].slice(0,4).map(el=>Number(el.dataset.index))).toEqual([4,5,6,7]);
+  click('play'); click('home');
+  view.value=oldView; view.dispatchEvent(new Event('change')); animationFrame(0);
+});
 it("separates tap playback, percent drag, marker activation and cancelled gestures", async () => {
   const stage = document.getElementById('stage')!;
   const fire = (el: HTMLElement, name: string, x: number, y=100) => {
@@ -458,6 +495,39 @@ it("separates tap playback, percent drag, marker activation and cancelled gestur
   percent.click(); expect((document.getElementById('marker-dialog') as HTMLDialogElement).open).toBe(true);
   (document.getElementById('marker-dialog') as HTMLDialogElement).close();
   click('home');
+});
+it("browses all paused rows vertically without seeking, then restores playback following", async () => {
+  const stage = document.getElementById("stage")!;
+  const view = document.getElementById("view") as HTMLSelectElement;
+  const seek = document.getElementById("seek") as HTMLInputElement;
+  const oldView = view.value, oldTime = seek.value;
+  view.value = "rows"; view.dispatchEvent(new Event("change"));
+  seek.value = "62"; seek.dispatchEvent(new Event("input")); animationFrame(0);
+  const before = seek.value;
+  const count = (await allRecords()).find(r => r.song.id === "real-paradis")!.song.measures.length;
+  expect(stage.classList.contains("paused-score-scroll")).toBe(true);
+  expect(stage.querySelectorAll("[data-index]")).toHaveLength(count);
+  stage.scrollTop = 400;
+  const wheel = new WheelEvent("wheel", {deltaY:100,bubbles:true,cancelable:true});
+  stage.dispatchEvent(wheel); animationFrame(0);
+  expect(wheel.defaultPrevented).toBe(false);
+  expect(stage.scrollTop).toBe(400);
+  expect(seek.value).toBe(before);
+  const horizontal = new WheelEvent("wheel", {deltaX:100,bubbles:true,cancelable:true});
+  stage.dispatchEvent(horizontal); animationFrame(0);
+  expect(horizontal.defaultPrevented).toBe(true);
+  expect(Number(seek.value)).toBeGreaterThan(Number(before));
+  const resumedFrom = seek.value;
+  click("play"); await vi.waitFor(() => expect(document.getElementById("play")!.getAttribute("aria-label")).toBe("일시정지"));
+  animationFrame(0);
+  expect(stage.classList.contains("paused-score-scroll")).toBe(false);
+  expect(stage.scrollTop).toBe(0);
+  expect(stage.querySelectorAll("[data-index]").length).toBeLessThanOrEqual(8);
+  expect(seek.value).toBe(resumedFrom);
+  click("play"); animationFrame(0);
+  expect(stage.querySelectorAll("[data-index]")).toHaveLength(count);
+  seek.value = oldTime; seek.dispatchEvent(new Event("input"));
+  view.value = oldView; view.dispatchEvent(new Event("change")); animationFrame(0);
 });
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("library-button");
@@ -582,7 +652,7 @@ it('keeps only the app heading and groups PDF with fullscreen below the divider'
   const pdf=document.getElementById('pdf-view-row')!;
   expect(pdf.parentElement!.classList.contains('settings-group')).toBe(true);
   expect(pdf.nextElementSibling!.contains(document.getElementById('auto-fullscreen'))).toBe(true);
-  expect(document.querySelector('.view-select-row > strong')!.textContent).toBe('보기');
+  expect(document.querySelector('.view-select-row > strong')!.textContent).toBe('악보 스타일');
   expect(document.getElementById('zoom')!.closest('label')!.querySelector('strong')!.textContent).toBe('악보 크기');
 });
 
@@ -597,4 +667,17 @@ it("marks immediately from the transport and renders sorted fixed slots on the s
   expect(document.querySelectorAll('.measure-marker:not([hidden])').length).toBeGreaterThan(0);
   const ids=[...document.querySelectorAll<HTMLElement>('#quick-markers [data-quick-marker]')].map(e=>e.textContent!);
   expect(ids.map(Number)).toEqual(ids.map(Number).sort((a,b)=>a-b));
+});
+it('shows note-follow as unavailable for the active PDF-only score without erasing preference',()=>{
+ const toggle=document.getElementById('note-highlight') as HTMLInputElement;
+ expect(toggle.closest('#screen-dialog')).not.toBeNull();
+ expect(toggle.getAttribute('role')).toBe('switch');
+ expect(toggle.closest('label')!.textContent).toContain('음표 따라가기');
+ expect(toggle.disabled).toBe(true);
+ expect(toggle.checked).toBe(false);
+ expect(document.getElementById('note-highlight-description')!.textContent).toContain('MusicXML');
+ const stored=localStorage.getItem('drum-practice.note-highlight');
+ toggle.checked=true;toggle.dispatchEvent(new Event('change'));
+ expect(toggle.checked).toBe(false);
+ expect(localStorage.getItem('drum-practice.note-highlight')).toBe(stored);
 });

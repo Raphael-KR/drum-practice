@@ -1,3 +1,5 @@
+import { fullScoreLabels } from "./full-score-labels";
+import { displayPage } from "./score-pages";
 import { icon } from "./icons";
 import { songScores } from "./song-scores";
 import { openSettingsChild } from "./workspace";
@@ -189,11 +191,63 @@ export function setupScoreManagement(h: Host) {
     lyrics.showModal();
   };
   const original = $("original-button");
-  original.textContent = "원본 악보 보기";
+  original.textContent = "PDF 전체 악보 보기";
   original.className = "management-row";
   const originalTools = document.createElement("div");
   originalTools.className = "score-source-tools";
-  originalTools.append(original);
+  const svgButton = document.createElement("button");
+  svgButton.id = "svg-full-button";
+  svgButton.className = "management-row";
+  svgButton.textContent = "SVG 전체 악보 보기";
+  const svgDialog = dialog("svg-full-dialog", "SVG 전체 악보 보기");
+  const svgPages = document.createElement("div");
+  svgPages.className = "full-svg-pages";
+  svgDialog.append(svgPages);
+  let svgURLs: string[] = [];
+  const releaseSVG = () => {
+    svgPages.replaceChildren();
+    svgURLs.forEach(URL.revokeObjectURL);
+    svgURLs = [];
+  };
+  svgDialog.addEventListener("close", releaseSVG);
+  svgButton.onclick = run(async () => {
+    const score = h.get() && songScores(h.get()!).find(s => s.format === "musicxml");
+    if (!score?.pages.length) throw Error("MusicXML 악보가 없습니다.");
+    svgButton.disabled = true;
+    releaseSVG();
+    try {
+      for (const [i, page] of score.pages.entries()) {
+        const decoded = await displayPage(page);
+        const labels = fullScoreLabels(await decoded.text());
+        const url = URL.createObjectURL(decoded);
+        svgURLs.push(url);
+        const figure = document.createElement("figure");
+        const caption = document.createElement("figcaption");
+        caption.textContent = `${i + 1} / ${score.pages.length}쪽`;
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = `SVG 전체 악보 ${i + 1}쪽`;
+        const surface = document.createElement("div");
+        surface.className = "full-svg-surface";
+        surface.append(img);
+        for (const position of labels) {
+          const label = document.createElement("span");
+          label.className = "full-svg-measure-label";
+          label.textContent = position.label;
+          label.setAttribute("aria-label", `${position.label}마디`);
+          label.style.left = `${position.left}%`;
+          label.style.top = `${position.top}%`;
+          surface.append(label);
+        }
+        figure.append(caption, surface);
+        svgPages.append(figure);
+      }
+      svgDialog.showModal();
+      svgDialog.scrollTop = 0;
+    } catch (e) { releaseSVG(); throw e; }
+    finally { svgButton.disabled = false; }
+  });
+  originalTools.append(original, svgButton);
   $("editor-score").prepend(originalTools);
   $("editor-dialog").querySelector("h2")!.textContent = "편집";
   $("save-metadata").textContent = "곡 정보 적용";
@@ -268,6 +322,7 @@ export function setupScoreManagement(h: Host) {
       !r.audio.size;
     selection();
     original.hidden = !pdf;
+    svgButton.hidden = !songScores(r).some(s => s.format === "musicxml" && s.pages.length > 0);
     body.replaceChildren();
     const text = lyricDocument(r);
     if (!text) {
