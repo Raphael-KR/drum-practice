@@ -1219,3 +1219,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - public/qa/drum-key-comparison.html 추가. 이전 상세 범례와 최신 Drum Key를 동일 오선 간격/음표 크기의 SVG로 나란히 비교. 하이햇 상태와 동작 지시는 별도 행으로 구분.
 - 첨부 범례 재도식이며 OSMD 출력/확정 매핑이 아님을 화면에 명시. 앱/곡/매핑 정본 변경 없음.
 - Safari에서 페이지 표시와 전체 스크린샷 직접 확인. 초기 고음 좌표 반칸 간격 수정 후 재확인. 증거 docs/experiments/drum-key-comparison.png. git diff --check 확인.
+
+## 2026-09-20 — 범례 충돌에 대한 사용자 선택 확정
+
+- 하이햇 제5칸, 라이드 제5선 ×, 벨 제5선 ▲, 크래시 위 첫째 덧줄 ×로 확정. 상태/동작 하이햇 구분 유지.
+- Tom 4=플로어 탐, 싱글 킥=Right Bass/더블 킥에 Left Bass 추가. 한쪽만 있는 항목은 해당 범례를 따르는 사용자 결정을 정본에 기록.
+- 문서 갱신 후 비교 페이지에 확정 기준 추가. 원본 두 열은 비교용으로 보존. 기존 곡 변환 및 OSMD 미지원 주법 구현은 수행하지 않음.
+- 검증: Safari에서 확정 기준/원본 비교 구분과 Tom 4 별칭 표시 확인. git diff --check 통과.
