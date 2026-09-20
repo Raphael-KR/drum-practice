@@ -1,3 +1,4 @@
+import { REST_LAYOUT_VERSION, restCenterShift } from "./whole-rest-layout";
 import { compressSVG } from "./score-pages";
 import JSZip from "jszip";
 import { uid, type Region } from "./model";
@@ -334,6 +335,49 @@ export async function renderMusicXML(
     osmd.render();
     const svgs = Array.from(host.querySelectorAll("svg"));
     if (!svgs.length) throw Error("MusicXML 악보를 그릴 수 없습니다.");
+    // Explicit rest display pitches bypass OSMD's automatic whole-rest centering.
+    // Move only full-bar silence glyphs; keep staff entries and playback anchors intact.
+    for (const row of osmd.GraphicSheet.MeasureList)
+      for (const g of row) {
+        if (!g?.hasOnlyRests || g.staffEntries.length !== 1) continue;
+        const page = g.ParentMusicSystem.Parent;
+        const box = g.PositionAndShape;
+        const left =
+          (box.AbsolutePosition.x -
+            page.PositionAndShape.AbsolutePosition.x +
+            box.BorderLeft) *
+          10;
+        const right =
+          (box.AbsolutePosition.x -
+            page.PositionAndShape.AbsolutePosition.x +
+            box.BorderRight) *
+          10;
+        for (const voice of g.staffEntries[0].graphicalVoiceEntries)
+          for (const note of voice.notes) {
+            if (
+              !note.sourceNote.isRest() ||
+              !(
+                note.sourceNote.IsWholeMeasureRest ||
+                note.sourceNote.Length.RealValue ===
+                  note.sourceNote.SourceMeasure.ActiveTimeSignature.RealValue
+              )
+            )
+              continue;
+            const glyph = (
+              note as unknown as { getSVGGElement(): SVGGElement }
+            ).getSVGGElement();
+            if (!glyph) continue;
+            const bounds = glyph.getBBox();
+            const dx = restCenterShift(left, right, bounds.x, bounds.width);
+            glyph.setAttribute(
+              "transform",
+              `translate(${dx} 0) ${glyph.getAttribute("transform") || ""}`,
+            );
+            glyph.setAttribute("data-full-measure-rest", "centered");
+          }
+      }
+    for (const svg of svgs)
+      svg.setAttribute("data-rest-layout", REST_LAYOUT_VERSION);
     const pages = await Promise.all(
       svgs.map((svg) => {
         const copy = svg.cloneNode(true) as SVGSVGElement;

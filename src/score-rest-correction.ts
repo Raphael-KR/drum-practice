@@ -156,3 +156,32 @@ export async function correctStoredRests(
   }
   return result;
 }
+
+/** Refresh generated SVG caches only; preserve MusicXML and user timing/region edits. */
+export async function ensureCenteredRestCache(
+  record: RecordData,
+  progress: (s: string) => void,
+): Promise<RecordData> {
+  const xml = songScores(record).find((s) => s.format === "musicxml");
+  if (!xml?.pages.length) return record;
+  const { displayPage } = await import("./score-pages");
+  const { REST_LAYOUT_VERSION } = await import("./whole-rest-layout");
+  const first = await displayPage(xml.pages[0]);
+  if (
+    first.type === "image/svg+xml" &&
+    (await first.text()).includes(`data-rest-layout="${REST_LAYOUT_VERSION}"`)
+  )
+    return record;
+  const { renderMusicXML } = await import("./musicxml");
+  const rendered = await renderMusicXML(xml.source, progress, xml.partId);
+  if (rendered.pages.length !== xml.pages.length)
+    throw Error("쉼표 배치 갱신 후 페이지 수가 달라 적용을 중단했습니다.");
+  return record.song.scoreFormat === "musicxml"
+    ? { ...record, pages: rendered.pages }
+    : {
+        ...record,
+        otherScores: record.otherScores?.map((s) =>
+          s.format === "musicxml" ? { ...s, pages: rendered.pages } : s,
+        ),
+      };
+}

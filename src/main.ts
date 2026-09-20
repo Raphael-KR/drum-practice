@@ -1,4 +1,4 @@
-import { correctStoredRests } from "./score-rest-correction";
+import { correctStoredRests, ensureCenteredRestCache } from "./score-rest-correction";
 import { attachBundledScore } from "./bundled-score";
 import { ScoreReview, reviewPair, copyReviewImage } from "./score-review";
 import { displayPage, SVG_GZIP, pageExtension } from "./score-pages";
@@ -235,7 +235,7 @@ async function activate(r: RecordData) {
   validateSong(r.song);
   busy = true;
   try {
-    if(!isPortable){r=await attachBundledScore(r,status);r=await correctStoredRests(r,status);}
+    if(!isPortable){r=await attachBundledScore(r,status);r=await correctStoredRests(r,status);r=await ensureCenteredRestCache(r,status);}
     if (!isPortable && r.song.scoreFormat === 'musicxml' && r.pages.some(p => p.type !== SVG_GZIP)) {
       const rendered = await renderScore(r.pdf, 'musicxml', r.song.scorePartId);
       if (!rendered.parsed) throw Error('MusicXML 렌더링 결과가 없습니다.');
