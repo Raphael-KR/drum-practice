@@ -1,3 +1,4 @@
+import { measurePageStaff, practiceStaffLayout, practicePage, type StaffPosition } from "./practice-staff-layout";
 import { correctStoredRests, ensureCenteredRestCache } from "./score-rest-correction";
 import { attachBundledScore } from "./bundled-score";
 import { ScoreReview, reviewPair, copyReviewImage } from "./score-review";
@@ -97,6 +98,7 @@ let saveTimer = 0,
   rowWindow = -1;
 let editingLoopId: string | undefined;
 let pageRatios: number[] = [];
+let practiceStaffs = new Map<string, StaffPosition>();
 let trackOffsets: number[] = [],
   trackWidths: number[] = [];
 const app = $("app");
@@ -107,7 +109,7 @@ app.innerHTML = `
 <section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="악보 표시 방식"><option value="ribbon">한 줄로 이어 보기</option><option value="rows">두 줄 고정 비교</option><option value="compare">PDF · MusicXML 검수</option></select><button id="original-button">원본 보기</button></div></div>
 <div id="review-tools" hidden><span id="review-message">스페이스: 정지·캡처 복사 / 다시 누르면 재생</span><button id="review-copy">정지·캡처 복사</button><button id="review-save" hidden>캡처 저장</button></div><div class="stage" id="stage"><canvas id="review-canvas" hidden aria-label="위 PDF, 아래 MusicXML 같은 마디 비교"></canvas><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
-<div class="transport"><div class="flex transport-left"><button id="home" aria-label="처음으로">↤</button><label><select id="goto" aria-label="앞으로 이동할 마디 수">${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label><button id="jump">앞으로</button><button id="copy-position" title="현재 마디와 위치 복사" aria-label="현재 마디와 위치 복사">위치 복사</button></div><button id="play" class="primary play">▶ 재생</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">BPM</button><button id="slower" aria-label="5 BPM 느리게">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="재생 BPM: 좌우 드래그로 조절, 두 번 탭하면 원곡 BPM" aria-orientation="horizontal" title="좌우 드래그: 1 BPM씩 조절 · 두 번 탭: 원곡 BPM"><button id="faster" aria-label="5 BPM 빠르게">+5</button><label><input id="click" type="checkbox" checked>클릭</label></div></div>
+<div class="transport"><div class="flex transport-left"><button id="home" aria-label="처음으로">↤</button><label><select id="goto" aria-label="되감을 마디 수">${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label><button id="jump">앞으로</button><button id="copy-position" title="현재 마디와 위치 복사" aria-label="현재 마디와 위치 복사">위치 복사</button></div><button id="play" class="primary play">▶ 재생</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">BPM</button><button id="slower" aria-label="5 BPM 느리게">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="재생 BPM: 좌우 드래그로 조절, 두 번 탭하면 원곡 BPM" aria-orientation="horizontal" title="좌우 드래그: 1 BPM씩 조절 · 두 번 탭: 원곡 BPM"><button id="faster" aria-label="5 BPM 빠르게">+5</button><label><input id="click" type="checkbox" checked>클릭</label></div></div>
 <details><summary>소리·카운트인·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>준비 <select id="count"><option value="0">없음</option><option value="1">1마디</option><option value="2">2마디</option></select></label><label><input id="count-each" type="checkbox">반복마다 준비</label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
 <div class="panels"><section class="panel"><h2>구간 반복</h2><div class="flex"><label>시작 마디 <input id="loop-a" type="number" min="1" value="25"></label><label>박 <input id="loop-ab" type="number" min="1" step="0.25" value="1"></label><button id="set-a">현재 위치 A</button></div><div class="flex"><label>끝 마디 <input id="loop-b" type="number" min="1" value="29"></label><label>박 <input id="loop-bb" type="number" min="1" step="0.25" value="1"></label><button id="set-b">현재 위치 B</button></div><p class="subtle">끝 지점의 첫 음은 포함하지 않습니다. 25~28마디 반복은 끝을 29마디 1박으로 설정하세요.</p><div class="flex"><input id="loop-name" type="text" placeholder="예: 후렴 4마디" aria-label="반복 이름"><button id="save-loop">저장·반복</button><button id="new-loop">새 구간</button><button id="stop-loop">반복 끄기</button></div><div class="list" id="loops"></div></section><section class="panel"><h2>마커</h2><div class="flex"><input id="marker-name" type="text" placeholder="예: 어려운 필인" aria-label="마커 이름"><button id="add-marker">현재 위치 표시</button></div><div id="markers" class="list"></div><details><summary>백업·복원</summary><p class="subtle">백업에는 정렬·가사·연습 설정이 들어갑니다. 미디어를 포함하면 다른 기기에서도 바로 열 수 있습니다.</p><label><input id="include-media" type="checkbox" checked>악보·음원 포함</label><div class="flex"><button id="export">백업 내보내기</button><label>가져오기 <input id="restore" type="file" accept=".zip"></label></div></details></section></div><p class="keyboard">스페이스: 재생/정지 · ←/→: 이전/다음 마디 · M: 마커 추가</p><p class="subtle" id="alignment-note">가사와 박 위치는 자동 추정 자료를 포함합니다. 어긋나는 곳은 ‘악보·가사 맞추기’에서 수정하세요.</p></section></main>
 <dialog id="library-dialog"><div class="dialoghead"><h2>내 악보 목록</h2><button id="new-button">＋ 곡 추가</button><button data-close="library-dialog">닫기</button></div><div id="library-list"></div></dialog>
@@ -257,8 +259,9 @@ async function activate(r: RecordData) {
     // Materialize persisted blobs before image decoding; Safari may not load
     // an object URL backed directly by an IndexedDB blob after a reload.
     urls = await Promise.all(r.pages.map(async (b) =>
-      URL.createObjectURL(await displayPage(b)),
+      URL.createObjectURL(await practicePage(b)),
     ));
+    practiceStaffs.clear();
     pageRatios = await Promise.all(
       urls.map(async (u, index) => {
         const img = new Image();
@@ -268,6 +271,8 @@ async function activate(r: RecordData) {
         } catch (cause) {
           throw new Error(`악보 ${index + 1}쪽을 불러오지 못했습니다: ${cause instanceof Error ? cause.message : String(cause)}`, { cause });
         }
+        if (r.song.scoreFormat === "musicxml")
+          for (const [id, staff] of measurePageStaff(img, r.song.regions.filter(region => region.page === index))) practiceStaffs.set(id, staff);
         return img.naturalHeight / img.naturalWidth;
       }),
     );
@@ -328,18 +333,15 @@ function syncSettings() {
   val("view").value = s.view;
   engine().volumes();
 }
-// Fit newly engraved XML bars into the existing fixed two-row viewport.
-// Scale the image and its beat/lyric coordinates together; stored geometry is unchanged.
-function xmlRowScale(s:Song,r:Region) {
-  if(s.scoreFormat!=='musicxml'||s.settings.view!=='rows')return 1;
-  const style=getComputedStyle($('ribbon'));
-  const budget=($('stage').clientHeight-(parseFloat(style.top)||24)-(parseFloat(style.rowGap)||54)-24)/2-24;
-  const height=($('stage').clientWidth/4/r.w)*r.h*(pageRatios[r.page]||1.414);
-  return Math.min(1,Math.max(50,budget)/height);
-}
 function practiceRegion(s:Song,region:Region) {
-  const r=displayRegion(s,region),scale=xmlRowScale(s,r);
-  return scale===1?r:{...r,beatXs:r.beatXs.map(x=>x*scale)};
+  return displayRegion(s,region);
+}
+function xmlPracticeLayout(s: Song, r: Region, width: number) {
+  const staff = practiceStaffs.get(r.id);
+  if (s.scoreFormat !== 'musicxml' || s.settings.view !== 'rows' || !staff) return undefined;
+  const style = getComputedStyle($('ribbon'));
+  const budget = ($('stage').clientHeight - (parseFloat(style.top) || 24) - (parseFloat(style.rowGap) || 54) - 24) / 2 - 24;
+  return practiceStaffLayout(r, staff, width, budget);
 }
 function widthOf(m: Measure) {
   const r = practiceRegion(song(), song().regions.find((r) => r.id === m.regionId)!);
@@ -354,9 +356,9 @@ function measureHTML(m: Measure, i: number, width: number) {
   const s = song(),
     r = practiceRegion(s, s.regions.find((r) => r.id === m.regionId)!);
   const ly = s.lyrics.filter((l) => lyricMeasureId(s, l) === m.id);
-  const scale=xmlRowScale(s,r);
+  const layout=xmlPracticeLayout(s,r,width);
   const height =
-    width > 1 ? (width / r.w) * r.h * (pageRatios[r.page] || 1.294)*scale : 165;
+    layout?.height ?? (width > 1 ? (width / r.w) * r.h * (pageRatios[r.page] || 1.294) : 165);
   const syl = ly
     .map((l) => {
       const b = ((l.time - m.start) / (m.end - m.start)) * m.beats;
@@ -367,7 +369,7 @@ function measureHTML(m: Measure, i: number, width: number) {
       return `<span class="syllable" title="${l.confirmed ? "확인됨" : "추정"}" style="left:${x * 100}%;${l.text.length > 4 ? "font-size:14px;white-space:normal;max-width:95%;transform:none;" : ""}">${esc(l.text)}</span>`;
     })
     .join("");
-  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label">${esc(m.label)} 마디<span class="measure-beat" aria-label="현재 박">1</span><small class="measure-signature">${m.beats}/${m.denominator}</small></span><div class="crop" style="width:${width*scale}px;height:${height}px;background-image:url('${urls[r.page]}');background-size:${100 / r.w}% ${100 / r.h}%;background-position:${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%"></div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
+  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label">${esc(m.label)} 마디<span class="measure-beat" aria-label="현재 박">1</span><small class="measure-signature">${m.beats}/${m.denominator}</small></span><div class="crop" style="width:${width}px;height:${height}px;background-image:url('${urls[r.page]}');background-size:${layout?.size ?? `${100 / r.w}% ${100 / r.h}%`};background-position:${layout?.position ?? `${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%`}"></div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
 }
 function positionInMeasure(index: number, beat: number, width: number) {
   const s = song(),

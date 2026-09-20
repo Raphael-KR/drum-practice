@@ -1259,3 +1259,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - SVG 재생성 시 pages와 regions를 함께 적용하고 마디 ID 구성을 검증한다. 원본 MusicXML, 가사, 음원 시간은 유지한다. 캐시 v5로 기존 저장 악보도 재생성한다.
 - Safari 실제 ScoreReview에서 22.094초, 9–12마디 상단 연결선 출력 확인: docs/experiments/svg-crop-fixed.png.
 - 38개 파일 131개 테스트 통과, production build 통과. HTML 별도 내보내기 없음.
+
+## 2026-09-20 전반 Safari QA
+- docs/QA-GENERAL-2026-09-20.md에 범위·실측 결과·미검증 범위를 기록.
+- 세로 화면 위치/재생 버튼 겹침 수정, 되감기 접근성 이름 정정.
+- SVG 직접 두줄 보기의 마디별 오선 확대율·높이 불일치를 실제 화면에서 발견하고 오선 기준 정렬로 수정. 표시용 SVG만 preserveAspectRatio=none 적용, 원본 보존.
+- 110마디 28구간 비교 draw 성공, Safari Space 정지·캡처 복사 확인, 39파일 133테스트 및 빌드 통과.

@@ -1248,3 +1248,11 @@ button.icon-button[hidden] { display:none; }
 #screen-dialog #view[hidden] { display:none; }
 #review-help { flex-basis:100%; }
 #review-help p { font-size:14px; margin:6px 0; }
+
+/* Keep the position label clear of the centered play button on iPad portrait. */
+@media (max-width: 820px) {
+  .transport-left { min-width:0; width:100%; }
+  .transport-left > button:not(#copy-position), .transport-left > label { flex-shrink:0; }
+  #goto { min-width:44px; width:44px; }
+  #copy-position { width:auto; min-width:0; flex:1; padding:4px 2px; font-size:11px; }
+}
