@@ -1,5 +1,5 @@
 /** Full-bar silence is centered visually; its rhythmic onset stays at beat zero. */
-export const REST_LAYOUT_VERSION = "centered-hollow-v2";
+export const REST_LAYOUT_VERSION = "default-full-rest-v3";
 export function restCenterShift(
   left: number,
   right: number,

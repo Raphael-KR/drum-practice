@@ -66,7 +66,7 @@ export function fixAllDrumRestPositions(text: string): {
   if (d.querySelector("parsererror"))
     throw Error("MusicXML을 읽을 수 없습니다.");
   const part = d.querySelector('part[id="P1"]');
-  const counts = { cymbal: 0, drum: 0, kick: 0 };
+  const counts = { cymbal: 0, drum: 0, kick: 0, fullBar: 0 };
   let changed = false;
   if (!part) return { text, changed, counts };
   const upperBars = new Set([5, 6, 36, 39, 40, 68, 72, 80, 91, 94, 96]);
@@ -74,12 +74,26 @@ export function fixAllDrumRestPositions(text: string): {
   for (const m of Array.from(part.children).filter(
     (n) => n.tagName === "measure",
   )) {
+    const notes = Array.from(m.children).filter((n) => n.tagName === "note");
+    const silentMeasure = notes.every((n) => n.querySelector("rest"));
     let voiceOneRest = 0;
     for (const n of Array.from(m.children).filter(
       (n) => n.tagName === "note",
     )) {
       const rest = n.querySelector("rest");
       if (!rest) continue;
+      // Shared full-bar silence uses the renderer's default vertical/central placement.
+      // Keep role-specific heights when another voice is playing in this measure.
+      if (silentMeasure && rest.getAttribute("measure") === "yes") {
+        counts.fullBar++;
+        for (const e of Array.from(rest.children)) {
+          if (e.tagName === "display-step" || e.tagName === "display-octave") {
+            e.remove();
+            changed = true;
+          }
+        }
+        continue;
+      }
       const voice = n.querySelector("voice")?.textContent,
         number = Number(m.getAttribute("number"));
       let lane: keyof typeof counts;

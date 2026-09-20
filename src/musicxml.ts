@@ -393,6 +393,7 @@ export async function renderMusicXML(
           for (const note of voice.notes) {
             if (
               !note.sourceNote.isRest() ||
+              !note.sourceNote.Pitch ||
               !(
                 note.sourceNote.IsWholeMeasureRest ||
                 note.sourceNote.Length.RealValue ===

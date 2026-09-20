@@ -99,3 +99,9 @@ MusicXML은 악기 의미(instrument), 표시 높이(unpitched/display-step/disp
 - https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/fingering/
 
 실측 화면: docs/experiments/osmd-hollow-report/rest-sticking.png. 공개 PR 제출과 신규 upstream 수정은 이번 조사에서 수행하지 않았다.
+
+## 적용 결정: 전체 마디가 쉬면 높이 미지정 (2026-09-20)
+
+사용자 승인에 따라 현재 곡의 1~4, 110마디 온마디쉼표에서 display-step/display-octave를 제거했다. 별도 성부가 연주하는 마디의 쉼표 높이는 유지한다. 자동 보정기가 다시 높이를 넣지 않도록 수정했으며 저장된 곡의 XML/canonicalXML도 곡 열기 때 갱신한다. 높이 없는 쉼표는 앱의 수동 중앙 이동 대상에서 제외하여 OSMD 기본 배치를 사용한다. SVG 캐시 버전은 default-full-rest-v3이다.
+
+Safari의 실제 저장 곡에서 5개 rest의 높이 값이 모두 비었고, 새 SVG 캐시의 수동 중앙 이동 표시는 0개임을 확인했다. 1~4마디 검수 화면의 중앙 배치를 직접 확인했다. 전체 129 tests, 37 files 및 build 통과. 근거 화면 rest-default-app-start.png. 기존 HTML 내보내기 파일은 재생성하지 않았다.

@@ -1159,3 +1159,12 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 앱 보정 없는 OSMD 2.1.2에서 높이 미지정 온마디쉼표는 center=true, B4 지정은 center=false로 재현. sourceNote.Pitch 분기의 조기 break가 중앙 정렬을 건너뛴다. 실제 곡 1~4마디에 B4 rest display가 존재한다. 앱의 자르기 이전에 발생하는 OSMD 결함이며 앱의 중앙 이동 보정은 우회책이다.
 - R/L의 명칭은 sticking. 앞선 fingering 명칭/한 음표에 R/L을 쌓은 시연의 한계를 정정했다. words로 네 음표에 R L R L을 각각 배치한 Safari SVG 확인.
 - 재현 public/qa/rest-sticking-audit.html, 상세 docs/DRUM-NOTATION-SUPPORT-AUDIT.md에 추가. 화면 docs/experiments/osmd-hollow-report/rest-sticking.png. 앱/악보/기존 upstream 패치 변경 및 공개 제출 없음.
+
+## 2026-09-20 — 온마디쉼표 높이 제거 적용
+
+- 승인된 결정에 따라 bundled score.musicxml의 1,2,3,4,110마디 총 5개 온마디쉼표 display 높이를 제거하고 bundled SHA256을 갱신했다. 그 밖의 악기별 쉼표 위치/음표/박자/가사 유지.
+- fixAllDrumRestPositions는 전체 쉼 마디의 measure=yes rest를 높이 미지정으로 유지한다. 다른 성부가 연주하는 마디는 기존 lane 규칙을 유지한다. 저장된 곡 및 canonicalXML에도 곡 열기 시 적용한다.
+- src/musicxml.ts의 수동 중앙 이동은 explicit Pitch가 있는 경우만 적용. 높이 없는 온마디쉼표는 OSMD 기본 중앙 배치. 캐시 default-full-rest-v3으로 갱신.
+- 테스트 초기 bundled hash 불일치 검출 후 새 자료 해시 반영. 전체 37 files / 129 tests 통과, build 통과. 높이 제거의 멱등성과 다른 성부 높이 보존 회귀 검사 추가.
+- Safari에서 실제 곡 열기와 저장 결과 확인: 5개 높이 비어 있음, 최신 SVG 캐시, 수동 중앙 이동 0개. 실제 PDF/MusicXML 비교 1~4마디 화면 확인. docs/experiments/osmd-hollow-report/rest-default-app-start.png.
+- 로컬 앱 반영. 기존 export HTML 재생성 및 upstream 제출 없음.
