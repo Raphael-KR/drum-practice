@@ -95,6 +95,11 @@ beforeAll(async () => {
   await import("../src/main");
 });
 it("shows the app name and score library action on the home screen", async () => {
+  for(const id of ["replace-score-button","export-musicxml"]) expect((document.getElementById(id) as HTMLButtonElement).disabled).toBe(true);
+  for(const id of ["replace-close","vocal-close"]) {
+    expect(document.querySelector(`#${id} svg`)).not.toBeNull();
+    expect(document.getElementById(id)!.getAttribute("aria-label")).toBe("닫기");
+  }
   expect(document.getElementById('review-help')!.hidden).toBe(true);
   expect(document.getElementById('review-add-score')!.hidden).toBe(true);
   expect(document.getElementById('view-description')!.textContent).toContain('옆으로 이어집니다');
@@ -183,6 +188,7 @@ it("opens practice BPM from the heading and resets through the explicit original
   click("home");
 });
 it("keeps direct tool access and previews the actual measure while scrubbing", async () => {
+  for(const id of ["replace-score-button","export-musicxml"]) expect((document.getElementById(id) as HTMLButtonElement).disabled).toBe(false);
   expect(document.getElementById("song-title")!.textContent).toContain(
     "Real Paradis -",
   );

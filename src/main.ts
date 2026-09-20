@@ -129,8 +129,8 @@ arrangeWorkspace();
 arrangeIcons();
 function songControlsAvailable(enabled: boolean) {
   val("click").closest("label")!.hidden = !enabled;
-  for (const id of ['click','zoom','original-button','edit-button','lyrics-button','metadata-button','export','save-html','review-add-score'])
-    ($<HTMLButtonElement>(id)).disabled = !enabled;
+  for (const id of ['click','zoom','original-button','edit-button','lyrics-button','metadata-button','export','save-html','review-add-score','replace-score-button','export-musicxml'])
+    { const control=document.getElementById(id) as HTMLButtonElement | null; if(control) control.disabled = !enabled; }
   syncViewChoices();
 }
 songControlsAvailable(false);
@@ -1997,6 +1997,8 @@ document.body.append(replaceDialog);
 const replaceButton=document.createElement('button');replaceButton.id='replace-score-button';replaceButton.textContent='이 곡에 악보 추가';
 $('backup-dialog').append(replaceButton);
 replaceButton.hidden=isPortable;
+replaceButton.disabled=!record;
+iconButton('replace-close','close','닫기'); $('replace-close').classList.add('close-button');
 replaceButton.onclick=()=>{if(!record)return;engine().pause();openSettingsChild(replaceDialog);};
 $('review-add-score').onclick=()=>{replaceButton.click();};
 $('replace-close').onclick=()=>replaceDialog.close();
@@ -2034,8 +2036,10 @@ $('replace-score-apply').onclick=async()=>{
 };
 
 const xmlExport=document.createElement('button');xmlExport.id='export-musicxml';xmlExport.textContent='MusicXML 저장';$('backup-dialog').append(xmlExport);
+xmlExport.disabled=!record;
 xmlExport.onclick=async()=>{try{if(!record)return;await persist();const url=URL.createObjectURL(new Blob([record.canonicalXML!],{type:'application/vnd.recordare.musicxml+xml'})),a=document.createElement('a');a.href=url;a.download=`${song().title}.musicxml`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){error(e);}};
 const vocalDialog=document.createElement('dialog');vocalDialog.id='vocal-dialog';vocalDialog.innerHTML='<div class="dialoghead"><h2>보컬 악보에서 가사 가져오기</h2><button id="vocal-close">닫기</button></div><p>마디 수·박자표·반복 순서가 같은 보컬 MusicXML을 선택하세요. 기존 가사를 보컬 악보의 리듬으로 바꿉니다.</p><input id="vocal-file" type="file" accept=".musicxml,.xml,.mxl"><label>보컬 파트 <select id="vocal-part"></select></label><button id="vocal-apply" disabled>가사 가져오기</button>';document.body.append(vocalDialog);
+iconButton('vocal-close','close','닫기'); $('vocal-close').classList.add('close-button');
 const vocalButton=document.createElement('button');vocalButton.id='import-vocal';vocalButton.textContent='보컬 MusicXML 가져오기';vocalButton.hidden=isPortable;$('show-all').after(vocalButton);vocalButton.onclick=()=>{engine().pause();vocalDialog.showModal();};$('vocal-close').onclick=()=>vocalDialog.close();
 let vocalGeneration=0;
 val('vocal-file').onchange=async()=>{const generation=++vocalGeneration;val('vocal-apply').disabled=true;try{const f=val('vocal-file').files?.[0];if(!f)return;const xml=await xmlModule(),info=xml.parseMusicXML(await xml.readMusicXML(f),undefined,true);if(generation!==vocalGeneration)return;$('vocal-part').innerHTML=info.parts.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');val('vocal-apply').disabled=false;}catch(e){error(e);}};
