@@ -1,5 +1,6 @@
 import { normalizeBundledDrumNotation } from "./drum-notation";
 import type { RecordData } from "./storage";
+import type { Region } from "./model";
 import { songScores } from "./song-scores";
 /** Exact reviewed bar only. Respect explicit placements from later user edits. */
 export function correctMeasureFiveRests(text: string): {
@@ -144,7 +145,8 @@ export async function correctStoredRests(
   if (!xml) return record;
   const { readMusicXML, renderMusicXML } = await import("./musicxml");
   const normalize = (text: string) => {
-    const a = fixAllDrumRestPositions(text), b = normalizeBundledDrumNotation(a.text);
+    const a = fixAllDrumRestPositions(text),
+      b = normalizeBundledDrumNotation(a.text);
     return { text: b.text, changed: a.changed || b.changed };
   };
   const fixed = normalize(await readMusicXML(xml.source));
@@ -164,19 +166,47 @@ export async function correctStoredRests(
     if (rendered.pages.length !== xml.pages.length)
       throw Error("쉼표 보정 후 페이지 수가 달라 적용을 중단했습니다.");
     if (record.song.scoreFormat === "musicxml")
-      result = { ...result, pdf: source, pages: rendered.pages };
+      result = {
+        ...result,
+        pdf: source,
+        pages: rendered.pages,
+        song: {
+          ...result.song,
+          regions: refreshedRegions(xml.regions, rendered.regions),
+        },
+      };
     else
       result = {
         ...result,
         otherScores: record.otherScores?.map((s) =>
-          s.format === "musicxml" ? { ...s, source, pages: rendered.pages } : s,
+          s.format === "musicxml"
+            ? {
+                ...s,
+                source,
+                pages: rendered.pages,
+                regions: refreshedRegions(s.regions, rendered.regions),
+              }
+            : s,
         ),
       };
   }
   return result;
 }
 
-/** Refresh generated SVG caches only; preserve MusicXML and user timing/region edits. */
+/** Geometry belongs to the generated page; retain IDs referenced by song measures. */
+export function refreshedRegions(
+  previous: Region[],
+  generated: Region[],
+): Region[] {
+  if (
+    previous.length !== generated.length ||
+    previous.some((r, i) => r.id !== generated[i].id)
+  )
+    throw Error("SVG 마디 영역 구성이 달라 갱신을 중단했습니다.");
+  return generated.map((r) => ({ ...r }));
+}
+
+/** Refresh SVG and matching crop geometry together; preserve source and song timing. */
 export async function ensureCenteredRestCache(
   record: RecordData,
   progress: (s: string) => void,
@@ -196,11 +226,24 @@ export async function ensureCenteredRestCache(
   if (rendered.pages.length !== xml.pages.length)
     throw Error("쉼표 배치 갱신 후 페이지 수가 달라 적용을 중단했습니다.");
   return record.song.scoreFormat === "musicxml"
-    ? { ...record, pages: rendered.pages }
+    ? {
+        ...record,
+        pages: rendered.pages,
+        song: {
+          ...record.song,
+          regions: refreshedRegions(xml.regions, rendered.regions),
+        },
+      }
     : {
         ...record,
         otherScores: record.otherScores?.map((s) =>
-          s.format === "musicxml" ? { ...s, pages: rendered.pages } : s,
+          s.format === "musicxml"
+            ? {
+                ...s,
+                pages: rendered.pages,
+                regions: refreshedRegions(s.regions, rendered.regions),
+              }
+            : s,
         ),
       };
 }

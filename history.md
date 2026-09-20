@@ -1253,3 +1253,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - Safari 실제 renderMusicXML 결과에서 고스트 괄호 2개, R/L 각각 1개 출력 및 스크린샷 확인. docs/experiments/production-drum-notation.png.
 - 메인 앱 곡 열기 후 저장 데이터 확인: 오픈 하이햇 268개 모두 circle-x, approved-drum-notation-v4 캐시 확인.
 - standalone HTML 재내보내기/원격 push/upstream 제출 없음. 단위 범례와 앱 저장 갱신 검증이며 모든 합주 성부 충돌 조합/음향 주법 합성을 검증한 것은 아님.
+
+## 2026-09-20 SVG 비교 상단 잘림 수정
+- 원인: 표기 변경으로 SVG의 시스템 세로 위치가 이동했지만 캐시 갱신은 이전 마디 crop 영역을 유지했다. 실제 9마디 y는 0.297854에서 0.284356으로 변경됨.
+- SVG 재생성 시 pages와 regions를 함께 적용하고 마디 ID 구성을 검증한다. 원본 MusicXML, 가사, 음원 시간은 유지한다. 캐시 v5로 기존 저장 악보도 재생성한다.
+- Safari 실제 ScoreReview에서 22.094초, 9–12마디 상단 연결선 출력 확인: docs/experiments/svg-crop-fixed.png.
+- 38개 파일 131개 테스트 통과, production build 통과. HTML 별도 내보내기 없음.
