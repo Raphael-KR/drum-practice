@@ -1,3 +1,7 @@
+import {editorSession} from "./editor-session";
+import {snapshot,retainRevision,type EditSnapshot,type EditorForm} from "./edit-history";
+import {setupScoreManagement,scoreChips} from "./score-management";
+import {exportLibrary,importLibrary,preferenceKeys} from "./library-backup";
 import { markMeasure, sortedMarkerSlots, markedMeasureIndices } from './marker-slots';
 import { preferPDF, savePreferPDF, scorePreference } from "./score-preference";
 import { readPlaybackPreferences, savePlaybackPreferences } from "./playback-preferences";
@@ -39,6 +43,7 @@ import { Player } from "./audio";
 import {
   allRecords,
   saveRecord,
+  saveRecords,
   deleteRecord,
   type RecordData,
 } from "./storage";
@@ -97,6 +102,8 @@ let player: Player | undefined,
   record: RecordData | undefined,
   urls: string[] = [],
   library: RecordData[] = [];
+let session:ReturnType<typeof editorSession>|undefined;
+let management:ReturnType<typeof setupScoreManagement>|undefined;
 let selected = 0,
   editorPage = 0,
   drawStart: { x: number; y: number } | undefined;
@@ -122,7 +129,7 @@ app.innerHTML = `
 <details><summary>소리·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
 <div class="panels"><section class="panel"><h2>구간 반복</h2><div class="flex"><label>시작 마디 <input id="loop-a" type="number" min="1" value="25"></label><label>박 <input id="loop-ab" type="number" min="1" step="0.25" value="1"></label><button id="set-a">현재 위치 A</button></div><div class="flex"><label>끝 마디 <input id="loop-b" type="number" min="1" value="29"></label><label>박 <input id="loop-bb" type="number" min="1" step="0.25" value="1"></label><button id="set-b">현재 위치 B</button></div><p class="subtle">끝 지점의 첫 음은 포함하지 않습니다. 25~28마디 반복은 끝을 29마디 1박으로 설정하세요.</p><div class="flex"><input id="loop-name" type="text" placeholder="예: 후렴 4마디" aria-label="반복 이름"><button id="save-loop">저장·반복</button><button id="new-loop">새 구간</button><button id="stop-loop">반복 끄기</button></div><div class="list" id="loops"></div></section><section class="panel"><h2>마커</h2><div class="flex"><input id="marker-name" type="text" placeholder="예: 어려운 필인" aria-label="마커 이름"><button id="add-marker">현재 위치 표시</button></div><div id="markers" class="list"></div><details><summary>백업·복원</summary><p class="subtle">백업에는 정렬·가사·연습 설정이 들어갑니다. 미디어를 포함하면 다른 기기에서도 바로 열 수 있습니다.</p><label><input id="include-media" type="checkbox" checked>악보·음원 포함</label><div class="flex"><button id="export">백업 내보내기</button><label>가져오기 <input id="restore" type="file" accept=".zip"></label></div></details></section></div><p class="keyboard">스페이스: 재생/정지 · ←/→: 이전/다음 마디 · M: 마커 추가</p><p class="subtle" id="alignment-note">가사와 박 위치는 자동 추정 자료를 포함합니다. 어긋나는 곳은 ‘악보·가사 맞추기’에서 수정하세요.</p></section></main>
 <dialog id="library-dialog"><div class="dialoghead"><h2>내 악보 목록</h2><button id="new-button">＋ 곡 추가</button><button data-close="library-dialog">닫기</button></div><div id="library-list"></div></dialog>
-<dialog id="new-dialog"><div class="dialoghead"><h2>새 곡 준비</h2><button data-close="new-dialog">닫기</button></div><p>PDF 또는 MusicXML과 음악을 골라 주세요. MusicXML은 마디·박자·템포를 자동으로 읽습니다.</p><form id="new-form"><p><label>가수 <input id="new-artist" type="text"></label><label>제목 <input id="new-title" required type="text" value="새 연습곡"></label></p><p><label>악보 <input id="pdf-file" required type="file" accept="application/pdf,.pdf,.musicxml,.xml,.mxl"></label></p><p id="xml-part-row" hidden><label>악기 파트 <select id="xml-part"></select></label><span class="subtle">박자표는 MusicXML 값을 사용합니다. 선택한 단일 오선 파트를 가져옵니다.</span></p><p><label>음원 <input id="audio-file" required type="file" accept="audio/*,.mp3"></label></p><p><label>BPM <input id="new-bpm" type="number" min="20" max="300" value="94" required></label><label>첫 박(초) <input id="new-first" type="number" min="0" step="0.001" value="0" required></label><label>박자 <input id="new-beats" type="number" min="1" max="16" value="4" required>/ <select id="new-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></p><p><label>한글 발음 가사 — 한 줄에 한 구절</label><textarea id="new-lyrics" placeholder="스베테오 테니 이레테\n스베테오 우시낫테"></textarea></p><p class="subtle">가사 초기 위치는 임시 분배입니다. 노래를 들으며 실제 시작 마디·박을 맞춰 주세요.</p><button type="submit" class="primary">곡 만들기</button></form></dialog>
+<dialog id="new-dialog"><div class="dialoghead"><h2>새 곡 준비</h2><button data-close="new-dialog">닫기</button></div><p>PDF 또는 MusicXML과 음악을 골라 주세요. MusicXML은 마디·박자·템포를 자동으로 읽습니다.</p><form id="new-form"><p><label>가수 <input id="new-artist" type="text"></label><label>제목 <input id="new-title" required type="text" value="새 연습곡"></label></p><p><label>악보 <input id="pdf-file" required type="file" accept="application/pdf,.pdf,.musicxml,.xml,.mxl"></label></p><p id="xml-part-row" hidden><label>악기 파트 <select id="xml-part"></select></label><span class="subtle">박자표는 MusicXML 값을 사용합니다. 선택한 단일 오선 파트를 가져옵니다.</span></p><p><label>음원 <input id="audio-file" required type="file" accept="audio/*,.mp3"></label></p><p><label>BPM <input id="new-bpm" type="number" min="20" max="300" value="94" required></label><label>첫 박(초) <input id="new-first" type="number" min="0" step="0.001" value="0" required></label><label>박자 <input id="new-beats" type="number" min="1" max="16" value="4" required>/ <select id="new-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></p><p><label>한글 발음 가사 — 한 줄에 한 구절</label><textarea id="new-lyrics" placeholder="스베테오 테니 이레테\n스베테오 우시낫테"></textarea></p><p class="subtle">텍스트 가사는 MusicXML에 보관하며, 실제 시작 마디·박은 별도로 교정합니다.</p><button type="submit" class="primary">곡 만들기</button></form></dialog>
 <dialog id="editor-dialog"><div class="dialoghead"><h2>악보·가사 맞추기</h2><button data-close="editor-dialog">연습으로 돌아가기</button></div><div class="flex"><label>가수 <input id="edit-artist" type="text"></label><label>표시 제목 <input id="edit-title" type="text"></label><label>원제 <input id="edit-original-title" type="text"></label><label>작사 <input id="edit-lyricist" type="text"></label><label>작곡 <input id="edit-composer" type="text"></label><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>첫 박(초) <input id="edit-first" type="number" min="0" step="0.001"></label><button id="reflow">이 템포로 전체 다시 맞추기</button><button id="estimate-tempo">음원 템포 추정</button><button id="tap-tempo">박자 탭</button><span id="tap-result"></span></div><p class="subtle">전체 다시 맞추기는 기존 시간 보정을 바꿉니다. 실행 전 백업을 권합니다. 가사는 악보 위치를 유지하며 음원과의 연결만 바뀝니다.</p><div class="editor"><section><div class="flex"><label>페이지 <select id="editor-page"></select></label><label>마디 <select id="measure-select"></select></label></div><p class="subtle">원본 위를 드래그하여 마디 영역을 지정한 후 추가하거나 선택한 마디에 적용하세요.</p><div class="pagebox"><canvas id="edit-canvas"></canvas></div><div class="flex"><button id="add-region">새 마디 추가</button><button id="apply-crop">선택 마디에 영역 적용</button></div></section><section><h3>선택한 마디</h3><div class="flex"><label>이름 <input id="measure-label" type="text" style="width:95px"></label><label>박 수 <input id="measure-beats" type="number" min="1" max="16"></label><label>분모 <select id="measure-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></div><div class="flex"><label>시작 초 <input id="measure-start" type="number" min="0" step="0.001"></label><label>끝 초 <input id="measure-end" type="number" min="0" step="0.001"></label><button id="apply-measure">마디 저장</button></div><label>내부 박 위치(0~1, 쉼표 구분)<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1" style="width:100%"></label><p class="subtle">마디 시작부터 끝까지 박 경계의 가로 위치입니다. 비우면 균등 간격을 사용합니다.</p><div class="flex"><button id="preview-measure">이 마디 듣기</button><button id="anchor-now">현재 음악 위치를 첫 박으로</button><button id="editor-play">재생/정지</button><span id="editor-time"></span></div><div class="flex"><button id="duplicate">뒤에 복제</button><button id="split">반으로 분할</button><button id="merge">다음과 합치기</button><button id="move-left">앞으로</button><button id="move-right">뒤로</button><button id="remove-measure" class="danger">마디 삭제</button></div><h3>가사 리듬</h3><p class="subtle">시작 마디·박과 길이를 지정합니다. 보컬 악보의 세부 음가도 보존합니다. 가사 위치는 음원 시각과 독립적으로 MusicXML에 저장됩니다.</p><div class="flex"><button id="add-lyric">현재 위치에 가사 추가</button><button id="show-near">현재 마디 가사</button><button id="show-all">전체 가사</button></div><div class="scroll"><table><thead><tr><th>발음</th><th>시작 · ¼박</th><th>길이(박)</th><th>확인</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>
 <dialog id="original-dialog"><div class="dialoghead"><h2>원본 악보</h2><button data-close="original-dialog">닫기</button></div><div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>알림</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>`;
 document.getElementById("app")!.insertAdjacentHTML("beforeend", '<dialog id="tempo-dialog" aria-labelledby="tempo-heading"><div class="dialoghead"><h2 id="tempo-heading">연습 BPM</h2><button data-close="tempo-dialog">닫기</button></div><div id="tempo-options"></div><p class="subtle">숫자를 좌우로 드래그하면 1 BPM씩 조절하고, 두 번 탭하면 원곡 BPM으로 돌아갑니다.</p></dialog>');
@@ -144,6 +151,7 @@ function updateSongHeading() {
   $("original-tempo").title = "연습 BPM 설정";
   ($("original-tempo") as HTMLButtonElement).disabled = false;
   document.title = $("song-title").textContent!;
+  management?.refresh();
 }
 function tell(s: string) {
   status(s);
@@ -206,10 +214,11 @@ async function persist() {
   if (!record) return;
   await ensureCanonical(record);
   saveCanonical(record);
-  await saveRecord(record);
+  await saveRecord(session?.forStorage() || record);
+  management?.refresh();
   status(
     isPortable
-      ? "변경 내용을 보관하려면 HTML을 다시 저장하세요."
+      ? "이 파일의 연습 설정은 현재 실행 중에만 유지됩니다."
       : "기기에 저장됨",
   );
 }
@@ -272,8 +281,9 @@ async function activate(r: RecordData) {
     }
     engine().pause();
     clearTimeout(saveTimer);
-    if (record) await saveRecord(record);
+    if (record) await saveRecord(session?.forStorage() || record);
     for (const u of urls) URL.revokeObjectURL(u);
+    session?.reset();
     record = r;
     if (r.song.id === "real-paradis" && !r.song.artist)
       r.song.artist = "Real Paradis";
@@ -1121,10 +1131,11 @@ async function openLibrary() {
     ? library
         .map(
           (r, i) =>
-            `<div class="panel song-card"><div class="song-card-heading"><button data-open="${i}" class="song-card-title">${esc(r.song.title)}</button><small>${r.song.artist ? esc(r.song.artist)+' · ' : ''}${r.song.measures.length}마디 · ${r.song.bpm} BPM</small></div><div class="song-card-types" aria-label="저장된 악보 유형">${songScores(r).map(score => `<button class="score-type score-type-${score.format}" data-open="${i}" data-score="${score.format}" aria-label="${esc(r.song.title)} ${score.format==='pdf'?'PDF':'MusicXML'} 열기">${score.format==='pdf'?'PDF':'MusicXML'}</button>`).join('')}${r.song.lyrics.length ? `<button class="score-type score-type-lyrics" data-open="${i}" data-lyrics="true">가사</button>` : ''}</div><div class="song-card-actions" ${isPortable ? 'hidden' : ''}><button data-attach="${i}" aria-label="${esc(r.song.title)}에 악보 추가">+ 악보 추가</button><button data-delete="${i}" class="danger">삭제</button></div></div>`,
+            `<div class="panel song-card"><div class="song-card-heading"><button data-open="${i}" class="song-card-title">${esc(r.song.title)}</button><small>${r.song.artist ? esc(r.song.artist)+' · ' : ''}${r.song.measures.length}마디 · ${r.song.bpm} BPM</small></div><div class="song-card-types" aria-label="저장된 악보 유형">${songScores(r).map(score => `<button class="score-type score-type-${score.format}" data-open="${i}" data-score="${score.format}" aria-label="${esc(r.song.title)} ${score.format==='pdf'?'PDF':'MusicXML'} 열기">${score.format==='pdf'?'PDF':'MusicXML'}</button>`).join('')}${(r.song.lyrics.length || r.song.lyricText) ? `<button class="score-type score-type-lyrics" data-open="${i}" data-lyrics="true">가사</button>` : ''}<span class="asset-chip asset-audio">음원</span></div><div class="song-card-actions" ${isPortable ? 'hidden' : ''}><button data-attach="${i}" aria-label="${esc(r.song.title)}에 악보 추가">+ 악보 추가</button><button data-delete="${i}" class="danger">삭제</button></div></div>`,
         )
         .join("")
     : "<p>아직 저장한 곡이 없습니다.</p>";
+  const backupLabel=document.querySelector("#library-backup-export small");if(backupLabel)backupLabel.textContent=`보관 중인 모든 곡 · 총 ${library.length}곡`;
   $<HTMLDialogElement>("library-dialog").showModal();
 }
 action("library-button", openLibrary);
@@ -1275,17 +1286,8 @@ $("new-form").onsubmit = async (e) => {
       audioName: audio.name,
     };
     if (result.parsed) applyXMLTiming(s,result.parsed); else reflow(s);
-    const lines = val("new-lyrics")
-      .value.split("\n")
-      .map((x) => x.trim())
-      .filter(Boolean);
-    s.lyrics = lines.map((text, i) => ({
-      id: uid(),
-      text,
-      time: 0, end: 0, confirmed: false,
-      scorePosition: {measureId:s.measures[Math.min(i,s.measures.length-1)].id,quarterOffset:0,durationQuarters:s.measures[Math.min(i,s.measures.length-1)].beats*4/s.measures[Math.min(i,s.measures.length-1)].denominator},
-    }));
-    if(!lines.length && result.parsed) s.lyrics=result.parsed.lyrics.map(l=>{
+    s.lyricText=val('new-lyrics').value.trim()||undefined;
+    if(result.parsed) s.lyrics=result.parsed.lyrics.map(l=>{
       const m=s.measures[l.measure],beat=clamp(l.beat,0,m.beats);
       return {id:uid(),text:l.text,time:beatTime(m,beat),end:beatTime(m,Math.min(m.beats,beat+l.duration)),confirmed:false,scorePosition:{measureId:m.id,quarterOffset:l.beat*4/m.denominator,durationQuarters:Math.max(0.0001,l.duration*4/m.denominator)}};
     }).sort((a,b)=>a.time-b.time);
@@ -1303,13 +1305,13 @@ $("new-form").onsubmit = async (e) => {
   }
 };
 async function openEditor() {
-  if (!record) return;
+  if (!record || isPortable) return;
   scoreGestures.cancel();
   selected = locate(song(), engine().current()).index;
   selected = clamp(selected, 0, song().measures.length - 1);
   engine().pause();
   val("edit-title").value = song().title;
-  val("edit-original-title").value = song().originalTitle || song().title;
+  val("edit-original-title").value = song().originalTitle || "";
   val("edit-lyricist").value = song().lyricist || "";
   val("edit-composer").value = song().composer || "";
   val("edit-artist").value = song().artist || "";
@@ -1319,9 +1321,10 @@ async function openEditor() {
     .map((_, i) => `<option value="${i}">${i + 1}쪽</option>`)
     .join("");
   updateMeasureForm();
+  renderLyricEditor(true);
+  session?.begin();
   openSettingsChild($<HTMLDialogElement>("editor-dialog"));
   await drawPage();
-  renderLyricEditor(true);
 }
 action("edit-button", () => {
   selectEditorPane("score");
@@ -1338,7 +1341,7 @@ action("save-metadata", () => {
     s.originalTitle=val("edit-original-title").value.trim();s.lyricist=val("edit-lyricist").value.trim();s.composer=val("edit-composer").value.trim();
   });
   updateSongHeading();
-  tell("곡 정보를 저장했습니다.");
+  tell("곡 정보를 초안에 적용했습니다. 상단 저장 버튼으로 확정하세요.");
 });
 action("lyrics-button", () => {
   selectEditorPane("lyrics");
@@ -1396,6 +1399,7 @@ val("editor-page").onchange = () => {
   void drawPage();
 };
 val("measure-select").onchange = () => {
+  if(session?.active()) {try {flushEditorForm();} catch(e) {val("measure-select").value=String(selected);error(e);return;}}
   selected = num("measure-select");
   crop = undefined;
   updateMeasureForm();
@@ -1446,6 +1450,7 @@ function edit(mut: (s: Song) => void) {
   validateSong(draft);
   engine().pause();
   const canonicalXML=writeCanonical(draft,record!.canonicalXML);
+  session?.before();
   record!.song = draft;
   record!.canonicalXML=canonicalXML;
   engine().song = draft;
@@ -1455,6 +1460,7 @@ function edit(mut: (s: Song) => void) {
   renderTrack();
   renderLists();
   queueSave();
+  session?.changed();
   void drawPage();
 }
 action("add-region", () => {
@@ -1761,22 +1767,17 @@ action("add-lyric", () => {
   renderLyricEditor(false);
 });
 let originalPage = 0;
+let originalURLs:string[]=[];
 function showOriginalPage() {
-  $("page-original").innerHTML =
-    `<img src="${urls[originalPage]}" alt="원본 악보 ${originalPage + 1}쪽"><div class="pager"><button id="original-prev" ${originalPage === 0 ? "disabled" : ""}>이전 쪽</button><span>${originalPage + 1} / ${urls.length}</span><button id="original-next" ${originalPage === urls.length - 1 ? "disabled" : ""}>다음 쪽</button></div>`;
-  $("original-prev").onclick = () => {
-    originalPage--;
-    showOriginalPage();
-  };
-  $("original-next").onclick = () => {
-    originalPage++;
-    showOriginalPage();
-  };
+  $("page-original").innerHTML = `<img src="${originalURLs[originalPage]}" alt="원본 PDF 악보 ${originalPage+1}쪽"><div class="pager"><button id="original-prev" ${originalPage===0?'disabled':''}>이전 쪽</button><span>${originalPage+1} / ${originalURLs.length}</span><button id="original-next" ${originalPage===originalURLs.length-1?'disabled':''}>다음 쪽</button></div>`;
+  $('original-prev').onclick=()=>{originalPage--;showOriginalPage();};$('original-next').onclick=()=>{originalPage++;showOriginalPage();};
 }
-action("original-button", () => {
-  originalPage = 0;
-  showOriginalPage();
-  openSettingsChild($<HTMLDialogElement>("original-dialog"));
+action('original-button',async()=>{
+  if(!record)return;const pdf=songScores(record).find(s=>s.format==='pdf');if(!pdf)throw Error('원본 PDF 악보가 없습니다.');
+  originalURLs.forEach(URL.revokeObjectURL);originalURLs=await Promise.all(pdf.pages.map(async p=>URL.createObjectURL(await displayPage(p))));
+  const index=$<HTMLDialogElement>('editor-dialog').open?selected:locate(song(),engine().current()).index;
+  originalPage=pdf.regions.find(r=>r.id===pdf.measures[index]?.regionId)?.page||0;showOriginalPage();
+  openSettingsChild($<HTMLDialogElement>('original-dialog'));
 });
 action("export", async () => {
   await persist();
@@ -1949,7 +1950,7 @@ action("save-html", async () => {
     await persist();
     const html = makePortableHTML(
       shellFromDocument(doc),
-      await packSong(record),
+      await packSong({...record,song:{...song(),lyricArchive:undefined}}),
     );
     const url = URL.createObjectURL(
       new Blob([html], { type: "text/html;charset=utf-8" }),
@@ -2050,3 +2051,65 @@ const vocalButton=document.createElement('button');vocalButton.id='import-vocal'
 let vocalGeneration=0;
 val('vocal-file').onchange=async()=>{const generation=++vocalGeneration;val('vocal-apply').disabled=true;try{const f=val('vocal-file').files?.[0];if(!f)return;const xml=await xmlModule(),info=xml.parseMusicXML(await xml.readMusicXML(f),undefined,true);if(generation!==vocalGeneration)return;$('vocal-part').innerHTML=info.parts.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');val('vocal-apply').disabled=false;}catch(e){error(e);}};
 $('vocal-apply').onclick=async()=>{try{if(!record)return;const original=record,f=val('vocal-file').files?.[0];if(!f)return;const xml=await xmlModule(),parsed=xml.parseMusicXML(await xml.readMusicXML(f),val('vocal-part').value);const lyrics=vocalLyrics(original.song,parsed);if(!confirm('기존 가사를 보컬 악보의 가사와 리듬으로 바꿀까요? 기존 교정 내용은 이 곡의 이력에 보존합니다.'))return;if(record!==original)throw Error('현재 곡이 바뀌었습니다.');const base=withVocalSource(original.canonicalXML!,parsed.document);const previous=original.canonicalXML;original.canonicalXML=base;try{edit(s=>{s.lyricArchive=[...(s.lyricArchive||[]),{revision:'before-vocal-import',lyrics:structuredClone(s.lyrics)}];s.lyrics=lyrics;});}catch(e){original.canonicalXML=previous;throw e;}await persist();renderLyricEditor(false);vocalDialog.close();tell('보컬 악보의 마디·박 위치로 가사를 가져왔습니다.');}catch(e){error(e);}};
+
+// Approved score-management workflow. The session preserves drafts independently
+// from the confirmed record; input fields are included even before Apply.
+const editorFields=['edit-artist','edit-title','edit-original-title','edit-lyricist','edit-composer','edit-bpm','edit-first','measure-label','measure-beats','measure-denominator','measure-start','measure-end','beat-xs'];
+function editorForm():EditorForm {
+  const fields=Object.fromEntries(editorFields.map(id=>[id,val(id).value]));
+  document.querySelectorAll<HTMLInputElement|HTMLSelectElement>('#lyric-editor [data-field]').forEach(el=>{const key=`lyric:${el.closest<HTMLElement>('[data-lyric]')!.dataset.lyric}:${el.dataset.field}`;fields[key]=el instanceof HTMLInputElement && el.type==='checkbox'?String(el.checked):el.value;});
+  return {selected,fields};
+}
+function fillMetadata(){for(const [id,key] of [['edit-title','title'],['edit-original-title','originalTitle'],['edit-artist','artist'],['edit-composer','composer'],['edit-lyricist','lyricist'],['edit-bpm','bpm'],['edit-first','firstBeat']] as const)val(id).value=String(song()[key]??'');}
+function applySnapshot(s:EditSnapshot){if(!record)return;record.song=structuredClone(s.song);record.canonicalXML=s.canonicalXML;engine().song=record.song;engine().loop=undefined;selected=clamp(selected,0,s.song.measures.length-1);fillMetadata();updateMeasureForm();renderLyricEditor(true);renderTrack();renderLists();updateSongHeading();void drawPage();}
+function restoreEditorForm(form:EditorForm){selected=clamp(form.selected,0,song().measures.length-1);updateMeasureForm();renderLyricEditor(true);for(const id of editorFields)if(form.fields[id]!==undefined)val(id).value=form.fields[id];document.querySelectorAll<HTMLInputElement|HTMLSelectElement>('#lyric-editor [data-field]').forEach(el=>{const key=`lyric:${el.closest<HTMLElement>('[data-lyric]')!.dataset.lyric}:${el.dataset.field}`,v=form.fields[key];if(v===undefined)return;if(el instanceof HTMLInputElement && el.type==='checkbox')el.checked=v==='true';else el.value=v;});}
+function pendingEditorValues(){
+  const current=editorForm(),m=song().measures[selected],region=song().regions.find(r=>r.id===m.regionId)!;
+  const metadata={title:current.fields['edit-title'].trim()||song().title,artist:current.fields['edit-artist'].trim(),originalTitle:current.fields['edit-original-title'].trim(),lyricist:current.fields['edit-lyricist'].trim(),composer:current.fields['edit-composer'].trim()};
+  const metaChanged=Object.entries(metadata).some(([k,v])=>v!==String(song()[k as keyof Song]??''));
+  const measureChanged=current.fields['measure-label']!==m.label||Number(current.fields['measure-beats'])!==m.beats||Number(current.fields['measure-denominator'])!==m.denominator||current.fields['measure-start']!==m.start.toFixed(3)||current.fields['measure-end']!==m.end.toFixed(3)||current.fields['beat-xs']!==region.beatXs.join(',');
+  const lyrics=song().lyrics.flatMap(l=>{
+    const f=(key:string)=>current.fields[`lyric:${l.id}:${key}`];if(f('text')===undefined)return [];
+    const point=l.grid||{measureId:nearestQuarterBeat(song(),l.time).measure.id,tick:nearestQuarterBeat(song(),l.time).tick};
+    const values={id:l.id,text:f('text'),measureId:f('grid-measure'),tick:Number(f('grid-tick')),duration:Number(f('duration-beats')),confirmed:f('confirmed')==='true'};
+    return values.text!==l.text||values.measureId!==point.measureId||values.tick!==point.tick||values.duration!==lyricDurationBeats(song(),l)||values.confirmed!==!!l.confirmed?[values]:[];
+  });
+  const tempoChanged=Number(current.fields['edit-bpm'])!==song().bpm||Number(current.fields['edit-first'])!==song().firstBeat;
+  return {current,metadata,metaChanged,measureChanged,lyrics,tempoChanged};
+}
+function flushEditorForm(){
+  const {current,metadata,metaChanged,measureChanged,lyrics,tempoChanged}=pendingEditorValues();
+  if(tempoChanged)throw Error('BPM·첫 박 변경은 전체 시간에 영향을 줍니다. 먼저 템포 적용 버튼으로 적용해 주세요.');
+  if(!metaChanged&&!measureChanged&&!lyrics.length)return;
+  edit(s=>{
+    Object.assign(s,metadata);
+    if(measureChanged){Object.assign(s.measures[selected],{label:current.fields['measure-label'],beats:Number(current.fields['measure-beats']),denominator:Number(current.fields['measure-denominator']),start:Number(current.fields['measure-start']),end:Number(current.fields['measure-end'])});const r=s.regions.find(r=>r.id===s.measures[selected].regionId)!;r.beatXs=current.fields['beat-xs'].trim()?current.fields['beat-xs'].split(',').map(Number):[];if(r.beatXs.length&&r.beatXs.length!==s.measures[selected].beats+1)throw Error('박 위치 개수를 확인하세요.');}
+    for(const v of lyrics){const l=s.lyrics.find(l=>l.id===v.id)!;l.text=v.text;l.confirmed=v.confirmed;const m=s.measures.find(m=>m.id===v.measureId);if(!m)throw Error('가사 마디를 확인하세요.');setLyricGrid(s,l,{measureId:m.id,tick:Math.min(m.beats*4-1,v.tick)});l.scorePosition!.durationQuarters=v.duration*4/m.denominator;}
+  });
+  renderLyricEditor(false);
+  updateSongHeading();
+}
+session=editorSession({get:()=>record,pending:()=>{const p=pendingEditorValues();return p.metaChanged||p.measureChanged||p.tempoChanged||!!p.lyrics.length;},form:editorForm,restoreForm:restoreEditorForm,apply:applySnapshot,flush:flushEditorForm,persist,error});
+function download(blob:Blob,name:string){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name.replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+async function portableBlob(){
+  if(!record)throw Error('곡을 먼저 여세요.');
+  const response=await fetch(`${import.meta.env.BASE_URL}portable-template.html`);if(!response.ok)throw Error('HTML 실행 코드를 준비하지 못했습니다.');
+  const doc=new DOMParser().parseFromString(await response.text(),'text/html');
+  const playback={...record,song:structuredClone(song()),editDraft:undefined,revisions:undefined};delete playback.song.lyricArchive;
+  return new Blob([makePortableHTML(shellFromDocument(doc),await packSong(playback))],{type:'text/html;charset=utf-8'});
+}
+management=setupScoreManagement({get:()=>record,error,
+  uploadLyrics:async text=>{if(!record)return;if((song().lyricText||song().lyrics.length)&&!confirm('전체 가사 텍스트를 교체할까요? 기존 마디·박 가사는 유지하며 이전 상태를 이력에 보관합니다.'))return;record.revisions=retainRevision(record.revisions,record);song().lyricText=text;await persist();},
+  exportFiles:async kinds=>{if(!record||!kinds.length)return;await persist();const title=song().title.replace(/[\\/:*?"<>|]/g,'_'),files:{name:string;blob:Blob}[]=[];
+    for(const k of kinds){if(k==='xml')files.push({name:title+'.musicxml',blob:new Blob([record.canonicalXML!],{type:'application/vnd.recordare.musicxml+xml'})});
+      if(k==='pdf'){const pdf=songScores(record).find(s=>s.format==='pdf');if(pdf)files.push({name:title+'.pdf',blob:pdf.source});}
+      if(k==='audio')files.push({name:song().audioName.replace(/[\\/:*?"<>|]/g,'_')||title+'.audio',blob:record.audio});
+      if(k==='html')files.push({name:title+'.html',blob:await portableBlob()});}
+    if(files.length===1)download(files[0].blob,files[0].name);else{const zip=new JSZip();for(const f of files)zip.file(f.name,await f.blob.arrayBuffer());download(new Blob([new Uint8Array(await zip.generateAsync({type:'uint8array'}))]),title+'.zip');}},
+  exportAll:async()=>{await persist();const records=await allRecords();if(!records.length)throw Error('백업할 곡이 없습니다.');const prefs=Object.fromEntries(preferenceKeys.map(k=>[k,localStorage.getItem(k)]).filter((p):p is [string,string]=>p[1]!==null));download(new Blob([new Uint8Array(await exportLibrary(records,prefs))]),`드럼연습실-전체${records.length}곡-백업.zip`);tell(`전체 ${records.length}곡 백업을 내보냈습니다.`);},
+  restoreAll:async f=>{const parsed=await importLibrary(await f.arrayBuffer());for(const r of parsed.records){if(r.canonicalXML)readCanonical(r.canonicalXML,r.song);}
+    const existing=await allRecords(),overlap=parsed.records.filter(r=>existing.some(x=>x.song.id===r.song.id));if(!confirm(`전체 백업에서 ${parsed.records.length}곡을 복원합니다. 같은 ID ${overlap.length}곡은 교체하고 나머지 기존 곡은 유지합니다. 진행할까요?`))return;
+    player?.pause();clearTimeout(saveTimer);session?.reset();await saveRecords(parsed.records);for(const [k,v] of Object.entries(parsed.preferences))localStorage.setItem(k,v);
+    const replacement=parsed.records.find(r=>r.song.id===record?.song.id);if(replacement){record=undefined;await activate(replacement);}await openLibrary();tell(`${parsed.records.length}곡을 복원했습니다.`);},
+  replaceAudio:async f=>{if(!record)return;if(!confirm('음원을 교체할까요? 마디·박 연결은 유지되므로 교체 후 싱크를 확인하세요.'))return;const old=record;const next={...old,audio:f,song:{...structuredClone(old.song),audioName:f.name}};next.canonicalXML=writeCanonical(next.song,old.canonicalXML,(await mediaIdentity(next.pdf,next.audio)).audio);await ensureCanonical(next);await activate(next);await persist();}
+});

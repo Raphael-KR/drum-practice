@@ -3,6 +3,8 @@ import type { ScoreVariant } from "./song-scores";
 import { isPortable } from "./portable";
 const portableRecords = new Map<string, RecordData>();
 export interface RecordData {
+  editDraft?: import("./edit-history").EditDraft;
+  revisions?: import("./edit-history").SavedRevision[];
   canonicalXML?: string;
   song: Song;
   otherScores?: ScoreVariant[];
@@ -19,6 +21,8 @@ interface StoredScore extends Omit<ScoreVariant, "source" | "pages"> {
   pages: StoredMedia[];
 }
 interface StoredRecord {
+  editDraft?: import("./edit-history").EditDraft;
+  revisions?: import("./edit-history").SavedRevision[];
   canonicalXML?: string;
   otherScores?: StoredScore[];
   song: Song;
@@ -35,6 +39,8 @@ function restoreRecord(value: StoredRecord | RecordData): RecordData {
   const blob = (m: StoredMedia) => new Blob([m.bytes], { type: m.type });
   return {
     song: value.song,
+    editDraft: value.editDraft,
+    revisions: value.revisions,
     canonicalXML: value.canonicalXML,
     pdf: blob(value.pdf),
     audio: blob(value.audio),
@@ -55,12 +61,8 @@ function db(): Promise<IDBDatabase> {
     r.onerror = () => no(r.error);
   });
 }
-export async function saveRecord(record: RecordData) {
+async function serializeRecord(record: RecordData): Promise<StoredRecord> {
   validateSong(record.song);
-  if (isPortable) {
-    portableRecords.set(record.song.id, record);
-    return;
-  }
   // Persist owned bytes, not references to browser-managed Blob backing files.
   // Read everything before opening a write transaction, so failure preserves the old record.
   const [pdf, audio, pages] = await Promise.all([
@@ -77,6 +79,8 @@ export async function saveRecord(record: RecordData) {
   );
   const stored: StoredRecord = {
     song: structuredClone(record.song),
+    editDraft: structuredClone(record.editDraft),
+    revisions: structuredClone(record.revisions),
     canonicalXML: record.canonicalXML,
     mediaFormat: "bytes-v1",
     pdf,
@@ -84,11 +88,27 @@ export async function saveRecord(record: RecordData) {
     pages,
     otherScores,
   };
+  return stored;
+}
+export async function saveRecord(record: RecordData) {
+  if (isPortable) { portableRecords.set(record.song.id,record);return; }
+  await saveRecords([record]);
+}
+/** Validate and materialize all media before one atomic restore transaction. */
+let writeQueue:Promise<void>=Promise.resolve();
+export function saveRecords(records: RecordData[]) {
+  const copies=records.map(r=>({...r,song:structuredClone(r.song),editDraft:structuredClone(r.editDraft),revisions:structuredClone(r.revisions),pages:[...r.pages],otherScores:r.otherScores?.map(s=>({...s,pages:[...s.pages]}))}));
+  const result=writeQueue.then(()=>writeRecords(copies));
+  writeQueue=result.catch(()=>{});
+  return result;
+}
+async function writeRecords(records:RecordData[]) {
+  const stored=await Promise.all(records.map(serializeRecord));
   const d = await db();
   try {
     await new Promise<void>((ok, no) => {
       const t = d.transaction("songs", "readwrite");
-      t.objectStore("songs").put(stored);
+      for(const r of stored)t.objectStore("songs").put(r);
       t.oncomplete = () => ok();
       t.onerror = () => no(t.error);
       t.onabort = () => no(t.error);

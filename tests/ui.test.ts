@@ -498,18 +498,22 @@ it("opens the last practiced score instead of the bundled song", async () => {
 });
 it("edits lyric starts and duration in musical units without free-time controls", async () => {
   await vi.waitFor(() => expect(document.getElementById("busy")!.textContent!.split("\n")[0]).toContain("저장"));
-  click("lyrics-button");click("show-all");
+  click("lyrics-button");
+  await vi.waitFor(()=>expect((document.getElementById("editor-dialog") as HTMLDialogElement).open).toBe(true));
+  vi.stubGlobal("prompt",()=>"새로운");click("add-lyric");click("show-all");
   const select=document.querySelector<HTMLSelectElement>('#lyric-editor [data-field="grid-tick"]')!;
   expect(select).not.toBeNull();select.value='5';select.dispatchEvent(new Event('change',{bubbles:true}));
   await vi.waitFor(async()=>{
     const r=(await allRecords()).find(r=>r.song.title==='독립 두 번째 곡')!;
-    expect(r.song.lyrics[0].grid?.tick).toBe(5);
-    expect(r.song.lyrics[0].time).toBeCloseTo(r.song.measures[0].start+(r.song.measures[0].end-r.song.measures[0].start)*1.25/4);
+    expect(r.song.lyrics).toHaveLength(0);
+    expect(r.editDraft!.song.lyrics[0].grid?.tick).toBe(5);
+    expect(r.editDraft!.song.lyrics[0].time).toBeCloseTo(r.song.measures[0].start+(r.song.measures[0].end-r.song.measures[0].start)*1.25/4);
   });
   expect(document.querySelector('[data-field="freeTiming"]')).toBeNull();
   expect(document.querySelector('[data-field="time"]')).toBeNull();
   const duration=document.querySelector<HTMLInputElement>('#lyric-editor [data-field="duration-beats"]')!;
   duration.value='0.5';duration.dispatchEvent(new Event('change',{bubbles:true}));
+  click('edit-commit');
   await vi.waitFor(async()=>{const r=(await allRecords()).find(r=>r.song.title==='독립 두 번째 곡')!;expect(r.song.lyrics[0].scorePosition!.durationQuarters).toBe(.5);expect(r.canonicalXML).toContain('DrumPracticeLyrics');});
 });
 it('lists one card per song and only the content types actually saved',async()=>{
@@ -522,7 +526,7 @@ it('lists one card per song and only the content types actually saved',async()=>
   for(const [i,r] of records.entries()) {
     expect(cards[i].querySelector('.score-type-pdf')).not.toBeNull();
     expect(cards[i].querySelector('.score-type-musicxml')).toBeNull();
-    expect(!!cards[i].querySelector('.score-type-lyrics')).toBe(r.song.lyrics.length>0);
+    expect(!!cards[i].querySelector('.score-type-lyrics')).toBe(r.song.lyrics.length>0||!!r.song.lyricText);
   }
 });
 

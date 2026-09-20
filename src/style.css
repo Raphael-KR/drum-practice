@@ -1438,3 +1438,31 @@ button.icon-button[hidden] { display:none; }
 .measure-marker { color:var(--accent); margin-right:4px; }
 .measure.active .measure-marker { color:inherit; }
 @media (max-width:600px) { .marker-slots { grid-template-columns:repeat(3,44px); gap:4px; } .marker-slots button { width:44px; } }
+
+/* Approved score management: one editor, one file hub. */
+.management-dialog { width:min(640px,calc(100vw - 32px)); }
+#score-summary h3 { margin:0 0 5px; font-size:20px; }
+#score-summary p { margin:0; }
+.asset-chips { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 24px; }
+.asset-chip { display:inline-block; padding:4px 9px; border-radius:7px; font-size:14px; }
+.asset-musicxml { color:#285dac; background:#e4eeff; }
+.asset-pdf { color:#a43835; background:#ffe8e7; }
+.asset-lyrics { color:#236744; background:#e0f3e8; }
+.asset-audio { color:#72439e; background:#eee5fb; }
+.asset-missing { color:#7a818c; background:#e8ebef; }
+.management-row { width:100%; display:flex; align-items:center; text-align:left; gap:14px; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:18px 0; background:transparent; margin:0; min-height:60px; }
+.management-row .ui-icon { color:var(--accent); width:24px; flex:none; }
+.management-row strong { display:block; font-size:18px; font-weight:600; }
+.management-row small { display:block; margin-top:4px; color:var(--muted); font-size:14px; }
+.management-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:20px; }
+#library-backup { margin-top:24px; border-top:1px solid var(--line); padding-top:18px; }
+#library-backup summary { color:var(--muted); min-height:44px; }
+.editor-history-tools { display:flex; align-items:center; gap:8px; margin:12px 0; }
+.editor-history-tools small { margin-right:auto; color:var(--muted); }
+.editor-history-tools button { min-width:44px; min-height:44px; padding:6px; }
+#full-lyrics-content { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.9; }
+#full-lyrics-content p { margin:4px 0; }
+#full-lyrics-content h3 { margin:24px 0 10px; color:var(--accent); }
+#lyric-upload-dialog textarea { width:100%; min-height:220px; margin-top:10px; }
+#original-button,#full-lyrics-button { margin-bottom:18px; }
+@media(max-width:600px){ .editor-history-tools{flex-wrap:wrap} .editor-history-tools small{width:100%} }

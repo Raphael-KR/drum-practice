@@ -58,6 +58,8 @@ export interface Song {
   originalTitle?: string;
   composer?: string;
   lyricist?: string;
+  /** Untimed full lyric document, canonical MusicXML miscellaneous-field. */
+  lyricText?: string;
   bpm: number;
   firstBeat: number;
   measures: Measure[];
@@ -195,6 +197,7 @@ export function validateSong(x: unknown): asserts x is Song {
   if (
     !s ||
     s.version !== 1 ||
+    (s.lyricText !== undefined && typeof s.lyricText !== "string") ||
     typeof s.id !== "string" ||
     typeof s.title !== "string" ||
     (s.artist !== undefined && typeof s.artist !== "string") ||

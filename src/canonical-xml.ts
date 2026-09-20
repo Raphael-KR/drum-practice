@@ -131,13 +131,14 @@ export function writeCanonical(
     }
   }
   const misc = child(ident, "miscellaneous") || add(ident, "miscellaneous");
-  for (const name of [FIELD, "drum-practice:display-title"])
+  for (const name of [FIELD, "drum-practice:display-title", "drum-practice:lyric-text"])
     kids(misc, "miscellaneous-field")
       .filter((e) => e.getAttribute("name") === name)
       .forEach((e) => e.remove());
   add(misc, "miscellaneous-field", s.title, {
     name: "drum-practice:display-title",
   });
+  if(s.lyricText) add(misc,"miscellaneous-field",s.lyricText,{name:"drum-practice:lyric-text"});
   const partList = child(root, "part-list") || add(root, "part-list");
   if (!old && kids(root, "part").some((p) => p.id === PART))
     throw Error("가사 파트 ID가 기존 악보와 충돌합니다.");
@@ -253,6 +254,7 @@ export function writeCanonical(
   return new XMLSerializer().serializeToString(d);
 }
 export function readCanonical(text: string, s: Song): void {
+  s.lyricText=Array.from(parse(text).querySelectorAll("miscellaneous-field")).find(e=>e.getAttribute("name")==="drum-practice:lyric-text")?.textContent || undefined;
   const d = parse(text),
     data = manifest(d);
   if (!data || data.version !== 1)

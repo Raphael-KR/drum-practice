@@ -64,6 +64,7 @@ export function useScore(record: RecordData, target: ScoreVariant): RecordData {
   song.pageCount = target.pages.length;
   validateSong(song);
   return {
+    ...record,
     song,
     canonicalXML: record.canonicalXML,
     pdf: target.source,

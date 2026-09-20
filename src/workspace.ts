@@ -1,3 +1,4 @@
+import {isPortable} from "./portable";
 import { licenseSection } from "./licenses";
 import buildInfo from "./build-info.generated.json";
 import packageInfo from "../package.json";
@@ -18,6 +19,7 @@ export function updateViewWidth() {
   if(mirror) mirror.textContent=select.selectedOptions[0]?.textContent || '';
 }
 export function selectSettingsCategory(category: SettingsCategory) {
+  if(isPortable && category==="score")category="screen";
   lastCategory=category;
   try { localStorage.setItem(SETTINGS_KEY,category); } catch { /* Session fallback. */ }
   for (const panel of document.querySelectorAll<HTMLElement>("[data-settings-panel]"))
