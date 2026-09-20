@@ -128,6 +128,7 @@ document.getElementById("app")!.insertAdjacentHTML("beforeend", '<dialog id="tem
 arrangeWorkspace();
 arrangeIcons();
 function songControlsAvailable(enabled: boolean) {
+  val("click").closest("label")!.hidden = !enabled;
   for (const id of ['click','zoom','original-button','edit-button','lyrics-button','metadata-button','export','save-html','review-add-score'])
     ($<HTMLButtonElement>(id)).disabled = !enabled;
   if (!enabled) document.querySelectorAll<HTMLInputElement>('input[name="score-view"]').forEach(r => r.disabled = true);
