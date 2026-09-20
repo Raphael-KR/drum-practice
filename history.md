@@ -1207,3 +1207,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 
 - OSMD 소스/공식 API/MusicXML 대조 결과를 docs/DRUM-KEY-EXTENSION-RESEARCH.md에 기록. 버즈 롤의 전용 XML 파싱/그리기/드럼 예제 확인. Doubles는 일반 tremolo와 더블 스트로크 의미를 구분. 나머지 추가 항목은 악기 전용 모양/위치 규칙 미확인.
 - 매핑 정본·앱·악보 데이터 변경 없음. 이번 검증은 소스와 표준 조사이며 새 GUI/재생 실험은 하지 않음. 문서 diff 검사 완료.
+
+## 2026-09-20 — MusicXML 공식 표준 재조사
+
+- 공식 4.0 문서/sounds.xml/XSD로 Drum Key 추가 항목 재조사. docs/MUSICXML-DRUM-KEY-STANDARD-RESEARCH.md에 악기 식별·모양/위치·주법 의미를 분리 기록.
+- 표준 식별자가 있어도 악기별 고정 머리/높이를 강제하지 않음. 버즈 롤/괄호는 표준 표현. 픽토그램·하프 damp를 드럼 음표/초크와 혼동하지 않도록 명시.
+- 조사 문서만 추가. 확정 매핑·앱·곡 데이터 변경 없음. 공식 소스 대조 및 git diff --check 확인.
