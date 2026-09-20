@@ -1,3 +1,4 @@
+import { markedMeasureIndices } from './marker-slots';
 import { detectStaff } from "./staff-geometry";
 import { locate, xAtBeat, type Song } from "./model";
 import { songScores, type ScoreVariant } from "./song-scores";
@@ -34,6 +35,7 @@ export class ScoreReview {
   private staffs: { top: number; gap: number }[][] = [];
   private base = document.createElement("canvas");
   private window = -1;
+  private markerKey = "";
   private width = 0;
   private height = 0;
   private scale = 2;
@@ -117,7 +119,9 @@ export class ScoreReview {
       h = Math.max(220, this.canvas.clientHeight),
       loc = locate(this.song, time),
       start = Math.floor(loc.index / 4) * 4;
-    if (start !== this.window || w !== this.width || h !== this.height) {
+    const marked=markedMeasureIndices(this.song), markerKey=[...marked].join(",");
+    if (start !== this.window || w !== this.width || h !== this.height || markerKey !== this.markerKey) {
+      this.markerKey=markerKey;
       this.window = start;
       this.width = w;
       this.height = h;
@@ -155,7 +159,7 @@ export class ScoreReview {
           c.fillStyle = "#627189";
           c.font = "12px system-ui";
           c.fillText(
-            `${this.song.measures[start + j].label} 마디 · ${m.beats}/${m.denominator}`,
+            `${marked.has(start+j) ? "⚑ " : ""}${this.song.measures[start + j].label} 마디 · ${m.beats}/${m.denominator}`,
             x,
             y + 34,
           );

@@ -1,3 +1,4 @@
+import { markMeasure, sortedMarkerSlots, markedMeasureIndices } from './marker-slots';
 import { preferPDF, savePreferPDF, scorePreference } from "./score-preference";
 import { readPlaybackPreferences, savePlaybackPreferences } from "./playback-preferences";
 import { centeredRange, loopMeasureRange, scrubTime } from "./practice-controls";
@@ -448,7 +449,7 @@ function measureHTML(m: Measure, i: number, width: number) {
       return `<span class="syllable" title="${l.confirmed ? "확인됨" : "추정"}" style="left:${x * 100}%;${l.text.length > 4 ? "font-size:14px;white-space:normal;max-width:95%;transform:none;" : ""}">${esc(l.text)}</span>`;
     })
     .join("");
-  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label">${esc(m.label)} 마디<span class="measure-beat" aria-label="현재 박">1</span><small class="measure-signature">${m.beats}/${m.denominator}</small></span><div class="crop" style="width:${width}px;height:${height}px;background-image:url('${urls[r.page]}');background-size:${layout?.size ?? `${100 / r.w}% ${100 / r.h}%`};background-position:${layout?.position ?? `${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%`}"></div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
+  return `<div class="measure" data-index="${i}" style="width:${width}px"><span class="label"><span class="measure-marker" aria-label="마킹된 마디" ${markedMeasureIndices(s).has(i) ? "" : "hidden"}>⚑</span>${esc(m.label)} 마디<span class="measure-beat" aria-label="현재 박">1</span><small class="measure-signature">${m.beats}/${m.denominator}</small></span><div class="crop" style="width:${width}px;height:${height}px;background-image:url('${urls[r.page]}');background-size:${layout?.size ?? `${100 / r.w}% ${100 / r.h}%`};background-position:${layout?.position ?? `${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%`}"></div><div class="lyrics" style="top:${height + 6}px">${syl}</div></div>`;
 }
 function positionInMeasure(index: number, beat: number, width: number) {
   const s = song(),
@@ -1015,16 +1016,25 @@ for (const [id,prefix] of [['set-a','loop-a'],['set-b','loop-b']]) action(id,()=
   updateLoopBeatBounds();
 });
 function addMarker() {
-  const name =
-    val("marker-name").value.trim() ||
-    `${locate(song(), engine().current()).measure?.label}마디`;
-  song().markers.push({ id: uid(), name, time: engine().current() });
+  markMeasure(song(), engine().current(), uid(), val("marker-name").value.trim());
   val("marker-name").value = "";
   renderLists();
   queueSave();
 }
 action("add-marker", addMarker);
 action("quick-add-marker", addMarker);
+$("open-marker-dialog").onclick=null;
+action("open-marker-dialog", addMarker);
+$('open-marker-dialog').removeAttribute('aria-haspopup');
+$('open-marker-dialog').setAttribute('aria-label','현재 마디 마킹');
+$('open-marker-dialog').title='현재 마디 마킹';
+function syncScoreMarkers() {
+  const marked = markedMeasureIndices(song());
+  document.querySelectorAll<HTMLElement>('#ribbon .measure').forEach(el => {
+    const badge=el.querySelector<HTMLElement>('.measure-marker')!;
+    badge.hidden=!marked.has(Number(el.dataset.index));
+  });
+}
 function renderLists() {
   const s = song();
   $("open-loop-dialog").classList.toggle("is-on", !!player?.loop);
@@ -1040,14 +1050,10 @@ function renderLists() {
   $("active-loop").textContent = player?.loop
     ? `반복 중 · ${player.loop.name}`
     : "반복 꺼짐";
-  $("quick-markers").innerHTML =
-    s.markers
-      .slice(0, 6)
-      .map(
-        (m) =>
-          `<button data-quick-marker="${esc(m.id)}">${esc(m.name)} <small>${locate(s, m.time).measure?.label} 마디</small></button>`,
-      )
-      .join("") || "마커를 추가하면 여기에서 바로 이동할 수 있습니다.";
+  $("quick-markers").innerHTML = sortedMarkerSlots(s).map((m, i) => m
+    ? `<button type="button" data-quick-marker="${esc(m.id)}" aria-label="${esc(locate(s,m.time).measure?.label ?? '')}마디 마커로 이동">${esc(locate(s,m.time).measure?.label ?? '')}</button>`
+    : `<button type="button" class="empty-marker-slot" disabled aria-label="빈 마커 슬롯 ${i+1}">—</button>`).join('');
+  syncScoreMarkers();
   $("markers").innerHTML = s.markers
     .map(
       (m) =>
@@ -1068,7 +1074,7 @@ $("quick-markers").onclick = (e) => {
     "[data-quick-marker]",
   )?.dataset.quickMarker;
   const marker = song().markers.find((m) => m.id === id);
-  if (marker) seekFreely(marker.time);
+  if (marker) seekFreely(locate(song(),marker.time).measure!.start);
 };
 $("markers").onclick = (e) => {
   const t = e.target as HTMLElement;

@@ -142,10 +142,15 @@ export function arrangeWorkspace() {
   el("save-loop").before(Object.assign(document.createElement("button"), { id: "apply-loop", className: "primary", textContent: "구간 적용" }));
   el("save-loop").textContent = "이름 붙여 저장";
 
-  const quick = document.createElement("section");
-  quick.className = "quick-section";
-  quick.innerHTML = '<div class="quick-title"><strong>마커</strong><span id="active-loop" hidden>반복 꺼짐</span><button id="quick-add-marker" type="button" title="현재 위치에 마커 추가">현재 위치 표시</button></div><div id="quick-markers" class="quick-markers"></div>';
-  repeat.after(quick);
+  const repeatActions=document.createElement('div'); repeatActions.className='repeat-actions';
+  repeatActions.append(...repeat.childNodes);
+  repeatActions.prepend(repeatActions.querySelector('#open-loop-dialog')!);
+  repeat.append(repeatActions);
+  const slots=document.createElement('div'); slots.id='quick-markers'; slots.className='marker-slots';
+  slots.setAttribute('role','group'); slots.setAttribute('aria-label','최근 마커 3개');
+  repeat.append(slots);
+  // The progress percentage still opens full marker management.
+  markers.insertAdjacentHTML('beforeend','<span id="active-loop" hidden></span><button id="quick-add-marker" hidden></button>');
 
   const settings = document.createElement("dialog");
   settings.id = "settings-dialog";

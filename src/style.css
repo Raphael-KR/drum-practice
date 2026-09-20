@@ -1427,3 +1427,14 @@ button.icon-button[hidden] { display:none; }
 #settings-dialog { --settings-description-gap:5px; }
 .settings-control-description { width:100%; display:grid; gap:var(--settings-description-gap); }
 .settings-control-description > p, #fullscreen-status { margin:0; font-size:12px; }
+
+/* Repeat controls stay on the left; fixed marker slots stay on the right. */
+.touch-workspace #repeat-controls { align-items:flex-start; flex-wrap:nowrap; }
+.repeat-actions { display:flex; align-items:center; flex:1; min-width:0; flex-wrap:wrap; gap:8px; }
+.repeat-actions #open-loop-dialog { min-height:48px; padding:6px 10px; }
+.marker-slots { display:grid; grid-template-columns:repeat(3,52px); gap:6px; margin-left:auto; flex:none; }
+.marker-slots button { width:52px; min-height:48px; padding:6px; font-size:18px; font-weight:600; color:var(--accent); background:var(--accent-soft); border-color:var(--line); font-variant-numeric:tabular-nums; }
+.marker-slots .empty-marker-slot { background:transparent; border-style:dashed; color:var(--muted); opacity:.6; }
+.measure-marker { color:var(--accent); margin-right:4px; }
+.measure.active .measure-marker { color:inherit; }
+@media (max-width:600px) { .marker-slots { grid-template-columns:repeat(3,44px); gap:4px; } .marker-slots button { width:44px; } }

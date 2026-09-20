@@ -579,3 +579,16 @@ it('keeps only the app heading and groups PDF with fullscreen below the divider'
   expect(document.querySelector('.view-select-row > strong')!.textContent).toBe('보기');
   expect(document.getElementById('zoom')!.closest('label')!.querySelector('strong')!.textContent).toBe('악보 크기');
 });
+
+it("marks immediately from the transport and renders sorted fixed slots on the score", async () => {
+  click("home");
+  set("seek","25"); document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  click("open-marker-dialog");
+  expect((document.getElementById("marker-dialog") as HTMLDialogElement).open).toBe(false);
+  expect(document.querySelectorAll("#quick-markers button")).toHaveLength(3);
+  expect(document.querySelector("#repeat-controls > .repeat-actions > :first-child")!.id).toBe("open-loop-dialog");
+  expect(document.querySelector('#quick-markers')!.parentElement!.id).toBe('repeat-controls');
+  expect(document.querySelectorAll('.measure-marker:not([hidden])').length).toBeGreaterThan(0);
+  const ids=[...document.querySelectorAll<HTMLElement>('#quick-markers [data-quick-marker]')].map(e=>e.textContent!);
+  expect(ids.map(Number)).toEqual(ids.map(Number).sort((a,b)=>a-b));
+});
