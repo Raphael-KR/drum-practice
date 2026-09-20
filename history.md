@@ -1168,3 +1168,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 테스트 초기 bundled hash 불일치 검출 후 새 자료 해시 반영. 전체 37 files / 129 tests 통과, build 통과. 높이 제거의 멱등성과 다른 성부 높이 보존 회귀 검사 추가.
 - Safari에서 실제 곡 열기와 저장 결과 확인: 5개 높이 비어 있음, 최신 SVG 캐시, 수동 중앙 이동 0개. 실제 PDF/MusicXML 비교 1~4마디 화면 확인. docs/experiments/osmd-hollow-report/rest-default-app-start.png.
 - 로컬 앱 반영. 기존 export HTML 재생성 및 upstream 제출 없음.
+
+## 2026-09-20 — MusicXML · OSMD 매핑 정책 정본 작성
+
+- 사용자 승인 원칙: OSMD가 지원하는 의미상 적절한 표기를 먼저 선택하고 해당 유효 MusicXML로 저장. 의미를 보존하는 표시 방법이 없는 경우만 보고.
+- docs/SCORE-MUSICXML-OSMD-MAPPING.md 신설: 악기별 좌표/머리/주법, 쉼표 예외, words 스티킹, 독립 가사 성부, 버전별 검증 근거와 갱신 절차 정리. 현재 미지원은 고스트 괄호.
+- AGENTS.md에 정본 연결, 이전 조사 문서에 현재 정책 링크 추가. 원본 외형과 악기 의미, 전용 기능과 표시 가능 여부를 구분.
+- 검증: 기존 조사 문서와 매핑 대조, 문서 로컬 링크 존재 및 git diff --check 확인. 문서만 변경하므로 앱 테스트/GUI 재실행 없음. 기존 곡의 circle-x 변환 및 렌더러 변경은 이번에 수행하지 않음.
