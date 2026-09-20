@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><meta charset="utf-8"><title>확정 범례 실제 출력 검수</title><style>body{font:16px system-ui;margin:20px;max-width:1120px}h1{font-size:24px}#score{width:1100px}pre{white-space:pre-wrap}</style><h1>확정 범례 · OSMD 실제 출력 검수</h1><p>앱 SVG 보정 없는 실제 MusicXML 렌더링입니다. 초크의 점은 staccato 요소로 외형만 시험하며 초크 음향 의미를 보장하지 않습니다. 더블 스트로크도 빗금 외형을 검사합니다. 기존 곡에는 적용하지 않습니다.</p><p id="version"></p><div id="score"></div><pre id="status">렌더링 중</pre><script type="module">
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>확정 범례 실제 출력 검수</title><style>body{font:16px system-ui;margin:20px;max-width:1120px}h1{font-size:24px}#score{width:1100px}pre{white-space:pre-wrap}</style><h1>확정 범례 · OSMD 실제 출력 검수</h1><p>MusicXML을 OSMD로 렌더링하고 고스트 괄호와 스티킹 위치를 보완한 화면입니다. 초크의 점은 staccato 요소로 외형만 시험하며 초크 음향 의미를 보장하지 않습니다. 더블 스트로크도 빗금 외형을 검사합니다. 기존 곡에는 적용하지 않습니다.</p><p id="version"></p><div id="score"></div><pre id="status">렌더링 중</pre><script type="module">
 const patched=new URLSearchParams(location.search).has('patched');
 let OpenSheetMusicDisplay;
 if(patched){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='/qa/osmd-upstream-fixed.js';s.onload=resolve;s.onerror=reject;document.head.append(s)});({OpenSheetMusicDisplay}=window.opensheetmusicdisplay)}
@@ -10,13 +10,30 @@ const cases=[
 ['Tom 3','B',4,'normal','',46],['Tom 4 = Floor Tom','A',4,'normal','',44],['Tom 5','G',4,'normal','',42],['Right Bass','F',4,'normal','',37,'down'],
 ['Left Bass','E',4,'normal','',37,'down'],['Closed Hi-Hat','G',5,'x','',43],['Open Hi-Hat','G',5,'circle-x','',47],['Ride','F',5,'x','',52],
 ['Ride Bell','F',5,'triangle','filled="yes"',54],['Crash','A',5,'x','',50],['Hi-Hat Open (동작)','G',5,'x','',47,'up','<open-string placement="above"/>'],['Hi-Hat Close (동작)','G',5,'x','',43,'up','<stopped placement="above"/>'],
-['Ghost (괄호)','C',5,'normal','parentheses="yes"',39],['R other-technical','C',5,'normal','',39,'up','<other-technical placement="above">R</other-technical>'],['R words','C',5,'normal','',39,'up','',true],['L words','C',5,'normal','',39,'up','',true]
+['Ghost (괄호)','C',5,'normal','parentheses="yes"',39],['오른손','C',5,'normal','',39,'up','',true],['왼손','C',5,'normal','',39,'up','',true]
 ];
 const esc=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;');
-window.auditXML=`<?xml version="1.0"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>Drums</part-name>${cases.map((c,i)=>`<score-instrument id="I${i}"><instrument-name>${esc(c[0])}</instrument-name></score-instrument>`).join('')}${cases.map((c,i)=>`<midi-instrument id="I${i}"><midi-channel>10</midi-channel><midi-unpitched>${c[5]}</midi-unpitched></midi-instrument>`).join('')}</score-part></part-list><part id="P1">${cases.map((c,i)=>`<measure number="${i+1}">${i%4===0?'<print new-system="yes"/>':''}${i===0?'<attributes><divisions>4</divisions><time><beats>1</beats><beat-type>4</beat-type></time><clef><sign>percussion</sign></clef><staff-details><staff-lines>5</staff-lines></staff-details></attributes>':''}<direction placement="above"><direction-type><words font-size="11">${esc(c[0])}</words></direction-type></direction>${c[8]?`<direction placement="above"><direction-type><words default-y="35">${i===23?'L':'R'}</words></direction-type></direction>`:''}<note${i===20?' dynamics="20"':''}><unpitched><display-step>${c[1]}</display-step><display-octave>${c[2]}</display-octave></unpitched><duration>4</duration><instrument id="I${i}"/><type>quarter</type><stem>${c[6]||'up'}</stem><notehead ${c[4]}>${c[3]}</notehead>${c[7]||c[9]?`<notations>${c[7]?`<technical>${c[7]}</technical>`:''}${c[9]||''}</notations>`:''}</note></measure>`).join('')}</part></score-partwise>`;
+window.auditXML=`<?xml version="1.0"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>Drums</part-name>${cases.map((c,i)=>`<score-instrument id="I${i}"><instrument-name>${esc(c[0])}</instrument-name></score-instrument>`).join('')}${cases.map((c,i)=>`<midi-instrument id="I${i}"><midi-channel>10</midi-channel><midi-unpitched>${c[5]}</midi-unpitched></midi-instrument>`).join('')}</score-part></part-list><part id="P1">${cases.map((c,i)=>`<measure number="${i+1}">${i%4===0?'<print new-system="yes"/>':''}${i===0?'<attributes><divisions>4</divisions><time><beats>1</beats><beat-type>4</beat-type></time><clef><sign>percussion</sign></clef><staff-details><staff-lines>5</staff-lines></staff-details></attributes>':''}${i<20?`<direction placement="above"><direction-type><words font-size="11">${esc(c[0])}</words></direction-type></direction>`:''}${c[8]?`<direction placement="above"><direction-type><words default-y="35">${i===22?'L':'R'}</words></direction-type></direction>`:''}<note${i===20?' dynamics="20"':''}><unpitched><display-step>${c[1]}</display-step><display-octave>${c[2]}</display-octave></unpitched><duration>4</duration><instrument id="I${i}"/><type>quarter</type><stem>${c[6]||'up'}</stem><notehead ${c[4]}>${c[3]}</notehead>${c[7]||c[9]?`<notations>${c[7]?`<technical>${c[7]}</technical>`:''}${c[9]||''}</notations>`:''}</note></measure>`).join('')}</part></score-partwise>`;
 try{const osmd=new OpenSheetMusicDisplay('score',{backend:'svg',autoResize:false,drawTitle:false,drawPartNames:false});
 osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem=4;osmd.EngravingRules.PercussionOneLineCutoff=0;osmd.EngravingRules.PercussionUseXMLDisplayStep=true;
 await osmd.load(window.auditXML);osmd.render();window.auditOsmd=osmd;
+// Read the approved notehead attribute; surround only its glyph, not the stem.
+for(let i=0;i<cases.length;i++){
+ const notes=osmd.GraphicSheet.MeasureList[i][0].staffEntries.flatMap(e=>e.graphicalVoiceEntries.flatMap(v=>v.notes));
+ const n=notes[0]; if(!n)continue;
+ if(cases[i][4].includes('parentheses="yes"')){
+  const glyph=n.getNoteheadSVGs()[n.vfnote[1]], b=glyph.getBBox();
+  for(const side of [-1,1]){const x=side<0?b.x-3:b.x+b.width+3,y=b.y-2,h=b.height+4;
+   const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',`M ${x} ${y} Q ${x+side*5} ${y+h/2} ${x} ${y+h}`);path.setAttribute('fill','none');path.setAttribute('stroke','#000');path.setAttribute('stroke-width','1.4');path.setAttribute('data-ghost-parenthesis','true');glyph.parentNode.append(path);
+  }
+ }
+ if(cases[i][8]){
+  const letter=i===22?'L':'R'; const matches=[...document.querySelectorAll('#score svg text')].filter(t=>t.textContent.trim()===letter); const t=matches[0]; for(const duplicate of matches.slice(1))duplicate.remove();
+  const stem=n.getSVGGElement().querySelector('.vf-stem path').getBBox();
+  if(!t)throw Error('스티킹 글자 누락'); t.setAttribute('x',String(stem.x+stem.width/2));t.setAttribute('y',String(stem.y-9));t.setAttribute('text-anchor','middle');t.setAttribute('data-sticking',letter);
+ }
+}
+
 window.auditResult=osmd.GraphicSheet.MeasureList.map(([m],i)=>({name:cases[i][0],notes:m.staffEntries.flatMap(e=>e.graphicalVoiceEntries.flatMap(v=>v.notes.map(n=>({filled:n.sourceNote.Notehead?.Filled,shape:n.sourceNote.Notehead?.Shape,keys:n.vfnote[0].keys,head:n.vfnote[0].note_heads[n.vfnote[1]].glyph_code,articulations:v.parentVoiceEntry.Articulations.map(a=>a.articulationEnum),tech:v.parentVoiceEntry.TechnicalInstructions.map(t=>t.value)}))))}));
-document.querySelector('#status').textContent='24개 항목 렌더링 완료 (앱 보정 없음)';}catch(e){document.querySelector('#status').textContent=e.stack;}
+document.querySelector('#status').textContent='23개 항목 · 고스트 괄호 / 각 음표 줄기 위 R 또는 L · 저장 방식 words';}catch(e){document.querySelector('#status').textContent=e.stack;}
 </script></html>

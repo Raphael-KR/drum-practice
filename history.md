@@ -1232,3 +1232,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - OSMD 2.1.2 원본으로 MusicXML 24개 사례 렌더링. 추가 악기/탐/킥/하이햇 상태 및 동작/롤/RL 검사.
 - 실제 스크린샷과 노트 속성 확인. Ghost 괄호와 other-technical R 누락 재현; words R/L 및 나머지 기호 표시 확인. 초크 점은 placement=above 필요. 의미/음향 검증과 구분.
 - 결과 docs/DRUM-KEY-RENDER-RESULTS.md, 재현 public/qa/drum-key-final-audit.html. 증거 docs/experiments/drum-key-final-audit.{png,json}. 실제 곡/매핑 정본 변경 없음.
+
+## 2026-09-20 — 검수 화면 고스트/스티킹 교정
+
+- 사용자 지시에 따라 정본에 words 단일 경로, 음표 줄기 위 한 글자, 머리 양옆 괄호 규칙 기록 후 검수 페이지 수정.
+- 진단 라벨과 other-technical 사례 제거. parentheses=yes 대상 머리 bbox에 괄호 경로 보완. words 출력은 stem bbox 위로 정렬하고 이 예제의 동일 글자 중복 SVG 제거.
+- Safari 재검증: 괄호 2개, R/L 각각 1개, 스크린샷 확인. 증거 docs/experiments/drum-key-ghost-sticking-fixed.png. 이번 구현은 검수 예제에 한정하며 메인 앱/실제 곡 및 upstream OSMD는 변경하지 않음.
