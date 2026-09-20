@@ -530,3 +530,26 @@ it('dismisses settings only for an outside gesture and uses icon close controls'
   expect(close.querySelector('svg')).not.toBeNull();
   rect.mockRestore();
 });
+
+it('remembers the settings category and returns from a child only when opened there', async () => {
+  const {openSettings,selectSettingsCategory,openSettingsChild}=await import('../src/workspace');
+  const settings=document.getElementById('settings-dialog') as HTMLDialogElement;
+  const child=document.getElementById('original-dialog') as HTMLDialogElement;
+  openSettings('score'); settings.close(); openSettings();
+  expect(document.getElementById('settings-detail-heading')!.textContent).toBe('악보');
+  expect(localStorage.getItem('drum-practice.settings-category')).toBe('score');
+  settings.scrollTop=50;
+  openSettingsChild(child);
+  expect(settings.open).toBe(false); expect(child.open).toBe(true);
+  child.close(); child.dispatchEvent(new Event('close'));
+  expect(settings.open).toBe(true); expect(settings.scrollTop).toBe(50);
+  expect(document.getElementById('settings-detail-heading')!.textContent).toBe('악보');
+  settings.close(); openSettingsChild(child); child.close(); child.dispatchEvent(new Event('close'));
+  expect(settings.open).toBe(false);
+  selectSettingsCategory('info');
+  expect(document.getElementById('settings-detail-heading')!.textContent).toBe('드럼 연습실');
+  localStorage.setItem('drum-practice.settings-category','playback'); openSettings();
+  expect(document.getElementById('settings-detail-heading')!.textContent).toBe('재생');
+  expect(document.getElementById('playback-settings')!.textContent).not.toContain('모든 곡에 공통으로 적용하며');
+  settings.close();
+});

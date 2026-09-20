@@ -1306,7 +1306,7 @@ button.icon-button[hidden] { display:none; }
 .tempo-number { display:flex; justify-content:center; flex-wrap:nowrap; gap:12px; margin:14px auto 4px; color:var(--muted); }
 .touch-workspace #rate { width:180px; min-height:94px; padding:14px; font-size:44px; font-weight:700; color:var(--accent); border-radius:16px; }
 #tempo-reset { width:100%; }
-.touch-workspace #settings-dialog { width:min(880px,96vw); min-height:min(560px,90dvh); }
+.touch-workspace #settings-dialog { width:min(720px,96vw); min-height:min(560px,90dvh); }
 .settings-layout { display:grid; grid-template-columns:164px minmax(0,1fr); gap:22px; align-items:start; }
 .settings-nav { display:flex; flex-direction:column; gap:7px; }
 .settings-nav button.icon-button { justify-content:flex-start; gap:10px; width:100%; padding:10px 12px; }
@@ -1406,15 +1406,20 @@ button.icon-button[hidden] { display:none; }
 .settings-switch input[type="checkbox"]:checked::before { transform:translateX(20px); }
 
 .view-select-row { display:flex; align-items:center; gap:20px; width:100%; position:relative; min-height:52px; }
-.view-select-row select { flex:1; min-width:0; min-height:52px; border-radius:12px; padding:10px 14px; }
 #view-description, #pdf-view-row { width:100%; }
 .close-button { border-radius:50%; min-width:48px; min-height:48px; width:48px; height:48px; padding:11px; }
 .settings-switch:has(input:disabled) { color:var(--muted); }
-.view-select-row select { appearance:none; -webkit-appearance:none; background:#fff; border:1px solid var(--line); font:inherit; padding-right:42px; }
-.view-select-row::after { content:''; pointer-events:none; position:absolute; right:18px; top:20px; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); }
 
 .license-section { display:block; width:100%; min-width:0; }
 .license-section details { margin:8px 0; padding:12px; border:1px solid var(--line); border-radius:10px; }
 .license-section summary { cursor:pointer; overflow-wrap:anywhere; }
 .license-section pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; max-height:320px; overflow:auto; }
 .license-section a { display:inline-block; padding:10px 0; color:var(--accent); }
+
+.view-select-control { position:relative; display:inline-grid; margin-left:auto; min-width:0; max-width:calc(100% - 52px); }
+#view-selected-text { visibility:hidden; white-space:pre; overflow:hidden; padding:14px 42px 14px 14px; font:inherit; min-height:52px; box-sizing:border-box; }
+.view-select-control select { position:absolute; inset:0; width:100%; min-width:0; height:100%; min-height:52px; border-radius:12px; appearance:none; -webkit-appearance:none; background:#fff; border:1px solid var(--line); font:inherit; padding:10px 42px 10px 14px; }
+.view-select-control::after { content:''; pointer-events:none; position:absolute; right:18px; top:20px; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); }
+#view-description { text-align:right; }
+#playback-settings-status:empty { display:none; }
+@media (orientation:portrait) { .touch-workspace #settings-dialog { width:min(880px,96vw); } }

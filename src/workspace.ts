@@ -6,7 +6,20 @@ export type SettingsCategory = "screen" | "playback" | "score" | "info";
 const settingsTitles: Record<SettingsCategory, string> = {
   screen: "화면", playback: "재생", score: "악보", info: "정보",
 };
+const SETTINGS_KEY = 'drum-practice.settings-category';
+let lastCategory: SettingsCategory = 'screen';
+function rememberedCategory(): SettingsCategory {
+  try { const saved=localStorage.getItem(SETTINGS_KEY); if(saved && Object.hasOwn(settingsTitles,saved)) return saved as SettingsCategory; } catch { /* Session fallback. */ }
+  return lastCategory;
+}
+export function updateViewWidth() {
+  const select=document.getElementById('view') as HTMLSelectElement;
+  const mirror=document.getElementById('view-selected-text');
+  if(mirror) mirror.textContent=select.selectedOptions[0]?.textContent || '';
+}
 export function selectSettingsCategory(category: SettingsCategory) {
+  lastCategory=category;
+  try { localStorage.setItem(SETTINGS_KEY,category); } catch { /* Session fallback. */ }
   for (const panel of document.querySelectorAll<HTMLElement>("[data-settings-panel]"))
     panel.hidden = panel.dataset.settingsPanel !== category;
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-settings-category]")) {
@@ -14,14 +27,31 @@ export function selectSettingsCategory(category: SettingsCategory) {
     button.classList.toggle("primary", active);
     button.setAttribute("aria-current", active ? "page" : "false");
   }
-  document.getElementById("settings-detail-heading")!.textContent = settingsTitles[category];
+  document.getElementById("settings-detail-heading")!.textContent = category === "info" ? "드럼 연습실" : settingsTitles[category];
 }
-export function openSettings(category: SettingsCategory = "screen") {
+export function openSettings(category: SettingsCategory = rememberedCategory()) {
   selectSettingsCategory(category);
   (document.getElementById("settings-dialog") as HTMLDialogElement).showModal();
 }
 export function closeSettings() {
   (document.getElementById("settings-dialog") as HTMLDialogElement).close();
+}
+/** Restore settings only for dialogs opened from settings, including native Escape. */
+export function openSettingsChild(child: HTMLDialogElement) {
+  const settings=document.getElementById('settings-dialog') as HTMLDialogElement;
+  if(settings.open){
+    const category=lastCategory;
+    const scroll=settings.scrollTop;
+    const detail=settings.querySelector<HTMLElement>('.settings-detail')!;
+    const detailScroll=detail.scrollTop;
+    const origin=document.activeElement as HTMLElement | null;
+    child.addEventListener('close',()=>{
+      openSettings(category); settings.scrollTop=scroll; detail.scrollTop=detailScroll;
+      origin?.focus({preventScroll:true});
+    },{once:true});
+    settings.close();
+  }
+  child.showModal();
 }
 export function arrangeWorkspace() {
   const el = (id: string) => document.getElementById(id)!;
@@ -157,8 +187,12 @@ export function arrangeWorkspace() {
   viewRow.className = "view-select-row";
   viewRow.innerHTML = '<span>보기</span>';
   el("view").hidden = false;
-  viewRow.append(el("view"));
+  const viewControl=document.createElement('span'); viewControl.className='view-select-control';
+  viewControl.innerHTML='<span id="view-selected-text" aria-hidden="true"></span>';
+  viewControl.append(el('view')); viewRow.append(viewControl);
   screenBody.append(viewRow);
+  el('view').addEventListener('change',updateViewWidth);
+  updateViewWidth();
   screenBody.insertAdjacentHTML("beforeend", '<p id="view-description" class="subtle"></p><label id="pdf-view-row" class="settings-switch"><span><strong>악보를 PDF로 보기</strong><small id="pdf-view-status">모든 곡에 공통으로 적용합니다.</small></span><input id="prefer-pdf" type="checkbox" role="switch" disabled></label>');
   const reviewHelp = document.createElement("div");
   reviewHelp.id = "review-help";
@@ -166,7 +200,7 @@ export function arrangeWorkspace() {
   screenBody.append(reviewHelp, el("zoom").closest("label")!);
   screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>현재 악보와 다음에 여는 악보에 적용합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><p id="fullscreen-status" class="subtle" role="status"></p></div>');
   const playback = settingsPanel("playback", "playback-settings", "open-playback-settings");
-  playback.innerHTML = '<label class="settings-switch"><span><strong>마디 처음부터 다시 재생</strong><small>끄면 일시정지한 위치에서 이어서 재생합니다.</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>카운트오프 (Count-off)</strong><small>현재 연습 BPM으로 4분음표 스틱 소리 네 번 후 시작합니다.</small></span><input id="count-off" type="checkbox" role="switch"></label><p class="subtle">모든 곡에 공통으로 적용하며, 다음 재생부터 사용합니다.</p><p id="playback-settings-status" class="subtle" role="status"></p>';
+  playback.innerHTML = '<label class="settings-switch"><span><strong>마디 처음부터 다시 재생</strong><small>끄면 일시정지한 위치에서 이어서 재생합니다.</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>카운트오프 (Count-off)</strong><small>현재 연습 BPM으로 4분음표 스틱 소리 네 번 후 시작합니다.</small></span><input id="count-off" type="checkbox" role="switch"></label><p id="playback-settings-status" class="subtle" role="status"></p>';
   const scoreSettings = settingsPanel("score", "score-settings", "open-score-settings");
   const group = (title: string, id: string) => {
     const section = document.createElement('section'); section.id=id; section.className='settings-group score-management-group';
@@ -196,7 +230,7 @@ export function arrangeWorkspace() {
   info.append(log);
   backup.remove();
   practice.querySelector(".panels")!.remove();
-  selectSettingsCategory("screen");
+  selectSettingsCategory(rememberedCategory());
 
   const seek = el("seek");
   const wrap = document.createElement("div");

@@ -33,7 +33,7 @@ import { applyLyricTimingPatch, applyUserLyricAnchors } from "./lyric-timing";
 import { chooseRecent, rememberScore } from "./recent-score";
 import { displayRegion } from "./score-view";
 import { arrangeIcons, iconButton } from "./icons";
-import { arrangeWorkspace, selectEditorPane, paginateList, closeSettings } from "./workspace";
+import { arrangeWorkspace, selectEditorPane, paginateList, openSettingsChild, updateViewWidth } from "./workspace";
 import { Player } from "./audio";
 import {
   allRecords,
@@ -326,6 +326,7 @@ async function activate(r: RecordData) {
   }
 }
 function syncViewChoices() {
+  updateViewWidth();
   if(!record)return;
   const formats=songScores(record).map(s=>s.format);
   const missing=['pdf','musicxml'].filter(f=>!formats.includes(f as 'pdf'|'musicxml'));
@@ -391,6 +392,7 @@ function syncSettings() {
   val("click-volume").value = String(s.clickVolume);
   val("zoom").value = String(s.zoom);
   val("view").value = s.view;
+  updateViewWidth();
   document.querySelectorAll<HTMLButtonElement>('[data-tempo]').forEach(b => {
     const selected = Math.abs(Number(b.dataset.tempo) - s.rate * song().bpm) < .01;
     b.classList.toggle('primary', selected); b.setAttribute('aria-pressed', String(selected));
@@ -1283,7 +1285,6 @@ $("new-form").onsubmit = async (e) => {
 };
 async function openEditor() {
   if (!record) return;
-  closeSettings();
   scoreGestures.cancel();
   selected = locate(song(), engine().current()).index;
   selected = clamp(selected, 0, song().measures.length - 1);
@@ -1299,7 +1300,7 @@ async function openEditor() {
     .map((_, i) => `<option value="${i}">${i + 1}쪽</option>`)
     .join("");
   updateMeasureForm();
-  $<HTMLDialogElement>("editor-dialog").showModal();
+  openSettingsChild($<HTMLDialogElement>("editor-dialog"));
   await drawPage();
   renderLyricEditor(true);
 }
@@ -1754,10 +1755,9 @@ function showOriginalPage() {
   };
 }
 action("original-button", () => {
-  closeSettings();
   originalPage = 0;
   showOriginalPage();
-  $<HTMLDialogElement>("original-dialog").showModal();
+  openSettingsChild($<HTMLDialogElement>("original-dialog"));
 });
 action("export", async () => {
   await persist();
@@ -1984,8 +1984,8 @@ document.body.append(replaceDialog);
 const replaceButton=document.createElement('button');replaceButton.id='replace-score-button';replaceButton.textContent='이 곡에 악보 추가';
 $('backup-dialog').append(replaceButton);
 replaceButton.hidden=isPortable;
-replaceButton.onclick=()=>{if(!record)return;closeSettings();engine().pause();replaceDialog.showModal();};
-$('review-add-score').onclick=()=>{closeSettings();replaceButton.click();};
+replaceButton.onclick=()=>{if(!record)return;engine().pause();openSettingsChild(replaceDialog);};
+$('review-add-score').onclick=()=>{replaceButton.click();};
 $('replace-close').onclick=()=>replaceDialog.close();
 let replaceGeneration=0;
 val('replace-score-file').onchange=async()=>{
