@@ -1319,7 +1319,7 @@ button.icon-button[hidden] { display:none; }
 .settings-panel > .icon-button .icon-caption { font-size:14px; }
 .settings-group { flex-basis:100%; padding-top:14px; border-top:1px solid var(--line); }
 .settings-switch { display:flex; justify-content:space-between; flex-wrap:nowrap; width:100%; gap:16px; padding:8px 0 14px; }
-.settings-switch span { display:grid; gap:5px; }
+.settings-switch span { display:grid; gap:var(--settings-description-gap,5px); }
 .settings-switch strong, .settings-item-title { font-size:15px; font-weight:600; }
 .settings-switch small { font-size:12px; }
 .settings-switch input { flex:none; width:24px; height:24px; }
@@ -1423,3 +1423,7 @@ button.icon-button[hidden] { display:none; }
 #view-description { text-align:right; }
 #playback-settings-status:empty { display:none; }
 @media (orientation:portrait) { .touch-workspace #settings-dialog { width:min(880px,96vw); } }
+
+#settings-dialog { --settings-description-gap:5px; }
+.settings-control-description { width:100%; display:grid; gap:var(--settings-description-gap); }
+.settings-control-description > p, #fullscreen-status { margin:0; font-size:12px; }

@@ -12,7 +12,7 @@ export async function enterFullscreen(report: (message: string) => void) {
   }
   try {
     await document.documentElement.requestFullscreen();
-    report('전체화면으로 보고 있습니다.'); return true;
+    report(''); return true;
   } catch {
     report('전체화면 전환이 제한되었습니다. 옵션을 껐다가 다시 켜 주세요.'); return false;
   }

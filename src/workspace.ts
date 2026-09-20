@@ -196,6 +196,8 @@ export function arrangeWorkspace() {
   el('view').addEventListener('change',updateViewWidth);
   updateViewWidth();
   screenBody.insertAdjacentHTML("beforeend", '<p id="view-description" class="subtle"></p><label id="pdf-view-row" class="settings-switch"><span><strong>악보를 PDF로 보기</strong><small id="pdf-view-status">모든 곡에 공통으로 적용합니다.</small></span><input id="prefer-pdf" type="checkbox" role="switch" disabled></label>');
+  const viewSetting=document.createElement('div'); viewSetting.className='settings-control-description';
+  viewRow.before(viewSetting); viewSetting.append(viewRow, el('view-description'));
   const reviewHelp = document.createElement("div");
   reviewHelp.id = "review-help";
   reviewHelp.innerHTML = '<p id="review-availability"></p><button id="review-add-score">이 곡에 악보 추가</button>';
@@ -205,6 +207,7 @@ export function arrangeWorkspace() {
   screenBody.append(reviewHelp, zoomLabel);
   screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>현재 악보와 다음에 여는 악보에 적용합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><p id="fullscreen-status" class="subtle" role="status"></p></div>');
   el('auto-fullscreen').closest('.settings-group')!.prepend(el('pdf-view-row'));
+  el('auto-fullscreen').closest('label')!.querySelector('span')!.append(el('fullscreen-status'));
   const playback = settingsPanel("playback", "playback-settings", "open-playback-settings");
   playback.innerHTML = '<label class="settings-switch"><span><strong>마디 처음부터 다시 재생</strong><small>끄면 일시정지한 위치에서 이어서 재생합니다.</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>카운트오프 (Count-off)</strong><small>현재 연습 BPM으로 4분음표 스틱 소리 네 번 후 시작합니다.</small></span><input id="count-off" type="checkbox" role="switch"></label><p id="playback-settings-status" class="subtle" role="status"></p>';
   const scoreSettings = settingsPanel("score", "score-settings", "open-score-settings");
