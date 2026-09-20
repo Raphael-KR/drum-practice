@@ -1,3 +1,5 @@
+import { readPlaybackPreferences } from "./playback-preferences";
+import { stickClickSamples } from "./stick-click";
 import {
   beatEvents,
   locate,
@@ -26,6 +28,7 @@ export class Player {
   nextClick = new Map<Cycle, number>();
   generation = 0;
   private playRequest = 0;
+  private stickSound?: AudioBuffer;
   worker?: Worker;
   private cancelRender?: () => void;
   onstate = () => {};
@@ -203,7 +206,9 @@ export class Player {
     }
     await this.ctx.resume();
   }
-  async play(count = true, fromMeasureStart = true) {
+  async play(count = true, fromMeasureStart?: boolean) {
+    const preferences = readPlaybackPreferences();
+    const restartMeasure = fromMeasureStart ?? preferences.restartMeasure;
     if (!this.song?.measures.length || !this.rendered)
       throw Error("악보 마디와 음원을 먼저 준비하세요.");
     const request = ++this.playRequest;
@@ -220,7 +225,7 @@ export class Player {
     )
       this.position = this.loop.start;
     if (this.position >= this.duration) this.position = 0;
-    if (fromMeasureStart) {
+    if (restartMeasure) {
       const m = locate(this.song, this.position).measure;
       if (m && this.position >= m.start) this.position = m.start;
     }
@@ -228,7 +233,7 @@ export class Player {
     this.addCycle(
       this.ctx.currentTime + 0.08,
       this.position,
-      count ? this.song.settings.countIn : 0,
+      count && preferences.countOff,
     );
     this.tick();
     this.timer = window.setInterval(() => this.tick(), 25);
@@ -241,12 +246,12 @@ export class Player {
     if (was) void this.play(false, false);
     else this.onstate();
   }
-  addCycle(at: number, from: number, count: number) {
+  addCycle(at: number, from: number, countOff: boolean) {
     const s = this.song!;
     const to = Math.min(this.loop?.end ?? this.duration, this.duration);
     const m = locate(s, from).measure;
     if (!m || to <= from) return;
-    const c = makeCycle(at, from, to, s.settings.rate, count, m);
+    const c = makeCycle(at, from, to, s.settings.rate, 0, m, countOff);
     this.cycles.push(c);
     this.nextClick.set(c, 0);
     const source = this.ctx.createBufferSource();
@@ -263,27 +268,31 @@ export class Player {
     };
   }
   pulse(at: number, accent: boolean, count = false) {
-    const o = this.ctx.createOscillator(),
-      g = this.ctx.createGain();
-    o.frequency.value = accent ? 1500 : 1000;
     if (count) {
-      // Count-in is heard without music and keeps its independent volume.
-      g.gain.setValueAtTime(0.3, at);
-      g.gain.exponentialRampToValueAtTime(0.001, at + 0.045);
-    } else {
-      // A short attack/hold makes the click audible over a mastered song;
-      // the user's click gain still controls its entire level, including mute.
-      g.gain.setValueAtTime(0, at);
-      g.gain.linearRampToValueAtTime(0.8, at + 0.001);
-      g.gain.setValueAtTime(0.8, at + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, at + 0.075);
+      if (!this.stickSound) {
+        const samples = stickClickSamples(this.ctx.sampleRate);
+        this.stickSound = this.ctx.createBuffer(1, samples.length, this.ctx.sampleRate);
+        this.stickSound.copyToChannel(samples, 0);
+      }
+      const source = this.ctx.createBufferSource();
+      source.buffer = this.stickSound;
+      source.connect(this.ctx.destination);
+      this.track(source);
+      source.start(at);
+      return;
     }
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.frequency.value = accent ? 1500 : 1000;
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(0.8, at + 0.001);
+    g.gain.setValueAtTime(0.8, at + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, at + 0.075);
     o.connect(g);
-    g.connect(count ? this.ctx.destination : this.click);
+    g.connect(this.click);
     this.track(o);
     o.addEventListener("ended", () => g.disconnect());
     o.start(at);
-    o.stop(at + (count ? 0.05 : 0.08));
+    o.stop(at + 0.08);
   }
   tick() {
     if (!this.playing || !this.song) return;
@@ -298,7 +307,7 @@ export class Player {
       this.addCycle(
         last.endAt,
         this.loop.start,
-        this.song.settings.countEach ? this.song.settings.countIn : 0,
+        false,
       );
       last = this.cycles.at(-1)!;
     }

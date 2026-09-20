@@ -1,3 +1,4 @@
+import { readPlaybackPreferences, savePlaybackPreferences } from "./playback-preferences";
 import { centeredRange, loopMeasureRange, scrubTime } from "./practice-controls";
 import { autoFullscreenEnabled, saveAutoFullscreen, enterFullscreen } from "./fullscreen";
 import { attachScoreGestures } from "./score-gestures";
@@ -116,7 +117,7 @@ app.innerHTML = `
 <div id="review-tools" hidden><span id="review-message">스페이스: 정지·캡처 복사 / 다시 누르면 재생</span><button id="review-copy">정지·캡처 복사</button><button id="review-save" hidden>캡처 저장</button></div><div class="stage" id="stage"><canvas id="review-canvas" hidden aria-label="위 PDF, 아래 MusicXML 같은 마디 비교"></canvas><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>
 <div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="곡 위치" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>
 <div class="transport"><div class="flex transport-left"><button id="home" aria-label="처음으로">↤</button><label><select id="goto" aria-label="되감을 마디 수">${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}</select></label><button id="jump">앞으로</button><button id="copy-position" title="현재 마디와 위치 복사" aria-label="현재 마디와 위치 복사">위치 복사</button></div><button id="play" class="primary play">▶ 재생</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">BPM</button><button id="slower" aria-label="5 BPM 느리게">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="재생 BPM: 좌우 드래그로 조절, 두 번 탭하면 원곡 BPM" aria-orientation="horizontal" title="좌우 드래그: 1 BPM씩 조절 · 두 번 탭: 원곡 BPM"><button id="faster" aria-label="5 BPM 빠르게">+5</button><label><input id="click" type="checkbox" checked>클릭</label></div></div>
-<details><summary>소리·카운트인·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>준비 <select id="count"><option value="0">없음</option><option value="1">1마디</option><option value="2">2마디</option></select></label><label><input id="count-each" type="checkbox">반복마다 준비</label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
+<details><summary>소리·악보 크기</summary><div class="flex panel"><label>음악 <input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>클릭 <input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>악보 크기 <input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>
 <div class="panels"><section class="panel"><h2>구간 반복</h2><div class="flex"><label>시작 마디 <input id="loop-a" type="number" min="1" value="25"></label><label>박 <input id="loop-ab" type="number" min="1" step="0.25" value="1"></label><button id="set-a">현재 위치 A</button></div><div class="flex"><label>끝 마디 <input id="loop-b" type="number" min="1" value="29"></label><label>박 <input id="loop-bb" type="number" min="1" step="0.25" value="1"></label><button id="set-b">현재 위치 B</button></div><p class="subtle">끝 지점의 첫 음은 포함하지 않습니다. 25~28마디 반복은 끝을 29마디 1박으로 설정하세요.</p><div class="flex"><input id="loop-name" type="text" placeholder="예: 후렴 4마디" aria-label="반복 이름"><button id="save-loop">저장·반복</button><button id="new-loop">새 구간</button><button id="stop-loop">반복 끄기</button></div><div class="list" id="loops"></div></section><section class="panel"><h2>마커</h2><div class="flex"><input id="marker-name" type="text" placeholder="예: 어려운 필인" aria-label="마커 이름"><button id="add-marker">현재 위치 표시</button></div><div id="markers" class="list"></div><details><summary>백업·복원</summary><p class="subtle">백업에는 정렬·가사·연습 설정이 들어갑니다. 미디어를 포함하면 다른 기기에서도 바로 열 수 있습니다.</p><label><input id="include-media" type="checkbox" checked>악보·음원 포함</label><div class="flex"><button id="export">백업 내보내기</button><label>가져오기 <input id="restore" type="file" accept=".zip"></label></div></details></section></div><p class="keyboard">스페이스: 재생/정지 · ←/→: 이전/다음 마디 · M: 마커 추가</p><p class="subtle" id="alignment-note">가사와 박 위치는 자동 추정 자료를 포함합니다. 어긋나는 곳은 ‘악보·가사 맞추기’에서 수정하세요.</p></section></main>
 <dialog id="library-dialog"><div class="dialoghead"><h2>내 악보 목록</h2><button id="new-button">＋ 곡 추가</button><button data-close="library-dialog">닫기</button></div><div id="library-list"></div></dialog>
 <dialog id="new-dialog"><div class="dialoghead"><h2>새 곡 준비</h2><button data-close="new-dialog">닫기</button></div><p>PDF 또는 MusicXML과 음악을 골라 주세요. MusicXML은 마디·박자·템포를 자동으로 읽습니다.</p><form id="new-form"><p><label>가수 <input id="new-artist" type="text"></label><label>제목 <input id="new-title" required type="text" value="새 연습곡"></label></p><p><label>악보 <input id="pdf-file" required type="file" accept="application/pdf,.pdf,.musicxml,.xml,.mxl"></label></p><p id="xml-part-row" hidden><label>악기 파트 <select id="xml-part"></select></label><span class="subtle">박자표는 MusicXML 값을 사용합니다. 선택한 단일 오선 파트를 가져옵니다.</span></p><p><label>음원 <input id="audio-file" required type="file" accept="audio/*,.mp3"></label></p><p><label>BPM <input id="new-bpm" type="number" min="20" max="300" value="94" required></label><label>첫 박(초) <input id="new-first" type="number" min="0" step="0.001" value="0" required></label><label>박자 <input id="new-beats" type="number" min="1" max="16" value="4" required>/ <select id="new-denominator"><option>4</option><option>8</option><option>2</option><option>16</option></select></label></p><p><label>한글 발음 가사 — 한 줄에 한 구절</label><textarea id="new-lyrics" placeholder="스베테오 테니 이레테\n스베테오 우시낫테"></textarea></p><p class="subtle">가사 초기 위치는 임시 분배입니다. 노래를 들으며 실제 시작 마디·박을 맞춰 주세요.</p><button type="submit" class="primary">곡 만들기</button></form></dialog>
@@ -348,8 +349,6 @@ function syncSettings() {
   val("click").checked = s.click;
   val("music-volume").value = String(s.musicVolume);
   val("click-volume").value = String(s.clickVolume);
-  val("count").value = String(s.countIn);
-  val("count-each").checked = s.countEach;
   val("zoom").value = String(s.zoom);
   val("view").value = s.view;
   document.querySelectorAll<HTMLButtonElement>('[data-tempo]').forEach(b => {
@@ -654,6 +653,14 @@ $("tempo-options").onclick = e => {
 };
 bindNumericDrag(val("rate"));
 
+const playbackPreferences = readPlaybackPreferences();
+val('restart-measure').checked = playbackPreferences.restartMeasure;
+val('count-off').checked = playbackPreferences.countOff;
+for (const id of ['restart-measure','count-off']) val(id).onchange = () => {
+  const saved = savePlaybackPreferences({restartMeasure:val('restart-measure').checked, countOff:val('count-off').checked});
+  $('playback-settings-status').textContent = saved ? '이 브라우저에 저장했습니다.' : '이 화면을 열어 둔 동안에만 적용됩니다.';
+};
+
 // Score and percentage scrubbing share one preview/commit/cancel lifecycle.
 let gestureScrub: { start: number; resume: boolean; loop?: Loop; center?: number; radius?: number } | undefined;
 function prepareGestureAudio() { if (record && !busy) void engine().prepare?.().catch(error); }
@@ -820,8 +827,6 @@ for (const id of [
   "click",
   "music-volume",
   "click-volume",
-  "count",
-  "count-each",
   "zoom",
   "view",
 ])
@@ -831,8 +836,6 @@ for (const id of [
     s.click = val("click").checked;
     s.musicVolume = num("music-volume");
     s.clickVolume = num("click-volume");
-    s.countIn = num("count");
-    s.countEach = val("count-each").checked;
     s.zoom = num("zoom");
     if(val('view').value==='compare'){
       try{reviewPair(record);}catch(e){val('view').value=s.view;syncViewChoices();error(e);return;}

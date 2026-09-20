@@ -231,11 +231,9 @@ it("keeps the louder music click under its volume control and the count-in indep
     expect(p.click.gain.value).toBe(0);
     p.pulse(3, false, true);
     const count = ctx.nodes.at(-1)!;
-    const countEnvelope = count.connections[0];
-    expect(count.frequency.value).toBe(1000);
-    expect(countEnvelope.connections).toEqual([ctx.destination]);
-    expect(countEnvelope.gain.setValueAtTime).toHaveBeenCalledWith(0.3, 3);
-    expect(countEnvelope.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(0.001, 3.045);
+    expect(count.buffer).toBeDefined();
+    expect(count.connections).toEqual([ctx.destination]);
+    expect(count.started).toEqual([3]);
 
     // Both audible music and click enter the same bounded output path.
     const musicMix = (p.music as unknown as Node).connections[0];
@@ -323,7 +321,8 @@ it.each(["supported", "missing", "rejected"])("plays with %s Audio Session API",
   }
 });
 
- it.each([0, 2])("resumes paused music and clicks from the measure start with %i count-in measures", async (countIn) => {
+ it.each([false, true])("resumes paused music from the measure start with count-off=%s", async (countOff) => {
+  vi.stubGlobal("localStorage", {getItem: () => JSON.stringify({restartMeasure:true,countOff})});
   vi.stubGlobal("AudioContext", Context);
   vi.stubGlobal("window", { setInterval: () => 1 });
   const p = new Player();
@@ -331,7 +330,7 @@ it.each(["supported", "missing", "rejected"])("plays with %s Audio Session API",
     p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
     p.original = { duration: 296.88 } as AudioBuffer;
     p.rendered = {} as AudioBuffer;
-    p.song!.settings.countIn = countIn;
+    p.song!.settings.countIn = 2; // Legacy song settings do not override app preferences.
     const m = p.song!.measures[24];
     p.position = m.start;
     await p.play();
@@ -342,7 +341,7 @@ it.each(["supported", "missing", "rejected"])("plays with %s Audio Session API",
     await p.play();
     const resumed = p.cycles[0];
     expect(resumed.from).toBe(m.start);
-    expect(resumed.count).toBe(countIn * m.beats);
+    expect(resumed.count).toBe(countOff ? 4 : 0);
     const source = [...p.nodes].find(n => (n as unknown as Node).buffer) as unknown as Node;
     expect(source.started[1]).toBe(m.start);
     (p.ctx as unknown as Context).currentTime = resumed.musicAt;
@@ -353,4 +352,29 @@ it.each(["supported", "missing", "rejected"])("plays with %s Audio Session API",
     p.pause();
     vi.unstubAllGlobals();
   }
+});
+
+it.each([true,false])('honors exact resume position with restartMeasure=%s and count-off independently',async(restartMeasure)=>{
+  vi.stubGlobal('AudioContext',Context);
+  vi.stubGlobal('window',{setInterval:()=>1});
+  const p=new Player();
+  try {
+    p.song=JSON.parse(readFileSync('public/demo/song.json','utf8'));
+    p.original={duration:296.88} as AudioBuffer;p.rendered={} as AudioBuffer;
+    const m=p.song!.measures[24];
+    for(const countOff of [true,false]) {
+      vi.stubGlobal('localStorage',{getItem:()=>JSON.stringify({restartMeasure,countOff})});
+      p.pause(); p.position=m.start+.37;
+      await p.play();
+      const c=p.cycles[0];
+      expect(c.from).toBeCloseTo(m.start+(restartMeasure?0:.37));
+      expect(c.count).toBe(countOff?4:0);
+      if(countOff) expect(c.countAt).toBe(c.at);
+      expect(c.musicAt-c.at).toBeCloseTo(countOff ? 4*(m.end-m.start)/m.beats : 0);
+    }
+    p.pause();p.position=m.start+.37;
+    await p.play(false,false); // Scrub/rate continuation overrides both options.
+    expect(p.cycles[0].from).toBeCloseTo(m.start+.37);
+    expect(p.cycles[0].count).toBe(0);
+  } finally {p.pause();vi.unstubAllGlobals();}
 });

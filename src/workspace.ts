@@ -1,7 +1,8 @@
+import packageInfo from "../package.json";
 // Arrange existing controls without duplicating their state or event handlers.
-export type SettingsCategory = "screen" | "score" | "lyrics" | "info" | "file";
+export type SettingsCategory = "screen" | "playback" | "score" | "info";
 const settingsTitles: Record<SettingsCategory, string> = {
-  screen: "화면", score: "악보", lyrics: "가사", info: "곡 정보", file: "파일",
+  screen: "화면", playback: "재생", score: "악보", info: "정보",
 };
 export function selectSettingsCategory(category: SettingsCategory) {
   for (const panel of document.querySelectorAll<HTMLElement>("[data-settings-panel]"))
@@ -75,15 +76,9 @@ export function arrangeWorkspace() {
   el("tempo-presets").remove(); el("slower").remove(); el("faster").remove();
   transportRight.insertAdjacentHTML("afterbegin", '<label class="progress-number" title="드래그하여 곡 위치 이동 · 탭하여 마커 열기"><input id="progress-percent" type="text" inputmode="none" readonly role="slider" min="0" max="100" step="1" value="0" aria-label="곡 진행률, 드래그하여 이동, 탭하여 마커 열기" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span aria-hidden="true">%</span></label>');
   panel("marker-dialog", "마커", transportRight).append(markers);
-  const soundBody = panel("sound-dialog", "소리 · 준비", transportRight, "소리");
+  const soundBody = panel("sound-dialog", "소리", transportRight, "소리");
   soundBody.append(...sound.children);
   sound.remove();
-  const oldCount = el("count");
-  const count = document.createElement("input");
-  count.id = "count"; count.type = "number"; count.min = "0"; count.max = "2"; count.step = "1"; count.value = "0";
-  count.setAttribute("aria-label", "준비 마디 수, 0이면 없음");
-  oldCount.replaceWith(count);
-  count.insertAdjacentText("afterend", "마디");
   el("click-volume").closest("label")!.childNodes[0].textContent = "메트로놈 ";
 
   const repeat = document.createElement("section");
@@ -163,23 +158,30 @@ export function arrangeWorkspace() {
   reviewHelp.innerHTML = '<p id="review-availability"></p><button id="review-add-score">이 곡에 악보 추가</button>';
   screenBody.append(reviewHelp, el("view"), el("zoom").closest("label")!);
   screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>악보를 열 때 전체화면으로 전환합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><button id="fullscreen" type="button">전체화면</button><p id="fullscreen-status" class="subtle" role="status"></p></div>');
+  const playback = settingsPanel("playback", "playback-settings", "open-playback-settings");
+  playback.innerHTML = '<label class="settings-switch"><span><strong>마디 처음부터 다시 재생</strong><small>끄면 일시정지한 위치에서 이어서 재생합니다.</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>카운트오프 (Count-off)</strong><small>현재 연습 BPM으로 4분음표 스틱 소리 네 번 후 시작합니다.</small></span><input id="count-off" type="checkbox" role="switch"></label><p class="subtle">모든 곡에 공통으로 적용하며, 다음 재생부터 사용합니다.</p><p id="playback-settings-status" class="subtle" role="status"></p>';
   const scoreSettings = settingsPanel("score", "score-settings", "open-score-settings");
-  scoreSettings.insertAdjacentHTML("beforeend", '<p class="subtle">악보 원본을 확인하고, 마디 영역과 박 위치를 조절합니다. 다른 형식의 악보는 파일에서 추가할 수 있습니다.</p>');
+  const group = (title: string, id: string) => {
+    const section = document.createElement('section'); section.id=id; section.className='settings-group score-management-group';
+    const heading = document.createElement('h4'); heading.textContent=title; section.append(heading); scoreSettings.append(section); return section;
+  };
+  const edit = group('편집', 'score-edit-actions');
   el("edit-button").textContent = "악보 편집";
-  scoreSettings.append(el("original-button"), el("edit-button"));
-  const lyricSettings = settingsPanel("lyrics", "lyrics-settings", "open-lyrics-settings");
-  lyricSettings.innerHTML = '<p class="subtle">가사를 마디와 박에 맞추고, 발음과 음절 길이를 수정합니다.</p><button id="lyrics-button" type="button">가사 편집</button>';
-  const infoSettings = settingsPanel("info", "info-settings", "open-info-settings");
-  infoSettings.innerHTML = '<p class="subtle">제목·가수·작사·작곡 정보와 악보의 원곡 템포를 관리합니다.</p><button id="metadata-button" type="button">곡 정보 편집</button>';
-  const backupBody = settingsPanel("file", "backup-dialog", "open-backup-dialog");
+  edit.append(el("original-button"), el("edit-button"));
+  edit.insertAdjacentHTML('beforeend', '<button id="lyrics-button" type="button">가사 편집</button><button id="metadata-button" type="button">곡 정보 편집</button>');
+  const backupBody = group('추가 · 내보내기 · 백업', 'backup-dialog');
   el("save-html").textContent = "HTML 저장";
-  backupBody.append(el("save-html"), ...backup.children, el("portable-note"), el("alignment-note"), practice.querySelector(".keyboard")!);
+  backupBody.append(el("save-html"), ...backup.children, el("portable-note"), el("alignment-note"));
+  const info = settingsPanel("info", "info-settings", "open-info-settings");
+  info.innerHTML = '<section class="settings-group app-info"><h4>프로그램 정보</h4><dl><dt>이름</dt><dd>드럼 연습실</dd><dt>버전</dt><dd id="app-version"></dd></dl></section>';
+  el('app-version').textContent=packageInfo.version;
+  info.append(practice.querySelector(".keyboard")!);
   const log = document.createElement("section");
   log.className = "work-log";
-  log.innerHTML = '<h3>최근 작업 기록</h3><p class="subtle">이 화면을 연 동안의 최근 5건입니다.</p>';
+  log.innerHTML = '<h4>최근 작업 기록</h4><p class="subtle">이 화면을 연 동안의 최근 5건입니다.</p>';
   el("busy").textContent = "아직 기록이 없습니다.";
   log.append(el("busy"));
-  backupBody.append(log);
+  info.append(log);
   backup.remove();
   practice.querySelector(".panels")!.remove();
   selectSettingsCategory("screen");

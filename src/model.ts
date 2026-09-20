@@ -162,16 +162,17 @@ export function makeCycle(
   rate: number,
   countBars: number,
   m: Measure,
+  quarterCountOff = false,
 ): Cycle {
-  const bs = (m.end - m.start) / m.beats / rate;
-  const count = countBars * m.beats;
+  const bs = (m.end - m.start) / m.beats / rate * (quarterCountOff ? m.denominator / 4 : 1);
+  const count = quarterCountOff ? 4 : countBars * m.beats;
   const musicAt = at + count * bs;
   const originalBeat = (m.end - m.start) / m.beats;
   const nextBeat =
     m.start +
     Math.max(0, Math.ceil((from - m.start) / originalBeat - 1e-8)) *
       originalBeat;
-  const countAt = at + Math.max(0, nextBeat - from) / rate;
+  const countAt = quarterCountOff ? at : at + Math.max(0, nextBeat - from) / rate;
   return {
     at,
     countAt,
@@ -182,7 +183,7 @@ export function makeCycle(
     rate,
     count,
     countBeatSeconds: bs,
-    beats: m.beats,
+    beats: quarterCountOff ? 4 : m.beats,
   };
 }
 export function cyclePosition(c: Cycle, now: number) {

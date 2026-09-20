@@ -241,18 +241,31 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
     expect(s.measures[0].start).toBe(before);
   });
 });
-it("groups screen, score, lyrics, metadata and files in one settings dialog", () => {
+it("groups screen, playback, score management and app info in settings", () => {
   for (const dialog of document.querySelectorAll<HTMLDialogElement>("dialog[open]")) dialog.close();
   click("open-settings-dialog");
   expect((document.getElementById("settings-dialog") as HTMLDialogElement).open).toBe(true);
-  expect(document.querySelectorAll("[data-settings-category]")).toHaveLength(5);
+  expect([...document.querySelectorAll<HTMLElement>("[data-settings-category]")].map(e=>e.dataset.settingsCategory)).toEqual(["screen","playback","score","info"]);
   expect(document.querySelectorAll("[data-settings-panel]:not([hidden])")).toHaveLength(1);
   expect(document.getElementById("auto-fullscreen")!.closest("#screen-dialog")).not.toBeNull();
-  click("open-backup-dialog");
-  expect(document.getElementById("backup-dialog")!.hidden).toBe(false);
+  click("open-score-settings");
+  expect(document.getElementById("backup-dialog")!.closest<HTMLElement>("[data-settings-panel]")!.hidden).toBe(false);
   expect(document.getElementById("screen-dialog")!.hidden).toBe(true);
   click("open-score-settings");
   expect(document.getElementById("edit-button")!.closest<HTMLElement>("[data-settings-panel]")!.hidden).toBe(false);
+  expect(document.getElementById('lyrics-button')!.closest('#score-settings')).not.toBeNull();
+  expect(document.getElementById('metadata-button')!.closest('#score-settings')).not.toBeNull();
+  click('open-info-settings');
+  expect(document.getElementById('busy')!.closest('#info-settings')).not.toBeNull();
+  expect(document.getElementById('app-version')!.textContent).toBe(JSON.parse(readFileSync('package.json','utf8')).version);
+  click('open-playback-settings');
+  expect((document.getElementById('restart-measure') as HTMLInputElement).checked).toBe(true);
+  expect((document.getElementById('count-off') as HTMLInputElement).checked).toBe(true);
+  click('restart-measure'); click('count-off');
+  expect(JSON.parse(localStorage.getItem('drum-practice.playback')!)).toEqual({restartMeasure:false,countOff:false});
+  expect(document.querySelector('#count')).toBeNull();
+  expect(document.querySelector('#count-each')).toBeNull();
+  click('restart-measure'); click('count-off');
   (document.getElementById("settings-dialog") as HTMLDialogElement).close();
 });
 it("returns to earlier measures and stops at the first measure", () => {

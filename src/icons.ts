@@ -39,11 +39,11 @@ export function arrangeIcons() {
     ['library-button','library','내 악보 목록'], ['new-button','plus','곡 추가','곡 추가'],
     ['save-html','export','HTML 한 파일로 저장','HTML 저장'], ['fullscreen','expand','전체화면','전체화면'],
     ['open-settings-dialog','settings','설정'], ['quick-add-marker','plus','현재 위치에 마커 추가','현재 위치 표시'],
-    ['open-score-settings','pencil','악보 설정','악보'], ['open-lyrics-settings','lyrics','가사 설정','가사'], ['open-info-settings','info','곡 정보 설정','곡 정보'],
+    ['open-score-settings','library','악보 관리','악보'], ['open-playback-settings','play','재생 설정','재생'], ['open-info-settings','info','프로그램 정보','정보'],
     ['open-loop-dialog','repeat','반복 구간 조정','조정'], ['open-marker-dialog','bookmark','마커','마커'],
-    ['open-sound-dialog','sliders','소리·준비','소리'], ['open-screen-dialog','screen','화면','화면'],
+    ['open-sound-dialog','sliders','소리','소리'], ['open-screen-dialog','screen','화면','화면'],
     ['edit-button','pencil','악보 편집','악보 편집'], ['lyrics-button','lyrics','가사 편집','가사 편집'],
-    ['metadata-button','info','곡 정보 편집','곡 정보 편집'], ['open-backup-dialog','folder','파일·안내','파일'],
+    ['metadata-button','info','곡 정보 편집','곡 정보 편집'],
   ];
   items.forEach(([id,name,label,caption]) => iconButton(id,name,label,caption));
   const input = document.getElementById('click') as HTMLInputElement;

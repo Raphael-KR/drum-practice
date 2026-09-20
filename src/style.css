@@ -1057,7 +1057,7 @@ button { min-width:44px; }
 .work-log { width:100%; border-top:1px solid var(--line); padding-top:8px; }
 .work-log h3 { margin:0 0 4px; }
 .work-log p { margin:0 0 6px; }
-#backup-dialog #busy { padding:8px 10px; min-height:0; color:var(--muted); background:var(--accent-soft); border-radius:8px; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; line-height:1.6; }
+.work-log #busy { padding:8px 10px; min-height:0; color:var(--muted); background:var(--accent-soft); border-radius:8px; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; line-height:1.6; }
 
 .error-notice { display:flex; align-items:center; gap:10px; min-width:0; min-height:44px; border:1px solid #bf5b37; background:#fff2e9; color:#853c23; text-align:left; overflow:hidden; white-space:nowrap; }
 .error-notice:hover { background:#ffe6d6; }
@@ -1397,3 +1397,19 @@ button.icon-button[hidden] { display:none; }
 .touch-workspace .measure.loop-start { border-left:3px solid var(--accent); }
 .touch-workspace .measure.loop-end { border-right:3px solid var(--accent); }
 .touch-workspace [data-numeric-dragging="true"] { background:var(--accent-soft); outline:2px solid var(--accent); }
+
+/* Group song editing and transport preferences without exposing old categories. */
+.settings-panel .score-management-group { display:flex; flex-wrap:wrap; gap:12px; width:100%; }
+.score-management-group > h4, .score-management-group > p { flex-basis:100%; margin:0; }
+.score-management-group > .icon-button { padding:10px 14px; gap:7px; }
+.score-management-group .icon-caption { font-size:14px; }
+#playback-settings { display:flex; flex-direction:column; width:100%; }
+#playback-settings .settings-switch { border-bottom:1px solid var(--line); }
+.app-info { width:100%; }
+.app-info dl { display:grid; grid-template-columns:70px 1fr; gap:12px; }
+.app-info dt { color:var(--muted); }
+.app-info dd { margin:0; }
+.settings-switch input[type="checkbox"] { appearance:none; -webkit-appearance:none; width:48px; height:28px; min-height:28px; border:0; padding:3px; margin:0; border-radius:20px; background:#b4becb; cursor:pointer; transition:background .15s; }
+.settings-switch input[type="checkbox"]::before { content:""; display:block; width:22px; height:22px; border-radius:50%; background:white; box-shadow:0 1px 3px #0003; transition:transform .15s; }
+.settings-switch input[type="checkbox"]:checked { background:var(--accent); }
+.settings-switch input[type="checkbox"]:checked::before { transform:translateX(20px); }
