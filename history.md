@@ -1307,3 +1307,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 버전은 `<제품 버전> (<소스 식별자>)`, 빌드 시각은 한국 시간 24시간제·분 단위 두 줄만 표시. 프로그램 정보 소제목·이름·빌드 번호·별도 소스 식별자 행 제거.
 - 생성 메타데이터에서 number 필드 제거. builtAt/source만 유지하며 SHA-256 앞 12자리 소스 식별 방식은 변경하지 않음. 웹과 portable 공통 컴포넌트 적용.
 - 전체 48파일 196테스트 및 production build 통과. Safari에서 두 행·KST 실제 표시 확인. portable 템플릿에 최신 소스/시각 포함 및 폐기된 행/번호 필드 부재 검사 통과.
+
+## 2026-09-20 v0.2.0
+
+- MusicXML 지원·iPad 연습 조작·설정 개편·오픈소스 고지 등 누적 기능 확장을 기준으로 제품 버전을 0.1.0에서 0.2.0으로 상향. package.json/package-lock.json 동기화.
+- UI 집중 19테스트 및 production build 통과. 웹/portable 빌드 정보 재생성. 원격 push·외부 배포 없음.
