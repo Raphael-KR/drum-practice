@@ -1301,3 +1301,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - SoundTouchJS 비압축 코드 저장 제공. JSZip은 MIT 선택. 기존 portable 법적 고지 보존.
 - 집중 UI/고지 20테스트, 빌드 통과. Safari 30개 원문 고지 노드 확인.
 - docs/OPEN-SOURCE-NOTICES.md에 수집 범위와 외부 배포 전 LGPL 재결합/OSMD 누락 고지 대조 항목 기록. 전체 라이선스 의무 충족을 인증한 것은 아님. 외부 게시 없음.
+
+## 2026-09-20 프로그램 정보 간소화
+
+- 버전은 `<제품 버전> (<소스 식별자>)`, 빌드 시각은 한국 시간 24시간제·분 단위 두 줄만 표시. 프로그램 정보 소제목·이름·빌드 번호·별도 소스 식별자 행 제거.
+- 생성 메타데이터에서 number 필드 제거. builtAt/source만 유지하며 SHA-256 앞 12자리 소스 식별 방식은 변경하지 않음. 웹과 portable 공통 컴포넌트 적용.
+- 전체 48파일 196테스트 및 production build 통과. Safari에서 두 행·KST 실제 표시 확인. portable 템플릿에 최신 소스/시각 포함 및 폐기된 행/번호 필드 부재 검사 통과.

@@ -180,11 +180,12 @@ export function arrangeWorkspace() {
   el("save-html").textContent = "HTML 저장";
   backupBody.append(el("save-html"), ...backup.children, el("portable-note"), el("alignment-note"));
   const info = settingsPanel("info", "info-settings", "open-info-settings");
-  info.innerHTML = '<section class="settings-group app-info"><h4>프로그램 정보</h4><dl><dt>이름</dt><dd>드럼 연습실</dd><dt>버전</dt><dd id="app-version"></dd><dt>빌드 번호</dt><dd id="app-build"></dd><dt>빌드 시각</dt><dd id="app-built-at"></dd><dt>소스 식별자</dt><dd id="app-source"></dd></dl></section>';
-  el('app-version').textContent=packageInfo.version;
-  el('app-build').textContent=buildInfo.number;
-  el('app-built-at').textContent=new Date(buildInfo.builtAt).toLocaleString('ko-KR', {timeZone:'Asia/Seoul'}) + ' KST';
-  el('app-source').textContent=buildInfo.source;
+  info.innerHTML = '<section class="settings-group app-info"><dl><dt>버전</dt><dd id="app-version"></dd><dt>빌드 시각</dt><dd id="app-built-at"></dd></dl></section>';
+  el('app-version').textContent=`${packageInfo.version} (${buildInfo.source})`;
+  el('app-built-at').textContent=new Date(buildInfo.builtAt).toLocaleString('ko-KR', {
+    timeZone:'Asia/Seoul', year:'numeric', month:'numeric', day:'numeric',
+    hour:'2-digit', minute:'2-digit', hourCycle:'h23',
+  }) + ' KST';
   info.append(licenseSection());
   info.append(practice.querySelector(".keyboard")!);
   const log = document.createElement("section");

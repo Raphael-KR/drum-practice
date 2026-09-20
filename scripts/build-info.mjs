@@ -13,7 +13,7 @@ export async function writeBuildInfo() {
   const hash = createHash('sha256');
   for (const path of inputs) { hash.update(path); hash.update(await readFile(path)); }
   const builtAt = new Date().toISOString();
-  const info = { number: builtAt.replace(/[-:TZ.]/g, ''), builtAt, source: hash.digest('hex').slice(0, 12) };
+  const info = { builtAt, source: hash.digest('hex').slice(0, 12) };
   await writeFile('src/build-info.generated.json', JSON.stringify(info, null, 2) + '\n');
   return info;
 }
