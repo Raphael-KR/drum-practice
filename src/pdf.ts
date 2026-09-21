@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import worker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { uid, type Region } from "./model";
@@ -9,7 +10,7 @@ export async function renderPDF(blob: Blob, progress: (s: string) => void) {
   const regions: Region[] = [];
   try {
     for (let n = 1; n <= pdf.numPages; n++) {
-      progress(`악보 ${n}/${pdf.numPages}쪽 준비`);
+      progress(i18nText("pdf.message420", { n: n, value2: pdf.numPages }));
       const page = await pdf.getPage(n),
         v = page.getViewport({ scale: 1.8 }),
         canvas = document.createElement("canvas");

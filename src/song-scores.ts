@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 import { validateSong, type Song, type Region } from "./model";
 import type { RecordData } from "./storage";
 export type ScoreFormat = "pdf" | "musicxml";
@@ -51,9 +52,7 @@ export function useScore(record: RecordData, target: ScoreVariant): RecordData {
         m.denominator !== song.measures[i].denominator,
     )
   )
-    throw Error(
-      "마디 구성이 달라 이 악보로 전환할 수 없습니다. 현재 마디 구성에 맞는 악보를 다시 추가하세요.",
-    );
+    throw Error(i18nText("song-scores.message541"));
   song.regions = structuredClone(target.regions);
   song.measures.forEach((m, i) => {
     m.regionId = target.measures[i].regionId;

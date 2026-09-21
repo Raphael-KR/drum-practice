@@ -1,3 +1,4 @@
+import { t as i18nText, formatDate, formatTime } from "./i18n";
 import { icon } from "./icons";
 import {
   EditHistory,
@@ -43,16 +44,30 @@ export function editorSession(host: SessionHost) {
     controls.append(b);
     return b;
   };
-  const undo = button("되돌리기 (⌘Z)", "↶", () => move(false)),
-    redo = button("다시 실행 (⇧⌘Z)", "↷", () => move(true));
-  button("이전 저장본", "◴", showVersions).id = "edit-revisions";
-  button("변경 저장", "✓", () => commit(false)).id = "edit-commit";
+  const undo = button(i18nText("editor-session.message028"), "↶", () =>
+      move(false),
+    ),
+    redo = button(i18nText("editor-session.message029"), "↷", () => move(true));
+  button(i18nText("editor-session.message030"), "◴", showVersions).id =
+    "edit-revisions";
+  button(i18nText("editor-session.message031"), "✓", () => commit(false)).id =
+    "edit-commit";
   dialog.querySelector(".editor-tabs")!.after(controls);
   const confirmDialog = document.createElement("dialog");
   confirmDialog.id = "edit-exit-dialog";
   confirmDialog.className = "compact-dialog";
   confirmDialog.innerHTML =
-    '<h2>변경 내용을 저장할까요?</h2><p>편집 내용은 별도 초안으로 임시저장됩니다.</p><div class="form-footer"><button data-answer="discard" class="danger">변경 버리기</button><button data-answer="continue" autofocus>계속 편집</button><button data-answer="save" class="primary">저장</button></div>';
+    "<h2>" +
+    i18nText("editor-session.message032") +
+    "</h2><p>" +
+    i18nText("editor-session.message033") +
+    '</p><div class="form-footer"><button data-answer="discard" class="danger">' +
+    i18nText("editor-session.message034") +
+    '</button><button data-answer="continue" autofocus>' +
+    i18nText("editor-session.message035") +
+    '</button><button data-answer="save" class="primary">' +
+    i18nText("editor-session.message036") +
+    "</button></div>";
   document.body.append(confirmDialog);
   const versions = document.createElement("dialog");
   versions.id = "edit-versions-dialog";
@@ -63,7 +78,9 @@ export function editorSession(host: SessionHost) {
     return !!history && !!r && (history.changed(r) || host.pending());
   }
   function refresh() {
-    status.textContent = dirty() ? "변경 있음 · 임시저장 중" : "저장된 상태";
+    status.textContent = dirty()
+      ? i18nText("editor-session.message037")
+      : i18nText("editor-session.message038");
     undo.disabled = !history?.undoStack.length;
     redo.disabled = !history?.redoStack.length;
   }
@@ -83,10 +100,12 @@ export function editorSession(host: SessionHost) {
       void host
         .persist()
         .then(() => {
-          status.textContent = dirty() ? "임시저장됨" : "저장된 상태";
+          status.textContent = dirty()
+            ? i18nText("editor-session.message039")
+            : i18nText("editor-session.message038");
         })
         .catch((e) => {
-          status.textContent = "임시저장 실패";
+          status.textContent = i18nText("editor-session.message040");
           host.error(e);
         });
     }, 180);
@@ -98,9 +117,7 @@ export function editorSession(host: SessionHost) {
     history = new EditHistory(r);
     const draft = r.editDraft;
     if (draft) {
-      if (
-        confirm("이 곡에 저장하지 않은 초안이 있습니다. 이어서 편집할까요?")
-      ) {
+      if (confirm(i18nText("editor-session.message041"))) {
         host.apply(draft);
         if (draft.form) host.restoreForm(draft.form);
       } else {
@@ -220,50 +237,43 @@ export function editorSession(host: SessionHost) {
     if (!r) return;
     versions.replaceChildren();
     const h = document.createElement("h2");
-    h.textContent = "이전 저장본";
+    h.textContent = i18nText("editor-session.message030");
     const close = document.createElement("button");
     close.innerHTML = icon("close");
     close.className = "icon-button close-button";
-    close.setAttribute("aria-label", "닫기");
+    close.setAttribute("aria-label", i18nText("editor-session.message042"));
     close.onclick = () => versions.close();
     const head = document.createElement("div");
-    head.className = "dialoghead"; head.append(h, close);
+    head.className = "dialoghead";
+    head.append(h, close);
     versions.append(head);
     for (const v of [...(r.revisions || [])].reverse()) {
       const b = document.createElement("button");
       b.className = "management-row";
-      b.textContent = new Date(v.savedAt).toLocaleString("ko-KR") + " · 복원";
+      b.textContent =
+        formatDate(new Date(v.savedAt)) + i18nText("editor-session.message043");
       b.onclick = () => {
         if (
           v.song.pdfName !== r.song.pdfName ||
           v.song.audioName !== r.song.audioName
         ) {
-          host.error(
-            Error(
-              "이 저장본은 교체 전 파일을 사용합니다. 해당 파일이 포함된 전체 백업으로 복원하세요.",
-            ),
-          );
+          host.error(Error(i18nText("editor-session.message044")));
           return;
         }
-        if (
-          !confirm(
-            "현재 편집 내용을 저장 이력에 보존하고 선택한 저장본으로 복원할까요?",
-          )
-        )
-          return;
+        if (!confirm(i18nText("editor-session.message045"))) return;
         host.flush();
         r.revisions = retainRevision(r.revisions, r);
         before();
         host.apply(v);
         schedule();
         versions.close();
-        status.textContent = "복원됨 · 저장하면 확정됩니다.";
+        status.textContent = i18nText("editor-session.message046");
       };
       versions.append(b);
     }
     if (!r.revisions?.length) {
       const p = document.createElement("p");
-      p.textContent = "아직 이전 저장본이 없습니다.";
+      p.textContent = i18nText("editor-session.message047");
       versions.append(p);
     }
     versions.showModal();

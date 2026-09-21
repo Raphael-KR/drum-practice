@@ -1,4 +1,8 @@
-import { annotateNoteHighlights, NOTE_HIGHLIGHT_VERSION } from "./note-highlight";
+import { t as i18nText } from "./i18n";
+import {
+  annotateNoteHighlights,
+  NOTE_HIGHLIGHT_VERSION,
+} from "./note-highlight";
 import { prepareDrumDecorations, applyDrumDecorations } from "./drum-notation";
 import { REST_LAYOUT_VERSION, restCenterShift } from "./whole-rest-layout";
 import { compressSVG } from "./score-pages";
@@ -31,16 +35,14 @@ export function parseMusicXML(
   selectedPart?: string,
   inspectOnly = false,
 ): XMLScore {
-  if (text.length > MAX_XML)
-    throw Error("MusicXML은 12MB 이하로 가져와 주세요.");
-  if (/<!ENTITY/i.test(text))
-    throw Error("엔티티 선언을 포함한 XML은 지원하지 않습니다.");
+  if (text.length > MAX_XML) throw Error(i18nText("musicxml.message390"));
+  if (/<!ENTITY/i.test(text)) throw Error(i18nText("musicxml.message391"));
   const doc = new DOMParser().parseFromString(text, "application/xml");
   if (doc.querySelector("parsererror"))
-    throw Error("MusicXML 문법을 확인하세요.");
+    throw Error(i18nText("drum-notation.message027"));
   const root = doc.documentElement;
   if (root.localName !== "score-partwise")
-    throw Error("score-partwise 형식의 MusicXML로 내보내 주세요.");
+    throw Error(i18nText("musicxml.message392"));
   // MusicXML data only: do not permit linked images or active foreign markup.
   for (const e of Array.from(
     doc.querySelectorAll("script, foreignObject, image, link, opus"),
@@ -60,12 +62,12 @@ export function parseMusicXML(
           children(list, "score-part")
             .find((v) => v.getAttribute("id") === p.getAttribute("id"))
             ?.querySelector("part-name"),
-      ) || `파트 ${i + 1}`,
+      ) || i18nText("musicxml.message393", { value1: i + 1 }),
   }));
   const partId = selectedPart || parts[0]?.id;
   const index = parts.findIndex((p) => p.id === partId),
     part = partEls[index];
-  if (!part) throw Error("가져올 악기 파트를 선택하세요.");
+  if (!part) throw Error(i18nText("musicxml.message394"));
   if (inspectOnly) {
     const bpm =
       Number(part.querySelector("sound[tempo]")?.getAttribute("tempo")) ||
@@ -90,9 +92,7 @@ export function parseMusicXML(
       "repeat, ending, sound[da-capo], sound[dacapo], sound[dalsegno], sound[tocoda]",
     )
   )
-    warnings.push(
-      "반복·다카포는 펼치지 않고 인쇄된 마디 순서로 가져왔습니다. 음원 순서에 맞춰 마디를 복제·정렬하세요.",
-    );
+    warnings.push(i18nText("musicxml.message395"));
   let beats = 4,
     denominator = 4,
     divisions = 1,
@@ -104,14 +104,12 @@ export function parseMusicXML(
     if (attr && one(attr, "divisions"))
       divisions = Number(content(one(attr, "divisions")));
     if (!Number.isFinite(divisions) || divisions <= 0)
-      throw Error("MusicXML divisions 값이 올바르지 않습니다.");
+      throw Error(i18nText("musicxml.message396"));
     if (Number(content(attr && one(attr, "staves")) || 1) > 1)
-      throw Error(
-        "현재는 한 파트의 단일 오선 악보를 지원합니다. 드럼 파트만 단일 오선으로 내보내 주세요.",
-      );
+      throw Error(i18nText("musicxml.message397"));
     if (time) {
       if (children(time, "beats").length !== 1)
-        throw Error("복합 박자표는 단일 박자표로 내보내 주세요.");
+        throw Error(i18nText("musicxml.message398"));
       beats = content(one(time, "beats"))
         .split("+")
         .reduce((a, b) => a + Number(b), 0);
@@ -123,11 +121,9 @@ export function parseMusicXML(
       beats > 16 ||
       ![2, 4, 8, 16].includes(denominator)
     )
-      throw Error(`${i + 1}마디의 박자표는 현재 지원하지 않습니다.`);
+      throw Error(i18nText("musicxml.message399", { value1: i + 1 }));
     if (m.getAttribute("implicit") === "yes")
-      throw Error(
-        "못갖춘마디는 현재 자동 시간 배치를 지원하지 않습니다. 완전한 마디로 내보내 주세요.",
-      );
+      throw Error(i18nText("musicxml.message400"));
     let cursor = 0,
       lastOnset = 0,
       maxBeat = 0;
@@ -136,17 +132,17 @@ export function parseMusicXML(
         ((Number(content(one(e, "duration")) || 0) / divisions) * denominator) /
         4;
       if (!Number.isFinite(duration) || duration < 0)
-        throw Error(`${i + 1}마디 음가가 올바르지 않습니다.`);
+        throw Error(i18nText("musicxml.message401", { value1: i + 1 }));
       if (
         e.localName === "direction" &&
         e.querySelector("sound[tempo], metronome") &&
         cursor > 1e-8
       )
-        throw Error("마디 중간의 템포 변경은 현재 지원하지 않습니다.");
+        throw Error(i18nText("musicxml.message402"));
       if (e.localName === "backup") {
         cursor -= duration;
         if (cursor < -1e-8)
-          throw Error(`${i + 1}마디 성부 위치가 올바르지 않습니다.`);
+          throw Error(i18nText("musicxml.message403", { value1: i + 1 }));
         continue;
       }
       if (e.localName === "forward") {
@@ -172,9 +168,7 @@ export function parseMusicXML(
       }
     }
     if (maxBeat > 0 && Math.abs(maxBeat - beats) > 1e-6)
-      throw Error(
-        `${i + 1}마디 음가 합계가 박자표와 다릅니다. 못갖춘마디 또는 불완전한 마디를 확인하세요.`,
-      );
+      throw Error(i18nText("musicxml.message404", { value1: i + 1 }));
     const tempos = Array.from(m.querySelectorAll("sound[tempo]")).map((e) =>
       Number(e.getAttribute("tempo")),
     );
@@ -199,7 +193,7 @@ export function parseMusicXML(
     }
     const bpm = tempos[0];
     if (tempos.some((t) => !Number.isFinite(t) || t < 20 || t > 300))
-      throw Error("템포는 사분음표 기준 20~300 BPM 범위여야 합니다.");
+      throw Error(i18nText("musicxml.message405"));
     if (
       tempos.length > 1 ||
       Array.from(m.querySelectorAll("direction")).some(
@@ -208,7 +202,7 @@ export function parseMusicXML(
           Number(d.querySelector("offset")?.textContent || 0) !== 0,
       )
     )
-      throw Error("마디 중간의 템포 변경은 현재 지원하지 않습니다.");
+      throw Error(i18nText("musicxml.message402"));
     if (i === 0) initialBpm = bpm;
     return {
       label: m.getAttribute("number") || String(i + 1),
@@ -218,7 +212,7 @@ export function parseMusicXML(
     };
   });
   if (!measures.length || measures.length > 2000)
-    throw Error("1~2000마디의 악보를 가져와 주세요.");
+    throw Error(i18nText("musicxml.message406"));
   for (const p of partEls) if (p !== part) p.remove();
   if (list)
     for (const p of Array.from(list.children))
@@ -243,23 +237,22 @@ export function parseMusicXML(
   };
 }
 export async function readMusicXML(blob: Blob): Promise<string> {
-  if (blob.size > MAX_XML)
-    throw Error("MusicXML/MXL은 12MB 이하로 가져와 주세요.");
+  if (blob.size > MAX_XML) throw Error(i18nText("musicxml.message407"));
   const bytes = new Uint8Array(await blob.arrayBuffer());
   if (bytes[0] !== 0x50 || bytes[1] !== 0x4b)
     return new TextDecoder().decode(bytes);
   const zip = await JSZip.loadAsync(bytes);
   const container = zip.file("META-INF/container.xml");
-  if (!container) throw Error("MXL에 META-INF/container.xml이 없습니다.");
+  if (!container) throw Error(i18nText("musicxml.message408"));
   const meta = new DOMParser().parseFromString(
     await container.async("string"),
     "application/xml",
   );
   const path = meta.querySelector("rootfile")?.getAttribute("full-path");
   if (!path || path.includes("..") || path.startsWith("/"))
-    throw Error("MXL 악보 경로가 올바르지 않습니다.");
+    throw Error(i18nText("musicxml.message409"));
   const entry = zip.file(path);
-  if (!entry) throw Error("MXL의 악보 파일이 누락되었습니다.");
+  if (!entry) throw Error(i18nText("musicxml.message410"));
   // Stop decompression once the limit is reached instead of allocating an arbitrary ZIP payload.
   return new Promise((resolve, reject) => {
     let size = 0;
@@ -277,7 +270,7 @@ export async function readMusicXML(blob: Blob): Promise<string> {
       size += chunk.length;
       if (size > MAX_XML) {
         stream.pause();
-        reject(Error("압축 해제한 MusicXML이 12MB를 넘습니다."));
+        reject(Error(i18nText("musicxml.message411")));
       } else chunks.push(chunk);
     });
     stream.on("error", reject);
@@ -313,7 +306,7 @@ export async function renderMusicXML(
   partId?: string,
 ) {
   const parsed = parseMusicXML(await readMusicXML(blob), partId);
-  progress("MusicXML 악보를 그리는 중입니다.");
+  progress(i18nText("musicxml.message412"));
   const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
   const host = document.createElement("div");
   host.style.cssText =
@@ -343,44 +336,77 @@ export async function renderMusicXML(
     osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures = false;
     const renderDocument = parsed.document.cloneNode(true) as Document;
     // Suppress textual BPM labels only in the engraving copy; keep tempo data.
-    for (const words of renderDocument.querySelectorAll("direction-type > words")) {
-      if (/^\s*BPM\s*[:=]?\s*\d+(?:\.\d+)?\s*$/i.test(words.textContent || "")) words.remove();
+    for (const words of renderDocument.querySelectorAll(
+      "direction-type > words",
+    )) {
+      if (/^\s*BPM\s*[:=]?\s*\d+(?:\.\d+)?\s*$/i.test(words.textContent || ""))
+        words.remove();
     }
     const decorations = prepareDrumDecorations(renderDocument);
     await osmd.load(renderDocument);
     // MusicXML owns first-system spacing. OSMD 2.1.2 does not apply this
     // standard value to the system position, so translate tenths to its units.
-    const firstMeasure = renderDocument.querySelector('part > measure');
-    const topDistance = firstMeasure?.querySelector('print > system-layout > top-system-distance')
-      ?? renderDocument.querySelector('defaults > system-layout > top-system-distance');
+    const firstMeasure = renderDocument.querySelector("part > measure");
+    const topDistance =
+      firstMeasure?.querySelector(
+        "print > system-layout > top-system-distance",
+      ) ??
+      renderDocument.querySelector(
+        "defaults > system-layout > top-system-distance",
+      );
     const tenths = topDistance ? Number(topDistance.textContent) : NaN;
-    if (Number.isFinite(tenths) && tenths >= 0 && osmd.EngravingRules.RenderTitle) {
+    if (
+      Number.isFinite(tenths) &&
+      tenths >= 0 &&
+      osmd.EngravingRules.RenderTitle
+    ) {
       const rules = osmd.EngravingRules;
-      rules.TitleBottomDistance = Math.max(0, tenths / 10 - rules.TitleTopDistance - rules.SheetTitleHeight);
+      rules.TitleBottomDistance = Math.max(
+        0,
+        tenths / 10 - rules.TitleTopDistance - rules.SheetTitleHeight,
+      );
     }
     osmd.render();
     applyDrumDecorations(host, osmd, decorations);
     // This drum practice viewer omits percussion clef glyphs, including system
     // repeats. Keep source XML and all barline/repeat glyphs unchanged.
-    const clefSigns = Array.from(renderDocument.querySelectorAll("part > measure > attributes > clef > sign"));
-    if (clefSigns.length && clefSigns.every(sign => sign.textContent?.trim() === "percussion")) {
-      host.querySelectorAll(".vf-clef").forEach(clef => clef.remove());
+    const clefSigns = Array.from(
+      renderDocument.querySelectorAll(
+        "part > measure > attributes > clef > sign",
+      ),
+    );
+    if (
+      clefSigns.length &&
+      clefSigns.every((sign) => sign.textContent?.trim() === "percussion")
+    ) {
+      host.querySelectorAll(".vf-clef").forEach((clef) => clef.remove());
     }
     // VexFlow places rehearsal boxes differently at system starts. Normalize
     // their visible top edge to the practice viewport's seven-space headroom.
-    for (const text of host.querySelectorAll<SVGTextElement>(".vf-measure > text")) {
+    for (const text of host.querySelectorAll<SVGTextElement>(
+      ".vf-measure > text",
+    )) {
       let frame = text.previousElementSibling;
-      if (frame?.tagName === "path" && !frame.getAttribute("d")) frame = frame.previousElementSibling;
+      if (frame?.tagName === "path" && !frame.getAttribute("d"))
+        frame = frame.previousElementSibling;
       const staff = text.parentElement?.querySelector<SVGPathElement>("path");
-      if (frame?.tagName !== "rect" || frame.getAttribute("fill") !== "none" || !staff) continue;
+      if (
+        frame?.tagName !== "rect" ||
+        frame.getAttribute("fill") !== "none" ||
+        !staff
+      )
+        continue;
       const dy = staff.getBBox().y - 70 - Number(frame.getAttribute("y"));
       for (const element of [frame, text]) {
-        element.setAttribute("y", String(Number(element.getAttribute("y")) + dy));
+        element.setAttribute(
+          "y",
+          String(Number(element.getAttribute("y")) + dy),
+        );
         element.setAttribute("data-section-top", "safe");
       }
     }
     const svgs = Array.from(host.querySelectorAll("svg"));
-    if (!svgs.length) throw Error("MusicXML 악보를 그릴 수 없습니다.");
+    if (!svgs.length) throw Error(i18nText("musicxml.message413"));
     // OSMD 2.1.2 ignores filled="no" for normal short-note heads.
     // Select the specific chord member so neighboring snare/tom heads stay filled.
     for (const row of osmd.GraphicSheet.MeasureList)
@@ -402,8 +428,7 @@ export async function renderMusicXML(
                 getNoteheadSVGs(): HTMLElement[];
               };
               const glyph = vf.getNoteheadSVGs()[vf.vfnote[1]];
-              if (!glyph)
-                throw Error("빈 음표머리의 SVG 위치를 찾지 못했습니다.");
+              if (!glyph) throw Error(i18nText("musicxml.message414"));
               glyph.setAttribute("data-hollow-notehead", "true");
               for (const path of glyph.querySelectorAll("path")) {
                 path.setAttribute("fill", "white");
@@ -460,36 +485,75 @@ export async function renderMusicXML(
             glyph.setAttribute("data-full-measure-rest", "centered");
           }
       }
-    annotateNoteHighlights(osmd, parsed.measures.map(m => m.denominator));
+    annotateNoteHighlights(
+      osmd,
+      parsed.measures.map((m) => m.denominator),
+    );
     for (const svg of svgs) {
       svg.setAttribute("data-rest-layout", REST_LAYOUT_VERSION);
       svg.setAttribute("data-note-highlight", NOTE_HIGHLIGHT_VERSION);
     }
     // Retain titles in whole-score SVG, but identify them for practice-only removal.
-    const headings = new Set(Array.from(parsed.document.querySelectorAll("work-title, movement-title, credit-words")).map(e => e.textContent?.trim()).filter(Boolean));
-    for (const svg of svgs) for (const text of svg.querySelectorAll("text")) {
-      if (headings.has(text.textContent?.trim()) && !text.closest(".vf-measure")) text.setAttribute("data-score-heading", "true");
-    }
+    const headings = new Set(
+      Array.from(
+        parsed.document.querySelectorAll(
+          "work-title, movement-title, credit-words",
+        ),
+      )
+        .map((e) => e.textContent?.trim())
+        .filter(Boolean),
+    );
+    for (const svg of svgs)
+      for (const text of svg.querySelectorAll("text")) {
+        if (
+          headings.has(text.textContent?.trim()) &&
+          !text.closest(".vf-measure")
+        )
+          text.setAttribute("data-score-heading", "true");
+      }
     // Crop against actual system ink, not a fixed nine-space lower margin.
-    const systemBounds = svgs.map(svg => {
+    const systemBounds = svgs.map((svg) => {
       const rows = new Map<number, { top: number; bottom: number }>();
-      for (const measure of svg.querySelectorAll<SVGGraphicsElement>(".vf-measure")) {
-        const line = Array.from(measure.children).find(e => e.localName === "path" && /^M[\d. -]+L[\d. -]+$/.test(e.getAttribute("d") || ""));
-        const points = line?.getAttribute("d")?.match(/-?\d+(?:\.\d+)?/g)?.map(Number);
-        if (!points || points.length !== 4 || Math.abs(points[1] - points[3]) > .01) continue;
-        const key = Math.round(points[1] * 100), box = measure.getBBox(), previous = rows.get(key);
-        rows.set(key, { top: Math.min(previous?.top ?? Infinity, box.y), bottom: Math.max(previous?.bottom ?? -Infinity, box.y + box.height) });
+      for (const measure of svg.querySelectorAll<SVGGraphicsElement>(
+        ".vf-measure",
+      )) {
+        const line = Array.from(measure.children).find(
+          (e) =>
+            e.localName === "path" &&
+            /^M[\d. -]+L[\d. -]+$/.test(e.getAttribute("d") || ""),
+        );
+        const points = line
+          ?.getAttribute("d")
+          ?.match(/-?\d+(?:\.\d+)?/g)
+          ?.map(Number);
+        if (
+          !points ||
+          points.length !== 4 ||
+          Math.abs(points[1] - points[3]) > 0.01
+        )
+          continue;
+        const key = Math.round(points[1] * 100),
+          box = measure.getBBox(),
+          previous = rows.get(key);
+        rows.set(key, {
+          top: Math.min(previous?.top ?? Infinity, box.y),
+          bottom: Math.max(previous?.bottom ?? -Infinity, box.y + box.height),
+        });
       }
       return rows;
     });
     // Keep XML page/row boundaries; trim only the unused SVG canvas below ink.
     // Regions below are normalized against these final page dimensions.
     for (const svg of svgs) {
-      const ink = svg.getBBox(), view = svg.viewBox.baseVal;
+      const ink = svg.getBBox(),
+        view = svg.viewBox.baseVal;
       const bottom = Math.min(view.height, Math.ceil(ink.y + ink.height + 30));
       if (bottom > 0) {
-        svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.width} ${bottom}`);
-        svg.setAttribute('height', String(bottom));
+        svg.setAttribute(
+          "viewBox",
+          `${view.x} ${view.y} ${view.width} ${bottom}`,
+        );
+        svg.setAttribute("height", String(bottom));
       }
     }
     const pages = await Promise.all(
@@ -502,11 +566,11 @@ export async function renderMusicXML(
     const regions: Region[] = [];
     for (let i = 0; i < parsed.measures.length; i++) {
       const g = osmd.GraphicSheet.MeasureList[i]?.[0];
-      if (!g) throw Error(`${i + 1}마디의 악보 위치가 없습니다.`);
+      if (!g) throw Error(i18nText("musicxml.message415", { value1: i + 1 }));
       const page = g.ParentMusicSystem.Parent,
         pi = page.PageNumber - 1,
         svg = svgs[pi];
-      if (!svg) throw Error("악보 페이지 좌표를 찾지 못했습니다.");
+      if (!svg) throw Error(i18nText("musicxml.message416"));
       const box = g.PositionAndShape,
         p = box.AbsolutePosition,
         pp = page.PositionAndShape.AbsolutePosition;
@@ -514,7 +578,7 @@ export async function renderMusicXML(
       const width = svg.viewBox.baseVal.width,
         height = svg.viewBox.baseVal.height;
       if (!(width > 0 && height > 0))
-        throw Error("SVG 페이지 크기가 올바르지 않습니다.");
+        throw Error(i18nText("musicxml.message417"));
       const sx = 1,
         sy = 1;
       const x = Math.max(0, (p.x - pp.x + box.BorderLeft) * 10 * sx),
@@ -525,8 +589,7 @@ export async function renderMusicXML(
         bottom = Math.min(height, bounds ? bounds.bottom + 5 : staffY + 95);
       const w = right - x,
         h = bottom - y;
-      if (w <= 0 || h <= 0)
-        throw Error("MusicXML 마디 영역이 올바르지 않습니다.");
+      if (w <= 0 || h <= 0) throw Error(i18nText("musicxml.message418"));
       const meta = parsed.measures[i];
       const entries = g.staffEntries
         .map((e) => ({
@@ -555,7 +618,7 @@ export async function renderMusicXML(
             (j > 0 && v <= beatXs[j - 1]),
         )
       )
-        throw Error(`${i + 1}마디의 진행 위치를 계산할 수 없습니다.`);
+        throw Error(i18nText("musicxml.message419", { value1: i + 1 }));
       regions.push({
         id: `xml-r${i + 1}`,
         page: pi,

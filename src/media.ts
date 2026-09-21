@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 export interface MediaIdentity {
   pdf: string;
   audio: string;
@@ -26,10 +27,8 @@ export async function verifyMedia(
       (v) => typeof v === "string" && /^[a-f0-9]{64}$/.test(v),
     )
   )
-    throw Error("백업의 원본 파일 확인 정보가 올바르지 않습니다.");
+    throw Error(i18nText("media.message379"));
   const actual = await mediaIdentity(pdf, audio);
   if (actual.pdf !== expected.pdf || actual.audio !== expected.audio)
-    throw Error(
-      "백업에 사용한 원본 악보·음원과 다릅니다. 같은 파일을 선택하세요.",
-    );
+    throw Error(i18nText("media.message380"));
 }

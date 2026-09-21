@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 import type { Song, Lyric } from "./model";
 import type { RecordData } from "./storage";
 import { migrateLyricPositions, projectLyrics } from "./lyric-score";
@@ -8,13 +9,13 @@ const kids = (e: Element, name: string) =>
   Array.from(e.children).filter((c) => c.localName === name);
 const child = (e: Element, name: string) => kids(e, name)[0];
 function parse(text: string) {
-  if (/<!ENTITY/i.test(text)) throw Error("XML 엔터티는 지원하지 않습니다.");
+  if (/<!ENTITY/i.test(text)) throw Error(i18nText("canonical-xml.message011"));
   const d = new DOMParser().parseFromString(text, "application/xml");
   if (
     d.querySelector("parsererror") ||
     d.documentElement.localName !== "score-partwise"
   )
-    throw Error("올바른 MusicXML 악보가 아닙니다.");
+    throw Error(i18nText("canonical-xml.message012"));
   return d;
 }
 function add(
@@ -94,10 +95,24 @@ export function writeCanonical(
     ),
     root = d.documentElement,
     old = manifest(d);
-  const priorBpm=Number(kids(root,'part').find(p=>p.id===old?.partId)?.querySelector('sound[tempo]')?.getAttribute('tempo'));
-  if(priorBpm>0 && priorBpm!==s.bpm){
-    for(const e of Array.from(root.querySelectorAll('sound[tempo]'))) e.setAttribute('tempo',String(Number(e.getAttribute('tempo'))*s.bpm/priorBpm));
-    for(const e of Array.from(root.querySelectorAll('metronome > per-minute'))){const n=Number(e.textContent);if(n>0)e.textContent=String(n*s.bpm/priorBpm);}
+  const priorBpm = Number(
+    kids(root, "part")
+      .find((p) => p.id === old?.partId)
+      ?.querySelector("sound[tempo]")
+      ?.getAttribute("tempo"),
+  );
+  if (priorBpm > 0 && priorBpm !== s.bpm) {
+    for (const e of Array.from(root.querySelectorAll("sound[tempo]")))
+      e.setAttribute(
+        "tempo",
+        String((Number(e.getAttribute("tempo")) * s.bpm) / priorBpm),
+      );
+    for (const e of Array.from(
+      root.querySelectorAll("metronome > per-minute"),
+    )) {
+      const n = Number(e.textContent);
+      if (n > 0) e.textContent = String((n * s.bpm) / priorBpm);
+    }
   }
   const work =
     child(root, "work") ||
@@ -131,17 +146,24 @@ export function writeCanonical(
     }
   }
   const misc = child(ident, "miscellaneous") || add(ident, "miscellaneous");
-  for (const name of [FIELD, "drum-practice:display-title", "drum-practice:lyric-text"])
+  for (const name of [
+    FIELD,
+    "drum-practice:display-title",
+    "drum-practice:lyric-text",
+  ])
     kids(misc, "miscellaneous-field")
       .filter((e) => e.getAttribute("name") === name)
       .forEach((e) => e.remove());
   add(misc, "miscellaneous-field", s.title, {
     name: "drum-practice:display-title",
   });
-  if(s.lyricText) add(misc,"miscellaneous-field",s.lyricText,{name:"drum-practice:lyric-text"});
+  if (s.lyricText)
+    add(misc, "miscellaneous-field", s.lyricText, {
+      name: "drum-practice:lyric-text",
+    });
   const partList = child(root, "part-list") || add(root, "part-list");
   if (!old && kids(root, "part").some((p) => p.id === PART))
-    throw Error("가사 파트 ID가 기존 악보와 충돌합니다.");
+    throw Error(i18nText("canonical-xml.message013"));
   kids(root, "part")
     .filter((p) => p.id === (old?.partId || PART))
     .forEach((p) => p.remove());
@@ -149,7 +171,7 @@ export function writeCanonical(
     .filter((p) => p.id === (old?.partId || PART))
     .forEach((p) => p.remove());
   const sp = add(partList, "score-part", undefined, { id: PART });
-  add(sp, "part-name", "가사 리듬");
+  add(sp, "part-name", i18nText("canonical-xml.message014"));
   const part = add(root, "part", undefined, { id: PART });
   const offsets: number[] = [];
   let total = 0;
@@ -167,7 +189,8 @@ export function writeCanonical(
       end: Math.min(total, offsets[mi] + p.quarterOffset + p.durationQuarters),
     };
   });
-  if(rows.some(r=>r.start>=total || r.end<=r.start))throw Error('곡 끝을 넘는 가사 위치가 있습니다. 마지막 마디의 가사 위치를 확인하세요.');
+  if (rows.some((r) => r.start >= total || r.end <= r.start))
+    throw Error(i18nText("canonical-xml.message015"));
   for (let i = 0; i < s.measures.length; i++) {
     const sm = s.measures[i],
       len = (sm.beats * 4) / sm.denominator,
@@ -254,16 +277,19 @@ export function writeCanonical(
   return new XMLSerializer().serializeToString(d);
 }
 export function readCanonical(text: string, s: Song): void {
-  s.lyricText=Array.from(parse(text).querySelectorAll("miscellaneous-field")).find(e=>e.getAttribute("name")==="drum-practice:lyric-text")?.textContent || undefined;
+  s.lyricText =
+    Array.from(parse(text).querySelectorAll("miscellaneous-field")).find(
+      (e) => e.getAttribute("name") === "drum-practice:lyric-text",
+    )?.textContent || undefined;
   const d = parse(text),
     data = manifest(d);
   if (!data || data.version !== 1)
-    throw Error("앱의 MusicXML 연결 정보가 없습니다.");
+    throw Error(i18nText("canonical-xml.message016"));
   if (
     data.measures.length !== s.measures.length ||
     data.measures.some((m, i) => m.id !== s.measures[i].id)
   )
-    throw Error("MusicXML과 저장된 악보의 마디 구성이 다릅니다.");
+    throw Error(i18nText("canonical-xml.message017"));
   Object.assign(s, metadataFromXML(text));
   data.measures.forEach((m, i) =>
     Object.assign(s.measures[i], {
@@ -277,7 +303,7 @@ export function readCanonical(text: string, s: Song): void {
   const part = kids(d.documentElement, "part").find(
     (p) => p.id === data.partId,
   );
-  if (!part) throw Error("가사 리듬 성부가 없습니다.");
+  if (!part) throw Error(i18nText("canonical-xml.message018"));
   const bpm = Number(part.querySelector("sound[tempo]")?.getAttribute("tempo"));
   if (bpm > 0) s.bpm = bpm;
   s.firstBeat = s.measures[0]?.start ?? s.firstBeat;
@@ -308,7 +334,7 @@ export function readCanonical(text: string, s: Song): void {
             .join("");
       if (lyric && kids(lyric, "text").length) {
         const meta = data.lyrics.find((l) => l.voice === voice);
-        if (!meta) throw Error("가사 식별 정보가 누락되었습니다.");
+        if (!meta) throw Error(i18nText("canonical-xml.message019"));
         lyrics.set(voice, {
           id: meta.id,
           text: value || "",
@@ -341,7 +367,12 @@ export async function ensureCanonical(record: RecordData) {
   if (xml) {
     base = await (await import("./musicxml")).readMusicXML(xml);
     const meta = metadataFromXML(base);
-    for (const key of ["originalTitle", "composer", "lyricist", "artist"] as const)
+    for (const key of [
+      "originalTitle",
+      "composer",
+      "lyricist",
+      "artist",
+    ] as const)
       record.song[key] ||= meta[key];
   }
   record.canonicalXML = writeCanonical(
@@ -373,9 +404,7 @@ export async function verifyCanonicalAudio(record: RecordData) {
   const expected =
     record.canonicalXML && manifest(parse(record.canonicalXML))?.audioSHA256;
   if (expected && expected !== (await audioHash(record.audio)))
-    throw Error(
-      "MusicXML의 음원 연결 정보와 현재 음원이 다릅니다. 원래 음원으로 다시 연결하세요.",
-    );
+    throw Error(i18nText("canonical-xml.message020"));
 }
 export function vocalLyrics(
   s: Song,
@@ -389,11 +418,8 @@ export function vocalLyrics(
         m.denominator !== s.measures[i].denominator,
     )
   )
-    throw Error(
-      "보컬 악보의 마디 수·박자표가 현재 곡과 다릅니다. 전주와 반복 순서를 맞춰 주세요.",
-    );
-  if (!parsed.lyrics.length)
-    throw Error("선택한 보컬 파트에 음표와 연결된 가사가 없습니다.");
+    throw Error(i18nText("canonical-xml.message021"));
+  if (!parsed.lyrics.length) throw Error(i18nText("canonical-xml.message022"));
   return parsed.lyrics.map((l, i) => ({
     id: crypto.randomUUID(),
     text: l.text,
@@ -424,7 +450,7 @@ export function withVocalSource(base: string, source: Document) {
     ?.remove();
   const part = source.querySelector("score-partwise > part"),
     sp = source.querySelector("part-list > score-part");
-  if (!part || !sp) throw Error("보컬 악보 파트를 찾을 수 없습니다.");
+  if (!part || !sp) throw Error(i18nText("canonical-xml.message023"));
   const cp = d.importNode(part, true),
     cs = d.importNode(sp, true);
   cp.id = cs.id = "DrumPracticeVocalSource"; // Avoid source note IDs colliding with existing drum notation.
@@ -448,7 +474,7 @@ export function importedCanonical(text: string, s: Song): string | undefined {
         m.denominator !== s.measures[i].denominator,
     )
   )
-    throw Error("MusicXML의 악보와 연결 정보가 일치하지 않습니다.");
+    throw Error(i18nText("canonical-xml.message024"));
   s.measures.forEach((m, i) => {
     m.id = data.measures[i].id;
   });

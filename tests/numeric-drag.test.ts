@@ -249,3 +249,31 @@ describe('numeric drag inputs', () => {
     expect(input('3').dataset.numericDragBound).toBeUndefined();
   });
 });
+
+describe('meter controls', () => {
+  it('uses supported denominators for drag, wheel and arrow keys', () => {
+    const field = input('4');
+    cleanups.push(bindNumericDrag(field, { allowedValues: [2,4,8,16], wheel: true }));
+    pointer(field, 'pointerdown', 100, 100);
+    pointer(window, 'pointermove', 108, 100);
+    pointer(window, 'pointerup', 108, 100);
+    expect(field.value).toBe('8');
+    field.dispatchEvent(new WheelEvent('wheel', {deltaY: -30, cancelable:true}));
+    expect(field.value).toBe('16');
+    field.dispatchEvent(new KeyboardEvent('keydown', {key:'ArrowRight'}));
+    expect(field.value).toBe('16');
+    field.dispatchEvent(new KeyboardEvent('keydown', {key:'ArrowLeft'}));
+    expect(field.value).toBe('8');
+  });
+  it('keeps zoom gestures and disabled fields unchanged', () => {
+    const field = input('4', {min:'1', max:'16'});
+    cleanups.push(bindNumericDrag(field, {wheel:true}));
+    const zoom = new WheelEvent('wheel', {deltaY:-10, ctrlKey:true, cancelable:true});
+    field.dispatchEvent(zoom);
+    expect(zoom.defaultPrevented).toBe(false);
+    expect(field.value).toBe('4');
+    field.disabled = true;
+    field.dispatchEvent(new WheelEvent('wheel', {deltaY:-10}));
+    expect(field.value).toBe('4');
+  });
+});

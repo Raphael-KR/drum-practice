@@ -1,0 +1,937 @@
+{
+  "version": 1,
+  "defaultLocale": "ko",
+  "components": [
+    {
+      "id": "header",
+      "parent": "",
+      "role": "banner",
+      "selectors": {
+        "web": "header",
+        "portable": "header"
+      },
+      "name": {
+        "ko": "component.header.name",
+        "en": "Header"
+      },
+      "accessible": {
+        "ko": "component.header.accessible",
+        "en": "Header"
+      }
+    },
+    {
+      "id": "score",
+      "parent": "",
+      "role": "region",
+      "selectors": {
+        "web": "#stage",
+        "portable": "#stage"
+      },
+      "name": {
+        "ko": "component.score.name",
+        "en": "Score"
+      },
+      "accessible": {
+        "ko": "component.score.accessible",
+        "en": "Score"
+      }
+    },
+    {
+      "id": "playback",
+      "parent": "",
+      "role": "region",
+      "selectors": {
+        "web": ".playback-group",
+        "portable": ".playback-group"
+      },
+      "name": {
+        "ko": "component.playback.name",
+        "en": "Playback controls"
+      },
+      "accessible": {
+        "ko": "component.playback.accessible",
+        "en": "Playback controls"
+      }
+    },
+    {
+      "id": "playback.primary",
+      "parent": "playback",
+      "role": "group",
+      "selectors": {
+        "web": ".transport",
+        "portable": ".transport"
+      },
+      "name": {
+        "ko": "component.playback.primary.name",
+        "en": "Playback and position"
+      },
+      "accessible": {
+        "ko": "component.playback.primary.accessible",
+        "en": "Playback and position"
+      }
+    },
+    {
+      "id": "playback.secondary",
+      "parent": "playback",
+      "role": "group",
+      "selectors": {
+        "web": "#repeat-controls",
+        "portable": ".repeat-controls"
+      },
+      "name": {
+        "ko": "component.playback.secondary.name",
+        "en": "Loop and markers"
+      },
+      "accessible": {
+        "ko": "component.playback.secondary.accessible",
+        "en": "Loop and markers"
+      }
+    },
+    {
+      "id": "footer",
+      "parent": "",
+      "role": "",
+      "selectors": {
+        "web": "#score-gesture-hint",
+        "portable": "#status"
+      },
+      "name": {
+        "ko": "component.footer.name",
+        "en": "Help and status"
+      },
+      "accessible": {
+        "ko": "component.footer.accessible",
+        "en": "Help and status"
+      }
+    },
+    {
+      "id": "settings",
+      "parent": "header",
+      "role": "",
+      "selectors": {
+        "web": "#open-settings-dialog",
+        "portable": "#settings"
+      },
+      "name": {
+        "ko": "component.settings.name",
+        "en": "Settings"
+      },
+      "accessible": {
+        "ko": "component.settings.accessible",
+        "en": "Settings"
+      }
+    },
+    {
+      "id": "library",
+      "parent": "header",
+      "role": "",
+      "selectors": {
+        "web": "#library-button",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.library.name",
+        "en": "Score library"
+      },
+      "accessible": {
+        "ko": "component.library.accessible",
+        "en": "Score library"
+      }
+    },
+    {
+      "id": "tempo",
+      "parent": "header",
+      "role": "",
+      "selectors": {
+        "web": "#original-tempo",
+        "portable": "#bpm"
+      },
+      "name": {
+        "ko": "component.tempo.name",
+        "en": "Practice BPM"
+      },
+      "accessible": {
+        "ko": "component.tempo.accessible",
+        "en": "Practice BPM"
+      }
+    },
+    {
+      "id": "metronome",
+      "parent": "header",
+      "role": "",
+      "selectors": {
+        "web": "#click",
+        "portable": "#click"
+      },
+      "name": {
+        "ko": "component.metronome.name",
+        "en": "Metronome"
+      },
+      "accessible": {
+        "ko": "component.metronome.accessible",
+        "en": "Metronome"
+      }
+    },
+    {
+      "id": "fullscreen",
+      "parent": "header",
+      "role": "",
+      "selectors": {
+        "web": "#header-fullscreen",
+        "portable": "#header-fullscreen"
+      },
+      "name": {
+        "ko": "component.fullscreen.name",
+        "en": "Fullscreen"
+      },
+      "accessible": {
+        "ko": "component.fullscreen.accessible",
+        "en": "Fullscreen"
+      }
+    },
+    {
+      "id": "reload",
+      "parent": "header",
+      "role": "",
+      "selectors": {
+        "web": "#header-reload",
+        "portable": "#header-reload"
+      },
+      "name": {
+        "ko": "component.reload.name",
+        "en": "Reload"
+      },
+      "accessible": {
+        "ko": "component.reload.accessible",
+        "en": "Reload"
+      }
+    },
+    {
+      "id": "home",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#home",
+        "portable": "#home"
+      },
+      "name": {
+        "ko": "component.home.name",
+        "en": "Go to beginning"
+      },
+      "accessible": {
+        "ko": "component.home.accessible",
+        "en": "Go to beginning"
+      }
+    },
+    {
+      "id": "play",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#play",
+        "portable": "#play"
+      },
+      "name": {
+        "ko": "component.play.name",
+        "en": "Play"
+      },
+      "accessible": {
+        "ko": "component.play.accessible",
+        "en": "Play"
+      }
+    },
+    {
+      "id": "rewind",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#jump",
+        "portable": "#rewind"
+      },
+      "name": {
+        "ko": "component.rewind.name",
+        "en": "Rewind selected measures"
+      },
+      "accessible": {
+        "ko": "component.rewind.accessible",
+        "en": "Rewind selected measures"
+      }
+    },
+    {
+      "id": "rewindCount",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#goto",
+        "portable": "#rewind-bars"
+      },
+      "name": {
+        "ko": "component.rewindCount.name",
+        "en": "Measures to rewind"
+      },
+      "accessible": {
+        "ko": "component.rewindCount.accessible",
+        "en": "Measures to rewind"
+      }
+    },
+    {
+      "id": "position",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#copy-position",
+        "portable": "#position"
+      },
+      "name": {
+        "ko": "component.position.name",
+        "en": "Copy current measure and position"
+      },
+      "accessible": {
+        "ko": "component.position.accessible",
+        "en": "Copy current measure and position"
+      }
+    },
+    {
+      "id": "progress",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#progress-percent",
+        "portable": "#percent"
+      },
+      "name": {
+        "ko": "component.progress.name",
+        "en": "Song progress"
+      },
+      "accessible": {
+        "ko": "component.progress.accessible",
+        "en": "Song progress"
+      }
+    },
+    {
+      "id": "mark",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#open-marker-dialog",
+        "portable": "#mark"
+      },
+      "name": {
+        "ko": "component.mark.name",
+        "en": "Mark current measure"
+      },
+      "accessible": {
+        "ko": "component.mark.accessible",
+        "en": "Mark current measure"
+      }
+    },
+    {
+      "id": "sound",
+      "parent": "playback.primary",
+      "role": "",
+      "selectors": {
+        "web": "#open-sound-dialog",
+        "portable": "#sound"
+      },
+      "name": {
+        "ko": "component.sound.name",
+        "en": "Sound"
+      },
+      "accessible": {
+        "ko": "component.sound.accessible",
+        "en": "Sound"
+      }
+    },
+    {
+      "id": "loop",
+      "parent": "playback.secondary",
+      "role": "",
+      "selectors": {
+        "web": "#open-loop-dialog",
+        "portable": "#adjust"
+      },
+      "name": {
+        "ko": "component.loop.name",
+        "en": "Adjust loop"
+      },
+      "accessible": {
+        "ko": "component.loop.accessible",
+        "en": "Adjust loop"
+      }
+    },
+    {
+      "id": "recenter",
+      "parent": "playback.secondary",
+      "role": "",
+      "selectors": {
+        "web": "#recenter-loop",
+        "portable": "#recenter-loop"
+      },
+      "name": {
+        "ko": "component.recenter.name",
+        "en": "Center on current measure"
+      },
+      "accessible": {
+        "ko": "component.recenter.accessible",
+        "en": "Center on current measure"
+      }
+    },
+    {
+      "id": "loopOff",
+      "parent": "playback.secondary",
+      "role": "",
+      "selectors": {
+        "web": "#quick-stop-loop",
+        "portable": "#loop-off"
+      },
+      "name": {
+        "ko": "component.loopOff.name",
+        "en": "Turn loop off"
+      },
+      "accessible": {
+        "ko": "component.loopOff.accessible",
+        "en": "Turn loop off"
+      }
+    },
+    {
+      "id": "markers",
+      "parent": "playback.secondary",
+      "role": "",
+      "selectors": {
+        "web": "#quick-markers",
+        "portable": "#markers"
+      },
+      "name": {
+        "ko": "component.markers.name",
+        "en": "Three recent markers"
+      },
+      "accessible": {
+        "ko": "component.markers.accessible",
+        "en": "Three recent markers"
+      }
+    },
+    {
+      "id": "view",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#view",
+        "portable": "#view"
+      },
+      "name": {
+        "ko": "component.view.name",
+        "en": "Score layout"
+      },
+      "accessible": {
+        "ko": "component.view.accessible",
+        "en": "Score layout"
+      }
+    },
+    {
+      "id": "zoom",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#zoom",
+        "portable": "#zoom"
+      },
+      "name": {
+        "ko": "component.zoom.name",
+        "en": "Score size"
+      },
+      "accessible": {
+        "ko": "component.zoom.accessible",
+        "en": "Score size"
+      }
+    },
+    {
+      "id": "loopStart",
+      "parent": "loop",
+      "role": "",
+      "selectors": {
+        "web": "#loop-a",
+        "portable": "#loop-a"
+      },
+      "name": {
+        "ko": "component.loopStart.name",
+        "en": "Loop start measure"
+      },
+      "accessible": {
+        "ko": "component.loopStart.accessible",
+        "en": "Loop start measure"
+      }
+    },
+    {
+      "id": "loopEnd",
+      "parent": "loop",
+      "role": "",
+      "selectors": {
+        "web": "#loop-b",
+        "portable": "#loop-b"
+      },
+      "name": {
+        "ko": "component.loopEnd.name",
+        "en": "Loop end measure"
+      },
+      "accessible": {
+        "ko": "component.loopEnd.accessible",
+        "en": "Loop end measure"
+      }
+    },
+    {
+      "id": "loopStartBeat",
+      "parent": "loop",
+      "role": "",
+      "selectors": {
+        "web": "#loop-ab",
+        "portable": "#loop-ab"
+      },
+      "name": {
+        "ko": "component.loopStartBeat.name",
+        "en": "Loop start beat"
+      },
+      "accessible": {
+        "ko": "component.loopStartBeat.accessible",
+        "en": "Loop start beat"
+      }
+    },
+    {
+      "id": "loopEndBeat",
+      "parent": "loop",
+      "role": "",
+      "selectors": {
+        "web": "#loop-bb",
+        "portable": "#loop-bb"
+      },
+      "name": {
+        "ko": "component.loopEndBeat.name",
+        "en": "Loop end boundary beat"
+      },
+      "accessible": {
+        "ko": "component.loopEndBeat.accessible",
+        "en": "Loop end boundary beat"
+      }
+    },
+    {
+      "id": "musicVolume",
+      "parent": "sound",
+      "role": "",
+      "selectors": {
+        "web": "#music-volume",
+        "portable": "#music-volume"
+      },
+      "name": {
+        "ko": "component.musicVolume.name",
+        "en": "Music volume"
+      },
+      "accessible": {
+        "ko": "component.musicVolume.accessible",
+        "en": "Music volume"
+      }
+    },
+    {
+      "id": "clickVolume",
+      "parent": "sound",
+      "role": "",
+      "selectors": {
+        "web": "#click-volume",
+        "portable": "#click-volume"
+      },
+      "name": {
+        "ko": "component.clickVolume.name",
+        "en": "Metronome volume"
+      },
+      "accessible": {
+        "ko": "component.clickVolume.accessible",
+        "en": "Metronome volume"
+      }
+    },
+    {
+      "id": "tempoValue",
+      "parent": "tempo",
+      "role": "",
+      "selectors": {
+        "web": "#rate",
+        "portable": "#tempo"
+      },
+      "name": {
+        "ko": "component.tempoValue.name",
+        "en": "Practice BPM"
+      },
+      "accessible": {
+        "ko": "component.tempoValue.accessible",
+        "en": "Practice BPM"
+      }
+    },
+    {
+      "id": "close",
+      "parent": "",
+      "role": "",
+      "selectors": {
+        "web": "[data-close]",
+        "portable": "button[id$=\"-close\"]"
+      },
+      "name": {
+        "ko": "component.close.name",
+        "en": "Close"
+      },
+      "accessible": {
+        "ko": "component.close.accessible",
+        "en": "Close"
+      }
+    },
+    {
+      "id": "pdf",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#prefer-pdf",
+        "portable": "#pdf-view"
+      },
+      "name": {
+        "ko": "component.pdf.name",
+        "en": "Use PDF score"
+      },
+      "accessible": {
+        "ko": "component.pdf.accessible",
+        "en": "Use PDF score"
+      }
+    },
+    {
+      "id": "highlight",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#note-highlight",
+        "portable": "#highlight"
+      },
+      "name": {
+        "ko": "component.highlight.name",
+        "en": "Follow notes"
+      },
+      "accessible": {
+        "ko": "component.highlight.accessible",
+        "en": "Follow notes"
+      }
+    },
+    {
+      "id": "autoFullscreen",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#auto-fullscreen",
+        "portable": "#fullscreen"
+      },
+      "name": {
+        "ko": "component.autoFullscreen.name",
+        "en": "Open scores fullscreen"
+      },
+      "accessible": {
+        "ko": "component.autoFullscreen.accessible",
+        "en": "Open scores fullscreen"
+      }
+    },
+    {
+      "id": "restart",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#restart-measure",
+        "portable": "#restart"
+      },
+      "name": {
+        "ko": "component.restart.name",
+        "en": "Resume from measure start"
+      },
+      "accessible": {
+        "ko": "component.restart.accessible",
+        "en": "Resume from measure start"
+      }
+    },
+    {
+      "id": "countoff",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#count-off",
+        "portable": "#countoff"
+      },
+      "name": {
+        "ko": "component.countoff.name",
+        "en": "Count-off"
+      },
+      "accessible": {
+        "ko": "component.countoff.accessible",
+        "en": "Count-off"
+      }
+    },
+    {
+      "id": "settings.screen",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#open-screen-dialog",
+        "portable": "[data-menu=\"screen\"]"
+      },
+      "name": {
+        "ko": "component.settings.screen.name",
+        "en": "Display"
+      },
+      "accessible": {
+        "ko": "component.settings.screen.accessible",
+        "en": "Display"
+      }
+    },
+    {
+      "id": "settings.playback",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#open-playback-settings",
+        "portable": "[data-menu=\"playback\"]"
+      },
+      "name": {
+        "ko": "component.settings.playback.name",
+        "en": "Playback"
+      },
+      "accessible": {
+        "ko": "component.settings.playback.accessible",
+        "en": "Playback"
+      }
+    },
+    {
+      "id": "settings.score",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#open-score-settings",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.settings.score.name",
+        "en": "Score management"
+      },
+      "accessible": {
+        "ko": "component.settings.score.accessible",
+        "en": "Score management"
+      }
+    },
+    {
+      "id": "settings.info",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#open-info-settings",
+        "portable": "[data-menu=\"info\"]"
+      },
+      "name": {
+        "ko": "component.settings.info.name",
+        "en": "About"
+      },
+      "accessible": {
+        "ko": "component.settings.info.accessible",
+        "en": "About"
+      }
+    },
+    {
+      "id": "manage.edit",
+      "parent": "settings.score",
+      "role": "",
+      "selectors": {
+        "web": "#manage-edit",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.manage.edit.name",
+        "en": "Edit"
+      },
+      "accessible": {
+        "ko": "component.manage.edit.accessible",
+        "en": "Edit"
+      }
+    },
+    {
+      "id": "manage.files",
+      "parent": "settings.score",
+      "role": "",
+      "selectors": {
+        "web": "#manage-files",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.manage.files.name",
+        "en": "Files"
+      },
+      "accessible": {
+        "ko": "component.manage.files.accessible",
+        "en": "Files"
+      }
+    },
+    {
+      "id": "file.xml",
+      "parent": "manage.files",
+      "role": "",
+      "selectors": {
+        "web": "#file-xml",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.file.xml.name",
+        "en": "MusicXML"
+      },
+      "accessible": {
+        "ko": "component.file.xml.accessible",
+        "en": "MusicXML"
+      }
+    },
+    {
+      "id": "file.pdf",
+      "parent": "manage.files",
+      "role": "",
+      "selectors": {
+        "web": "#file-pdf",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.file.pdf.name",
+        "en": "Original PDF score"
+      },
+      "accessible": {
+        "ko": "component.file.pdf.accessible",
+        "en": "Original PDF score"
+      }
+    },
+    {
+      "id": "file.lyrics",
+      "parent": "manage.files",
+      "role": "",
+      "selectors": {
+        "web": "#file-lyrics",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.file.lyrics.name",
+        "en": "Upload lyrics"
+      },
+      "accessible": {
+        "ko": "component.file.lyrics.accessible",
+        "en": "Upload lyrics"
+      }
+    },
+    {
+      "id": "file.audio",
+      "parent": "manage.files",
+      "role": "",
+      "selectors": {
+        "web": "#file-audio",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.file.audio.name",
+        "en": "Original audio"
+      },
+      "accessible": {
+        "ko": "component.file.audio.accessible",
+        "en": "Original audio"
+      }
+    },
+    {
+      "id": "file.export",
+      "parent": "manage.files",
+      "role": "",
+      "selectors": {
+        "web": "#file-export",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.file.export.name",
+        "en": "Export"
+      },
+      "accessible": {
+        "ko": "component.file.export.accessible",
+        "en": "Export"
+      }
+    },
+    {
+      "id": "export.selected",
+      "parent": "file.export",
+      "role": "",
+      "selectors": {
+        "web": "#export-selected",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.export.selected.name",
+        "en": "Export selected files"
+      },
+      "accessible": {
+        "ko": "component.export.selected.accessible",
+        "en": "Export selected files"
+      }
+    },
+    {
+      "id": "lyrics.all",
+      "parent": "settings.score",
+      "role": "",
+      "selectors": {
+        "web": "#full-lyrics-dialog",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.lyrics.all.name",
+        "en": "All lyrics"
+      },
+      "accessible": {
+        "ko": "component.lyrics.all.accessible",
+        "en": "All lyrics"
+      }
+    },
+    {
+      "id": "score.pdf",
+      "parent": "settings.score",
+      "role": "",
+      "selectors": {
+        "web": "#original-button",
+        "portable": ""
+      },
+      "name": {
+        "ko": "component.score.pdf.name",
+        "en": "Full PDF score"
+      },
+      "accessible": {
+        "ko": "component.score.pdf.accessible",
+        "en": "Full PDF score"
+      }
+    }
+  ],
+  "messages": {
+    "play": {
+      "ko": "common.play",
+      "en": "Play"
+    },
+    "pause": {
+      "ko": "common.pause",
+      "en": "Pause"
+    },
+    "fullscreen": {
+      "ko": "common.fullscreen",
+      "en": "Fullscreen"
+    },
+    "exitFullscreen": {
+      "ko": "common.exitFullscreen",
+      "en": "Exit fullscreen"
+    },
+    "reload": {
+      "ko": "common.reload",
+      "en": "Reload"
+    },
+    "close": {
+      "ko": "common.close",
+      "en": "Close"
+    },
+    "scoreHelp": {
+      "ko": "common.scoreHelp",
+      "en": "Tap while playing to pause. Tap while paused to select a measure; double-tap to play from it. Scroll horizontally in one-line view; vertically in paused two-line view."
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 import { matchBundledPDFLayout } from "./score-system-layout";
 import { NOTE_HIGHLIGHT_VERSION } from "./note-highlight";
 import { normalizeBundledDrumNotation } from "./drum-notation";
@@ -11,7 +12,7 @@ export function correctMeasureFiveRests(text: string): {
 } {
   const d = new DOMParser().parseFromString(text, "application/xml");
   if (d.querySelector("parsererror"))
-    throw Error("MusicXML을 읽을 수 없습니다.");
+    throw Error(i18nText("score-rest-correction.message528"));
   const m = d.querySelector('part[id="P1"] > measure[number="5"]');
   if (!m) return { text, changed: false };
   const notes = Array.from(m.children).filter((n) => n.tagName === "note");
@@ -68,7 +69,7 @@ export function fixAllDrumRestPositions(text: string): {
 } {
   const d = new DOMParser().parseFromString(text, "application/xml");
   if (d.querySelector("parsererror"))
-    throw Error("MusicXML을 읽을 수 없습니다.");
+    throw Error(i18nText("score-rest-correction.message528"));
   const part = d.querySelector('part[id="P1"]');
   const counts = { cymbal: 0, drum: 0, kick: 0, fullBar: 0 };
   let changed = false;
@@ -108,8 +109,14 @@ export function fixAllDrumRestPositions(text: string): {
         else if (middleBars.has(number)) lane = "drum";
         else if (number === 84 || number === 108)
           lane = voiceOneRest === 1 ? "cymbal" : "drum";
-        else throw Error(`${number}마디 쉼표의 악기 그룹을 확인해야 합니다.`);
-      } else throw Error(`${number}마디의 알 수 없는 쉼표 성부입니다.`);
+        else
+          throw Error(
+            i18nText("score-rest-correction.message529", { number: number }),
+          );
+      } else
+        throw Error(
+          i18nText("score-rest-correction.message530", { number: number }),
+        );
       counts[lane]++;
       const [step, octave] =
         lane === "cymbal"
@@ -204,7 +211,7 @@ export function refreshedRegions(
     previous.length !== generated.length ||
     previous.some((r, i) => r.id !== generated[i].id)
   )
-    throw Error("SVG 마디 영역 구성이 달라 갱신을 중단했습니다.");
+    throw Error(i18nText("score-rest-correction.message531"));
   return generated.map((r) => ({ ...r }));
 }
 

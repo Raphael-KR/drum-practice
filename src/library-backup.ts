@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 import JSZip from "jszip";
 import { packSong, unpackSong, type PortableSong } from "./portable";
 import { validateSong } from "./model";
@@ -39,30 +40,31 @@ export async function exportLibrary(
 export async function importLibrary(bytes: ArrayBuffer) {
   const zip = await JSZip.loadAsync(bytes),
     file = zip.file("library.json");
-  if (!file) throw Error("전체 곡 백업 파일이 아닙니다.");
+  if (!file) throw Error(i18nText("library-backup.message077"));
   const data: LibraryArchive = JSON.parse(await file.async("string"));
   if (
     data.version !== 1 ||
     data.kind !== "drum-practice-library" ||
     !Array.isArray(data.records)
   )
-    throw Error("지원하지 않는 전체 백업입니다.");
+    throw Error(i18nText("library-backup.message078"));
   const ids = new Set<string>();
   const records = data.records.map((p) => {
     const r = unpackSong(p);
-    if (ids.has(r.song.id)) throw Error("백업에 중복된 곡 ID가 있습니다.");
+    if (ids.has(r.song.id)) throw Error(i18nText("library-backup.message079"));
     ids.add(r.song.id);
     if (p.editDraft) {
       validateSong(p.editDraft.song);
       if (p.editDraft.song.id !== r.song.id)
-        throw Error("초안 곡 ID가 다릅니다.");
+        throw Error(i18nText("library-backup.message080"));
     }
     if (p.revisions) {
       if (!Array.isArray(p.revisions))
-        throw Error("저장 이력이 올바르지 않습니다.");
+        throw Error(i18nText("library-backup.message081"));
       for (const v of p.revisions) {
         validateSong(v.song);
-        if (v.song.id !== r.song.id) throw Error("이력 곡 ID가 다릅니다.");
+        if (v.song.id !== r.song.id)
+          throw Error(i18nText("library-backup.message082"));
       }
     }
     return { ...r, editDraft: p.editDraft, revisions: p.revisions?.slice(-10) };

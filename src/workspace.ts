@@ -1,39 +1,64 @@
-import {isPortable} from "./portable";
+import { t as i18nText, formatDate, formatTime } from "./i18n";
+import { componentName } from "./ui-standard";
+import { installScreenControls } from "./fullscreen";
+import { isPortable } from "./portable";
 import { licenseSection } from "./licenses";
 import buildInfo from "./build-info.generated.json";
 import packageInfo from "../package.json";
 // Arrange existing controls without duplicating their state or event handlers.
 export type SettingsCategory = "screen" | "playback" | "score" | "info";
 const settingsTitles: Record<SettingsCategory, string> = {
-  screen: "화면", playback: "재생", score: "악보", info: "정보",
+  screen: componentName("settings.screen"),
+  playback: componentName("settings.playback"),
+  score: componentName("settings.score"),
+  info: componentName("settings.info"),
 };
-const SETTINGS_KEY = 'drum-practice.settings-category';
-let lastCategory: SettingsCategory = 'screen';
+const SETTINGS_KEY = "drum-practice.settings-category";
+let lastCategory: SettingsCategory = "screen";
 function rememberedCategory(): SettingsCategory {
-  try { const saved=localStorage.getItem(SETTINGS_KEY); if(saved && Object.hasOwn(settingsTitles,saved)) return saved as SettingsCategory; } catch { /* Session fallback. */ }
+  try {
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    if (saved && Object.hasOwn(settingsTitles, saved))
+      return saved as SettingsCategory;
+  } catch {
+    /* Session fallback. */
+  }
   return lastCategory;
 }
 export function updateViewWidth() {
-  const select=document.getElementById('view') as HTMLSelectElement;
-  const mirror=document.getElementById('view-selected-text');
-  if(mirror) mirror.textContent=select.selectedOptions[0]?.textContent || '';
+  const select = document.getElementById("view") as HTMLSelectElement;
+  const mirror = document.getElementById("view-selected-text");
+  if (mirror) mirror.textContent = select.selectedOptions[0]?.textContent || "";
 }
 export function selectSettingsCategory(category: SettingsCategory) {
-  if(isPortable && category==="score")category="screen";
-  lastCategory=category;
-  try { localStorage.setItem(SETTINGS_KEY,category); } catch { /* Session fallback. */ }
-  for (const panel of document.querySelectorAll<HTMLElement>("[data-settings-panel]"))
+  if (isPortable && category === "score") category = "screen";
+  lastCategory = category;
+  try {
+    localStorage.setItem(SETTINGS_KEY, category);
+  } catch {
+    /* Session fallback. */
+  }
+  for (const panel of document.querySelectorAll<HTMLElement>(
+    "[data-settings-panel]",
+  ))
     panel.hidden = panel.dataset.settingsPanel !== category;
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-settings-category]")) {
+  for (const button of document.querySelectorAll<HTMLButtonElement>(
+    "[data-settings-category]",
+  )) {
     const active = button.dataset.settingsCategory === category;
     button.classList.toggle("primary", active);
     button.setAttribute("aria-current", active ? "page" : "false");
   }
-  const heading=document.getElementById("settings-detail-heading")!;
-  heading.textContent = category === "info" ? "드럼 연습실" : settingsTitles[category];
+  const heading = document.getElementById("settings-detail-heading")!;
+  heading.textContent =
+    category === "info"
+      ? i18nText("main.message097")
+      : settingsTitles[category];
   heading.hidden = category !== "info";
 }
-export function openSettings(category: SettingsCategory = rememberedCategory()) {
+export function openSettings(
+  category: SettingsCategory = rememberedCategory(),
+) {
   selectSettingsCategory(category);
   (document.getElementById("settings-dialog") as HTMLDialogElement).showModal();
 }
@@ -42,17 +67,25 @@ export function closeSettings() {
 }
 /** Restore settings only for dialogs opened from settings, including native Escape. */
 export function openSettingsChild(child: HTMLDialogElement) {
-  const settings=document.getElementById('settings-dialog') as HTMLDialogElement;
-  if(settings.open){
-    const category=lastCategory;
-    const scroll=settings.scrollTop;
-    const detail=settings.querySelector<HTMLElement>('.settings-detail')!;
-    const detailScroll=detail.scrollTop;
-    const origin=document.activeElement as HTMLElement | null;
-    child.addEventListener('close',()=>{
-      openSettings(category); settings.scrollTop=scroll; detail.scrollTop=detailScroll;
-      origin?.focus({preventScroll:true});
-    },{once:true});
+  const settings = document.getElementById(
+    "settings-dialog",
+  ) as HTMLDialogElement;
+  if (settings.open) {
+    const category = lastCategory;
+    const scroll = settings.scrollTop;
+    const detail = settings.querySelector<HTMLElement>(".settings-detail")!;
+    const detailScroll = detail.scrollTop;
+    const origin = document.activeElement as HTMLElement | null;
+    child.addEventListener(
+      "close",
+      () => {
+        openSettings(category);
+        settings.scrollTop = scroll;
+        detail.scrollTop = detailScroll;
+        origin?.focus({ preventScroll: true });
+      },
+      { once: true },
+    );
     settings.close();
   }
   child.showModal();
@@ -63,14 +96,27 @@ export function arrangeWorkspace() {
   document.getElementById("app")!.classList.add("touch-workspace");
   practice.querySelector(".statusline")!.append(el("error-notice"));
   document.querySelector(".brand")!.innerHTML =
-    '<h1 id="song-title">드럼 연습실</h1><button id="original-tempo" type="button" hidden disabled title="연습 BPM 설정" aria-label="연습 BPM 설정" aria-haspopup="dialog"><svg class="tempo-note" viewBox="0 0 18 32" aria-hidden="true"><ellipse cx="6.5" cy="26" rx="6" ry="4" transform="rotate(-22 6.5 26)" fill="currentColor"/><path d="M11.5 25V2" stroke="currentColor" stroke-width="2"/></svg><span id="original-tempo-value"></span></button>';
+    '<h1 id="song-title">' +
+    i18nText("main.message097") +
+    '</h1><button id="original-tempo" type="button" hidden disabled title="' +
+    i18nText("main.message211") +
+    '" aria-label="' +
+    i18nText("main.message211") +
+    '" aria-haspopup="dialog"><svg class="tempo-note" viewBox="0 0 18 32" aria-hidden="true"><ellipse cx="6.5" cy="26" rx="6" ry="4" transform="rotate(-22 6.5 26)" fill="currentColor"/><path d="M11.5 25V2" stroke="currentColor" stroke-width="2"/></svg><span id="original-tempo-value"></span></button>';
 
   const panel = (id: string, title: string, host: Element, caption = title) => {
     const d = document.createElement("dialog");
     d.id = id;
     d.className = "tool-dialog";
     d.setAttribute("aria-label", title);
-    d.innerHTML = `<div class="dialoghead"><h2>${title}</h2><button data-close="${id}">닫기</button></div><div class="tool-body"></div>`;
+    d.innerHTML =
+      '<div class="dialoghead"><h2>' +
+      String(title) +
+      '</h2><button data-close="' +
+      String(id) +
+      '">' +
+      i18nText("editor-session.message042") +
+      '</button></div><div class="tool-body"></div>';
     el("app").append(d);
     const b = document.createElement("button");
     b.textContent = caption;
@@ -93,90 +139,198 @@ export function arrangeWorkspace() {
   actions.prepend(metronome);
   const oldGoto = el("goto");
   const rewind = document.createElement("input");
-  rewind.id = "goto"; rewind.type = "number"; rewind.min = "1"; rewind.max = "10"; rewind.step = "1"; rewind.value = "1";
-  rewind.setAttribute("aria-label", "되감을 마디 수");
-  rewind.title = "드래그하여 되감을 마디 수 조절";
+  rewind.id = "goto";
+  rewind.type = "number";
+  rewind.min = "1";
+  rewind.max = "10";
+  rewind.step = "1";
+  rewind.value = "1";
+  rewind.setAttribute("aria-label", i18nText("main.message118"));
+  rewind.title = i18nText("workspace.message542");
   oldGoto.replaceWith(rewind);
 
   const tempo = el("tempo-dialog");
   const tempoControl = document.createElement("label");
   tempoControl.className = "tempo-number";
   const rate = el("rate");
-  rate.setAttribute("aria-label", "연습 BPM");
-  rate.title = "좌우 또는 상하 드래그로 1 BPM씩 조절";
+  rate.setAttribute("aria-label", i18nText("main.message208"));
+  rate.title = i18nText("workspace.message543");
   tempoControl.append(rate);
-  tempoControl.insertAdjacentHTML("beforeend", "<span>BPM</span>");
+  tempoControl.insertAdjacentHTML(
+    "beforeend",
+    "<span>" + i18nText("term.BPM") + "</span>",
+  );
   el("tempo-options").before(tempoControl);
-  tempo.querySelector("p")!.textContent = "숫자를 오른쪽·위로 드래그하면 빨라지고, 왼쪽·아래로 드래그하면 느려집니다.";
-  tempo.insertAdjacentHTML("beforeend", '<button id="tempo-reset">원곡 BPM으로</button>');
-  el("tempo-presets").remove(); el("slower").remove(); el("faster").remove();
-  transportRight.insertAdjacentHTML("afterbegin", '<label class="progress-number" title="드래그하여 곡 위치 이동 · 탭하여 마커 열기"><input id="progress-percent" type="text" inputmode="none" readonly role="slider" min="0" max="100" step="1" value="0" aria-label="곡 진행률, 드래그하여 이동, 탭하여 마커 열기" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span aria-hidden="true">%</span></label>');
-  panel("marker-dialog", "마커", transportRight).append(markers);
-  const soundBody = panel("sound-dialog", "소리", transportRight, "소리");
+  tempo.querySelector("p")!.textContent = i18nText("workspace.message544");
+  tempo.insertAdjacentHTML(
+    "beforeend",
+    '<button id="tempo-reset">' +
+      i18nText("workspace.message545") +
+      "</button>",
+  );
+  el("tempo-presets").remove();
+  el("slower").remove();
+  el("faster").remove();
+  transportRight.insertAdjacentHTML(
+    "afterbegin",
+    '<label class="progress-number" title="' +
+      i18nText("workspace.message546") +
+      '"><input id="progress-percent" type="text" inputmode="none" readonly role="slider" min="0" max="100" step="1" value="0" aria-label="' +
+      i18nText("workspace.message547") +
+      '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span aria-hidden="true">%</span></label>',
+  );
+  panel("marker-dialog", i18nText("icons.message069"), transportRight).append(
+    markers,
+  );
+  const soundBody = panel(
+    "sound-dialog",
+    i18nText("icons.message070"),
+    transportRight,
+    i18nText("icons.message070"),
+  );
   soundBody.append(...sound.children);
   sound.remove();
-  el("click-volume").closest("label")!.childNodes[0].textContent = "메트로놈 ";
+  el("click-volume").closest("label")!.childNodes[0].textContent = i18nText(
+    "workspace.message548",
+  );
 
   const repeat = document.createElement("section");
   repeat.id = "repeat-controls";
-  repeat.setAttribute("aria-label", "현재 마디 중심 반복");
-  repeat.innerHTML = '<span class="repeat-heading">현재 마디 중심</span><div class="repeat-presets">' + [1, 2, 3, 4].map(radius => `<button type="button" data-loop-radius="${radius}" aria-pressed="false">앞뒤 ${radius}</button>`).join("") + '</div><output id="loop-summary" aria-live="polite">반복 꺼짐</output><button id="recenter-loop" title="지금 연주하는 마디를 중심으로 반복">현재 마디로</button><button id="quick-stop-loop">해제</button>';
+  repeat.setAttribute("aria-label", i18nText("workspace.message549"));
+  repeat.innerHTML =
+    '<span class="repeat-heading">' +
+    i18nText("portable-player.message449") +
+    '</span><div class="repeat-presets">' +
+    [1, 2, 3, 4]
+      .map(
+        (radius) =>
+          '<button type="button" data-loop-radius="' +
+          String(radius) +
+          '" aria-pressed="false">' +
+          i18nText("workspace.message550", { radius: radius }) +
+          "</button>",
+      )
+      .join("") +
+    ('</div><output id="loop-summary" aria-live="polite">' +
+      i18nText("main.message270") +
+      '</output><button id="recenter-loop" title="' +
+      i18nText("workspace.message551") +
+      '">' +
+      i18nText("portable-player.message450") +
+      '</button><button id="quick-stop-loop">' +
+      i18nText("portable-player.message451") +
+      "</button>");
   transport.after(repeat);
-  panel("loop-dialog", "반복 구간 조정", repeat, "조정").append(loops);
+  panel(
+    "loop-dialog",
+    i18nText("icons.message067"),
+    repeat,
+    i18nText("icons.message068"),
+  ).append(loops);
   loops.querySelector("h2")!.remove();
   markers.querySelector("h2")!.remove();
   const loopHelp = loops.querySelector("p")!;
   loopHelp.id = "loop-range-help";
-  loopHelp.textContent = "시작 마디부터 끝 마디까지 모두 반복합니다. 예: 24–26마디는 총 3마디입니다.";
-  loops.insertAdjacentHTML("afterbegin", '<p class="subtle">숫자를 좌우·상하로 드래그하여 구간을 조절하세요.</p>');
+  loopHelp.textContent = i18nText("workspace.message552");
+  loops.insertAdjacentHTML(
+    "afterbegin",
+    '<p class="subtle">' + i18nText("workspace.message553") + "</p>",
+  );
   const precise = document.createElement("div");
   precise.className = "loop-precision";
-  precise.innerHTML = '<label><input id="loop-precise" type="checkbox">박 단위로 정밀 조정</label><div id="loop-beat-controls" class="flex" hidden></div>';
+  precise.innerHTML =
+    '<label><input id="loop-precise" type="checkbox">' +
+    i18nText("workspace.message554") +
+    '</label><div id="loop-beat-controls" class="flex" hidden></div>';
   loopHelp.before(precise);
-  for (const [id, title] of [["loop-ab", "시작 박"], ["loop-bb", "끝 경계 박"]]) {
+  for (const [id, title] of [
+    ["loop-ab", i18nText("workspace.message555")],
+    ["loop-bb", i18nText("workspace.message556")],
+  ]) {
     const label = el(id).closest("label")!;
     label.childNodes[0].textContent = title + " ";
     precise.lastElementChild!.append(label);
   }
 
-  el("set-a").textContent = "현재 마디부터";
-  el("set-b").textContent = "현재 마디까지";
-  el("save-loop").before(Object.assign(document.createElement("button"), { id: "apply-loop", className: "primary", textContent: "구간 적용" }));
-  el("save-loop").textContent = "이름 붙여 저장";
+  el("set-a").textContent = i18nText("workspace.message557");
+  el("set-b").textContent = i18nText("workspace.message558");
+  el("save-loop").before(
+    Object.assign(document.createElement("button"), {
+      id: "apply-loop",
+      className: "primary",
+      textContent: i18nText("workspace.message559"),
+    }),
+  );
+  el("save-loop").textContent = i18nText("workspace.message560");
 
-  const repeatActions=document.createElement('div'); repeatActions.className='repeat-actions';
+  const repeatActions = document.createElement("div");
+  repeatActions.className = "repeat-actions";
   repeatActions.append(...repeat.childNodes);
-  repeatActions.prepend(repeatActions.querySelector('#open-loop-dialog')!);
+  repeatActions.prepend(repeatActions.querySelector("#open-loop-dialog")!);
   repeat.append(repeatActions);
-  const slots=document.createElement('div'); slots.id='quick-markers'; slots.className='marker-slots';
-  slots.setAttribute('role','group'); slots.setAttribute('aria-label','최근 마커 3개');
+  const slots = document.createElement("div");
+  slots.id = "quick-markers";
+  slots.className = "marker-slots";
+  slots.setAttribute("role", "group");
+  slots.setAttribute("aria-label", i18nText("portable-player.message452"));
   repeat.append(slots);
   // The progress percentage still opens full marker management.
-  markers.insertAdjacentHTML('beforeend','<span id="active-loop" hidden></span><button id="quick-add-marker" hidden></button>');
+  markers.insertAdjacentHTML(
+    "beforeend",
+    '<span id="active-loop" hidden></span><button id="quick-add-marker" hidden></button>',
+  );
 
   const settings = document.createElement("dialog");
   settings.id = "settings-dialog";
   settings.setAttribute("aria-labelledby", "settings-heading");
-  settings.innerHTML = '<div class="dialoghead"><h2 id="settings-heading">설정</h2><button data-close="settings-dialog">닫기</button></div><div class="settings-layout"><nav class="settings-nav" aria-label="설정 분류"></nav><div class="settings-detail"><h3 id="settings-detail-heading">화면</h3></div></div>';
+  settings.innerHTML =
+    '<div class="dialoghead"><h2 id="settings-heading">' +
+    i18nText("icons.message059") +
+    '</h2><button data-close="settings-dialog">' +
+    i18nText("editor-session.message042") +
+    '</button></div><div class="settings-layout"><nav class="settings-nav" aria-label="' +
+    i18nText("workspace.message561") +
+    '"></nav><div class="settings-detail"><h3 id="settings-detail-heading">' +
+    i18nText("icons.message071") +
+    "</h3></div></div>";
   el("app").append(settings);
   // Require both ends of the gesture outside; dragging a slider out must not dismiss.
   let outsideStart = false;
   const outside = (e: MouseEvent) => {
     const r = settings.getBoundingClientRect();
-    return e.target === settings && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom);
+    return (
+      e.target === settings &&
+      (e.clientX < r.left ||
+        e.clientX > r.right ||
+        e.clientY < r.top ||
+        e.clientY > r.bottom)
+    );
   };
-  settings.addEventListener('pointerdown', e => { outsideStart = outside(e); });
-  settings.addEventListener('click', e => {
-    if (outsideStart && outside(e)) { e.preventDefault(); e.stopPropagation(); settings.close(); }
+  settings.addEventListener("pointerdown", (e) => {
+    outsideStart = outside(e);
+  });
+  settings.addEventListener("click", (e) => {
+    if (outsideStart && outside(e)) {
+      e.preventDefault();
+      e.stopPropagation();
+      settings.close();
+    }
     outsideStart = false;
   });
   const gear = document.createElement("button");
   gear.id = "open-settings-dialog";
-  gear.textContent = "설정";
+  gear.textContent = i18nText("icons.message059");
   gear.setAttribute("aria-haspopup", "dialog");
   gear.onclick = () => openSettings();
   actions.append(gear);
-  const settingsPanel = (category: SettingsCategory, id: string, buttonId: string) => {
+  installScreenControls(gear, (message) => {
+    el("fullscreen-status").textContent = message;
+  });
+  const settingsPanel = (
+    category: SettingsCategory,
+    id: string,
+    buttonId: string,
+  ) => {
     const section = document.createElement("section");
     section.id = id;
     section.className = "tool-body settings-panel";
@@ -191,58 +345,154 @@ export function arrangeWorkspace() {
     settings.querySelector(".settings-nav")!.append(button);
     return section;
   };
-  const screenBody = settingsPanel("screen", "screen-dialog", "open-screen-dialog");
+  const screenBody = settingsPanel(
+    "screen",
+    "screen-dialog",
+    "open-screen-dialog",
+  );
   const viewRow = document.createElement("label");
   viewRow.className = "view-select-row";
-  viewRow.innerHTML = '<strong class="settings-item-title">악보 스타일</strong>';
+  viewRow.innerHTML =
+    '<strong class="settings-item-title">' +
+    i18nText("main.message108") +
+    "</strong>";
   el("view").hidden = false;
-  const viewControl=document.createElement('span'); viewControl.className='view-select-control';
-  viewControl.innerHTML='<span id="view-selected-text" aria-hidden="true"></span>';
-  viewControl.append(el('view')); viewRow.append(viewControl);
+  const viewControl = document.createElement("span");
+  viewControl.className = "view-select-control";
+  viewControl.innerHTML =
+    '<span id="view-selected-text" aria-hidden="true"></span>';
+  viewControl.append(el("view"));
+  viewRow.append(viewControl);
   screenBody.append(viewRow);
-  el('view').addEventListener('change',updateViewWidth);
+  el("view").addEventListener("change", updateViewWidth);
   updateViewWidth();
-  screenBody.insertAdjacentHTML("beforeend", '<p id="view-description" class="subtle"></p><label id="pdf-view-row" class="settings-switch"><span><strong>악보를 PDF로 보기</strong><small id="pdf-view-status">모든 곡에 공통으로 적용합니다.</small></span><input id="prefer-pdf" type="checkbox" role="switch" disabled></label>');
-  const viewSetting=document.createElement('div'); viewSetting.className='settings-control-description';
-  viewRow.before(viewSetting); viewSetting.append(viewRow, el('view-description'));
+  screenBody.insertAdjacentHTML(
+    "beforeend",
+    '<p id="view-description" class="subtle"></p><label id="pdf-view-row" class="settings-switch"><span><strong>' +
+      i18nText("portable-player.message438") +
+      '</strong><small id="pdf-view-status">' +
+      i18nText("main.message227") +
+      '</small></span><input id="prefer-pdf" type="checkbox" role="switch" disabled></label>',
+  );
+  const viewSetting = document.createElement("div");
+  viewSetting.className = "settings-control-description";
+  viewRow.before(viewSetting);
+  viewSetting.append(viewRow, el("view-description"));
   const reviewHelp = document.createElement("div");
   reviewHelp.id = "review-help";
-  reviewHelp.innerHTML = '<p id="review-availability"></p><button id="review-add-score">이 곡에 악보 추가</button>';
-  const zoomLabel=el("zoom").closest("label")!;
-  const zoomTitle=document.createElement('strong'); zoomTitle.className='settings-item-title'; zoomTitle.textContent='악보 크기';
+  reviewHelp.innerHTML =
+    '<p id="review-availability"></p><button id="review-add-score">' +
+    i18nText("main.message346") +
+    "</button>";
+  const zoomLabel = el("zoom").closest("label")!;
+  const zoomTitle = document.createElement("strong");
+  zoomTitle.className = "settings-item-title";
+  zoomTitle.textContent = i18nText("portable-player.message455");
   zoomLabel.childNodes[0].replaceWith(zoomTitle);
   screenBody.append(reviewHelp, zoomLabel);
-  screenBody.insertAdjacentHTML("beforeend", '<label class="settings-switch"><span><strong>음표 따라가기</strong><small id="note-highlight-description">MusicXML 악보의 음표가 박자에 맞춰 잠깐 빛납니다.</small></span><input id="note-highlight" type="checkbox" role="switch" checked></label>');
-  screenBody.insertAdjacentHTML("beforeend", '<div class="settings-group"><label class="settings-switch"><span><strong>전체화면으로 악보 보기</strong><small>현재 악보와 다음에 여는 악보에 적용합니다.</small></span><input id="auto-fullscreen" type="checkbox"></label><p id="fullscreen-status" class="subtle" role="status"></p></div>');
-  el('auto-fullscreen').closest('.settings-group')!.prepend(el('pdf-view-row'));
-  el('auto-fullscreen').closest('label')!.querySelector('span')!.append(el('fullscreen-status'));
-  const playback = settingsPanel("playback", "playback-settings", "open-playback-settings");
-  playback.innerHTML = '<label class="settings-switch"><span><strong>마디 처음부터 다시 재생</strong><small>끄면 일시정지한 위치에서 이어서 재생합니다.</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>카운트오프 (Count-off)</strong><small>현재 연습 BPM으로 4분음표 스틱 소리 네 번 후 시작합니다.</small></span><input id="count-off" type="checkbox" role="switch"></label><p id="playback-settings-status" class="subtle" role="status"></p>';
-  const scoreSettings = settingsPanel("score", "score-settings", "open-score-settings");
+  screenBody.insertAdjacentHTML(
+    "beforeend",
+    '<label class="settings-switch"><span><strong>' +
+      i18nText("portable-player.message439") +
+      '</strong><small id="note-highlight-description">' +
+      i18nText("main.message255") +
+      '</small></span><input id="note-highlight" type="checkbox" role="switch" checked></label>',
+  );
+  screenBody.insertAdjacentHTML(
+    "beforeend",
+    '<div class="settings-group"><label class="settings-switch"><span><strong>' +
+      i18nText("portable-player.message441") +
+      "</strong><small>" +
+      i18nText("workspace.message562") +
+      '</small></span><input id="auto-fullscreen" type="checkbox"></label><p id="fullscreen-status" class="subtle" role="status"></p></div>',
+  );
+  el("auto-fullscreen").closest(".settings-group")!.prepend(el("pdf-view-row"));
+  el("auto-fullscreen")
+    .closest("label")!
+    .querySelector("span")!
+    .append(el("fullscreen-status"));
+  const playback = settingsPanel(
+    "playback",
+    "playback-settings",
+    "open-playback-settings",
+  );
+  playback.innerHTML =
+    '<label class="settings-switch"><span><strong>' +
+    i18nText("portable-player.message442") +
+    "</strong><small>" +
+    i18nText("portable-player.message443") +
+    '</small></span><input id="restart-measure" type="checkbox" role="switch"></label><label class="settings-switch"><span><strong>' +
+    i18nText("portable-player.message444") +
+    "</strong><small>" +
+    i18nText("portable-player.message445") +
+    '</small></span><input id="count-off" type="checkbox" role="switch"></label><p id="playback-settings-status" class="subtle" role="status"></p>';
+  const scoreSettings = settingsPanel(
+    "score",
+    "score-settings",
+    "open-score-settings",
+  );
   const group = (title: string, id: string) => {
-    const section = document.createElement('section'); section.id=id; section.className='settings-group score-management-group';
-    const heading = document.createElement('h4'); heading.textContent=title; section.append(heading); scoreSettings.append(section); return section;
+    const section = document.createElement("section");
+    section.id = id;
+    section.className = "settings-group score-management-group";
+    const heading = document.createElement("h4");
+    heading.textContent = title;
+    section.append(heading);
+    scoreSettings.append(section);
+    return section;
   };
-  const edit = group('편집', 'score-edit-actions');
-  el("edit-button").textContent = "악보 편집";
+  const edit = group(
+    i18nText("score-management.message489"),
+    "score-edit-actions",
+  );
+  el("edit-button").textContent = i18nText("icons.message072");
   edit.append(el("original-button"), el("edit-button"));
-  edit.insertAdjacentHTML('beforeend', '<button id="lyrics-button" type="button">가사 편집</button><button id="metadata-button" type="button">곡 정보 편집</button>');
-  const backupBody = group('추가 · 내보내기 · 백업', 'backup-dialog');
-  el("save-html").textContent = "HTML 저장";
-  backupBody.append(el("save-html"), ...backup.children, el("portable-note"), el("alignment-note"));
+  edit.insertAdjacentHTML(
+    "beforeend",
+    '<button id="lyrics-button" type="button">' +
+      i18nText("icons.message073") +
+      '</button><button id="metadata-button" type="button">' +
+      i18nText("icons.message074") +
+      "</button>",
+  );
+  const backupBody = group(i18nText("workspace.message563"), "backup-dialog");
+  el("save-html").textContent = i18nText("icons.message058");
+  backupBody.append(
+    el("save-html"),
+    ...backup.children,
+    el("portable-note"),
+    el("alignment-note"),
+  );
   const info = settingsPanel("info", "info-settings", "open-info-settings");
-  info.innerHTML = '<section class="settings-group app-info"><dl><dt>버전</dt><dd id="app-version"></dd><dt>빌드 시각</dt><dd id="app-built-at"></dd></dl></section>';
-  el('app-version').textContent=`${packageInfo.version} (${buildInfo.source})`;
-  el('app-built-at').textContent=new Date(buildInfo.builtAt).toLocaleString('ko-KR', {
-    timeZone:'Asia/Seoul', year:'numeric', month:'numeric', day:'numeric',
-    hour:'2-digit', minute:'2-digit', hourCycle:'h23',
-  }) + ' KST';
+  info.innerHTML =
+    '<section class="settings-group app-info"><dl><dt>' +
+    i18nText("portable-player.message456") +
+    '</dt><dd id="app-version"></dd><dt>' +
+    i18nText("portable-player.message457") +
+    '</dt><dd id="app-built-at"></dd></dl></section>';
+  el("app-version").textContent =
+    `${packageInfo.version} (${buildInfo.source})`;
+  el("app-built-at").textContent =
+    formatDate(new Date(buildInfo.builtAt), {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }) + " KST";
   info.append(licenseSection());
   info.append(practice.querySelector(".keyboard")!);
   const log = document.createElement("section");
   log.className = "work-log";
-  log.innerHTML = '<h4>최근 작업 기록</h4><p class="subtle">이 화면을 연 동안의 최근 5건입니다.</p>';
-  el("busy").textContent = "아직 기록이 없습니다.";
+  log.innerHTML =
+    "<h4>" +
+    i18nText("workspace.message564") +
+    '</h4><p class="subtle">' +
+    i18nText("workspace.message565") +
+    "</p>";
+  el("busy").textContent = i18nText("workspace.message566");
   log.append(el("busy"));
   info.append(log);
   backup.remove();
@@ -254,15 +504,22 @@ export function arrangeWorkspace() {
   wrap.className = "seek-control";
   seek.before(wrap);
   wrap.append(seek);
-  wrap.insertAdjacentHTML("beforeend", '<output id="seek-position" hidden></output>');
+  wrap.insertAdjacentHTML(
+    "beforeend",
+    '<output id="seek-position" hidden></output>',
+  );
   (seek.closest(".seekrow") as HTMLElement).hidden = true;
-  practice.insertAdjacentHTML("beforeend", '<p id="score-gesture-hint" class="subtle">재생 중 탭: 정지 · 정지 중 탭: 마디 선택 · 두 번 탭: 해당 마디부터 재생 · 드래그: 앞뒤 이동 · 정지 중 스크롤: 악보 탐색</p>');
+  practice.insertAdjacentHTML(
+    "beforeend",
+    '<p id="score-gesture-hint" class="subtle">' +
+      i18nText("workspace.message567") +
+      "</p>",
+  );
   el("stage").setAttribute("aria-describedby", "score-gesture-hint");
 
   // Editing has explicit tabs; lyrics and metadata no longer sit below a PDF page.
   const editor = el("editor-dialog");
   const metadata = editor.querySelector(":scope > .flex")!;
-  const metadataNote = metadata.nextElementSibling!;
   const score = editor.querySelector(".editor")!;
   const right = score.children[1];
   const lyricHeading = right.querySelectorAll("h3")[1];
@@ -279,28 +536,38 @@ export function arrangeWorkspace() {
   metadata.className = "metadata-fields";
   const timing = document.createElement("section");
   timing.className = "metadata-timing";
-  timing.innerHTML = "<h3>음원과 악보 연결</h3><div class='timing-fields'></div><div class='timing-actions'></div>";
-  for (const id of ["edit-bpm", "edit-first"]) timing.querySelector('.timing-fields')!.append(el(id).closest('label')!);
-  for (const id of ["reflow", "estimate-tempo", "tap-tempo", "tap-result"]) timing.querySelector('.timing-actions')!.append(el(id));
-  timing.append(metadataNote);
+  timing.innerHTML =
+    "<h3>" +
+    i18nText("workspace.message568") +
+    "</h3><div class='timing-fields'></div><div class='timing-actions'></div>";
+  for (const id of ["edit-bpm", "edit-first"])
+    timing.querySelector(".timing-fields")!.append(el(id).closest("label")!);
+  for (const id of ["reflow", "estimate-tempo", "tap-tempo", "tap-result"])
+    timing.querySelector(".timing-actions")!.append(el(id));
   metaPane.append(metadata, timing);
   score.id = "editor-score";
   editor.append(metaPane, lyricPane);
   const tabs = document.createElement("div");
   tabs.className = "editor-tabs";
   tabs.innerHTML =
-    '<button data-pane="score">마디 · 영역</button><button data-pane="lyrics">가사</button><button data-pane="meta">곡 정보 · 템포</button>';
+    '<button data-pane="score">' +
+    i18nText("workspace.message569") +
+    '</button><button data-pane="lyrics">' +
+    i18nText("main.message279") +
+    '</button><button data-pane="meta">' +
+    i18nText("workspace.message570") +
+    "</button>";
   editor.querySelector(".dialoghead")!.after(tabs);
   tabs
     .querySelectorAll<HTMLButtonElement>("button")
     .forEach((b) => (b.onclick = () => selectEditorPane(b.dataset.pane!)));
-  metadata.insertAdjacentHTML(
-    "beforeend",
-    '<button id="save-metadata">곡 정보 저장</button>',
-  );
   lyricPane.insertAdjacentHTML(
     "beforeend",
-    '<div class="pager"><button id="lyrics-prev">이전</button><span id="lyrics-page"></span><button id="lyrics-next">다음</button></div>',
+    '<div class="pager"><button id="lyrics-prev">' +
+      i18nText("workspace.message572") +
+      '</button><span id="lyrics-page"></span><button id="lyrics-next">' +
+      i18nText("workspace.message573") +
+      "</button></div>",
   );
   const scrollBody = document.createElement("div");
   scrollBody.className = "editor-body";
@@ -308,13 +575,26 @@ export function arrangeWorkspace() {
   editor.append(scrollBody);
   selectEditorPane("score");
 }
+const editorScroll = new Map<string, number>();
+let currentEditorPane = "meta";
 export function selectEditorPane(name: string) {
-  for (const id of ["score", "lyrics", "meta"]) {
+  const scroller = document.querySelector<HTMLElement>("#editor-dialog .editor-body");
+  if (scroller) editorScroll.set(currentEditorPane, scroller.scrollTop);
+  currentEditorPane = name;
+  const editor = document.getElementById("editor-dialog");
+  if (editor) editor.dataset.activePane = name;
+  for (const id of ["score", "lyrics", "meta", "files"]) {
+    if (!document.getElementById(`editor-${id}`)) continue;
     document.getElementById(`editor-${id}`)!.hidden = id !== name;
     const b = document.querySelector(`[data-pane="${id}"]`)!;
     b.classList.toggle("primary", id === name);
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(id === name));
+    b.setAttribute("aria-controls", `editor-${id}`);
     b.setAttribute("aria-pressed", String(id === name));
+    document.getElementById(`editor-${id}`)!.setAttribute("role", "tabpanel");
   }
+  if (scroller) scroller.scrollTop = editorScroll.get(name) || 0;
 }
 
 const listPages = new Map<string, { page: number; count: number }>();
@@ -338,7 +618,20 @@ export function paginateList(id: string) {
       (item, i) => (item.hidden = Math.floor(i / 6) !== state.page),
     );
     pager!.hidden = pages === 1;
-    pager!.innerHTML = `<button ${state.page === 0 ? "disabled" : ""} data-prev>이전</button><span>${state.page + 1} / ${pages}</span><button ${state.page === pages - 1 ? "disabled" : ""} data-next>다음</button>`;
+    pager!.innerHTML =
+      "<button " +
+      String(state.page === 0 ? "disabled" : "") +
+      " data-prev>" +
+      i18nText("workspace.message572") +
+      "</button><span>" +
+      String(state.page + 1) +
+      " / " +
+      String(pages) +
+      "</span><button " +
+      String(state.page === pages - 1 ? "disabled" : "") +
+      " data-next>" +
+      i18nText("workspace.message573") +
+      "</button>";
     (pager!.querySelector("[data-prev]") as HTMLButtonElement).onclick = () => {
       state.page--;
       render();

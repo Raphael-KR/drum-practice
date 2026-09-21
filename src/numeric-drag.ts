@@ -7,6 +7,8 @@ export interface NumericDragOptions {
   onTap?: (event: MouseEvent) => void;
   onCancel?: (value: number) => void;
   pixelsPerStep?: number;
+  allowedValues?: readonly number[];
+  wheel?: boolean;
   threshold?: number;
 }
 
@@ -34,7 +36,11 @@ function readValue(input: HTMLInputElement): number {
   return Number.isFinite(number) ? number : (numericAttribute(input, 'min') ?? 0);
 }
 
-function stepValue(input: HTMLInputElement, origin: number, steps: number): number {
+function stepValue(input: HTMLInputElement, origin: number, steps: number, allowed?: readonly number[]): number {
+  if (allowed?.length) {
+    const nearest = allowed.reduce((best, value, index) => Math.abs(value-origin) < Math.abs(allowed[best]-origin) ? index : best, 0);
+    return allowed[Math.max(0, Math.min(allowed.length-1, nearest+steps))];
+  }
   const configuredStep = numericAttribute(input, 'step');
   const step = configuredStep !== undefined && configuredStep > 0 ? configuredStep : 1;
   const min = numericAttribute(input, 'min');
@@ -134,7 +140,7 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
     }
     event.preventDefault();
     const distance = drag.axis === 'x' ? dx : -dy;
-    preview(stepValue(input, drag.value, Math.round(distance / pixelsPerStep)));
+    preview(stepValue(input, drag.value, Math.round(distance / pixelsPerStep), options.allowedValues));
   };
   const pointerUp = (event: PointerEvent) => {
     if (cancelledPointers.delete(event.pointerId)) {
@@ -185,12 +191,25 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
     if (!direction) return;
     event.preventDefault();
     const previous = readValue(input);
-    const value = stepValue(input, previous, direction);
+    const value = stepValue(input, previous, direction, options.allowedValues);
     if (value === previous) return;
     options.onStart?.(previous);
     preview(value);
     emit('change');
   };
+  const wheel = (event: WheelEvent) => {
+    if (!options.wheel || input.disabled || input.readOnly || event.ctrlKey || event.metaKey || drag) return;
+    const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? -event.deltaY : event.deltaX;
+    if (!delta) return;
+    event.preventDefault();
+    const previous = readValue(input);
+    const value = stepValue(input, previous, Math.sign(delta), options.allowedValues);
+    if (value === previous) return;
+    options.onStart?.(previous);
+    preview(value);
+    emit('change');
+  };
+  input.addEventListener('wheel', wheel, { passive: false });
   input.addEventListener('pointerdown', pointerDown);
   input.addEventListener('click', click, true);
   input.addEventListener('change', change);
@@ -208,6 +227,7 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
     input.style.touchAction = oldTouchAction;
     if (oldBound === null) input.removeAttribute('data-numeric-drag-bound');
     else input.setAttribute('data-numeric-drag-bound', oldBound);
+    input.removeEventListener('wheel', wheel);
     input.removeEventListener('pointerdown', pointerDown);
     input.removeEventListener('click', click, true);
     input.removeEventListener('change', change);

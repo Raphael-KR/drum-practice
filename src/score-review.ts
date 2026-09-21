@@ -1,4 +1,5 @@
-import { markedMeasureIndices } from './marker-slots';
+import { t as i18nText } from "./i18n";
+import { markedMeasureIndices } from "./marker-slots";
 import { detectStaff } from "./staff-geometry";
 import { locate, xAtBeat, type Song } from "./model";
 import { songScores, type ScoreVariant } from "./song-scores";
@@ -10,8 +11,7 @@ export function reviewPair(record: RecordData): [ScoreVariant, ScoreVariant] {
   const scores = songScores(record),
     pdf = scores.find((s) => s.format === "pdf"),
     xml = scores.find((s) => s.format === "musicxml");
-  if (!pdf || !xml)
-    throw Error("이 곡에 PDF와 MusicXML 악보를 모두 추가해 주세요.");
+  if (!pdf || !xml) throw Error(i18nText("score-review.message532"));
   for (const s of [pdf, xml]) {
     if (
       s.measures.length !== record.song.measures.length ||
@@ -25,7 +25,7 @@ export function reviewPair(record: RecordData): [ScoreVariant, ScoreVariant] {
           ),
       )
     )
-      throw Error("두 악보의 마디 구성이 달라 비교할 수 없습니다.");
+      throw Error(i18nText("score-review.message533"));
   }
   return [pdf, xml];
 }
@@ -87,7 +87,10 @@ export class ScoreReview {
           );
           if (!staff)
             throw Error(
-              `${row ? "SVG" : "PDF"} ${m.id}마디의 오선 위치를 찾지 못했습니다.`,
+              i18nText("score-review.message534", {
+                value1: row ? i18nText("term.SVG") : i18nText("term.PDF"),
+                value2: m.id,
+              }),
             );
           const ratio = (r.h * image.naturalHeight) / c.height;
           return { top: staff.top * ratio, gap: staff.gap * ratio };
@@ -119,9 +122,15 @@ export class ScoreReview {
       h = Math.max(220, this.canvas.clientHeight),
       loc = locate(this.song, time),
       start = Math.floor(loc.index / 4) * 4;
-    const marked=markedMeasureIndices(this.song), markerKey=[...marked].join(",");
-    if (start !== this.window || w !== this.width || h !== this.height || markerKey !== this.markerKey) {
-      this.markerKey=markerKey;
+    const marked = markedMeasureIndices(this.song),
+      markerKey = [...marked].join(",");
+    if (
+      start !== this.window ||
+      w !== this.width ||
+      h !== this.height ||
+      markerKey !== this.markerKey
+    ) {
+      this.markerKey = markerKey;
       this.window = start;
       this.width = w;
       this.height = h;
@@ -146,7 +155,11 @@ export class ScoreReview {
         const y = 62 + row * rowH;
         c.fillStyle = "#3f74d4";
         c.font = "bold 13px system-ui";
-        c.fillText(row ? "MusicXML · SVG" : "PDF", 12, y + 16);
+        c.fillText(
+          row ? i18nText("term.MusicXMLSVG") : i18nText("term.PDF"),
+          12,
+          y + 16,
+        );
         for (let j = 0; j < 4 && start + j < this.song.measures.length; j++) {
           const m = score.measures[start + j],
             r = score.regions.find((r) => r.id === m.regionId)!,
@@ -159,7 +172,12 @@ export class ScoreReview {
           c.fillStyle = "#627189";
           c.font = "12px system-ui";
           c.fillText(
-            `${marked.has(start+j) ? "⚑ " : ""}${this.song.measures[start + j].label} 마디 · ${m.beats}/${m.denominator}`,
+            i18nText("score-review.message535", {
+              value1: marked.has(start + j) ? "⚑ " : "",
+              value2: this.song.measures[start + j].label,
+              value3: m.beats,
+              value4: m.denominator,
+            }),
             x,
             y + 34,
           );
@@ -195,7 +213,10 @@ export class ScoreReview {
     c.fillStyle = "#3f74d4";
     c.font = "14px system-ui";
     c.fillText(
-      `${playbackPosition(this.song, time).label} · 음원 ${time.toFixed(3)}초`,
+      i18nText("score-review.message536", {
+        value1: playbackPosition(this.song, time).label,
+        value2: time.toFixed(3),
+      }),
       12,
       46,
     );
@@ -228,7 +249,7 @@ export class ScoreReview {
     frozen.getContext("2d")!.drawImage(this.canvas, 0, 0);
     return new Promise((ok, no) =>
       frozen.toBlob(
-        (b) => (b ? ok(b) : no(Error("악보 캡처에 실패했습니다."))),
+        (b) => (b ? ok(b) : no(Error(i18nText("score-review.message537")))),
         "image/png",
       ),
     );
@@ -236,11 +257,7 @@ export class ScoreReview {
 }
 export function copyReviewImage(png: Promise<Blob>): Promise<void> {
   if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined")
-    return Promise.reject(
-      Error(
-        "이미지 복사를 지원하지 않는 환경입니다. 캡처 저장 버튼으로 이미지를 저장해 주세요.",
-      ),
-    );
+    return Promise.reject(Error(i18nText("score-review.message538")));
   // Call clipboard.write inside the key/click gesture, including on Safari.
   return navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
 }

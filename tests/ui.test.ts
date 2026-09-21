@@ -244,12 +244,17 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   set("edit-artist", "Real Paradis");
   const before = (await allRecords()).find((r) => r.song.id === "real-paradis")!
     .song.measures[0].start;
-  click("save-metadata");
+  expect(document.getElementById("save-metadata")).toBeNull();
+  set("edit-original-title", "Original title saved from toolbar");
+  set("edit-composer", "Composer saved from toolbar");
+  click("edit-commit");
   await vi.waitFor(async () => {
     const s = (await allRecords()).find(
       (r) => r.song.id === "real-paradis",
     )!.song;
     expect(s.artist).toBe("Real Paradis");
+    expect(s.originalTitle).toBe("Original title saved from toolbar");
+    expect(s.composer).toBe("Composer saved from toolbar");
     expect(s.measures[0].start).toBe(before);
   });
 });
@@ -289,6 +294,10 @@ it("groups screen, playback, score management and app info in settings", () => {
   expect(document.querySelector('#count-each')).toBeNull();
   click('restart-measure'); click('count-off');
   (document.getElementById("settings-dialog") as HTMLDialogElement).close();
+  (document.getElementById("editor-dialog") as HTMLDialogElement).close();
+  // The unified editor keeps its session while navigating settings. Resolve
+  // any pending exit explicitly before exercising playback below.
+  (document.querySelector('#edit-exit-dialog [data-answer="discard"]') as HTMLButtonElement)?.click();
 });
 it("returns to earlier measures and stops at the first measure", () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
@@ -498,6 +507,8 @@ it("separates tap playback, percent drag, marker activation and cancelled gestur
 });
 it("browses all paused rows vertically without seeking, then restores playback following", async () => {
   const stage = document.getElementById("stage")!;
+  // jsdom has no layout; provide a visible width for the fixed score rows.
+  Object.defineProperty(stage,"clientWidth",{configurable:true,value:1000});
   const view = document.getElementById("view") as HTMLSelectElement;
   const seek = document.getElementById("seek") as HTMLInputElement;
   const oldView = view.value, oldTime = seek.value;
@@ -506,17 +517,21 @@ it("browses all paused rows vertically without seeking, then restores playback f
   const before = seek.value;
   const count = (await allRecords()).find(r => r.song.id === "real-paradis")!.song.measures.length;
   expect(stage.classList.contains("paused-score-scroll")).toBe(true);
-  expect(stage.querySelectorAll("[data-index]")).toHaveLength(count);
+  expect(new Set([...stage.querySelectorAll<HTMLElement>("[data-index]")].map(el=>el.dataset.index)).size).toBe(count);
   stage.scrollTop = 400;
   const wheel = new WheelEvent("wheel", {deltaY:100,bubbles:true,cancelable:true});
   stage.dispatchEvent(wheel); animationFrame(0);
   expect(wheel.defaultPrevented).toBe(false);
   expect(stage.scrollTop).toBe(400);
   expect(seek.value).toBe(before);
+  const rowsBefore = [...stage.querySelectorAll(".browse-strip")].map(row => [...row.querySelectorAll<HTMLElement>("[data-index]")].map(el=>el.dataset.index));
+  expect(rowsBefore[0]).toEqual(["0", "1", "2", "3"]);
+  expect(rowsBefore.every(row=>row.length<=4)).toBe(true);
   const horizontal = new WheelEvent("wheel", {deltaX:100,bubbles:true,cancelable:true});
   stage.dispatchEvent(horizontal); animationFrame(0);
   expect(horizontal.defaultPrevented).toBe(true);
-  expect(Number(seek.value)).toBeGreaterThan(Number(before));
+  expect(seek.value).toBe(before);
+  expect([...stage.querySelectorAll(".browse-strip")].map(row => [...row.querySelectorAll<HTMLElement>("[data-index]")].map(el=>el.dataset.index))).toEqual(rowsBefore);
   const resumedFrom = seek.value;
   click("play"); await vi.waitFor(() => expect(document.getElementById("play")!.getAttribute("aria-label")).toBe("일시정지"));
   animationFrame(0);
@@ -525,7 +540,8 @@ it("browses all paused rows vertically without seeking, then restores playback f
   expect(stage.querySelectorAll("[data-index]").length).toBeLessThanOrEqual(8);
   expect(seek.value).toBe(resumedFrom);
   click("play"); animationFrame(0);
-  expect(stage.querySelectorAll("[data-index]")).toHaveLength(count);
+  expect(new Set([...stage.querySelectorAll<HTMLElement>("[data-index]")].map(el=>el.dataset.index)).size).toBe(count);
+  Reflect.deleteProperty(stage,"clientWidth");
   seek.value = oldTime; seek.dispatchEvent(new Event("input"));
   view.value = oldView; view.dispatchEvent(new Event("change")); animationFrame(0);
 });

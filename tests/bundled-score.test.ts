@@ -25,4 +25,24 @@ it('attaches bundled XML once without changing PDF, timeline or lyrics',async()=
  expect(await attachBundledScore(next,()=>{})).toBe(next);expect(fetcher).toHaveBeenCalledOnce();
  const unrelated={...r,pdf:new Blob(['different PDF'])};expect(await attachBundledScore(unrelated,()=>{})).toBe(unrelated);
  vi.unstubAllGlobals();
-});
+}, 20000);
+it('repairs legacy metadata from verified source while preserving display title and timing',async()=>{
+ vi.stubGlobal('Blob',NativeBlob);vi.stubGlobal('crypto',webcrypto);
+ const {repairBundledMetadata}=await import('../src/bundled-score');
+ const {metadataFromXML}=await import('../src/canonical-xml');
+ const song=JSON.parse(readFileSync('public/demo/song.json','utf8'));
+ song.originalTitle=song.title;
+ const before=structuredClone(song);
+ const r={song,pdf:new Blob([readFileSync('public/demo/score.pdf')]),audio:new Blob(),pages:[new Blob()],canonicalXML:undefined as string|undefined};
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,blob:async()=>new Blob([readFileSync('public/demo/score.musicxml')])}));
+ expect(await repairBundledMetadata(r)).toBe(true);
+ expect(song.originalTitle).toBe('風と丘のバラード');
+ expect(song.artist).toBe('Real Paradis with のだめオーケストラ');
+ expect(song.lyricist).toBe('Jane Su');expect(song.composer).toBe('野村陽一郎');
+ expect(song.title).toBe(before.title);expect(song.measures).toEqual(before.measures);expect(song.lyrics).toEqual(before.lyrics);
+ expect(metadataFromXML(r.canonicalXML!).artist).toBe(song.artist);
+ expect(await repairBundledMetadata(r)).toBe(false);
+ r.song={...before,artist:'Custom artist'};
+ expect(await repairBundledMetadata(r)).toBe(false);
+ vi.unstubAllGlobals();
+}, 20000);

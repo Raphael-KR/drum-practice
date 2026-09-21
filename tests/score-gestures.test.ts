@@ -54,6 +54,49 @@ describe("score playback gestures", () => {
     vi.useRealTimers();
   });
 
+  it.each(["touch", "mouse"])("ignores disabled horizontal %s movement without selecting", pointerType => {
+    controller.dispose();
+    controller = attachScoreGestures(surface, { ...callbacks, horizontalEnabled: () => false });
+    for (const state of [false, true]) {
+      playing = state;
+      pointer("pointerdown", 300, 60, 1, surface, pointerType);
+      pointer("pointermove", 100, 60, 1, surface, pointerType);
+      pointer("pointerup", 100, 60, 1, surface, pointerType);
+      vi.runAllTimers();
+      expect(playing).toBe(state);
+    }
+    expect(callbacks.scrubStart).not.toHaveBeenCalled();
+    expect(callbacks.scrubMove).not.toHaveBeenCalled();
+    expect(callbacks.seek).not.toHaveBeenCalled();
+    expect(callbacks.pause).not.toHaveBeenCalled();
+  });
+
+  it("keeps dragging when implicit capture leaves a child note for the surface", () => {
+    const note = document.createElement("span");
+    surface.append(note);
+    pointer("pointerdown", 300, 60, 1, note);
+    pointer("pointermove", 288, 60, 1, note);
+    pointer("lostpointercapture", 288, 60, 1, note);
+    pointer("pointermove", 100, 60);
+    pointer("pointerup", 100, 60);
+    expect(callbacks.scrubCancel).not.toHaveBeenCalled();
+    expect(callbacks.scrubMove).toHaveBeenLastCalledWith(-200);
+    expect(callbacks.scrubEnd).toHaveBeenCalledOnce();
+  });
+
+  it("allows native horizontal touch scrolling without scrubbing or selecting on release", () => {
+    controller.dispose();
+    controller = attachScoreGestures(surface, { ...callbacks, nativeHorizontal: () => true });
+    pointer("pointerdown", 300, 60);
+    const move = pointer("pointermove", 120, 65);
+    pointer("pointerup", 120, 65);
+    vi.advanceTimersByTime(500);
+    expect(move.defaultPrevented).toBe(false);
+    expect(callbacks.scrubStart).not.toHaveBeenCalled();
+    expect(callbacks.scrubMove).not.toHaveBeenCalled();
+    expect(callbacks.seek).not.toHaveBeenCalled();
+  });
+
   it("pauses a playing score immediately at tap release and never restarts it later", () => {
     playing = true;
     pointer("pointerdown");

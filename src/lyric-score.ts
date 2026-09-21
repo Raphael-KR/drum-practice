@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 import { beatTime, type Song, type Lyric } from "./model";
 import { nearestQuarterBeat } from "./lyric-grid";
 export function projectLyrics(s: Song) {
@@ -23,8 +24,7 @@ export function projectLyrics(s: Song) {
     const p = l.scorePosition;
     if (!p) continue;
     const i = s.measures.findIndex((m) => m.id === p.measureId);
-    if (i < 0)
-      throw Error("가사가 연결된 마디가 없습니다. 마디 구성을 확인하세요.");
+    if (i < 0) throw Error(i18nText("lyric-score.message092"));
     const m = s.measures[i];
     if (
       p.quarterOffset < 0 ||
@@ -32,7 +32,7 @@ export function projectLyrics(s: Song) {
       p.durationQuarters <= 0 ||
       !Number.isFinite(p.durationQuarters)
     )
-      throw Error("가사 리듬 위치 또는 길이가 올바르지 않습니다.");
+      throw Error(i18nText("lyric-score.message093"));
     l.grid = { measureId: m.id, tick: p.quarterOffset * m.denominator };
     l.freeTiming = false;
     l.time = at(offsets[i] + p.quarterOffset);
@@ -78,4 +78,24 @@ export function lyricDurationBeats(s: Song, l: Lyric) {
     m = s.measures.find((m) => m.id === p?.measureId);
   return p && m ? (p.durationQuarters * m.denominator) / 4 : 0.25;
 }
-export function advanceLyricPosition(s:Song,p:NonNullable<Lyric['scorePosition']>,quarters:number){let i=s.measures.findIndex(m=>m.id===p.measureId);if(i<0)throw Error('가사 마디를 찾을 수 없습니다.');let offset=p.quarterOffset+quarters;while(i<s.measures.length-1&&offset>=s.measures[i].beats*4/s.measures[i].denominator){offset-=s.measures[i].beats*4/s.measures[i].denominator;i++;}return {measureId:s.measures[i].id,quarterOffset:offset,durationQuarters:p.durationQuarters};}
+export function advanceLyricPosition(
+  s: Song,
+  p: NonNullable<Lyric["scorePosition"]>,
+  quarters: number,
+) {
+  let i = s.measures.findIndex((m) => m.id === p.measureId);
+  if (i < 0) throw Error(i18nText("lyric-score.message094"));
+  let offset = p.quarterOffset + quarters;
+  while (
+    i < s.measures.length - 1 &&
+    offset >= (s.measures[i].beats * 4) / s.measures[i].denominator
+  ) {
+    offset -= (s.measures[i].beats * 4) / s.measures[i].denominator;
+    i++;
+  }
+  return {
+    measureId: s.measures[i].id,
+    quarterOffset: offset,
+    durationQuarters: p.durationQuarters,
+  };
+}

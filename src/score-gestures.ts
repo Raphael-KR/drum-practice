@@ -4,6 +4,10 @@
  */
 export interface ScoreGestureCallbacks<T> {
   isPlaying(): boolean;
+  /** Let the browser scroll a paused single-line score, including touch inertia. */
+  nativeHorizontal?(): boolean;
+  /** Disable score scrubbing while still cancelling taps after movement. */
+  horizontalEnabled?(): boolean;
   /** Resolve the measure at pointer-down, before playback can move the score. */
   getTarget(event: PointerEvent): T | null;
   /** Resume/unlock AudioContext while pointer-down still has user activation. */
@@ -131,6 +135,14 @@ export function attachScoreGestures<T>(
     if (active.mode === "tap") {
       if (Math.max(Math.abs(dx), Math.abs(dy)) < DRAG_THRESHOLD) return;
       active.mode = Math.abs(dx) > Math.abs(dy) ? "scrub" : "scroll";
+      if (active.mode === "scrub" && callbacks.horizontalEnabled?.() === false) {
+        active.mode = "scroll";
+        return;
+      }
+      if (active.mode === "scrub" && event.pointerType === "touch" && callbacks.nativeHorizontal?.()) {
+        active.mode = "scroll";
+        return;
+      }
       if (active.mode === "scrub") {
         surface.setPointerCapture?.(event.pointerId);
         callbacks.scrubStart(active.wasPlaying);
@@ -190,7 +202,9 @@ export function attachScoreGestures<T>(
   }
 
   function lostCapture(event: PointerEvent) {
-    if (active?.id === event.pointerId) cancelGesture();
+    // iPad transfers implicit capture from the touched note to this surface.
+    // Its bubbling lostpointercapture is not a loss of our explicit capture.
+    if (event.target === surface && active?.id === event.pointerId) cancelGesture();
   }
 
   surface.addEventListener("pointerdown", down);

@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 import { type Song, type Region } from "./model";
 import type { XMLScore } from "./musicxml";
 export const scoreFormat = (name: string): "pdf" | "musicxml" =>
@@ -6,7 +7,7 @@ export const scoreArchivePath = (song: Song) =>
   song.scoreFormat === "musicxml" ? "media/score.musicxml" : "media/score.pdf";
 export function applyXMLTiming(song: Song, parsed: XMLScore) {
   if (song.measures.length !== parsed.measures.length)
-    throw Error("MusicXML 마디 수가 다릅니다.");
+    throw Error(i18nText("score-import.message479"));
   let at = song.firstBeat,
     bpm = song.bpm;
   song.measures.forEach((m, i) => {
@@ -28,7 +29,10 @@ export function replaceWithMusicXML(
 ): Song {
   if (song.measures.length !== result.parsed.measures.length)
     throw Error(
-      `마디 수가 다릅니다 (현재 ${song.measures.length}, MusicXML ${result.parsed.measures.length}). 새 악보로 추가해 주세요.`,
+      i18nText("score-import.message480", {
+        value1: song.measures.length,
+        value2: result.parsed.measures.length,
+      }),
     );
   if (
     song.measures.some(
@@ -37,9 +41,7 @@ export function replaceWithMusicXML(
         m.denominator !== result.parsed.measures[i].denominator,
     )
   )
-    throw Error(
-      "마디별 박자표가 달라 싱크를 보존할 수 없습니다. 새 악보로 추가해 주세요.",
-    );
+    throw Error(i18nText("score-import.message481"));
   const next = structuredClone(song);
   next.regions = result.regions;
   next.pageCount = result.pages.length;
