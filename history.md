@@ -1680,3 +1680,4 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자 승인으로 누적 변경을0.4.0으로 버전업하고 커밋·HTML 저장·기존 공개 Sites 배포 진행.
 - 전체59파일251테스트 통과, build 및 재생 전용 번들 제외 검사 통과. 대용량 bundled-score 테스트의 병렬 실행5초 timeout을20초로 조정 후 전체 재검증.
 - 주요 변경 docs/RELEASE-0.4.0.md. 편집 프로그램 분리는 docs/EDITOR-SEPARATION-ROADMAP.md에 향후 계획으로 기록.
+- 릴리스 배포 완료: Sites 버전8 succeeded(15:58KST), 정본8e015a3/발행 사본381bce1. 실제 웹앱 내보내기 결과11,565,517bytes, 문서/드럼 연습의 버전명 파일로 보존. 로컬 Safari file 실행 로딩 및 두 악보 형식 포함 확인. 실기기 Edge 신규 검수 아님.
