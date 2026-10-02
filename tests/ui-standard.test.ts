@@ -24,3 +24,10 @@ describe('shared UI standard',()=>{
   expect(root.querySelector('dialog')!.getAttribute('aria-labelledby')).toBe('settings-dialog-title');
  });
 });
+
+it("keeps the web footer after the playback group", () => {
+  document.body.innerHTML = '<div id="app"><section id="practice"><div id="stage"></div><div class="transport"></div><section id="repeat-controls"></section><p id="footer">Help</p></section></div>';
+  const root = document.getElementById("app")!;
+  installUIStandard("web", root);
+  expect(root.querySelector(".playback-group")!.nextElementSibling?.id).toBe("footer");
+});

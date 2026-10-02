@@ -1,3 +1,4 @@
+import { markerPath, markerFill, markerStroke } from "./marker-icon";
 import { t as i18nText } from "./i18n";
 import { markedMeasureIndices } from "./marker-slots";
 import { detectStaff } from "./staff-geometry";
@@ -169,16 +170,29 @@ export class ScoreReview {
             sh = r.h * image.naturalHeight,
             staff = this.staffs[row][start + j],
             scaleY = staffGap / staff.gap;
+          const isMarked = marked.has(start + j);
+          if (isMarked) {
+            c.save();
+            c.translate(x, y + 16);
+            c.fillStyle = markerFill;
+            c.strokeStyle = markerStroke;
+            c.lineWidth = 1.7;
+            c.lineJoin = "round";
+            const bookmark = new Path2D(markerPath);
+            c.fill(bookmark);
+            c.stroke(bookmark);
+            c.restore();
+          }
           c.fillStyle = "#627189";
           c.font = "12px system-ui";
           c.fillText(
             i18nText("score-review.message535", {
-              value1: marked.has(start + j) ? "⚑ " : "",
+              value1: "",
               value2: this.song.measures[start + j].label,
               value3: m.beats,
               value4: m.denominator,
             }),
-            x,
+            x + (isMarked ? 28 : 0),
             y + 34,
           );
           c.save();

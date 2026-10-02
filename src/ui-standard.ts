@@ -38,6 +38,8 @@ export function installUIStandard(
     group.className = "playback-group";
     primary.before(group);
     group.append(primary, secondary);
+    const practice = root.querySelector("#practice");
+    if (practice && group.parentElement !== practice) practice.append(group);
   }
   for (const entry of catalog.components) {
     const selector = entry.selectors[surface];

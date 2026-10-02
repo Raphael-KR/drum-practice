@@ -1,3 +1,4 @@
+import { setIconButton } from "./icon-button";
 import { t as i18nText } from "./i18n";
 import { uiText } from "./ui-standard";
 import { icon } from "./icons";
@@ -80,15 +81,11 @@ export function installScreenControls(
   reload.id = "header-reload";
   reload.className = "icon-button screen-action";
   reload.type = "button";
-  reload.innerHTML = icon("reload");
-  reload.title = uiText("reload");
-  reload.setAttribute("aria-label", reload.title);
+  setIconButton(reload, icon("reload"), uiText("reload"));
   reload.onclick = () => window.location.reload();
   const sync = () => {
     const active = !!document.fullscreenElement;
-    full.innerHTML = icon(active ? "collapse" : "expand");
-    full.title = uiText(active ? "exitFullscreen" : "fullscreen");
-    full.setAttribute("aria-label", full.title);
+    setIconButton(full, icon(active ? "collapse" : "expand"), uiText(active ? "exitFullscreen" : "fullscreen"));
     full.setAttribute("aria-pressed", String(active));
   };
   full.onclick = async () => {

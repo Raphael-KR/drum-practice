@@ -1,12 +1,12 @@
-import { t as i18nText, formatDate, formatTime } from "./i18n";
-import { icon } from "./icons";
+import { createDialog } from "./dialog-ui";
 import {
   EditHistory,
-  snapshot,
   retainRevision,
+  snapshot,
   type EditSnapshot,
   type EditorForm,
 } from "./edit-history";
+import { formatDate, t as i18nText } from "./i18n";
 import type { RecordData } from "./storage";
 export interface SessionHost {
   get: () => RecordData | undefined;
@@ -69,10 +69,11 @@ export function editorSession(host: SessionHost) {
     i18nText("editor-session.message036") +
     "</button></div>";
   document.body.append(confirmDialog);
-  const versions = document.createElement("dialog");
-  versions.id = "edit-versions-dialog";
-  versions.className = "management-dialog";
-  document.body.append(versions);
+  const versions = createDialog(
+    "edit-versions-dialog",
+    i18nText("editor-session.message030"),
+    "management-dialog",
+  );
   function dirty() {
     const r = host.get();
     return !!history && !!r && (history.changed(r) || host.pending());
@@ -235,18 +236,8 @@ export function editorSession(host: SessionHost) {
   function showVersions() {
     const r = host.get();
     if (!r) return;
-    versions.replaceChildren();
-    const h = document.createElement("h2");
-    h.textContent = i18nText("editor-session.message030");
-    const close = document.createElement("button");
-    close.innerHTML = icon("close");
-    close.className = "icon-button close-button";
-    close.setAttribute("aria-label", i18nText("editor-session.message042"));
-    close.onclick = () => versions.close();
-    const head = document.createElement("div");
-    head.className = "dialoghead";
-    head.append(h, close);
-    versions.append(head);
+    for (const child of [...versions.children])
+      if (!child.classList.contains("dialoghead")) child.remove();
     for (const v of [...(r.revisions || [])].reverse()) {
       const b = document.createElement("button");
       b.className = "management-row";

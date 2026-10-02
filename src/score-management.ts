@@ -1,3 +1,6 @@
+import { createDialog } from "./dialog-ui";
+import { hasLyrics, scoreAssets } from "./score-assets";
+export { hasLyrics } from "./score-assets";
 import { bindNumericDrag } from "./numeric-drag";
 import { installScoreEditorLayout } from "./score-editor-layout";
 import { t as i18nText } from "./i18n";
@@ -9,14 +12,8 @@ import { songScores } from "./song-scores";
 import { openSettingsChild, selectEditorPane } from "./workspace";
 import { isPortable } from "./portable";
 import type { RecordData } from "./storage";
-export const escapeHTML = (s: unknown) =>
-  String(s).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ]!,
-  );
+import { escapeHTML } from "./html";
+export { escapeHTML } from "./html";
 export function lyricDocument(r: RecordData) {
   if (r.song.lyricText) return r.song.lyricText;
   // Display only: preserve canonical order and explicit MusicXML line/word boundaries.
@@ -82,28 +79,13 @@ export function lyricDocument(r: RecordData) {
   });
   return result.trim();
 }
-export function hasLyrics(r?: RecordData): boolean {
-  if (!r) return false;
-  if (r.song.lyricText?.trim() || r.song.lyrics.some(l => l.text.trim())) return true;
-  if (!r.canonicalXML) return false;
-  const doc = new DOMParser().parseFromString(r.canonicalXML, "application/xml");
-  return [...doc.querySelectorAll("lyric > text")].some(n => n.textContent?.trim());
-}
 export function scoreChips(r?: RecordData) {
-  const formats = r ? songScores(r).map((s) => s.format) : [];
+  const assets = scoreAssets(r);
   return [
-    [
-      "musicxml",
-      i18nText("term.MusicXML"),
-      !!r?.canonicalXML || formats.includes("musicxml"),
-    ],
-    ["pdf", i18nText("term.PDF"), formats.includes("pdf")],
-    [
-      "lyrics",
-      i18nText("main.message279"),
-      !!r && (!!r.song.lyricText?.trim() || r.song.lyrics.length > 0),
-    ],
-    ["audio", i18nText("main.message282"), !!r?.audio.size],
+    ["musicxml", i18nText("term.MusicXML"), assets.musicxml],
+    ["pdf", i18nText("term.PDF"), assets.pdf],
+    ["lyrics", i18nText("main.message279"), assets.lyrics],
+    ["audio", i18nText("main.message282"), assets.audio],
   ]
     .map(
       ([key, label, has]) =>
@@ -123,20 +105,7 @@ interface Host {
 export function setupScoreManagement(h: Host) {
   const $ = (id: string) => document.getElementById(id)!;
   const dialog = (id: string, title: string) => {
-    const d = document.createElement("dialog");
-    d.id = id;
-    d.className = "management-dialog";
-    d.innerHTML =
-      '<div class="dialoghead"><h2>' +
-      String(title) +
-      '</h2><button class="icon-button close-button" aria-label="' +
-      i18nText("editor-session.message042") +
-      '">' +
-      String(icon("close")) +
-      "</button></div>";
-    d.querySelector("button")!.onclick = () => d.close();
-    document.body.append(d);
-    return d;
+    return createDialog(id, title, "management-dialog");
   };
   const files = dialog(
       "song-files-dialog",
@@ -171,8 +140,10 @@ export function setupScoreManagement(h: Host) {
   const editEntry = document.createElement("button");
   editEntry.id = "score-edit-entry";
   editEntry.className = "score-edit-entry";
-  editEntry.innerHTML = icon("pencil") + `<span>${i18nText("score.editEntry")}</span>`;
-  editEntry.onclick = () => document.dispatchEvent(new Event("open-score-editor"));
+  editEntry.innerHTML =
+    icon("pencil") + `<span>${i18nText("score.editEntry")}</span>`;
+  editEntry.onclick = () =>
+    document.dispatchEvent(new Event("open-score-editor"));
   const libraryActions = document.createElement("div");
   libraryActions.className = "score-library-actions";
   libraryActions.append(editEntry);
@@ -212,18 +183,25 @@ export function setupScoreManagement(h: Host) {
   head.insertBefore(tools, head.querySelector('[data-close="editor-dialog"]'));
   const fields = $("editor-meta").querySelector(".metadata-fields")!;
   fields.prepend($("edit-title").closest("label")!);
-  $("edit-title").closest("label")!.after($("edit-original-title").closest("label")!, $("edit-artist").closest("label")!);
+  $("edit-title")
+    .closest("label")!
+    .after(
+      $("edit-original-title").closest("label")!,
+      $("edit-artist").closest("label")!,
+    );
   const metadataCard = document.createElement("section");
   metadataCard.className = "metadata-card";
   fields.before(metadataCard);
   metadataCard.append(fields);
-  const timing = $("editor-meta").querySelector<HTMLElement>(".metadata-timing")!;
+  const timing =
+    $("editor-meta").querySelector<HTMLElement>(".metadata-timing")!;
   const metrics = document.createElement("div");
   metrics.className = "timing-metrics";
   const bpmField = $("edit-bpm").closest("label")!;
   bpmField.before(metrics);
   metrics.append(measureCountLabel, bpmField);
-  $("edit-bpm").closest("label")!.firstChild!.textContent = i18nText("editor.baseBpm");
+  $("edit-bpm").closest("label")!.firstChild!.textContent =
+    i18nText("editor.baseBpm");
   bindNumericDrag($("edit-bpm") as HTMLInputElement, { wheel: true });
   selectEditorPane("meta");
   files.insertAdjacentHTML(
@@ -244,9 +222,10 @@ export function setupScoreManagement(h: Host) {
       row(i18nText("score-management.message486"), "", "export", "file-export"),
   );
   $("file-pdf").remove();
-  $("file-xml").querySelector("strong")!.textContent = i18nText("score.files.replace");
-  $("file-xml").onclick = () =>
-    $("replace-score-button").click();
+  $("file-xml").querySelector("strong")!.textContent = i18nText(
+    "score.files.replace",
+  );
+  $("file-xml").onclick = () => $("replace-score-button").click();
 
   $("file-export").onclick = () => {
     refresh();
@@ -258,12 +237,17 @@ export function setupScoreManagement(h: Host) {
   const exportTools = document.createElement("div");
   exportTools.className = "connection-export";
   const exportButton = $("file-export");
-  exportButton.setAttribute("aria-label", i18nText("score-management.message486"));
+  exportButton.setAttribute(
+    "aria-label",
+    i18nText("score-management.message486"),
+  );
   exportButton.title = i18nText("score-management.message486");
   exportButton.innerHTML = icon("export");
   exportTools.append($("reflow"), exportButton);
   timing.append(exportTools);
-  $("file-audio").querySelector("strong")!.textContent = i18nText("score.files.replaceAudio");
+  $("file-audio").querySelector("strong")!.textContent = i18nText(
+    "score.files.replaceAudio",
+  );
   $("file-xml").querySelector("small")?.remove();
   const audio = document.createElement("input");
   audio.type = "file";
@@ -347,15 +331,22 @@ export function setupScoreManagement(h: Host) {
   const uploadButton = document.createElement("button");
   uploadButton.id = "editor-lyric-upload";
   uploadButton.className = "management-row";
-  uploadButton.innerHTML = icon("lyrics") + "<strong>" + i18nText("score-management.message488") + "</strong>";
+  uploadButton.innerHTML =
+    icon("lyrics") +
+    "<strong>" +
+    i18nText("score-management.message488") +
+    "</strong>";
   const emptyLyrics = document.createElement("p");
   emptyLyrics.textContent = i18nText("lyrics.empty");
   const replaceButton = document.createElement("button");
   replaceButton.id = "editor-lyric-replace";
   replaceButton.className = "management-row";
-  replaceButton.innerHTML = icon("lyrics") + "<strong>" + i18nText("lyrics.replace") + "</strong>";
+  replaceButton.innerHTML =
+    icon("lyrics") + "<strong>" + i18nText("lyrics.replace") + "</strong>";
   const openUpload = () => {
-    upload.querySelector("h2")!.textContent = i18nText(hasLyrics(h.get()) ? "lyrics.replace" : "score-management.message488");
+    upload.querySelector("h2")!.textContent = i18nText(
+      hasLyrics(h.get()) ? "lyrics.replace" : "score-management.message488",
+    );
     upload.showModal();
   };
   uploadButton.onclick = replaceButton.onclick = openUpload;
@@ -541,7 +532,7 @@ export function setupScoreManagement(h: Host) {
   function refresh() {
     const r = h.get();
     overview.innerHTML = r
-      ? `<h3>${escapeHTML(r.song.title)}</h3><p class="subtle">${i18nText("score-management.message521", {value2:escapeHTML(r.song.artist || ""),value3:r.song.measures.length,value4:r.song.bpm})}</p><div class="asset-chips">${scoreChips(r)}</div>`
+      ? `<h3>${escapeHTML(r.song.title)}</h3><p class="subtle">${i18nText("score-management.message521", { value2: escapeHTML(r.song.artist || ""), value3: r.song.measures.length, value4: r.song.bpm })}</p><div class="asset-chips">${scoreChips(r)}</div>`
       : "";
     overview.hidden = !r;
     editEntry.disabled = !r;

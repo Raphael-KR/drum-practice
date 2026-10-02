@@ -1,3 +1,4 @@
+import { encodeAsset, decodeAsset } from "./binary-asset";
 import { t as i18nText } from "./i18n";
 import { validateSong, type Song } from "./model";
 import type { RecordData } from "./storage";
@@ -26,19 +27,11 @@ export const playbackInitial: PlaybackInitial = {
   fullscreen: false,
   highlight: true,
 };
-export async function encodePlaybackAsset(blob: Blob): Promise<PlaybackAsset> {
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 32768)
-    binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-  return { type: blob.type, base64: btoa(binary) };
-}
+export const encodePlaybackAsset = (blob: Blob) => encodeAsset(blob);
 export function decodePlaybackAsset(a: PlaybackAsset) {
   if (!a || typeof a.type !== "string" || typeof a.base64 !== "string")
     throw Error(i18nText("playback-export.message421"));
-  return new Blob([Uint8Array.from(atob(a.base64), (c) => c.charCodeAt(0))], {
-    type: a.type,
-  });
+  return decodeAsset(a);
 }
 /** Explicit fields at every level: no authoring record is copied into playback. */
 export function playbackSong(s: Song): Song {

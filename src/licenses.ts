@@ -1,3 +1,4 @@
+import { download } from "./download";
 import { t as i18nText } from "./i18n";
 import notices from "./third-party.generated.json";
 /** Offline notices: never inject third-party license text as markup. */
@@ -35,14 +36,10 @@ export function licenseSection() {
   link.download = "soundtouch-0.3.0.js";
   link.onclick = (e) => {
     e.preventDefault();
-    const url = URL.createObjectURL(
+    download(
       new Blob([notices.soundtouchSource], { type: "text/javascript" }),
+      link.download,
     );
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = link.download;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   section.append(link);
   return section;

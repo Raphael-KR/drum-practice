@@ -1,3 +1,4 @@
+import { encodeAsset, decodeAsset as decode } from "./binary-asset";
 import { t as i18nText } from "./i18n";
 import { validateSong, type Song } from "./model";
 import type { ScoreVariant } from "./song-scores";
@@ -28,22 +29,7 @@ export interface PortableShell {
   worker: string;
   licenses: string;
 }
-async function encode(blob: Blob): Promise<Asset> {
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 32768)
-    binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-  return {
-    type: blob.type || "application/octet-stream",
-    base64: btoa(binary),
-  };
-}
-function decode(asset: Asset) {
-  const binary = atob(asset.base64),
-    bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new Blob([bytes], { type: asset.type });
-}
+const encode = (blob: Blob) => encodeAsset(blob, "application/octet-stream");
 export async function packScores(
   scores: ScoreVariant[] = [],
 ): Promise<PackedScore[]> {

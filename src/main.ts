@@ -1,126 +1,109 @@
-import { installHelp } from "./help";
-import { t as i18nText, formatDate, formatTime } from "./i18n";
-import { installUIStandard, uiText, componentName } from "./ui-standard";
-import { packCombinedPlayback, makePlaybackHTML } from "./playback-export";
+import { Player } from "./audio";
+import { attachBundledScore, repairBundledMetadata } from "./bundled-score";
+import {
+  ensureCanonical,
+  hasDrumNotation,
+  importedCanonical,
+  readCanonical,
+  saveCanonical,
+  verifyCanonicalAudio,
+  vocalLyrics,
+  withVocalSource,
+  writeCanonical,
+} from "./canonical-xml";
+import { createDialog, dialogHeader } from "./dialog-ui";
+import { download } from "./download";
+import {
+  retainRevision,
+  type EditSnapshot,
+  type EditorForm,
+} from "./edit-history";
+import { editorSession } from "./editor-session";
+import { applyEnglishLyrics, correctBrightSpelling } from "./english-lyrics";
+import {
+  autoFullscreenEnabled,
+  enterFullscreen,
+  saveAutoFullscreen,
+} from "./fullscreen";
+import { formatTime, t as i18nText } from "./i18n";
+import { arrangeIcons } from "./icons";
+import { exportLibrary, importLibrary, preferenceKeys } from "./library-backup";
+import { applyListeningRevision } from "./listening-revision";
+import { applyBar34AcousticReview } from "./lyric-bar34-review";
+import { applyListeningFeedbackBatch } from "./lyric-feedback-batch";
+import { applyListeningFeedbackFollowup } from "./lyric-feedback-followup";
+import { applyListeningFeedbackM32 } from "./lyric-feedback-m32";
+import { applyListeningFeedbackM36 } from "./lyric-feedback-m36";
+import { applyListeningFeedbackM39 } from "./lyric-feedback-m39";
+import { applyListeningFeedbackM48 } from "./lyric-feedback-m48";
+import {
+  enableLyricGrid,
+  nearestQuarterBeat,
+  setLyricGrid,
+  synchronizeLyricGrid,
+} from "./lyric-grid";
+import { applyJapaneseReadings } from "./lyric-reading";
+import { applyLyricRevision } from "./lyric-revision";
+import {
+  advanceLyricPosition,
+  lyricDurationBeats,
+  migrateLyricPositions,
+  projectLyrics,
+} from "./lyric-score";
+import { applyTookuTailShift } from "./lyric-tail-shift";
+import { applyLyricTimingPatch, applyUserLyricAnchors } from "./lyric-timing";
+import lyricTimingRefinement from "./lyric-timing-refinement";
+import { type HighlightPage } from "./note-highlight";
 import {
   readNoteHighlight,
   saveNoteHighlight,
 } from "./note-highlight-preference";
 import {
-  highlightPage,
-  updateNoteHighlights,
-  notePulseBeats,
-  type HighlightPage,
-} from "./note-highlight";
-import { editorSession } from "./editor-session";
-import {
-  snapshot,
-  retainRevision,
-  type EditSnapshot,
-  type EditorForm,
-} from "./edit-history";
-import { setupScoreManagement, scoreChips } from "./score-management";
-import { exportLibrary, importLibrary, preferenceKeys } from "./library-backup";
-import {
-  markMeasure,
-  sortedMarkerSlots,
-  markedMeasureIndices,
-} from "./marker-slots";
-import { preferPDF, savePreferPDF, scorePreference } from "./score-preference";
+  preparePlaybackAssets,
+  releasePlaybackAssets,
+  replacePlaybackAssets,
+} from "./playback-assets";
+import "./playback-base.css";
+import { makePlaybackHTML, packCombinedPlayback } from "./playback-export";
 import {
   readPlaybackPreferences,
   savePlaybackPreferences,
 } from "./playback-preferences";
+import { createPlaybackScreen } from "./playback-screen";
+import { scoreStageHTML, webPlaybackBindings } from "./playback-ui";
+import "./playback-ui.css";
+import { type StaffPosition } from "./practice-staff-layout";
+import { chooseRecent, rememberScore } from "./recent-score";
+import { scoreAssets } from "./score-assets";
 import {
-  centeredRange,
-  loopMeasureRange,
-  scrubTime,
-} from "./practice-controls";
-import {
-  autoFullscreenEnabled,
-  saveAutoFullscreen,
-  enterFullscreen,
-} from "./fullscreen";
-import { attachScoreGestures } from "./score-gestures";
-import { bindNumericDrag, installNumericInputs } from "./numeric-drag";
-import {
-  measurePageStaff,
-  practiceStaffLayout,
-  practicePage,
-  type StaffPosition,
-} from "./practice-staff-layout";
+  applyXMLTiming,
+  replaceWithMusicXML,
+  scoreArchivePath,
+  scoreFormat,
+} from "./score-import";
+import { setupScoreManagement } from "./score-management";
+import { SVG_GZIP, displayPage, pageExtension } from "./score-pages";
+import { preferPDF, savePreferPDF, scorePreference } from "./score-preference";
 import {
   correctStoredRests,
   ensureCenteredRestCache,
 } from "./score-rest-correction";
-import { attachBundledScore, repairBundledMetadata } from "./bundled-score";
-import { ScoreReview, reviewPair, copyReviewImage } from "./score-review";
-import { displayPage, SVG_GZIP, pageExtension } from "./score-pages";
-import {
-  importedCanonical,
-  hasDrumNotation,
-  ensureCanonical,
-  saveCanonical,
-  verifyCanonicalAudio,
-  vocalLyrics,
-  withVocalSource,
-  readCanonical,
-  writeCanonical,
-} from "./canonical-xml";
-import {
-  advanceLyricPosition,
-  migrateLyricPositions,
-  projectLyrics,
-  lyricDurationBeats,
-} from "./lyric-score";
+import { ScoreReview, copyReviewImage, reviewPair } from "./score-review";
 import { activeScore, songScores, useScore } from "./song-scores";
 import {
-  scoreFormat,
-  scoreArchivePath,
-  applyXMLTiming,
-  replaceWithMusicXML,
-} from "./score-import";
-import { applyListeningFeedbackM48 } from "./lyric-feedback-m48";
-import { applyListeningFeedbackM39 } from "./lyric-feedback-m39";
-import { applyBar34AcousticReview } from "./lyric-bar34-review";
-import { applyListeningFeedbackM36 } from "./lyric-feedback-m36";
-import { applyListeningFeedbackM32 } from "./lyric-feedback-m32";
-import { applyListeningFeedbackFollowup } from "./lyric-feedback-followup";
-import { applyListeningFeedbackBatch } from "./lyric-feedback-batch";
-import { applyTookuTailShift } from "./lyric-tail-shift";
-import {
-  lyricMeasureId,
-  enableLyricGrid,
-  synchronizeLyricGrid,
-  nearestQuarterBeat,
-  setLyricGrid,
-} from "./lyric-grid";
-import { applyListeningRevision } from "./listening-revision";
-import { applyEnglishLyrics, correctBrightSpelling } from "./english-lyrics";
-import { applyJapaneseReadings } from "./lyric-reading";
-import { applyLyricRevision } from "./lyric-revision";
-import { playbackPosition, copyPosition } from "./playback-position";
-import "./style.css";
-import lyricTimingRefinement from "./lyric-timing-refinement";
-import { applyLyricTimingPatch, applyUserLyricAnchors } from "./lyric-timing";
-import { chooseRecent, rememberScore } from "./recent-score";
-import { displayRegion } from "./score-view";
-import { arrangeIcons, iconButton } from "./icons";
-import {
-  arrangeWorkspace,
-  selectEditorPane,
-  paginateList,
-  openSettingsChild,
-  updateViewWidth,
-} from "./workspace";
-import { Player } from "./audio";
-import {
   allRecords,
+  deleteRecord,
   saveRecord,
   saveRecords,
-  deleteRecord,
   type RecordData,
 } from "./storage";
+import "./style.css";
+import {
+  arrangeWorkspace,
+  openSettingsChild,
+  paginateList,
+  selectEditorPane,
+} from "./workspace";
 const renderPDF: typeof import("./pdf").renderPDF = async (...args) =>
   (await import("./pdf")).renderPDF(...args);
 const xmlModule = () => import("./musicxml");
@@ -138,42 +121,31 @@ async function renderScore(
     : renderPDF(blob, status);
 }
 
-import {
-  defaults,
-  uid,
-  clamp,
-  locate,
-  beatTime,
-  reflow,
-  xAtBeat,
-  continuousX,
-  validateSong,
-  type Song,
-  type Region,
-  type Measure,
-  type Loop,
-} from "./model";
 import JSZip from "jszip";
+import { estimateTempo } from "./analysis";
+import { escapeHTML as esc } from "./html";
+import { mediaIdentity, verifyMedia, type MediaIdentity } from "./media";
+import {
+  beatTime,
+  clamp,
+  defaults,
+  locate,
+  reflow,
+  uid,
+  validateSong,
+  type Loop,
+  type Region,
+  type Song,
+} from "./model";
 import {
   isPortable,
   packScores,
+  shellFromDocument,
   unpackScores,
   unpackSong,
-  shellFromDocument,
 } from "./portable";
-import { estimateTempo } from "./analysis";
-import { packLabels } from "./lyric-layout";
-import { mediaIdentity, verifyMedia, type MediaIdentity } from "./media";
 const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
   document.getElementById(id) as T;
-const esc = (x: unknown) =>
-  String(x).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ]!,
-  );
 const val = (id: string) => $(id) as HTMLInputElement;
 const num = (id: string) => Number(val(id).value);
 const time = (s: number) =>
@@ -190,30 +162,16 @@ let selected = 0,
   editorPage = 0,
   drawStart: { x: number; y: number } | undefined;
 let saveTimer = 0,
-  busy = false,
-  rowWindow = -1;
-let pausedBrowseIndex = -1;
-let panStartBars = 0,
-  renderedBrowseWidth = NaN,
-  nativeRibbonScroll = false;
-let playbackRowOrigin = 0;
-let stationarySelectionTime: number | undefined;
+  busy = false;
 let editingLoopId: string | undefined;
-let repeatCenter: number | undefined, repeatRadius: number | undefined;
-let lastPracticeLoop: Loop | undefined;
 let pageRatios: number[] = [];
 let practiceStaffs = new Map<string, StaffPosition>();
 let highlightPages: (HighlightPage | undefined)[] = [];
 let noteHighlightEnabled = readNoteHighlight();
-let trackOffsets: number[] = [],
-  trackWidths: number[] = [];
+
 const app = $("app");
 app.innerHTML =
-  '\n<header><div class="brand"><div class="logo" aria-hidden="true">♩</div><div><h1>' +
-  i18nText("main.message097") +
-  '</h1><small id="song-title">' +
-  i18nText("main.message098") +
-  '</small></div></div><div class="actions"><button id="library-button">' +
+  '\n<header><div class="brand"></div><div class="actions"><button id="library-button">' +
   i18nText("icons.message054") +
   '</button><button id="save-html" hidden>' +
   i18nText("icons.message057") +
@@ -239,15 +197,7 @@ app.innerHTML =
   i18nText("main.message106") +
   '</p></section>\n<div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>' +
   i18nText("main.message107") +
-  '</p>\n<section id="practice" hidden><div class="statusline"><div class="flex"><select id="view" aria-label="' +
-  i18nText("main.message108") +
-  '"><option value="ribbon">' +
-  i18nText("main.message109") +
-  '</option><option value="rows">' +
-  i18nText("main.message110") +
-  '</option><option value="compare">' +
-  i18nText("main.message111") +
-  '</option></select><button id="original-button">' +
+  '</p>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
   i18nText("main.message112") +
   '</button></div></div>\n<div id="review-tools" hidden><span id="review-message">' +
   i18nText("main.message113") +
@@ -255,68 +205,24 @@ app.innerHTML =
   i18nText("main.message114") +
   '</button><button id="review-save" hidden>' +
   i18nText("main.message115") +
-  '</button></div><div class="stage" id="stage"><canvas id="review-canvas" hidden aria-label="' +
-  i18nText("main.message116") +
-  '"></canvas><div class="ribbon" id="ribbon"></div><div class="playhead"></div><div id="playhead-status"><span id="playhead-bar"></span><strong id="playhead-beat"></strong><small id="playhead-signature"></small></div></div>\n<div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="' +
-  i18nText("main.message117") +
-  '" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>\n<div class="transport"><div class="flex transport-left"><button id="home" aria-label="' +
-  i18nText("icons.message051") +
-  '">↤</button><label><select id="goto" aria-label="' +
-  i18nText("main.message118") +
-  '">' +
-  String(
-    Array.from(
-      { length: 10 },
-      (_, i) => `<option value="${i + 1}">${i + 1}</option>`,
-    ).join(""),
+  "</button></div>" +
+  scoreStageHTML(
+    '<canvas id="review-canvas" hidden aria-label="' +
+      i18nText("main.message116") +
+      '"></canvas>',
   ) +
-  '</select></label><button id="jump">' +
-  i18nText("main.message119") +
-  '</button><button id="copy-position" title="' +
-  i18nText("main.message120") +
-  '" aria-label="' +
-  i18nText("main.message120") +
-  '">' +
-  i18nText("main.message121") +
-  '</button></div><button id="play" class="primary play">' +
-  i18nText("main.message122") +
-  ('</button><div class="flex transport-right"><button id="tempo-presets" aria-haspopup="dialog">' +
-    i18nText("term.BPM") +
-    '</button><button id="slower" aria-label="') +
-  i18nText("main.message123") +
-  '">−5</button><input id="rate" type="text" inputmode="none" readonly value="94" role="slider" aria-label="' +
-  i18nText("main.message124") +
-  '" aria-orientation="horizontal" title="' +
-  i18nText("main.message125") +
-  '"><button id="faster" aria-label="' +
-  i18nText("main.message126") +
-  '">+5</button><label><input id="click" type="checkbox" checked>' +
-  i18nText("main.message127") +
-  "</label></div></div>\n<details><summary>" +
-  i18nText("main.message128") +
-  '</summary><div class="flex panel"><label>' +
-  i18nText("main.message129") +
-  '<input id="music-volume" type="range" min="0" max="1" step="0.01"></label><label>' +
-  i18nText("main.message130") +
-  '<input id="click-volume" type="range" min="0" max="1" step="0.01"></label><label>' +
-  i18nText("main.message131") +
-  '<input id="zoom" type="range" min="0.5" max="2" step="0.05"></label></div></details>\n<div class="panels"><section class="panel"><h2>' +
+  '\n<div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="' +
+  i18nText("main.message117") +
+  '" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>\n' +
+  '<div class="panels"><section class="panel"><h2>' +
   i18nText("main.message132") +
-  '</h2><div class="flex"><label>' +
-  i18nText("main.message133") +
-  '<input id="loop-a" type="number" min="1" value="25"></label><label>' +
-  i18nText("main.message134") +
-  '<input id="loop-ab" type="number" min="1" step="0.25" value="1"></label><button id="set-a">' +
-  i18nText("main.message135") +
-  '</button></div><div class="flex"><label>' +
-  i18nText("main.message136") +
-  '<input id="loop-b" type="number" min="1" value="29"></label><label>' +
-  i18nText("main.message134") +
-  '<input id="loop-bb" type="number" min="1" step="0.25" value="1"></label><button id="set-b">' +
-  i18nText("main.message137") +
-  '</button></div><p class="subtle">' +
-  i18nText("main.message138") +
-  '</p><div class="flex"><input id="loop-name" type="text" placeholder="' +
+  "</h2>" +
+  '<div class="flex"><button id="set-a">' +
+  i18nText("workspace.message557") +
+  '</button><button id="set-b">' +
+  i18nText("workspace.message558") +
+  "</button></div>" +
+  '<div class="flex"><input id="loop-name" type="text" placeholder="' +
   i18nText("main.message139") +
   '" aria-label="' +
   i18nText("main.message140") +
@@ -348,17 +254,17 @@ app.innerHTML =
   i18nText("main.message151") +
   '</p><p class="subtle" id="alignment-note">' +
   i18nText("main.message152") +
-  '</p></section></main>\n<dialog id="library-dialog"><div class="dialoghead"><h2>' +
-  i18nText("icons.message054") +
-  '</h2><button id="new-button">' +
-  i18nText("main.message153") +
-  '</button><button data-close="library-dialog">' +
-  i18nText("editor-session.message042") +
-  '</button></div><div id="library-list"></div></dialog>\n<dialog id="new-dialog"><div class="dialoghead"><h2>' +
-  i18nText("main.message154") +
-  '</h2><button data-close="new-dialog">' +
-  i18nText("editor-session.message042") +
-  "</button></div><p>" +
+  '</p></section></main>\n<dialog id="library-dialog">' +
+  dialogHeader(
+    i18nText("icons.message054"),
+    "",
+    "library-dialog",
+    "",
+    '<button id="new-button">' + i18nText("main.message153") + "</button>",
+  ) +
+  '<div id="library-list"></div></dialog>\n<dialog id="new-dialog">' +
+  dialogHeader(i18nText("main.message154"), "", "new-dialog", "") +
+  "<p>" +
   i18nText("main.message155") +
   '</p><form id="new-form"><p><label>' +
   i18nText("main.message156") +
@@ -388,11 +294,9 @@ app.innerHTML =
   i18nText("main.message166") +
   '</p><button type="submit" class="primary">' +
   i18nText("main.message167") +
-  '</button></form></dialog>\n<dialog id="editor-dialog"><div class="dialoghead"><h2>' +
-  i18nText("main.message099") +
-  '</h2><button data-close="editor-dialog">' +
-  i18nText("main.message168") +
-  '</button></div><div class="flex"><label>' +
+  '</button></form></dialog>\n<dialog id="editor-dialog">' +
+  dialogHeader(i18nText("main.message099"), "", "editor-dialog", "") +
+  '<div class="flex"><label>' +
   i18nText("main.message156") +
   '<input id="edit-artist" type="text"></label><label>' +
   i18nText("main.message169") +
@@ -474,29 +378,126 @@ app.innerHTML =
   i18nText("main.message204") +
   "</th><th>" +
   i18nText("main.message205") +
-  '</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>\n<dialog id="original-dialog"><div class="dialoghead"><h2>' +
-  i18nText("main.message206") +
-  '</h2><button data-close="original-dialog">' +
-  i18nText("editor-session.message042") +
-  '</button></div><div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>' +
+  '</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>\n<dialog id="original-dialog">' +
+  dialogHeader(i18nText("main.message206"), "", "original-dialog", "") +
+  '<div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>' +
   i18nText("main.message207") +
   '</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>';
-document
-  .getElementById("app")!
-  .insertAdjacentHTML(
-    "beforeend",
-    '<dialog id="tempo-dialog" aria-labelledby="tempo-heading"><div class="dialoghead"><h2 id="tempo-heading">' +
-      i18nText("main.message208") +
-      '</h2><button data-close="tempo-dialog">' +
-      i18nText("editor-session.message042") +
-      '</button></div><div id="tempo-options"></div><p class="subtle">' +
-      i18nText("main.message209") +
-      "</p></dialog>",
-  );
 arrangeWorkspace();
 arrangeIcons();
-installUIStandard("web", document.getElementById("app")!);
-  installHelp(document.getElementById("app")!);
+const playback = createPlaybackScreen({
+  root: app,
+  environment: "web",
+  preferences: {
+    restartId: "restart-measure",
+    countoffId: "count-off",
+    read: readPlaybackPreferences,
+    write: (value) => {
+      const saved = savePlaybackPreferences(value);
+      $("playback-settings-status").textContent = i18nText(
+        saved ? "main.message256" : "main.message257",
+      );
+    },
+  },
+  display: {
+    highlightId: "note-highlight",
+    fullscreenId: "auto-fullscreen",
+    fullscreen: autoFullscreenEnabled,
+    setFullscreen: saveAutoFullscreen,
+    setHighlight: (value) => {
+      noteHighlightEnabled = value;
+      saveNoteHighlight(value);
+    },
+    report: (message) => {
+      $("fullscreen-status").textContent = message;
+    },
+  },
+  afterFrame: updateEditorPlayback,
+  ids: {
+    ...webPlaybackBindings,
+    rewindButton: "jump",
+    mark: "open-marker-dialog",
+    sound: "open-sound-dialog",
+    radiusAttribute: "data-loop-radius",
+    settings: "open-settings-dialog",
+  },
+  song,
+  player: engine,
+  ready: () => !!record,
+  busy: () => busy,
+  setBusy: (value) => {
+    busy = value;
+  },
+  assets: () => ({
+    urls,
+    ratios: pageRatios,
+    staffs: practiceStaffs,
+    highlights: highlightPages,
+  }),
+  highlight: () => noteHighlightEnabled,
+  formats: () => (record ? songScores(record).map((s) => s.format) : []),
+  fail: error,
+  changed: queueSave,
+  pauseOverride: () => {
+    if (song().settings.view !== "compare") return false;
+    captureReview();
+    return true;
+  },
+  compare: {
+    render: () => {
+      $("review-tools").hidden = $("review-canvas").hidden = false;
+      void prepareReview();
+    },
+    draw: (time) => review?.draw(time),
+    target: (e) => {
+      const bounds = $("stage").getBoundingClientRect();
+      const column = Math.floor(
+        clamp(
+          (e.clientX - bounds.left - 12) / Math.max(1, bounds.width - 24),
+          0,
+          0.9999,
+        ) * 4,
+      );
+      return Math.min(
+        song().measures.length - 1,
+        Math.floor(locate(song(), engine().current()).index / 4) * 4 + column,
+      );
+    },
+  },
+  trackChanged: () => {
+    if (song().settings.view !== "compare") {
+      $("review-tools").hidden = $("review-canvas").hidden = true;
+      reviewGeneration++;
+      review?.dispose();
+      review = undefined;
+    }
+  },
+  listsChanged: renderManagedLists,
+  loopDraft: () => ({ id: editingLoopId, name: val("loop-name").value }),
+  loopChanged: (loop) => {
+    if (loop) {
+      editingLoopId = song().loops.some((saved) => saved.id === loop.id)
+        ? loop.id
+        : undefined;
+      val("loop-name").value = loop.name;
+      $("save-loop").textContent = i18nText(
+        editingLoopId ? "main.message263" : "main.message264",
+      );
+    }
+  },
+  markerName: () => {
+    const name = val("marker-name").value.trim();
+    val("marker-name").value = "";
+    return name;
+  },
+  validateView: (view) => {
+    if (view === "compare") {
+      reviewPair(record!);
+      if (song().settings.view !== "compare") engine().pause();
+    }
+  },
+  settingsChanged: syncViewChoices,
+});
 function songControlsAvailable(enabled: boolean) {
   val("click").closest("label")!.hidden = !enabled;
   for (const id of [
@@ -519,19 +520,7 @@ function songControlsAvailable(enabled: boolean) {
 }
 songControlsAvailable(false);
 function updateSongHeading() {
-  const s = song();
-  $("song-title").textContent = [s.artist, s.title].filter(Boolean).join(" - ");
-  $("original-tempo").hidden = false;
-  $("original-tempo-value").textContent =
-    `= ${Number((s.bpm * s.settings.rate).toFixed(2))}`;
-  $("original-tempo").setAttribute(
-    "aria-label",
-    i18nText("main.message210", {
-      value1: Number((s.bpm * s.settings.rate).toFixed(2)),
-    }),
-  );
-  $("original-tempo").title = i18nText("main.message211");
-  ($("original-tempo") as HTMLButtonElement).disabled = false;
+  playback.sync();
   document.title = $("song-title").textContent!;
   management?.refresh();
 }
@@ -597,29 +586,7 @@ function engine() {
   if (!player) {
     player = new Player(readPlaybackPreferences);
     player.onprogress = status;
-    player.onstate = () => {
-      if (
-        player?.playing &&
-        !$("stage").classList.contains("is-playing") &&
-        record
-      ) {
-        playbackRowOrigin = Math.floor(
-          locate(song(), player.current()).index / 4,
-        );
-        rowWindow = -1;
-        stationarySelectionTime = undefined;
-      }
-      $("stage").classList.toggle("is-playing", !!player?.playing);
-      iconButton(
-        "play",
-        player?.playing ? "pause" : "play",
-        uiText(player?.playing ? "pause" : "play"),
-      );
-      if (!player?.playing && record) {
-        record.song.settings.position = player?.position || 0;
-        queueSave();
-      }
-    };
+    player.onstate = () => playback.onState();
   }
   return player;
 }
@@ -652,8 +619,7 @@ async function activate(r: RecordData) {
   scoreGestures.cancel();
   if (autoFullscreenEnabled() && !document.fullscreenElement)
     requestScoreFullscreen();
-  repeatCenter = repeatRadius = undefined;
-  lastPracticeLoop = undefined;
+  playback.reset();
   validateSong(r.song);
   if (r.canonicalXML) {
     await verifyCanonicalAudio(r);
@@ -714,7 +680,6 @@ async function activate(r: RecordData) {
     engine().pause();
     clearTimeout(saveTimer);
     if (record) await saveRecord(session?.forStorage() || record);
-    for (const u of urls) URL.revokeObjectURL(u);
     session?.reset();
     record = r;
     document.body.classList.add("has-song");
@@ -722,34 +687,19 @@ async function activate(r: RecordData) {
     $("save-loop").textContent = i18nText("main.message141");
     // Materialize persisted blobs before image decoding; Safari may not load
     // an object URL backed directly by an IndexedDB blob after a reload.
-    urls = await Promise.all(
-      r.pages.map(async (b) => URL.createObjectURL(await practicePage(b))),
-    );
-    highlightPages = await Promise.all(r.pages.map(highlightPage));
-    practiceStaffs.clear();
-    pageRatios = await Promise.all(
-      urls.map(async (u, index) => {
-        const img = new Image();
-        img.src = u;
-        try {
-          await img.decode();
-        } catch (cause) {
-          throw new Error(
-            i18nText("main.message221", {
-              value1: index + 1,
-              value2: cause instanceof Error ? cause.message : String(cause),
-            }),
-            { cause },
-          );
-        }
-        if (r.song.scoreFormat === "musicxml")
-          for (const [id, staff] of measurePageStaff(
-            img,
-            r.song.regions.filter((region) => region.page === index),
-          ))
-            practiceStaffs.set(id, staff);
-        return img.naturalHeight / img.naturalWidth;
-      }),
+    const prepared = await preparePlaybackAssets(r.pages, r.song, {
+      decodeError: (cause, index) =>
+        new Error(
+          i18nText("main.message221", {
+            value1: index + 1,
+            value2: cause instanceof Error ? cause.message : String(cause),
+          }),
+          { cause },
+        ),
+    });
+    replacePlaybackAssets(
+      { urls, pageRatios, highlightPages, practiceStaffs },
+      prepared,
     );
     try {
       await engine().load(r.audio, r.song);
@@ -788,14 +738,7 @@ async function activate(r: RecordData) {
 }
 function syncViewChoices() {
   syncNoteHighlightControl();
-  updateViewWidth();
   const view = record ? song().settings.view : val("view").value;
-  $("view-description").textContent =
-    view === "compare"
-      ? i18nText("main.message224")
-      : view === "rows"
-        ? i18nText("main.message225")
-        : i18nText("main.message226");
   if (!record) {
     $("review-help").hidden = true;
     $("review-add-score").hidden = true;
@@ -856,46 +799,28 @@ val("prefer-pdf").onchange = async () => {
   }
   busy = true;
   val("prefer-pdf").disabled = true;
-  const nextUrls: string[] = [];
+  let prepared: Awaited<ReturnType<typeof preparePlaybackAssets>> | undefined;
   try {
     const target = songScores(original).find(
       (s) => s.format === (wanted ? "pdf" : "musicxml"),
     )!;
     const next = useScore(original, target);
-    const highlights = await Promise.all(next.pages.map(highlightPage));
-    const staffs = new Map<string, StaffPosition>();
-    const ratios: number[] = [];
-    for (const [index, page] of next.pages.entries()) {
-      const url = URL.createObjectURL(await practicePage(page));
-      nextUrls.push(url);
-      const img = new Image();
-      img.src = url;
-      await img.decode();
-      ratios.push(img.naturalHeight / img.naturalWidth);
-      if (target.format === "musicxml")
-        for (const [id, staff] of measurePageStaff(
-          img,
-          next.song.regions.filter((r) => r.page === index),
-        ))
-          staffs.set(id, staff);
-    }
+    prepared = await preparePlaybackAssets(next.pages, next.song);
     if (record !== original) throw Error(i18nText("main.message231"));
     // Settings may have changed while the images decoded; retain the latest values.
     next.song.settings = original.song.settings;
-    for (const url of urls) URL.revokeObjectURL(url);
-    urls = nextUrls;
-    pageRatios = ratios;
-    highlightPages = highlights;
-    practiceStaffs.clear();
-    for (const [id, staff] of staffs) practiceStaffs.set(id, staff);
+    replacePlaybackAssets(
+      { urls, pageRatios, highlightPages, practiceStaffs },
+      prepared,
+    );
+    prepared = undefined;
     record = next;
     engine().song = next.song;
     savePreferPDF(wanted);
     renderTrack();
     queueSave();
   } catch (e) {
-    for (const url of nextUrls)
-      if (!urls.includes(url)) URL.revokeObjectURL(url);
+    if (prepared) releasePlaybackAssets(prepared);
     error(e);
   } finally {
     busy = false;
@@ -903,160 +828,8 @@ val("prefer-pdf").onchange = async () => {
   }
 };
 function syncSettings() {
-  syncViewChoices();
-  const s = song().settings;
-  updateSongHeading();
-  val("rate").value = String(Number((s.rate * song().bpm).toFixed(2)));
-  val("rate").min = String(Math.ceil(song().bpm * 0.5));
-  val("rate").max = String(Math.floor(song().bpm * 1.2));
-  val("rate").setAttribute("aria-valuenow", val("rate").value);
-  val("rate").setAttribute("aria-valuemin", val("rate").min);
-  val("rate").setAttribute("aria-valuemax", val("rate").max);
-  val("click").checked = s.click;
-  val("music-volume").value = String(s.musicVolume);
-  val("click-volume").value = String(s.clickVolume);
-  val("zoom").value = String(s.zoom);
-  val("view").value = s.view;
-  updateViewWidth();
-  document.querySelectorAll<HTMLButtonElement>("[data-tempo]").forEach((b) => {
-    const selected =
-      Math.abs(Number(b.dataset.tempo) - s.rate * song().bpm) < 0.01;
-    b.classList.toggle("primary", selected);
-    b.setAttribute("aria-pressed", String(selected));
-  });
-  engine().volumes();
-}
-function practiceRegion(s: Song, region: Region) {
-  return displayRegion(s, region);
-}
-function xmlPracticeLayout(s: Song, r: Region, width: number) {
-  const staff = practiceStaffs.get(r.id);
-  if (s.scoreFormat !== "musicxml" || !staff) return undefined;
-  // One engraving scale for playing and paused rows, independent of grid state.
-  const budget =
-    s.settings.view === "rows"
-      ? clamp(width * 0.52, 100, 180)
-      : (clamp($("stage").clientWidth * 0.245, 170, 340) * s.settings.zoom) / 2;
-  return practiceStaffLayout(r, staff, width, budget);
-}
-function widthOf(m: Measure) {
-  const r = practiceRegion(
-    song(),
-    song().regions.find((r) => r.id === m.regionId)!,
-  );
-  const staff = practiceStaffs.get(r.id);
-  if (song().scoreFormat === "musicxml" && staff) {
-    const height =
-      (clamp($("stage").clientWidth * 0.245, 170, 340) * song().settings.zoom) /
-      2;
-    return (r.w * height) / (15 * staff.gap * (pageRatios[r.page] || 1.294));
-  }
-  return (
-    (clamp($("stage").clientWidth * 0.245, 170, 340) *
-      song().settings.zoom *
-      (r.w / r.h / (pageRatios[r.page] || 1.294))) /
-    2
-  );
-}
-function measureHTML(m: Measure, i: number, width: number) {
-  const s = song(),
-    r = practiceRegion(
-      s,
-      s.regions.find((r) => r.id === m.regionId)!,
-    );
-  const ly = s.lyrics.filter((l) => lyricMeasureId(s, l) === m.id);
-  const layout = xmlPracticeLayout(s, r, width);
-  const height =
-    layout?.height ??
-    (width > 1 ? (width / r.w) * r.h * (pageRatios[r.page] || 1.294) : 165);
-  // Two-row alignment keeps a shared height; mask ink outside this source system.
-  let trim = "";
-  if (layout) {
-    const pageHeight = parseFloat(layout.size.split(" ")[1]);
-    const offset = parseFloat(layout.position.split(" ")[1]);
-    const top = Math.max(0, r.y * pageHeight + offset);
-    const bottom = Math.max(0, height - ((r.y + r.h) * pageHeight + offset));
-    trim = `clip-path:inset(${top}px 0 ${bottom}px 0);`;
-  }
-  const highlight = highlightPages[r.page];
-  let overlay = "";
-  if (s.scoreFormat === "musicxml" && highlight?.measures.has(i)) {
-    const scaledHeight = layout
-      ? Number(layout.size.split(" ")[1].replace("px", ""))
-      : height / r.h;
-    const offsetY = layout
-      ? Number(layout.position.split(" ")[1].replace("px", ""))
-      : -r.y * scaledHeight;
-    overlay = `<svg class="note-highlight" aria-hidden="true" data-highlight-measure="${i}" preserveAspectRatio="none" viewBox="${r.x * highlight.width} ${(-offsetY / scaledHeight) * highlight.height} ${r.w * highlight.width} ${(height / scaledHeight) * highlight.height}">${highlight.measures.get(i)}</svg>`;
-  }
-  const syl = ly
-    .map((l) => {
-      const b = ((l.time - m.start) / (m.end - m.start)) * m.beats;
-      const x =
-        s.settings.view === "ribbon"
-          ? positionInMeasure(i, b, width) / width
-          : xAtBeat(r, m, b);
-      return `<span class="syllable" title="${l.confirmed ? i18nText("main.message232") : i18nText("main.message233")}" style="left:${x * 100}%;${l.text.length > 4 ? "font-size:14px;white-space:normal;max-width:95%;transform:none;" : ""}">${esc(l.text)}</span>`;
-    })
-    .join("");
-  return (
-    '<div class="measure" data-index="' +
-    String(i) +
-    '" style="width:' +
-    String(width) +
-    'px"><span class="label"><span class="measure-marker" aria-label="' +
-    i18nText("main.message234") +
-    '" ' +
-    String(markedMeasureIndices(s).has(i) ? "" : "hidden") +
-    ">⚑</span>" +
-    i18nText("main.message235", { value4: esc(m.label) }) +
-    '<span class="measure-beat" aria-label="' +
-    i18nText("main.message236") +
-    '">1</span><small class="measure-signature">' +
-    String(m.beats) +
-    "/" +
-    String(m.denominator) +
-    '</small></span><div class="crop" style="' +
-    String(trim) +
-    "width:" +
-    String(width) +
-    "px;height:" +
-    String(height) +
-    "px;background-image:url('" +
-    String(urls[r.page]) +
-    "');background-size:" +
-    String(layout?.size ?? `${100 / r.w}% ${100 / r.h}%`) +
-    ";background-position:" +
-    String(
-      layout?.position ??
-        `${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%`,
-    ) +
-    '">' +
-    String(overlay) +
-    '</div><div class="lyrics" style="top:' +
-    String(height + 6) +
-    'px">' +
-    String(syl) +
-    "</div></div>"
-  );
-}
-function positionInMeasure(index: number, beat: number, width: number) {
-  const s = song(),
-    m = s.measures[index],
-    next = s.measures[index + 1];
-  const r = practiceRegion(
-    s,
-    s.regions.find((r) => r.id === m.regionId)!,
-  );
-  const nextRegion =
-    next &&
-    practiceRegion(
-      s,
-      s.regions.find((r) => r.id === next.regionId)!,
-    );
-  const end =
-    width + (next ? widthOf(next) * xAtBeat(nextRegion!, next, 0) : 0);
-  return continuousX(r, m, beat, width, end);
+  playback.sync();
+  management?.refresh();
 }
 let review: ScoreReview | undefined;
 let reviewGeneration = 0;
@@ -1146,290 +919,14 @@ function captureReview() {
 action("review-copy", captureReview);
 action("review-save", async () => {
   if (!reviewPNG) return;
-  const url = URL.createObjectURL(await reviewPNG),
-    a = document.createElement("a");
-  a.href = url;
-  a.download = i18nText("main.message242");
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  download(await reviewPNG, i18nText("main.message242"));
 });
 function renderTrack() {
-  if (!record) return;
-  scoreGestures.cancel();
-  const s = song();
-  nativeRibbonScroll = false;
-  $("stage").classList.remove("paused-score-scroll", "paused-ribbon-scroll");
-  $("stage").style.setProperty("--scroll-x", "0px");
-  $("stage").scrollLeft = 0;
-  $("stage").scrollTop = 0;
-  pausedBrowseIndex = -1;
-  stationarySelectionTime = undefined;
-  const comparing = s.settings.view === "compare";
-  $("practice").classList.toggle("score-review", comparing);
-  $("review-tools").hidden = $("review-canvas").hidden = !comparing;
-  $("practice").classList.toggle("two-rows", s.settings.view !== "ribbon");
-  val("zoom").closest("label")!.hidden = s.settings.view !== "ribbon";
-  if (comparing) {
-    $("stage").style.removeProperty("height");
-    void prepareReview();
-    return;
-  }
-  reviewGeneration++;
-  review?.dispose();
-  review = undefined;
-  val("zoom").closest("label")!.hidden = s.settings.view !== "ribbon";
-  rowWindow = -1;
-  trackOffsets = [];
-  trackWidths = [];
-  let x = 0;
-  const html = s.measures.map((m, i) => {
-    trackOffsets.push(x);
-    const w =
-      s.settings.view === "rows" ? $("stage").clientWidth / 4 : widthOf(m);
-    trackWidths.push(w);
-    x += w;
-    return measureHTML(m, i, w);
-  });
-  $("ribbon").innerHTML = html.join("");
-  if (s.settings.view === "ribbon")
-    $("stage").style.height =
-      `${(clamp($("stage").clientWidth * 0.245, 170, 340) * s.settings.zoom) / 2 + 94}px`;
-  else {
-    const cropHeight = Math.max(
-      100,
-      ...Array.from($("ribbon").querySelectorAll<HTMLElement>(".crop"), (e) =>
-        parseFloat(e.style.height),
-      ),
-    );
-    const rowHeight = cropHeight + 30; // lyric baseline and line height
-    $("stage").style.setProperty("--row-content-height", `${rowHeight}px`);
-    $("stage").style.setProperty("--browse-row-pitch", `${rowHeight + 28}px`);
-    $("stage").style.height = `${rowHeight * 2 + 28 * 3}px`;
-  }
-  layoutLyrics();
-  if (!s.measures.length)
-    $("ribbon").innerHTML = "<p>" + i18nText("main.message243") + "</p>";
+  playback.renderTrack();
 }
-function renderRows(index: number) {
-  const stage = $("stage"),
-    ribbon = $("ribbon");
-  if (!player?.playing && !gestureScrub?.resume) {
-    if (rowWindow !== -2) {
-      rowWindow = -2;
-      pausedBrowseIndex = -1;
-      renderedBrowseWidth = NaN;
-      stage.classList.add("paused-score-scroll");
-    }
-    const width = stage.clientWidth / 4;
-    if (width !== renderedBrowseWidth) {
-      renderedBrowseWidth = width;
-      const measures = song().measures;
-      ribbon.innerHTML = Array.from(
-        { length: Math.ceil(measures.length / 4) },
-        (_, row) =>
-          `<div class="browse-row"><div class="browse-strip">${Array.from(
-            { length: 4 },
-            (_, j) => {
-              const i = row * 4 + j;
-              return i >= 0 && i < measures.length
-                ? measureHTML(measures[i], i, width)
-                : `<div class="measure empty-measure" style="width:${width}px"></div>`;
-            },
-          ).join("")}</div></div>`,
-      ).join("");
-      layoutLyrics();
-    }
-    if (!gestureScrub && pausedBrowseIndex !== index) {
-      pausedBrowseIndex = index;
-      const row = ribbon.querySelector<HTMLElement>(
-        `[data-index="${Math.floor(index / 4) * 4}"]`,
-      );
-      stage.scrollTop = Math.max(
-        0,
-        (row?.closest<HTMLElement>(".browse-row")?.offsetTop || 0) - 28,
-      );
-    }
-    return;
-  }
-  if (stage.classList.contains("paused-score-scroll")) {
-    stage.classList.remove("paused-score-scroll");
-    stage.scrollTop = 0;
-    pausedBrowseIndex = -1;
-    rowWindow = -1;
-  }
-  const windowIndex = Math.floor(index / 4);
-  if (windowIndex === rowWindow) return;
-  rowWindow = windowIndex;
-  const s = song();
-  const currentOnTop = (windowIndex - playbackRowOrigin) % 2 === 0;
-  const upper = currentOnTop ? windowIndex : windowIndex + 1,
-    lower = currentOnTop ? windowIndex + 1 : windowIndex;
-  const indices = [
-    ...Array.from({ length: 4 }, (_, j) => upper * 4 + j),
-    ...Array.from({ length: 4 }, (_, j) => lower * 4 + j),
-  ];
-  $("ribbon").innerHTML = indices
-    .filter((i) => i < s.measures.length)
-    .map((i) => measureHTML(s.measures[i], i, $("stage").clientWidth / 4))
-    .join("");
-  layoutLyrics();
-}
-// One lyric baseline per score row; preserve time anchors in the song data.
-function layoutLyrics() {
-  const rows = new Map<number, { el: HTMLElement; rect: DOMRect }[]>();
-  $("ribbon")
-    .querySelectorAll<HTMLElement>(".syllable")
-    .forEach((el) => {
-      el.style.top = "0px";
-      el.style.marginLeft = "0px";
-      const rect = el.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      const row =
-        el.closest<HTMLElement>(".browse-row")?.offsetTop ??
-        el.closest<HTMLElement>(".measure")!.offsetTop;
-      if (!rows.has(row)) rows.set(row, []);
-      rows.get(row)!.push({ el, rect });
-    });
-  for (const items of rows.values()) {
-    const positions = packLabels(
-      items.map(({ rect }) => ({ left: rect.left, width: rect.width })),
-      2,
-      // Clamp to the row content edge, not the moving viewport in ribbon mode.
-      song().settings.view === "rows"
-        ? (items[0].el
-            .closest<HTMLElement>(".browse-strip")
-            ?.getBoundingClientRect().left ??
-            $("stage").getBoundingClientRect().left) + 4
-        : $("ribbon").getBoundingClientRect().left + 4,
-    );
-    const baseline = Math.max(...items.map(({ rect }) => rect.top));
-    items.forEach(({ el, rect }, i) => {
-      el.style.marginLeft = `${positions[i] - rect.left}px`;
-      el.style.top = `${baseline - rect.top}px`;
-    });
-  }
-}
-let positionCopiedUntil = 0;
-function frame() {
-  requestAnimationFrame(frame);
-  if (!record || !player) return;
-  const t = player.current(),
-    s = song(),
-    loc = locate(s, t);
-  if (loc.measure) {
-    const { index, measure: m, beat } = loc;
-    const count = player.count();
-    const positionLabel =
-      performance.now() < positionCopiedUntil
-        ? i18nText("main.message244")
-        : playbackPosition(s, t).label;
-    if ($("copy-position").textContent !== positionLabel)
-      $("copy-position").textContent = positionLabel;
-    $("playhead-status").hidden = s.settings.view !== "ribbon";
-    $("playhead-bar").textContent = i18nText("main.message245", {
-      value1: m.label,
-    });
-    $("playhead-beat").textContent =
-      `${count ? i18nText("main.message246") : ""}${count || Math.min(m.beats, Math.floor(beat) + 1)}`;
-    $("playhead-signature").textContent = `${m.beats}/${m.denominator}`;
-    if (s.settings.view === "compare") {
-      review?.draw(t);
-    } else if (s.settings.view === "ribbon") {
-      const x =
-        trackOffsets[index] +
-        positionInMeasure(index, beat, trackWidths[index]);
-      const stage = $("stage"),
-        ribbon = $("ribbon");
-      if (!player.playing) {
-        if (!nativeRibbonScroll) {
-          nativeRibbonScroll = true;
-          stage.classList.add("paused-ribbon-scroll");
-          ribbon.style.transform = "none";
-          stage.scrollLeft = x;
-        } else if (!gestureScrub && stationarySelectionTime !== t)
-          stage.scrollLeft = x;
-        stage.style.setProperty("--scroll-x", `${stage.scrollLeft}px`);
-      } else {
-        nativeRibbonScroll = false;
-        stage.classList.remove("paused-ribbon-scroll");
-        stage.scrollLeft = 0;
-        stage.style.setProperty("--scroll-x", "0px");
-        ribbon.style.transform = `translateX(${stage.clientWidth / 3 - x}px)`;
-      }
-    } else {
-      renderRows(index);
-    }
-    updateNoteHighlights(
-      $("ribbon"),
-      index,
-      beat,
-      !!count,
-      noteHighlightEnabled,
-      notePulseBeats(m.beats, m.end - m.start, s.settings.rate),
-    );
-    const region = practiceRegion(
-      s,
-      s.regions.find((r) => r.id === m.regionId)!,
-    );
-    const next = s.measures[index + 1];
-    const nextRegion =
-      next &&
-      practiceRegion(
-        s,
-        s.regions.find((r) => r.id === next.regionId)!,
-      );
-    // Cross printed bar margins continuously, but never bridge two screen rows.
-    const nextStart =
-      next && index % 4 !== 3 ? 1 + xAtBeat(nextRegion!, next, 0) : 1;
-    const playedThrough = index + continuousX(region, m, beat, 1, nextStart);
-    $("ribbon")
-      .querySelectorAll<HTMLElement>("[data-index]")
-      .forEach((e) => {
-        const measureIndex = Number(e.dataset.index);
-        const active = measureIndex === index;
-        if (s.settings.view === "rows") {
-          const progress = clamp(playedThrough - measureIndex, 0, 1);
-          e.style.setProperty("--played", `${progress * 100}%`);
-          e.classList.toggle(
-            "progress-edge",
-            playedThrough >= measureIndex && playedThrough < measureIndex + 1,
-          );
-        }
-        const loop = player!.loop,
-          bar = s.measures[measureIndex];
-        e.classList.toggle(
-          "in-loop",
-          !!loop && bar.end > loop.start && bar.start < loop.end,
-        );
-        e.classList.toggle(
-          "loop-start",
-          !!loop && loop.start >= bar.start && loop.start < bar.end,
-        );
-        e.classList.toggle(
-          "loop-end",
-          !!loop && loop.end > bar.start && loop.end <= bar.end,
-        );
-        e.classList.toggle("active", active);
-        if (active) {
-          e.querySelector(".measure-beat")!.textContent =
-            `${count ? i18nText("main.message246") : ""}${count || Math.min(m.beats, Math.floor(beat) + 1)}`;
-        }
-      });
-  }
+function updateEditorPlayback(t: number) {
+  const loc = locate(song(), t);
   $("elapsed").textContent = time(t);
-  if (!gestureScrub) {
-    val("progress-percent").value = String(
-      Math.round(clamp(t / (player.duration || 1), 0, 1) * 100),
-    );
-    val("progress-percent").setAttribute(
-      "aria-valuenow",
-      val("progress-percent").value,
-    );
-  }
-  val("progress-percent").setAttribute(
-    "aria-valuetext",
-    `${val("progress-percent").value}% · ${time(t)} / ${time(player.duration)}`,
-  );
   if (!scrubbing) {
     val("seek").value = String(t);
     val("seek").setAttribute(
@@ -1441,360 +938,18 @@ function frame() {
     value1: t.toFixed(2),
   });
 }
-requestAnimationFrame(frame);
-async function toggle() {
-  if (busy) return;
-  if (engine().playing) {
-    if (song().settings.view === "compare") captureReview();
-    else engine().pause();
-    return;
-  }
-  busy = true;
-  try {
-    await engine().play();
-  } finally {
-    busy = false;
-  }
-}
-async function rate(bpm: number) {
-  if (busy) return;
-  busy = true;
-  try {
-    if (!Number.isFinite(bpm) || bpm <= 0) {
-      syncSettings();
-      throw Error(i18nText("main.message248"));
-    }
-    await engine().setRate(clamp(bpm / song().bpm, 0.5, 1.2));
-    syncSettings();
-    queueSave();
-  } finally {
-    busy = false;
-  }
-}
-action("original-tempo", openTempo);
-action("tempo-reset", () => rate(song().bpm));
-action("copy-position", async () => {
-  const snapshot = playbackPosition(song(), engine().current());
-  await copyPosition(snapshot.text);
-  positionCopiedUntil = performance.now() + 1400;
-  $("copy-position").textContent = i18nText("main.message244");
-});
-action("play", toggle);
-action("home", () => seekFreely(0));
-action("jump", () => {
-  const count = num("goto");
-  if (!Number.isSafeInteger(count) || count < 1 || count > 10)
-    throw Error(i18nText("main.message249"));
-  const measures = song().measures;
-  const index = locate(song(), engine().current()).index;
-  seekFreely(measures[Math.max(index - count, 0)].start);
-});
-val("rate").onchange = () => rate(num("rate")).catch(error);
-function openTempo() {
-  if (!record) return;
-  const original = song().bpm;
-  const presets = [
-    ...new Set([0.5, 0.6, 0.7, 0.8, 0.9].map((f) => Math.round(original * f))),
-  ];
-  $("tempo-options").innerHTML = presets
-    .map(
-      (bpm) =>
-        `<button data-tempo="${bpm}" class="${Math.abs(bpm - original * song().settings.rate) < 0.01 ? "primary" : ""}">${bpm} BPM${bpm === original ? i18nText("main.message250") : ""}</button>`,
-    )
-    .join("");
-  $("tempo-reset").textContent = i18nText("main.message251", {
-    original: original,
-  });
-  $<HTMLDialogElement>("tempo-dialog").showModal();
-}
-$("tempo-options").onclick = (e) => {
-  const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
-    "[data-tempo]",
-  );
-  if (!b) return;
-  void rate(Number(b.dataset.tempo)).catch(error);
-};
-bindNumericDrag(val("rate"));
+const toggle = () => playback.toggle();
 
 function syncNoteHighlightControl() {
-  const comparing = record?.song.settings.view === "compare";
-  const pdf = record && (record.song.scoreFormat ?? "pdf") !== "musicxml";
-  const unavailable = !!(comparing || pdf);
-  val("note-highlight").disabled = unavailable;
-  val("note-highlight").checked = noteHighlightEnabled && !unavailable;
-  $("note-highlight-description").textContent = comparing
-    ? i18nText("main.message252")
-    : pdf
-      ? songScores(record!).some((s) => s.format === "musicxml")
-        ? i18nText("main.message253")
-        : i18nText("main.message254")
-      : i18nText("main.message255");
+  playback.syncDisplay();
 }
 syncNoteHighlightControl();
-val("note-highlight").onchange = () => {
-  if (val("note-highlight").disabled) {
-    syncNoteHighlightControl();
-    return;
-  }
-  noteHighlightEnabled = val("note-highlight").checked;
-  saveNoteHighlight(noteHighlightEnabled);
-  if (record && player) {
-    const { index, beat, measure: m } = locate(song(), player.current());
-    updateNoteHighlights(
-      $("ribbon"),
-      index,
-      beat,
-      !!player.count(),
-      noteHighlightEnabled,
-      notePulseBeats(m.beats, m.end - m.start, song().settings.rate),
-    );
-  }
+const seekFreely = (time: number) => playback.seek(time);
+const scoreGestures = {
+  cancel: () => playback.cancel(),
+  dispose: () => playback.dispose(),
 };
-const playbackPreferences = readPlaybackPreferences();
-val("restart-measure").checked = playbackPreferences.restartMeasure;
-val("count-off").checked = playbackPreferences.countOff;
-for (const id of ["restart-measure", "count-off"])
-  val(id).onchange = () => {
-    const saved = savePlaybackPreferences({
-      restartMeasure: val("restart-measure").checked,
-      countOff: val("count-off").checked,
-    });
-    $("playback-settings-status").textContent = saved
-      ? i18nText("main.message256")
-      : i18nText("main.message257");
-  };
-
-// Score and percentage scrubbing share one preview/commit/cancel lifecycle.
-let gestureScrub:
-  | {
-      start: number;
-      resume: boolean;
-      loop?: Loop;
-      center?: number;
-      radius?: number;
-    }
-  | undefined;
-function prepareGestureAudio() {
-  if (record && !busy) void engine().prepare?.().catch(error);
-}
-function seekFreely(t: number) {
-  stationarySelectionTime = undefined;
-  const p = engine();
-  if (p.loop && (t < p.loop.start || t >= p.loop.end)) {
-    lastPracticeLoop = p.loop;
-    p.loop = undefined;
-    repeatCenter = repeatRadius = undefined;
-    renderLists();
-    status(i18nText("main.message258"));
-  }
-  p.seek(t);
-}
-function beginGestureScrub() {
-  if (!record || busy) return;
-  const p = engine();
-  panStartBars = song().settings.view === "ribbon" ? $("stage").scrollLeft : 0;
-  gestureScrub = {
-    start: p.current(),
-    resume: p.playing,
-    loop: p.loop,
-    center: repeatCenter,
-    radius: repeatRadius,
-  };
-  p.pause();
-}
-function previewGestureScrub(t: number) {
-  if (!gestureScrub) return;
-  seekFreely(t);
-  val("progress-percent").value = String(
-    Math.round(clamp(t / (engine().duration || 1), 0, 1) * 100),
-  );
-}
-function endGestureScrub(cancel = false) {
-  const state = gestureScrub;
-  gestureScrub = undefined;
-  if (!state) return;
-  if (cancel) {
-    engine().pause();
-    engine().loop = state.loop;
-    repeatCenter = state.center;
-    repeatRadius = state.radius;
-    engine().seek(state.start);
-    renderLists();
-  } else if (state.resume && engine().current() < engine().duration) {
-    void engine().play(false, false).catch(error);
-  }
-  queueSave();
-}
-const scoreGestures = attachScoreGestures<number>($("stage"), {
-  isPlaying: () => !!player?.playing,
-  horizontalEnabled: () => !!record && song().settings.view !== "rows",
-  nativeHorizontal: () => !player?.playing && song().settings.view === "ribbon",
-  getTarget: (e) => {
-    if (!record || busy || document.querySelector("dialog[open]")) return null;
-    const measure = (e.target as HTMLElement).closest?.<HTMLElement>(
-      "[data-index]",
-    );
-    if (measure) return Number(measure.dataset.index);
-    if (song().settings.view === "compare") {
-      const bounds = $("stage").getBoundingClientRect();
-      const column = Math.floor(
-        clamp(
-          (e.clientX - bounds.left - 12) / Math.max(1, bounds.width - 24),
-          0,
-          0.9999,
-        ) * 4,
-      );
-      return Math.min(
-        song().measures.length - 1,
-        Math.floor(locate(song(), engine().current()).index / 4) * 4 + column,
-      );
-    }
-    return locate(song(), engine().current()).index;
-  },
-  prepareAudio: prepareGestureAudio,
-  pause: () => {
-    if (record && !busy) {
-      if (song().settings.view === "compare") captureReview();
-      else engine().pause();
-    }
-  },
-  seek: (index, resume) => {
-    if (!record || busy) return;
-    engine().pause();
-    seekFreely(song().measures[index].start);
-    if (!resume) {
-      // Selection changes the playhead, not the paused browsing viewport.
-      pausedBrowseIndex = index;
-      stationarySelectionTime = engine().current();
-    }
-    if (resume) void engine().play(true, false).catch(error);
-  },
-  scrubStart: beginGestureScrub,
-  scrubMove: (delta) => {
-    if (!gestureScrub) return;
-    if (!gestureScrub.resume && song().settings.view === "ribbon") {
-      $("stage").scrollLeft = panStartBars - delta;
-      return;
-    }
-    const width =
-      song().settings.view === "ribbon"
-        ? trackWidths[locate(song(), gestureScrub.start).index]
-        : $("stage").clientWidth / 4;
-    previewGestureScrub(
-      scrubTime(song(), gestureScrub.start, delta, width, engine().duration),
-    );
-  },
-  scrubEnd: () => endGestureScrub(),
-  scrubCancel: () => endGestureScrub(true),
-});
-$("stage").addEventListener(
-  "wheel",
-  (e) => {
-    if (!record || busy || document.querySelector("dialog[open]") || e.ctrlKey)
-      return;
-    if (
-      !engine().playing &&
-      song().settings.view === "rows" &&
-      Math.abs(e.deltaY) >= Math.abs(e.deltaX)
-    ) {
-      scoreGestures.cancel();
-      renderRows(locate(song(), engine().current()).index);
-      return; // Native vertical scroll browses notation without seeking the audio.
-    }
-    if (engine().playing) {
-      e.preventDefault();
-      return;
-    }
-    const scale =
-      e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? $("stage").clientHeight : 1;
-    if (song().settings.view === "ribbon") {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        $("stage").scrollLeft += e.deltaY * scale;
-      }
-      return;
-    }
-    e.preventDefault();
-    scoreGestures.cancel();
-    if (song().settings.view === "rows") {
-      return;
-    }
-    const delta =
-      (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * scale;
-    seekFreely(
-      scrubTime(
-        song(),
-        engine().current(),
-        -delta,
-        Math.max(150, $("stage").clientWidth / 4),
-        engine().duration,
-      ),
-    );
-  },
-  { passive: false },
-);
-$("stage").addEventListener("scroll", () => {
-  if (
-    !record ||
-    busy ||
-    !player ||
-    player.playing ||
-    !nativeRibbonScroll ||
-    song().settings.view !== "ribbon"
-  )
-    return;
-  const x = $("stage").scrollLeft;
-  $("stage").style.setProperty("--scroll-x", `${x}px`);
-  let i = trackOffsets.findIndex(
-    (_, j) => j === trackOffsets.length - 1 || x < trackOffsets[j + 1],
-  );
-  i = Math.max(0, i);
-  const m = song().measures[i];
-  if (!m) return;
-  let lo = 0,
-    hi = m.beats;
-  for (let n = 0; n < 20; n++) {
-    const mid = (lo + hi) / 2;
-    if (positionInMeasure(i, mid, trackWidths[i]) < x - trackOffsets[i])
-      lo = mid;
-    else hi = mid;
-  }
-  seekFreely(m.start + ((m.end - m.start) * (lo + hi)) / 2 / m.beats);
-  stationarySelectionTime = player.current();
-});
-// Keyboard and assistive-technology activation remains available without pointer gestures.
-$("stage").tabIndex = 0;
-$("stage").setAttribute("aria-label", componentName("score"));
-$("stage").addEventListener("click", (e) => {
-  if (e.detail === 0 && record && player?.playing) void toggle().catch(error);
-});
-bindNumericDrag(val("progress-percent"), {
-  onStart: beginGestureScrub,
-  onPreview: (percent) =>
-    previewGestureScrub((engine().duration * percent) / 100),
-  onCommit: (percent) => {
-    if (gestureScrub) endGestureScrub();
-    else if (record) seekFreely((engine().duration * percent) / 100);
-  },
-  onCancel: () => endGestureScrub(true),
-  onTap: () => {
-    if (record) $<HTMLDialogElement>("marker-dialog").showModal();
-  },
-});
-const disposeNumericInputs = installNumericInputs(document);
-if (import.meta.hot)
-  import.meta.hot.dispose(() => {
-    disposeNumericInputs();
-    scoreGestures.dispose();
-  });
-document.addEventListener(
-  "pointerdown",
-  (e) => {
-    if (!(e.target instanceof Element) || $("stage").contains(e.target)) return;
-    scoreGestures.cancel();
-  },
-  true,
-);
+if (import.meta.hot) import.meta.hot.dispose(() => playback.dispose());
 
 let fullscreenRequest: Promise<boolean> | undefined;
 const fullscreenReport = (message: string) => {
@@ -1812,20 +967,6 @@ function requestScoreFullscreen() {
     fullscreenRequest = undefined;
   });
 }
-val("auto-fullscreen").checked = autoFullscreenEnabled();
-val("auto-fullscreen").onchange = async () => {
-  const enabled = val("auto-fullscreen").checked;
-  saveAutoFullscreen(enabled);
-  try {
-    if (enabled && record) await enterFullscreen(fullscreenReport);
-    else if (!enabled) {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      fullscreenReport("");
-    }
-  } catch (e) {
-    error(e);
-  }
-};
 // Request before asynchronous file/IndexedDB work consumes transient activation.
 document.addEventListener(
   "click",
@@ -1897,193 +1038,26 @@ seek.onchange = () => {
 seek.onblur = () => {
   $("seek-position").hidden = true;
 };
-for (const id of ["click", "music-volume", "click-volume", "zoom", "view"])
-  val(id).onchange = () => {
-    if (!record) {
-      syncViewChoices();
-      return;
-    }
-    const s = song().settings;
-    s.click = val("click").checked;
-    s.musicVolume = num("music-volume");
-    s.clickVolume = num("click-volume");
-    s.zoom = num("zoom");
-    if (val("view").value === "compare") {
-      try {
-        reviewPair(record);
-      } catch (e) {
-        val("view").value = s.view;
-        syncViewChoices();
-        error(e);
-        return;
-      }
-      if (s.view !== "compare") engine().pause();
-    }
-    s.view = val("view").value as typeof s.view;
-    syncViewChoices();
-    engine().volumes();
-    if (["view", "zoom"].includes(id)) renderTrack();
-    queueSave();
-  };
-val("loop-precise").onchange = () => {
-  $("loop-beat-controls").hidden = !val("loop-precise").checked;
-  $("loop-range-help").textContent = val("loop-precise").checked
-    ? i18nText("main.message259")
-    : i18nText("main.message260");
-};
-function loopPoint(prefix: string) {
-  const s = song(),
-    i = num(prefix) - 1;
-  const precise = val("loop-precise").checked;
-  const m = s.measures[i];
-  if (!Number.isInteger(i) || !m) throw Error(i18nText("main.message261"));
-  if (!precise) return prefix === "loop-a" ? m.start : m.end;
-  const beat = num(prefix === "loop-a" ? "loop-ab" : "loop-bb") - 1;
-  if (!Number.isFinite(beat) || beat < 0 || beat > m.beats)
-    throw Error(i18nText("main.message262"));
-  return beatTime(m, beat);
-}
-function fillLoop(l: Loop) {
-  const a = locate(song(), l.start),
-    range = loopMeasureRange(song(), l.start, l.end);
-  const last = song().measures[range.last];
-  const endBeat = ((l.end - last.start) / (last.end - last.start)) * last.beats;
-  const precise =
-    Math.abs(l.start - a.measure.start) > 1e-5 ||
-    Math.abs(l.end - last.end) > 1e-5;
-  val("loop-precise").checked = precise;
-  val("loop-precise").dispatchEvent(new Event("change"));
-  val("loop-a").value = String(a.index + 1);
-  val("loop-ab").value = String(Number((a.beat + 1).toFixed(4)));
-  val("loop-b").value = String(range.last + 1);
-  val("loop-bb").value = String(Number((endBeat + 1).toFixed(4)));
-  val("loop-name").value = l.name;
-  updateLoopBeatBounds();
-}
-function updateLoopBeatBounds() {
-  for (const [bar, beat] of [
-    ["loop-a", "loop-ab"],
-    ["loop-b", "loop-bb"],
-  ]) {
-    const m = record && song().measures[num(bar) - 1];
-    if (!m) continue;
-    val(beat).max = String(m.beats + (bar === "loop-b" ? 1 : 0));
-    val(beat).value = String(clamp(num(beat), 1, Number(val(beat).max)));
-  }
-}
-for (const id of ["loop-a", "loop-b"])
-  val(id).addEventListener("change", updateLoopBeatBounds);
 function useLoop(l?: Loop, preservePosition = false) {
-  scoreGestures.cancel();
-  const p = engine(),
-    was = p.playing;
-  p.pause();
-  if (p.loop) lastPracticeLoop = p.loop;
-  p.loop = l;
-  if (l) {
-    lastPracticeLoop = l;
-    if (!preservePosition || p.position < l.start || p.position >= l.end)
-      p.position = l.start;
-    editingLoopId = song().loops.some((saved) => saved.id === l.id)
-      ? l.id
-      : undefined;
-    fillLoop(l);
-    $("save-loop").textContent = editingLoopId
-      ? i18nText("main.message263")
-      : i18nText("main.message264");
-  }
-  renderLists();
-  if (was) void p.play(false, false).catch(error);
+  playback.useLoop(l, preservePosition);
 }
 function loopFromForm(): Loop {
-  const start = loopPoint("loop-a"),
-    end = loopPoint("loop-b");
-  if (end - start < 0.15 || end > engine().duration + 0.01)
-    throw Error(i18nText("main.message265"));
-  return {
-    id: editingLoopId || uid(),
-    name:
-      val("loop-name").value.trim() ||
-      i18nText("main.message266", {
-        value1: num("loop-a"),
-        value2: num("loop-b"),
-      }),
-    start,
-    end,
-  };
+  return playback.loopFromForm(editingLoopId, val("loop-name").value);
 }
-action("apply-loop", () => {
-  const l = loopFromForm();
-  repeatCenter = repeatRadius = undefined;
-  useLoop(l, true);
-  $<HTMLDialogElement>("loop-dialog").close();
-});
 action("save-loop", () => {
   const l = loopFromForm();
   const at = song().loops.findIndex((x) => x.id === l.id);
   if (at < 0) song().loops.push(l);
   else song().loops[at] = l;
-  repeatCenter = repeatRadius = undefined;
+  playback.clearPreset();
   useLoop(l, true);
   queueSave();
 });
-function stopPracticeLoop() {
-  repeatCenter = repeatRadius = undefined;
-  useLoop();
-}
-action("stop-loop", stopPracticeLoop);
-action("quick-stop-loop", stopPracticeLoop);
-function quickRepeat(radius: number, recenter = false) {
-  if (!record || busy) return;
-  const center =
-    recenter || repeatCenter === undefined || !engine().loop
-      ? locate(song(), engine().current()).index
-      : repeatCenter;
-  const range = centeredRange(
-    song().measures,
-    center,
-    radius,
-    engine().duration,
-  );
-  if (range.end <= range.start) throw Error(i18nText("main.message267"));
-  repeatCenter = range.center;
-  repeatRadius = radius;
-  useLoop(
-    {
-      id: uid(),
-      name: i18nText("main.message266", {
-        value1: range.first + 1,
-        value2: range.last + 1,
-      }),
-      start: range.start,
-      end: range.end,
-    },
-    true,
-  );
-}
-$("repeat-controls").addEventListener("click", (e) => {
-  const b = (e.target as Element).closest<HTMLElement>("[data-loop-radius]");
-  if (b) quickRepeat(Number(b.dataset.loopRadius));
-});
-action("recenter-loop", () => quickRepeat(repeatRadius || 1, true));
+action("stop-loop", () => playback.stopLoop());
 action("new-loop", () => {
   editingLoopId = undefined;
   val("loop-name").value = "";
   $("save-loop").textContent = i18nText("main.message264");
-});
-$("open-loop-dialog").addEventListener("click", () => {
-  if (!record) return;
-  if (engine().loop || lastPracticeLoop)
-    fillLoop((engine().loop || lastPracticeLoop)!);
-  else {
-    const range = centeredRange(
-      song().measures,
-      locate(song(), engine().current()).index,
-      1,
-      engine().duration,
-    );
-    fillLoop({ id: "", name: "", start: range.start, end: range.end });
-  }
 });
 for (const [id, prefix] of [
   ["set-a", "loop-a"],
@@ -2095,77 +1069,22 @@ for (const [id, prefix] of [
     val(prefix === "loop-a" ? "loop-ab" : "loop-bb").value = String(
       Math.floor(loc.beat * 4) / 4 + 1,
     );
-    updateLoopBeatBounds();
+    playback.updateLoopBeatBounds();
   });
-function addMarker() {
-  markMeasure(
-    song(),
-    engine().current(),
-    uid(),
-    val("marker-name").value.trim(),
-  );
-  val("marker-name").value = "";
-  renderLists();
-  queueSave();
-}
+const addMarker = () => playback.mark();
 action("add-marker", addMarker);
 action("quick-add-marker", addMarker);
 $("open-marker-dialog").onclick = null;
-action("open-marker-dialog", addMarker);
 $("open-marker-dialog").removeAttribute("aria-haspopup");
-$("open-marker-dialog").setAttribute("aria-label", i18nText("main.message268"));
-$("open-marker-dialog").title = i18nText("main.message268");
-function syncScoreMarkers() {
-  const marked = markedMeasureIndices(song());
-  document
-    .querySelectorAll<HTMLElement>("#ribbon .measure[data-index]")
-    .forEach((el) => {
-      const badge = el.querySelector<HTMLElement>(".measure-marker")!;
-      badge.hidden = !marked.has(Number(el.dataset.index));
-    });
-}
 function renderLists() {
+  playback.renderLists();
+}
+function renderManagedLists() {
   const s = song();
-  $("open-loop-dialog").classList.toggle("is-on", !!player?.loop);
-  const loop = player?.loop;
-  const range = loop && loopMeasureRange(s, loop.start, loop.end);
-  $("loop-summary").textContent = range
-    ? i18nText("main.message269", {
-        value1: range.first + 1,
-        value2: range.last + 1,
-        value3: range.last - range.first + 1,
-      })
-    : i18nText("main.message270");
-  $("quick-stop-loop").hidden = !loop;
-  $("recenter-loop").hidden = !loop;
-  document
-    .querySelectorAll<HTMLButtonElement>("[data-loop-radius]")
-    .forEach((b) => {
-      const active = !!loop && Number(b.dataset.loopRadius) === repeatRadius;
-      b.classList.toggle("primary", active);
-      b.setAttribute("aria-pressed", String(active));
-    });
   $("active-loop").textContent = player?.loop
     ? i18nText("main.message271", { value1: player.loop.name })
     : i18nText("main.message270");
-  $("quick-markers").innerHTML = sortedMarkerSlots(s)
-    .map((m, i) =>
-      m
-        ? '<button type="button" data-quick-marker="' +
-          String(esc(m.id)) +
-          '" aria-label="' +
-          i18nText("main.message272", {
-            value2: esc(locate(s, m.time).measure?.label ?? ""),
-          }) +
-          '">' +
-          String(esc(locate(s, m.time).measure?.label ?? "")) +
-          "</button>"
-        : '<button type="button" class="empty-marker-slot" disabled aria-label="' +
-          i18nText("main.message273", { value1: i + 1 }) +
-          '">—</button>',
-    )
-    .join("");
-  syncScoreMarkers();
+
   $("markers").innerHTML = s.markers
     .map(
       (m) =>
@@ -2209,13 +1128,7 @@ function renderLists() {
   paginateList("markers");
   paginateList("loops");
 }
-$("quick-markers").onclick = (e) => {
-  const id = (e.target as HTMLElement).closest<HTMLElement>(
-    "[data-quick-marker]",
-  )?.dataset.quickMarker;
-  const marker = song().markers.find((m) => m.id === id);
-  if (marker) seekFreely(locate(song(), marker.time).measure!.start);
-};
+
 $("markers").onclick = (e) => {
   const t = e.target as HTMLElement;
   const b = t.closest("button") as HTMLButtonElement;
@@ -2240,7 +1153,7 @@ $("loops").onclick = (e) => {
   if (!b) return;
   const s = song();
   if (b.dataset.loop) {
-    repeatCenter = repeatRadius = undefined;
+    playback.clearPreset();
     useLoop(s.loops.find((l) => l.id === b.dataset.loop));
   }
   if (b.dataset.renameLoop) {
@@ -2256,7 +1169,16 @@ $("loops").onclick = (e) => {
   queueSave();
 };
 for (const b of document.querySelectorAll<HTMLElement>("[data-close]"))
-  b.onclick = () => $<HTMLDialogElement>(b.dataset.close!).close();
+  if (
+    ![
+      "settings-dialog",
+      "tempo-dialog",
+      "sound-dialog",
+      "loop-dialog",
+      "marker-dialog",
+    ].includes(b.dataset.close!)
+  )
+    b.onclick = () => $<HTMLDialogElement>(b.dataset.close!).close();
 async function openLibrary() {
   if (record) await persist();
   library = await allRecords();
@@ -2306,7 +1228,7 @@ async function openLibrary() {
                 .join(""),
             ) +
             String(
-              r.song.lyrics.length || r.song.lyricText
+              scoreAssets(r).lyrics
                 ? '<button class="score-type score-type-lyrics" data-open="' +
                     String(i) +
                     '" data-lyrics="true">' +
@@ -2314,7 +1236,9 @@ async function openLibrary() {
                     "</button>"
                 : "",
             ) +
-            '<span class="asset-chip asset-audio">' +
+            '<span class="asset-chip asset-audio' +
+            (scoreAssets(r).audio ? "" : " asset-missing") +
+            '">' +
             i18nText("main.message282") +
             '</span></div><div class="song-card-actions" ' +
             String(isPortable ? "hidden" : "") +
@@ -2563,7 +1487,8 @@ $("new-form").onsubmit = async (e) => {
   }
 };
 document.addEventListener("open-score-editor", () => {
-  if (!$<HTMLDialogElement>("editor-dialog").open) void openEditor().catch(error);
+  if (!$<HTMLDialogElement>("editor-dialog").open)
+    void openEditor().catch(error);
 });
 async function openEditor() {
   if (!record || isPortable) return;
@@ -3212,12 +2137,7 @@ action("export", async () => {
     );
   }
   const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
-  const u = URL.createObjectURL(blob),
-    a = document.createElement("a");
-  a.href = u;
-  a.download = i18nText("main.message331", { value1: song().title });
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(u), 1000);
+  download(blob, i18nText("main.message331", { value1: song().title }));
   tell(i18nText("main.message332"));
 });
 val("restore").onchange = async () => {
@@ -3326,46 +2246,6 @@ $("new-form").onsubmit = async (e) => {
     error(e);
   }
 };
-document.addEventListener("keydown", (e) => {
-  if (
-    !record ||
-    ["INPUT", "TEXTAREA", "SELECT"].includes(
-      (e.target as HTMLElement).tagName,
-    ) ||
-    document.querySelector("dialog[open]")
-  )
-    return;
-  if (e.code === "Space") {
-    scoreGestures.cancel();
-    e.preventDefault();
-    if (e.repeat) return;
-    void toggle().catch(error);
-  }
-  if (e.key === "m" || e.key === "M") {
-    scoreGestures.cancel();
-    addMarker();
-  }
-  if (["ArrowLeft", "ArrowRight"].includes(e.key)) {
-    scoreGestures.cancel();
-    e.preventDefault();
-    const i =
-      locate(song(), engine().current()).index +
-      (e.key === "ArrowRight" ? 1 : -1);
-    seekFreely(song().measures[clamp(i, 0, song().measures.length - 1)].start);
-  }
-});
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    scoreGestures.cancel();
-    if (gestureScrub) endGestureScrub(true);
-    player?.pause();
-    status(i18nText("main.message339"));
-  }
-});
-window.addEventListener("resize", () => {
-  if (record) renderTrack();
-});
-
 // Each exported file boots its embedded song without a server or storage origin.
 action("save-html", async () => {
   if (!record || busy) return;
@@ -3401,33 +2281,34 @@ if (isPortable) {
 
 if (!isPortable) void refreshRecentScore().catch(error);
 
-const replaceDialog = document.createElement("dialog");
-replaceDialog.id = "replace-score-dialog";
-replaceDialog.innerHTML =
-  '<div class="dialoghead"><h2>' +
-  i18nText("main.message346") +
-  '</h2><button id="replace-close">' +
-  i18nText("editor-session.message042") +
-  "</button></div><p>" +
-  i18nText("main.message347") +
-  "</p><label>" +
-  i18nText("main.message158") +
-  '<input type="file" id="replace-score-file" accept=".pdf,.musicxml,.xml,.mxl"></label><p><label>' +
-  i18nText("main.message348") +
-  '<select id="replace-score-part" disabled><option>' +
-  i18nText("main.message349") +
-  '</option></select></label></p><p id="replace-score-note" class="subtle"></p><button id="replace-score-apply" class="primary" disabled>' +
-  i18nText("main.message350") +
-  "</button>";
-document.body.append(replaceDialog);
+const replaceDialog = createDialog(
+  "replace-score-dialog",
+  i18nText("main.message346"),
+  "",
+  document.body,
+  "replace-close",
+);
+replaceDialog.insertAdjacentHTML(
+  "beforeend",
+  "<p>" +
+    i18nText("main.message347") +
+    "</p><label>" +
+    i18nText("main.message158") +
+    '<input type="file" id="replace-score-file" accept=".pdf,.musicxml,.xml,.mxl"></label><p><label>' +
+    i18nText("main.message348") +
+    '<select id="replace-score-part" disabled><option>' +
+    i18nText("main.message349") +
+    '</option></select></label></p><p id="replace-score-note" class="subtle"></p><button id="replace-score-apply" class="primary" disabled>' +
+    i18nText("main.message350") +
+    "</button>",
+);
+
 const replaceButton = document.createElement("button");
 replaceButton.id = "replace-score-button";
 replaceButton.textContent = i18nText("main.message346");
 $("backup-dialog").append(replaceButton);
 replaceButton.hidden = isPortable;
 replaceButton.disabled = !record;
-iconButton("replace-close", "close", i18nText("editor-session.message042"));
-$("replace-close").classList.add("close-button");
 replaceButton.onclick = () => {
   if (!record) return;
   engine().pause();
@@ -3436,7 +2317,6 @@ replaceButton.onclick = () => {
 $("review-add-score").onclick = () => {
   replaceButton.click();
 };
-$("replace-close").onclick = () => replaceDialog.close();
 let replaceGeneration = 0;
 val("replace-score-file").onchange = async () => {
   const gen = ++replaceGeneration;
@@ -3548,39 +2428,36 @@ xmlExport.onclick = async () => {
   try {
     if (!record) return;
     await persist();
-    const url = URL.createObjectURL(
-        new Blob([record.canonicalXML!], {
-          type: "application/vnd.recordare.musicxml+xml",
-        }),
-      ),
-      a = document.createElement("a");
-    a.href = url;
-    a.download = `${song().title}.musicxml`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    download(
+      new Blob([record.canonicalXML!], {
+        type: "application/vnd.recordare.musicxml+xml",
+      }),
+      `${song().title}.musicxml`,
+    );
   } catch (e) {
     error(e);
   }
 };
-const vocalDialog = document.createElement("dialog");
-vocalDialog.id = "vocal-dialog";
-vocalDialog.innerHTML =
-  '<div class="dialoghead"><h2>' +
-  i18nText("main.message358") +
-  '</h2><button id="vocal-close">' +
-  i18nText("editor-session.message042") +
-  "</button></div><p>" +
-  i18nText("main.message359") +
-  '</p><input id="vocal-file" type="file" accept=".musicxml,.xml,.mxl"><label class="form-field">' +
-  i18nText("main.message360") +
-  '<select id="vocal-part" disabled><option>' +
-  i18nText("main.message349") +
-  '</option></select></label><button id="vocal-apply" disabled>' +
-  i18nText("main.message361") +
-  "</button>";
-document.body.append(vocalDialog);
-iconButton("vocal-close", "close", i18nText("editor-session.message042"));
-$("vocal-close").classList.add("close-button");
+const vocalDialog = createDialog(
+  "vocal-dialog",
+  i18nText("main.message358"),
+  "",
+  document.body,
+  "vocal-close",
+);
+vocalDialog.insertAdjacentHTML(
+  "beforeend",
+  "<p>" +
+    i18nText("main.message359") +
+    '</p><input id="vocal-file" type="file" accept=".musicxml,.xml,.mxl"><label class="form-field">' +
+    i18nText("main.message360") +
+    '<select id="vocal-part" disabled><option>' +
+    i18nText("main.message349") +
+    '</option></select></label><button id="vocal-apply" disabled>' +
+    i18nText("main.message361") +
+    "</button>",
+);
+
 const vocalButton = document.createElement("button");
 vocalButton.id = "import-vocal";
 vocalButton.textContent = i18nText("main.message362");
@@ -3590,7 +2467,6 @@ vocalButton.onclick = () => {
   engine().pause();
   vocalDialog.showModal();
 };
-$("vocal-close").onclick = () => vocalDialog.close();
 let vocalGeneration = 0;
 val("vocal-file").onchange = async () => {
   const generation = ++vocalGeneration;
@@ -3849,14 +2725,6 @@ session = editorSession({
   persist,
   error,
 });
-function download(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob),
-    a = document.createElement("a");
-  a.href = url;
-  a.download = name.replace(/[\\/:*?"<>|]/g, "_");
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-}
 let playbackExportPending = false;
 async function portableBlob() {
   if (!record) throw Error(i18nText("main.message218"));
@@ -3868,8 +2736,8 @@ async function portableBlob() {
       song: {
         ...record.song,
         loops:
-          engine().loop || lastPracticeLoop
-            ? [(engine().loop || lastPracticeLoop)!]
+          engine().loop || playback.lastLoop
+            ? [(engine().loop || playback.lastLoop)!]
             : record.song.loops,
       },
     };
