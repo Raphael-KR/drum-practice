@@ -32,3 +32,8 @@
 ## 앱 명칭과 운영 범위
 - 악보제작실(editor.html)은 로컬 전용 제작 앱이다. 공개 배포하지 않는다.
 - 드럼연습실(player.html)이 최신 재생 앱이다. Sites 배포 요청 시 dist/player만 대상으로 한다.
+
+## 앱별 버전 관리
+- 앱 버전 정본은 src/app-versions.json이다. package.json 버전은 공용 개발 패키지 버전이며 앱 표시 버전으로 사용하지 않는다.
+- 기능·수정 커밋 시 영향 있는 앱만 올린다. 공통 재생 변경은 양쪽, 제작 전용은 editor, 재생 전용은 player를 올린다. 문서만 변경하면 앱 버전은 유지한다.
+- npm run version:app -- editor|player|both patch|minor|major를 사용하고 변경 기록과 함께 커밋한다. 버전 상승을 검증 완료나 배포 완료로 간주하지 않는다.

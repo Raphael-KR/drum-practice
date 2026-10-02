@@ -19,7 +19,8 @@
     "dev:editor": "vite --host 127.0.0.1 --open /editor.html",
     "dev:player": "vite --host 127.0.0.1 --port 5174 --open /player.html",
     "build:apps": "npm run check:i18n && npm run portable && tsc --noEmit && vite build --mode editor && vite build --mode player && node scripts/check-app-boundaries.mjs",
-    "test:drum": "vitest run --exclude 'guitar-practice/**'"
+    "test:drum": "vitest run --exclude 'guitar-practice/**'",
+    "version:app": "node scripts/bump-app-version.mjs"
   },
   "dependencies": {
     "jszip": "^3.10.2",

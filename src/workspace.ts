@@ -1,4 +1,4 @@
-import packageInfo from "../package.json";
+import appVersions from "./app-versions.json";
 import buildInfo from "./build-info.generated.json";
 import { t as i18nText } from "./i18n";
 import { licenseSection } from "./licenses";
@@ -161,7 +161,7 @@ export function arrangeWorkspace() {
     el("alignment-note"),
   );
   const info = settingsPanel("info", "info-settings", "open-info-settings");
-  info.innerHTML = appInfoHTML(packageInfo.version, buildInfo);
+  info.innerHTML = appInfoHTML(appVersions.editor.version, buildInfo);
   info.append(licenseSection());
   info.append(practice.querySelector(".keyboard")!);
   const log = document.createElement("section");

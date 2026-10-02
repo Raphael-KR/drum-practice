@@ -1,4 +1,4 @@
-import { version } from "../package.json";
+import appVersions from "./app-versions.json";
 import { installScoreReader } from "./score-reader";
 import { Player } from "./audio-core";
 import build from "./build-info.generated.json";
@@ -114,7 +114,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     loopExtra,
   });
   addSettings("info", "info-settings", "open-info-settings").innerHTML =
-    appInfoHTML(version, build) +
+    appInfoHTML(appVersions.player.version, build) +
     `<details><summary>${i18nText("licenses.message083")}</summary><pre id="licenses"></pre></details>`;
   $("licenses").textContent = options.licenses ?? "";
   const status = (v: string) => {
