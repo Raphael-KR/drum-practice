@@ -1,5 +1,7 @@
 # Real Paradis PDF → MusicXML
 
+> 이 문서는 2026-09-19 변환 실험의 재현 기록이다. 새 변환은 [변환 선택 기준](MUSICXML-CONVERSION-POLICY.md)과 최신 `docs/SCORE-MUSICXML-OSMD-MAPPING.md`, `docs/SVG-SCORE-RULES.md`를 먼저 따른다. 아래 전용 코드의 역사적 후보 매핑·Verovio 표시 보정은 현재 웹앱의 승인 규칙을 대체하지 않는다. 기존 산출물을 재현하는 도구이며 앱에 자동 적용하지 않는다.
+
 - 목표: PDF 기호의 음악적 의미를 복원하고 원본 대조 근거를 남긴다.
 - 범위: 별도 worktree의 변환 코드, 로컬 산출물, 검증 기록.
 - 완료 조건: 대표 마디(9, 12, 84)의 두 성부/음가/악기/박자 합계와 재렌더링 검증 후 전체 확장 판정. 전체 결과는 마디별 검토 상태를 갖는다.
@@ -87,7 +89,7 @@ SVG의 텍스트 글꼴만 `YuMincho`로 지정하고 `サビ`를 기존 프레�
 
 ## 재현
 
-작업 worktree 루트에서 실행한다. 원본 PDF는 읽기만 한다. 이 코드는 해당 PDF 해시에 결합한 전용 변환기이며 다른 곡에 수동 예외를 적용하지 않는다. Python/Cairo와 YuMincho가 있는 현재 macOS 환경 기준이다.
+통합된 프로젝트 루트에서 실행한다. 원본 PDF는 읽기만 한다. 이 코드는 해당 PDF 해시에 결합한 전용 변환기이며 다른 곡에 수동 예외를 적용하지 않는다. Python/Cairo와 YuMincho가 있는 현재 macOS 환경 기준이다.
 
 ```sh
 python3 -m venv docs/experiments/musicxml/venv

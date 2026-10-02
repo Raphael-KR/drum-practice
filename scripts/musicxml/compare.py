@@ -287,7 +287,7 @@ def main():
             if c.tag not in ["part-list", "part"]:
                 excerpt.getroot().remove(c)
         for part in excerpt.findall("./part"):
-            for m in list(part):
+            for m in part.findall("measure"):
                 if int(m.get("number")) not in [9, 12, 84]:
                     part.remove(m)
                     continue
