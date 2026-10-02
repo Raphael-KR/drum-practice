@@ -54,6 +54,8 @@ export function renderMeasure({
       : -r.y * scaledHeight;
     overlay = `<svg class="note-highlight" aria-hidden="true" data-highlight-measure="${i}" preserveAspectRatio="none" viewBox="${r.x * highlight.width} ${(-offsetY / scaledHeight) * highlight.height} ${r.w * highlight.width} ${(height / scaledHeight) * highlight.height}">${highlight.measures.get(i)}</svg>`;
   }
+  const centered = s.measureLyrics?.find(l => l.measureId === m.id);
+  const measureText = centered ? `<span class="measure-lyric">${esc(centered.text)}</span>` : "";
   const syl = ly
     .map((l) => {
       const b = ((l.time - m.start) / (m.end - m.start)) * m.beats;
@@ -103,7 +105,7 @@ export function renderMeasure({
     '</div><div class="lyrics" style="top:' +
     String(height + 6) +
     'px">' +
-    String(syl) +
+    String(syl) + measureText +
     "</div></div>"
   );
 }

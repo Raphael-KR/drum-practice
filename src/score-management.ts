@@ -16,6 +16,8 @@ import { escapeHTML } from "./html";
 export { escapeHTML } from "./html";
 export function lyricDocument(r: RecordData) {
   if (r.song.lyricText) return r.song.lyricText;
+  if (r.song.measureLyrics?.length && !r.song.lyrics.length)
+    return r.song.measures.flatMap(m => r.song.measureLyrics!.filter(l => l.measureId === m.id).map(l => l.text)).join("\n");
   // Display only: preserve canonical order and explicit MusicXML line/word boundaries.
   const doc = r.canonicalXML
     ? new DOMParser().parseFromString(r.canonicalXML, "application/xml")

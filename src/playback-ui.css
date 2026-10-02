@@ -1935,3 +1935,13 @@ main {
 .score-reader-surface img { display:block; width:100%; height:auto; }
 .score-reader-measure { position:absolute; transform:translate(-110%,-50%); color:#64748b; font-size:clamp(9px,1vw,14px); font-weight:600; line-height:1; pointer-events:none; }
 .score-reader-lyrics { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; }
+
+/* Measure-only lyrics do not enter syllable timing or cross-measure label packing. */
+.measure-lyric {
+  display: block;
+  padding: 0 6px;
+  text-align: center;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}

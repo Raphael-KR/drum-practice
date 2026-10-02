@@ -106,7 +106,7 @@ export function installScoreReader(options: Options) {
       }
     });
   }
-  if (options.song.lyricText || options.song.lyrics?.length) {
+  if (options.song.lyricText || options.song.measureLyrics?.length || options.song.lyrics?.length) {
     const label = t("score-management.message487");
     button("runtime-full-lyrics", label, () => {
       release();
@@ -115,7 +115,9 @@ export function installScoreReader(options: Options) {
       lyrics.className = "score-reader-lyrics";
       lyrics.textContent =
         options.song.lyricText ||
-        options.song.lyrics.map((l) => l.text).join(" ");
+        (options.song.measureLyrics?.length
+          ? options.song.measures.flatMap(m => options.song.measureLyrics!.filter(l => l.measureId === m.id).map(l => l.text)).join("\n")
+          : options.song.lyrics.map((l) => l.text).join(" "));
       body.append(lyrics);
       dialog.showModal();
       dialog.scrollTop = 0;

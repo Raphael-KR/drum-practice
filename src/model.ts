@@ -55,6 +55,13 @@ export interface Settings {
   view: "ribbon" | "rows" | "compare";
   position: number;
 }
+/** Printed text assigned to a measure, without an asserted vocal onset or duration. */
+export interface MeasureLyric {
+  id: string;
+  measureId: string;
+  text: string;
+  placement: "measure-center";
+}
 export interface Song {
   version: 1;
   id: string;
@@ -70,6 +77,7 @@ export interface Song {
   measures: Measure[];
   regions: Region[];
   lyrics: Lyric[];
+  measureLyrics?: MeasureLyric[];
   lyricRevision?: string;
   lyricGridEnabled?: boolean;
   lyricShifts?: string[];
@@ -285,6 +293,7 @@ export function validateSong(x: unknown): asserts x is Song {
     mids.add(m.id);
     end = m.end;
   }
+  validateMeasureLyrics(s.measureLyrics, mids);
   for (const l of s.lyrics)
     if (
       typeof l.text !== "string" ||
@@ -324,4 +333,18 @@ export function validateSong(x: unknown): asserts x is Song {
     !["ribbon", "rows", "compare"].includes(t.view)
   )
     throw Error(i18nText("model.message389"));
+}
+
+export function validateMeasureLyrics(value: unknown, measureIds: Set<string>): asserts value is MeasureLyric[] | undefined {
+  if (value === undefined) return;
+  if (!Array.isArray(value) || value.length > 100000) throw Error(i18nText("model.message386"));
+  const ids = new Set<string>();
+  const assigned = new Set<string>();
+  for (const l of value) {
+    if (!l || typeof l.id !== "string" || !l.id || ids.has(l.id) ||
+      typeof l.text !== "string" || !l.text.trim() ||
+      !measureIds.has(l.measureId) || assigned.has(l.measureId) || l.placement !== "measure-center")
+      throw Error(i18nText("model.message386"));
+    ids.add(l.id); assigned.add(l.measureId);
+  }
 }

@@ -2,7 +2,7 @@ import type { RecordData } from "./storage";
 import { songScores } from "./song-scores";
 export function hasLyrics(r?: RecordData): boolean {
   if (!r) return false;
-  if (r.song.lyricText?.trim() || r.song.lyrics.some((l) => l.text.trim()))
+  if (r.song.measureLyrics?.some(l => l.text.trim()) || r.song.lyricText?.trim() || r.song.lyrics.some((l) => l.text.trim()))
     return true;
   if (!r.canonicalXML) return false;
   const doc = new DOMParser().parseFromString(

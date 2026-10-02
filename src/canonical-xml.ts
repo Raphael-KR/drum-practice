@@ -1,5 +1,5 @@
 import { t as i18nText } from "./i18n";
-import type { Song, Lyric } from "./model";
+import { validateMeasureLyrics, type Song, type Lyric, type MeasureLyric } from "./model";
 import type { RecordData } from "./storage";
 import { migrateLyricPositions, projectLyrics } from "./lyric-score";
 const PART = "DrumPracticeLyrics",
@@ -37,6 +37,7 @@ function put(parent: Element, name: string, text: string) {
 }
 interface Manifest {
   version: 1;
+  measureLyrics?: MeasureLyric[];
   partId: string;
   audioName: string;
   audioSHA256?: string;
@@ -89,6 +90,7 @@ export function writeCanonical(
   base?: string,
   audioSHA256?: string,
 ): string {
+  validateMeasureLyrics(s.measureLyrics, new Set(s.measures.map(m => m.id)));
   migrateLyricPositions(s);
   const d = parse(
       base || '<score-partwise version="4.0"><part-list/></score-partwise>',
@@ -267,6 +269,7 @@ export function writeCanonical(
         occurrence: 1,
       }),
     ),
+    ...(s.measureLyrics?.length ? { measureLyrics: s.measureLyrics.map(l => ({ ...l })) } : {}),
     lyrics: rows.map(({ l, voice }) => ({
       voice,
       id: l.id,
@@ -354,6 +357,8 @@ export function readCanonical(text: string, s: Song): void {
       if (!child(e, "chord")) cursor += duration;
     }
   });
+  validateMeasureLyrics(data.measureLyrics, new Set(s.measures.map(m => m.id)));
+  s.measureLyrics = data.measureLyrics?.map(l => ({ ...l }));
   s.lyrics = [...lyrics.values()];
   projectLyrics(s);
 }
