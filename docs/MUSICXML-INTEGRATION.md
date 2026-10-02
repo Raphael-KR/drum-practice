@@ -11,3 +11,15 @@
 검토 수정: Audiveris XML의 part 아래 주석을 measure로 처리하던 비교 발췌 오류를 수정하고 회귀 검사를 추가했다.
 
 기본 npm run build는 portable HTML을 생성하므로 실행하지 않는다. 대신 i18n, 기존 출력에 대한 playback 검사, TypeScript, Vite build(publicDir:false)를 실행한다. Vite의 앱 index.html은 웹앱 빌드이며 HTML 재생 파일이 아니다. 기존 재생 HTML은 재생성하지 않는다.
+
+## 검증 결과와 자료 보존
+
+- main 통합 커밋: 3949f3c (d18f669를 부모로 포함하는 병합을 fast-forward 적용).
+- 최신 웹앱 src/, package.json, AGENTS.md 및 변환 정책: 시작 main과 diff 없음.
+- Python9검사 통과, 110마디/441박 MusicXML4.0 검증 통과.
+- 원본 PDF에서 재추출·재출력한 MusicXML SHA256: d5033d473bef0a63d2ded5f2e09234b168b7306d1872fdce9981d9864516f8f6. 기존 후보와 동일.
+- main의 드럼 앱 Vitest:64파일286테스트 통과 (`npm test -- --exclude 'guitar-practice/**'`). 단순 npm test는 별도 하위 guitar-practice 테스트까지 수집하여 다른 프로젝트의 fixture 경로 오류로 실패했으므로 해당 프로젝트만 제외했다. 이전 작업 트리 테스트는 누락된 Git 제외 데모/참조 자료를 연결한 뒤 통과했다.
+- i18n 검사, TypeScript, playback 구조/공통컴포넌트/기존 번들 검사 통과. Vite publicDir:false 웹앱 빌드 통과(기존 큰 청크 경고). npm run build/portable 및 HTML 검토 생성기는 실행하지 않았다.
+- 기존 로컬 자료5397파일을 해시 검증해 `/Users/raphael/Playground/drum-practice-local-archives/pdf-musicxml-worktree-20261002`에 보존했다. manifest는 backup-manifest.json. 재사용할 실험자료는 실제 프로젝트 docs/experiments/musicxml 및 musicxml-comparison에도 복사했다. venv 내 실행 스크립트의 기존 절대 shebang은 이전 경로를 포함할 수 있으므로 직접 venv/bin/python을 쓰거나 가상환경을 재생성한다.
+- 새 검증 로그는 docs/experiments/audiveris-20261002/, 재현 출력은 docs/experiments/pdf-musicxml-integration-repro/, 웹앱 빌드는 docs/experiments/pdf-musicxml-integration-build/에 보존한다.
+- 남은 악보 품질 한계는 변환/비교 문서의 범위 그대로다. 이번 작업은 앱 재배포나 새 악보 확정이 아니다.

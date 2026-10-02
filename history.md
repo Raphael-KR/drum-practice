@@ -1768,3 +1768,7 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 
 ## 2026-10-02 변환 방식 선택 정책 확정
 - 사용자 결정에 따라 실제 프로젝트 docs/MUSICXML-CONVERSION-POLICY.md에 선택 기준·보존·검증·비교 한계를 저장. 실제 프로젝트와 변환 worktree AGENTS.md에서 매 변환 전 참조하도록 연결. 앱 소스 및 기존 변경은 보존.
+
+## 2026-10-02 PDF→MusicXML main 통합 검증
+- 최신 main을 보존하여3949f3c로 통합. 중복 정책 없음. Python9검사·드럼앱64파일286테스트·타입/i18n/playback검사·HTML재생물 생성 없는 Vite빌드 통과.
+- 자료5397파일 해시검증 백업 후 변환 작업 트리/브랜치 정리. 상세 docs/MUSICXML-INTEGRATION.md. GitHub/push/배포/HTML재생 파일 생성 미실행.
