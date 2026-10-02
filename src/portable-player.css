@@ -1,0 +1,32 @@
+/* Standalone host differences: file status, settings content. */
+input::-webkit-inner-spin-button {
+  appearance: none;
+}
+.spacer {
+  flex: 1;
+}
+#status {
+  font-size: 14px;
+  color: var(--muted);
+  min-height: 20px;
+}
+details {
+  margin-top: 24px;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.4 monospace;
+  max-height: 40vh;
+  overflow: auto;
+}
+@media (max-width: 650px) {
+}
+
+/* Match the approved app workspace (workspace.ts/style.css), without authoring UI. */
+
+/* Paused browsing moves score content, not a reversed timeline indicator. */
+
+/* Fit the viewport without scaling text or the score's internal scroll surface. */
+
+/* Shared UI hierarchy: keep both playback bars together at every viewport width. */

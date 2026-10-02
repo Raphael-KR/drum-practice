@@ -1,4 +1,7 @@
+import { encodeAsset, decodeAsset as decode } from "./binary-asset";
+import { t as i18nText } from "./i18n";
 import { validateSong, type Song } from "./model";
+import type { ScoreVariant } from "./song-scores";
 import type { RecordData } from "./storage";
 
 export const isPortable =
@@ -7,7 +10,13 @@ interface Asset {
   type: string;
   base64: string;
 }
+export interface PackedScore extends Omit<ScoreVariant, "source" | "pages"> {
+  source: Asset;
+  pages: Asset[];
+}
 export interface PortableSong {
+  canonicalXML?: string;
+  otherScores?: PackedScore[];
   version: 1;
   song: Song;
   pdf: Asset;
@@ -20,39 +29,46 @@ export interface PortableShell {
   worker: string;
   licenses: string;
 }
-async function encode(blob: Blob): Promise<Asset> {
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 32768)
-    binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-  return {
-    type: blob.type || "application/octet-stream",
-    base64: btoa(binary),
-  };
+const encode = (blob: Blob) => encodeAsset(blob, "application/octet-stream");
+export async function packScores(
+  scores: ScoreVariant[] = [],
+): Promise<PackedScore[]> {
+  return Promise.all(
+    scores.map(async (s) => ({
+      ...s,
+      source: await encode(s.source),
+      pages: await Promise.all(s.pages.map(encode)),
+    })),
+  );
 }
-function decode(asset: Asset) {
-  const binary = atob(asset.base64),
-    bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new Blob([bytes], { type: asset.type });
+export function unpackScores(scores: PackedScore[] = []): ScoreVariant[] {
+  return scores.map((s) => {
+    if (!["pdf", "musicxml"].includes(s.format) || !s.pages.length)
+      throw Error(i18nText("portable.message470"));
+    return { ...s, source: decode(s.source), pages: s.pages.map(decode) };
+  });
 }
 export async function packSong(record: RecordData): Promise<PortableSong> {
   validateSong(record.song);
   return {
     version: 1,
+    otherScores: await packScores(record.otherScores),
     song: structuredClone(record.song),
+    canonicalXML: record.canonicalXML,
     pdf: await encode(record.pdf),
     audio: await encode(record.audio),
     pages: await Promise.all(record.pages.map(encode)),
   };
 }
 export function unpackSong(data: PortableSong): RecordData {
-  if (data.version !== 1) throw Error("지원하지 않는 HTML 곡 파일입니다.");
+  if (data.version !== 1) throw Error(i18nText("portable.message471"));
   validateSong(data.song);
   if (data.pages.length !== data.song.pageCount)
-    throw Error("악보 페이지가 누락되었습니다.");
+    throw Error(i18nText("playback-export.message423"));
   return {
     song: data.song,
+    canonicalXML: data.canonicalXML,
+    otherScores: unpackScores(data.otherScores),
     pdf: decode(data.pdf),
     audio: decode(data.audio),
     pages: data.pages.map(decode),
@@ -66,13 +82,28 @@ export function makePortableHTML(
   data: PortableSong | null,
 ) {
   if (/<\/script/i.test(shell.runtime) || /<\/style/i.test(shell.css))
-    throw Error("HTML 실행 코드 인코딩 오류");
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>드럼 연습 — 한 곡 파일</title><style id="portable-style">${shell.css}</style></head><body>
-<div id="app"><main><h1>드럼 연습곡</h1><p>이 파일에는 음원·악보·가사와 실행 코드가 함께 들어 있습니다.</p><p>이 안내만 보이면 현재 앱이 JavaScript를 실행하지 않는 미리보기일 수 있습니다. JavaScript와 오디오를 지원하는 HTML 실행 앱 또는 웹 브라우저에서 여세요. iPad 파일 앱의 미리보기에서는 실행을 보장하지 않습니다.</p></main></div>
-<script id="portable-data" type="application/json">${json(data)}</script>
-<script id="portable-worker" type="application/json">${json(shell.worker)}</script>
-<script id="portable-licenses" type="application/json">${json(shell.licenses)}</script>
-<script id="portable-runtime">${shell.runtime}</script></body></html>`;
+    throw Error(i18nText("portable.message472"));
+  return (
+    '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>' +
+    i18nText("portable.message473") +
+    '</title><style id="portable-style">' +
+    String(shell.css) +
+    '</style></head><body>\n<div id="app"><main><h1>' +
+    i18nText("portable.message474") +
+    "</h1><p>" +
+    i18nText("portable.message475") +
+    "</p><p>" +
+    i18nText("portable.message476") +
+    '</p></main></div>\n<script id="portable-data" type="application/json">' +
+    String(json(data)) +
+    '</script>\n<script id="portable-worker" type="application/json">' +
+    String(json(shell.worker)) +
+    '</script>\n<script id="portable-licenses" type="application/json">' +
+    String(json(shell.licenses)) +
+    '</script>\n<script id="portable-runtime">' +
+    String(shell.runtime) +
+    "</script></body></html>"
+  );
 }
 export function shellFromDocument(doc: Document): PortableShell {
   return {
@@ -82,13 +113,4 @@ export function shellFromDocument(doc: Document): PortableShell {
     licenses: JSON.parse(doc.getElementById("portable-licenses")!.textContent!),
   };
 }
-export function portableWorkerURL() {
-  const source = document.getElementById("portable-worker");
-  return source
-    ? URL.createObjectURL(
-        new Blob([JSON.parse(source.textContent!)], {
-          type: "text/javascript",
-        }),
-      )
-    : undefined;
-}
+export { portableWorkerURL } from "./audio-worker";

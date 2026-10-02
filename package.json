@@ -1,24 +1,30 @@
 {
   "name": "drum-practice-web",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "npm run portable && tsc --noEmit && vite build",
+    "build": "npm run check:i18n && npm run ui:docs && npm run portable && tsc --noEmit && npm run check:playback && vite build",
     "test": "vitest run",
     "preview": "vite preview --host 127.0.0.1",
     "portable": "node scripts/build-portable.mjs",
     "predev": "npm run portable",
     "review:local": "python3 scripts/apple-local/workflow.py",
-    "test:local": "python3 -m unittest discover -s scripts/apple-local -p \"test_*.py\""
+    "test:local": "python3 -m unittest discover -s scripts/apple-local -p \"test_*.py\"",
+    "pretest": "node scripts/third-party.mjs && node scripts/build-info.mjs",
+    "ui:docs": "node scripts/ui-docs.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "check:playback": "node scripts/check-playback-architecture.mjs && node scripts/check-common-components.mjs && node scripts/check-playback-build.mjs"
   },
   "dependencies": {
     "jszip": "^3.10.2",
+    "opensheetmusicdisplay": "^2.1.2",
     "pdfjs-dist": "^6.3.289",
     "soundtouchjs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^22.20.3",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",

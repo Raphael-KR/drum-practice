@@ -1,3 +1,4 @@
+import { t as i18nText } from "./i18n";
 export interface Region {
   id: string;
   page: number;
@@ -22,6 +23,12 @@ export interface Lyric {
   time: number;
   end: number;
   confirmed: boolean;
+  /** Authoritative musical position; time/end above are playback projections. */
+  scorePosition?: {
+    measureId: string;
+    quarterOffset: number;
+    durationQuarters: number;
+  };
   originalTime?: number;
   grid?: { measureId: string; tick: number };
   freeTiming?: boolean;
@@ -45,7 +52,7 @@ export interface Settings {
   countIn: number;
   countEach: boolean;
   zoom: number;
-  view: "ribbon" | "rows";
+  view: "ribbon" | "rows" | "compare";
   position: number;
 }
 export interface Song {
@@ -53,6 +60,11 @@ export interface Song {
   id: string;
   title: string;
   artist?: string;
+  originalTitle?: string;
+  composer?: string;
+  lyricist?: string;
+  /** Untimed full lyric document, canonical MusicXML miscellaneous-field. */
+  lyricText?: string;
   bpm: number;
   firstBeat: number;
   measures: Measure[];
@@ -66,7 +78,10 @@ export interface Song {
   loops: Loop[];
   settings: Settings;
   audioName: string;
+  /** Original score filename; legacy name retained for saved-record compatibility. */
   pdfName: string;
+  scoreFormat?: "pdf" | "musicxml";
+  scorePartId?: string;
   pageCount: number;
 }
 export const uid = () => crypto.randomUUID();
@@ -154,16 +169,21 @@ export function makeCycle(
   rate: number,
   countBars: number,
   m: Measure,
+  quarterCountOff = false,
 ): Cycle {
-  const bs = (m.end - m.start) / m.beats / rate;
-  const count = countBars * m.beats;
+  const bs =
+    ((m.end - m.start) / m.beats / rate) *
+    (quarterCountOff ? m.denominator / 4 : 1);
+  const count = quarterCountOff ? 4 : countBars * m.beats;
   const musicAt = at + count * bs;
   const originalBeat = (m.end - m.start) / m.beats;
   const nextBeat =
     m.start +
     Math.max(0, Math.ceil((from - m.start) / originalBeat - 1e-8)) *
       originalBeat;
-  const countAt = at + Math.max(0, nextBeat - from) / rate;
+  const countAt = quarterCountOff
+    ? at
+    : at + Math.max(0, nextBeat - from) / rate;
   return {
     at,
     countAt,
@@ -174,7 +194,7 @@ export function makeCycle(
     rate,
     count,
     countBeatSeconds: bs,
-    beats: m.beats,
+    beats: quarterCountOff ? 4 : m.beats,
   };
 }
 export function cyclePosition(c: Cycle, now: number) {
@@ -186,6 +206,7 @@ export function validateSong(x: unknown): asserts x is Song {
   if (
     !s ||
     s.version !== 1 ||
+    (s.lyricText !== undefined && typeof s.lyricText !== "string") ||
     typeof s.id !== "string" ||
     typeof s.title !== "string" ||
     (s.artist !== undefined && typeof s.artist !== "string") ||
@@ -198,9 +219,12 @@ export function validateSong(x: unknown): asserts x is Song {
     s.pageCount < 1 ||
     s.pageCount > 500 ||
     typeof s.audioName !== "string" ||
-    typeof s.pdfName !== "string"
+    typeof s.pdfName !== "string" ||
+    (s.scoreFormat !== undefined &&
+      !["pdf", "musicxml"].includes(s.scoreFormat)) ||
+    (s.scorePartId !== undefined && typeof s.scorePartId !== "string")
   )
-    throw Error("곡 정보 또는 BPM이 올바르지 않습니다.");
+    throw Error(i18nText("model.message381"));
   for (const k of [
     "measures",
     "regions",
@@ -209,7 +233,7 @@ export function validateSong(x: unknown): asserts x is Song {
     "loops",
   ] as const)
     if (!Array.isArray(s[k]) || s[k].length > 100000)
-      throw Error("곡 데이터가 누락되었습니다.");
+      throw Error(i18nText("model.message382"));
   const ids = new Set<string>();
   for (const r of s.regions) {
     if (
@@ -228,7 +252,7 @@ export function validateSong(x: unknown): asserts x is Song {
       r.y + r.h > 1.001 ||
       !Array.isArray(r.beatXs)
     )
-      throw Error("악보 영역이 올바르지 않습니다.");
+      throw Error(i18nText("model.message383"));
     ids.add(r.id);
     if (
       r.beatXs.some(
@@ -236,7 +260,7 @@ export function validateSong(x: unknown): asserts x is Song {
           !finite(v) || v < 0 || v > 1 || (i > 0 && v <= r.beatXs[i - 1]),
       )
     )
-      throw Error("박 위치는 왼쪽에서 오른쪽 순서여야 합니다.");
+      throw Error(i18nText("model.message384"));
   }
   let end = -1;
   const mids = new Set<string>();
@@ -257,7 +281,7 @@ export function validateSong(x: unknown): asserts x is Song {
       m.end <= m.start ||
       m.start < end - 1e-5
     )
-      throw Error("마디 순서·시각·박자표를 확인하세요.");
+      throw Error(i18nText("model.message385"));
     mids.add(m.id);
     end = m.end;
   }
@@ -269,10 +293,10 @@ export function validateSong(x: unknown): asserts x is Song {
       l.time < 0 ||
       l.end < l.time
     )
-      throw Error("가사 시각이 올바르지 않습니다.");
+      throw Error(i18nText("model.message386"));
   for (const m of s.markers)
     if (typeof m.name !== "string" || !finite(m.time) || m.time < 0)
-      throw Error("마커가 올바르지 않습니다.");
+      throw Error(i18nText("model.message387"));
   for (const l of s.loops)
     if (
       typeof l.name !== "string" ||
@@ -281,7 +305,7 @@ export function validateSong(x: unknown): asserts x is Song {
       l.start < 0 ||
       l.end <= l.start
     )
-      throw Error("반복 구간이 올바르지 않습니다.");
+      throw Error(i18nText("model.message388"));
   const t = s.settings;
   if (
     !t ||
@@ -297,7 +321,7 @@ export function validateSong(x: unknown): asserts x is Song {
     !finite(t.zoom) ||
     t.zoom < 0.5 ||
     t.zoom > 2 ||
-    !["ribbon", "rows"].includes(t.view)
+    !["ribbon", "rows", "compare"].includes(t.view)
   )
-    throw Error("연습 설정이 올바르지 않습니다.");
+    throw Error(i18nText("model.message389"));
 }

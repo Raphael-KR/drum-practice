@@ -124,3 +124,15 @@ it("matches independent snare observations, not just the BPM formula", () => {
   expect(g.references.length).toBeGreaterThan(40);
   expect(s.measures[84].start).toBeCloseTo(g.t0 + 337 * g.seconds_per_beat, 9);
 });
+
+it('schedules exactly four quarter-note count-off strokes in any meter and playback rate',()=>{
+  for(const [beats,denominator] of [[4,4],[5,4],[6,8]]) for(const rate of [.5,1,1.2]) {
+    const m={id:'m',regionId:'r',label:'1',beats,denominator,start:0,end:beats*60/94*4/denominator};
+    const c=makeCycle(10,.23,m.end,rate,0,m,true);
+    expect(c.count).toBe(4);expect(c.beats).toBe(4);
+    expect(c.countAt).toBe(10);
+    expect(c.countBeatSeconds).toBeCloseTo(60/94/rate);
+    expect(c.musicAt).toBeCloseTo(10+4*60/94/rate);
+    expect(cyclePosition(c,c.musicAt)).toBe(.23);
+  }
+});

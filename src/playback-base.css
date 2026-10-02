@@ -1,0 +1,212 @@
+/* Shared typography, palette, controls and header. */
+:root {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  color: #203d37;
+  background: #f5f4ef;
+  font-synthesis: none;
+  font-size: 15px;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+select,
+input[type="number"],
+input[type="text"] {
+  min-height: 44px;
+}
+button {
+  border: 1px solid #d0d8d2;
+  background: #fff;
+  color: #234b42;
+  border-radius: 10px;
+  padding: 9px 15px;
+  cursor: pointer;
+}
+button:hover {
+  background: #e3ede6;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+button.primary {
+  background: #17594d;
+  color: white;
+  border-color: #17594d;
+}
+button.danger {
+  color: #aa4233;
+}
+input,
+select,
+textarea {
+  border: 1px solid #c8d2cc;
+  border-radius: 8px;
+  background: white;
+  color: #203d37;
+  padding: 9px;
+  max-width: 100%;
+}
+input[type="number"] {
+  width: 90px;
+}
+input[type="range"] {
+  padding: 0;
+  accent-color: #267562;
+}
+textarea {
+  width: 100%;
+  min-height: 110px;
+}
+label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+h1 {
+  font-size: 21px;
+  margin: 0;
+}
+h2 {
+  font-size: 20px;
+  margin: 0 0 15px;
+}
+h3 {
+  font-size: 16px;
+  margin: 16px 0 10px;
+}
+p {
+  line-height: 1.6;
+}
+small,
+.muted {
+  color: #68786f;
+}
+header {
+  padding: 17px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #dbe1d9;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.subtle {
+  font-size: 13px;
+  color: #6a7b71;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #d68a48;
+  outline-offset: 2px;
+}
+@media (max-width: 850px) {
+  header {
+    padding: 12px;
+  }
+}
+:root {
+  --accent: #3f74d4;
+  --accent-soft: #edf3ff;
+  --ink: #24334b;
+  --muted: #64748b;
+  --line: #d4dfef;
+  color: var(--ink);
+  background: #f4f7fc;
+}
+button,
+input,
+select,
+textarea {
+  color: var(--ink);
+  border-color: var(--line);
+}
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+input[type="range"] {
+  accent-color: var(--accent);
+}
+small,
+.subtle,
+.muted {
+  color: var(--muted);
+}
+header {
+  padding: 12px 20px;
+  border-color: var(--line);
+}
+.brand {
+  min-width: 0;
+  gap: 18px;
+}
+.brand h1 {
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+header .actions {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+header button {
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+@media (min-width: 900px) and (max-height: 800px) {
+  header {
+    padding: 6px 16px;
+  }
+}
+@media (max-width: 899px) {
+  header {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 899px) {
+  .brand {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+button {
+  min-width: 44px;
+}
+:root {
+  --xml-bg: #e4eeff;
+  --xml-fg: #285dac;
+  --pdf-bg: #ffe8e7;
+  --pdf-fg: #a43835;
+  --lyrics-bg: #e0f3e8;
+  --lyrics-fg: #236744;
+  --audio-bg: #eee5fb;
+  --audio-fg: #72439e;
+}
+:root {
+  --border: var(--line);
+}
+button.on {
+  background: var(--accent);
+  color: white;
+}

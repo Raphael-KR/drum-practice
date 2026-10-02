@@ -1,0 +1,132 @@
+<div id="drum-touch-proposal" aria-label="드럼 연습실 iPad 조작 배치안">
+  <style>
+    #drum-touch-proposal{--dr-bg:light-dark(#f2f4f8,#202329);--dr-panel:light-dark(#fff,#2c3038);--dr-ink:light-dark(#263447,#f1f4f9);--dr-muted:light-dark(#637083,#bcc5d4);--dr-line:light-dark(#d9e0ea,#4c5563);--dr-blue:light-dark(#326aca,#88b1ff);--dr-soft:light-dark(#e8f0ff,#354661);font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--dr-ink);background:var(--dr-bg);border-radius:20px;padding:16px;position:relative;box-sizing:border-box}
+    #drum-touch-proposal *{box-sizing:border-box}
+    #drum-touch-proposal button{font:inherit;min-height:48px;border:1px solid var(--dr-line);border-radius:12px;background:var(--dr-panel);color:var(--dr-ink);padding:8px 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;touch-action:manipulation}
+    #drum-touch-proposal button[aria-pressed=true],#drum-touch-proposal .dr-active{background:var(--dr-soft);color:var(--dr-blue);border-color:var(--dr-blue)}
+    #drum-touch-proposal .dr-header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-bottom:14px}
+    #drum-touch-proposal .dr-title{font-size:18px;font-weight:650;flex:1;min-width:180px}
+    #drum-touch-proposal .dr-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    #drum-touch-proposal #dr-tempo{font-size:22px;font-weight:600;color:var(--dr-blue);border-color:transparent;background:transparent}
+    #drum-touch-proposal .dr-score{border-radius:14px;background:var(--dr-panel);padding:16px 10px 8px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+    #drum-touch-proposal .dr-score-status{display:flex;justify-content:space-between;gap:12px;color:var(--dr-muted);font-size:13px;padding:0 6px 12px}
+    #drum-touch-proposal .dr-bars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:24px}
+    #drum-touch-proposal .dr-bar{position:relative;padding-top:8px;border-left:1px solid var(--dr-line);min-width:0}
+    #drum-touch-proposal .dr-bar[data-current=true]{background:var(--dr-soft);box-shadow:inset 3px 0 var(--dr-blue)}
+    #drum-touch-proposal .dr-bar[data-loop=true]{border-bottom:3px solid var(--dr-blue)}
+    #drum-touch-proposal .dr-bar-label{font-size:13px;color:var(--dr-muted);padding-left:9px}
+    #drum-touch-proposal .dr-staff{display:block;width:100%;height:88px;color:var(--dr-ink)}
+    #drum-touch-proposal .dr-lyric{min-height:30px;font-size:14px;text-align:center;color:var(--dr-blue);padding:2px}
+    #drum-touch-proposal .dr-bottom{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:14px 0}
+    #drum-touch-proposal .dr-bottom-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    #drum-touch-proposal .dr-bottom-group:last-child{justify-content:flex-end}
+    #drum-touch-proposal #dr-play{min-width:76px;min-height:58px;background:var(--dr-blue);color:light-dark(#fff,#14243e);border:0}
+    #drum-touch-proposal .dr-number{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums;min-width:54px;touch-action:none;user-select:none;-webkit-user-select:none}
+    #drum-touch-proposal .dr-loopbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--dr-line);padding-top:12px}
+    #drum-touch-proposal .dr-loopbar>span{color:var(--dr-muted);font-size:14px}
+    #drum-touch-proposal #dr-loop-label{flex:1;min-width:140px;color:var(--dr-blue)}
+    #drum-touch-proposal .dr-pop{position:absolute;z-index:5;right:16px;top:76px;background:var(--dr-panel);border:1px solid var(--dr-line);border-radius:18px;padding:18px;width:min(380px,calc(100% - 32px));box-shadow:0 12px 36px light-dark(#26344722,#0008)}
+    #drum-touch-proposal .dr-pop[hidden]{display:none}
+    #drum-touch-proposal .dr-pop-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;font-size:18px;font-weight:650}
+    #drum-touch-proposal .dr-pop-head button{min-height:40px;font-size:14px;font-weight:400}
+    #drum-touch-proposal .dr-tempo-number{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:16px 0}
+    #drum-touch-proposal .dr-tempo-number button{font-size:44px;min-width:140px;min-height:82px;color:var(--dr-blue)}
+    #drum-touch-proposal .dr-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+    #drum-touch-proposal .dr-setting-list{display:grid;gap:2px}
+    #drum-touch-proposal .dr-setting-list button{justify-content:space-between;border:0;border-radius:4px;border-bottom:1px solid var(--dr-line)}
+    #drum-touch-proposal .dr-setting-detail{padding-top:12px;line-height:1.8;color:var(--dr-muted);font-size:14px}
+    #drum-touch-proposal .dr-volume{display:grid;gap:12px}
+    #drum-touch-proposal .dr-volume label{display:grid;gap:8px}
+    #drum-touch-proposal .dr-volume input{width:100%;accent-color:var(--dr-blue)}
+    #drum-touch-proposal .dr-hint{font-size:12px;color:var(--dr-muted);text-align:center;margin:6px 0}
+    @media(max-width:760px){#drum-touch-proposal .dr-bottom{grid-template-columns:1fr auto}#drum-touch-proposal .dr-bottom-group:last-child{grid-column:1/-1;justify-content:flex-start}#drum-touch-proposal .dr-header{gap:6px}#drum-touch-proposal .dr-title{flex-basis:100%}#drum-touch-proposal .dr-staff{height:74px}#drum-touch-proposal .dr-bar-label{font-size:12px}}
+    @media(max-width:450px){#drum-touch-proposal{padding:10px}#drum-touch-proposal .dr-bars{grid-template-columns:repeat(2,minmax(0,1fr))}#drum-touch-proposal .dr-title{font-size:16px}#drum-touch-proposal button{padding:8px 10px}#drum-touch-proposal .dr-actions{gap:4px}}
+  </style>
+  <header class="dr-header">
+    <div class="dr-title">바람과 언덕의 발라드</div>
+    <button id="dr-tempo" aria-label="연습 BPM 설정">♩ = <span id="dr-bpm">94</span></button>
+    <div class="dr-actions">
+      <button id="dr-click" aria-label="메트로놈" aria-pressed="true"><i data-lucide="metronome" aria-hidden="true"></i></button>
+      <button id="dr-library" aria-label="내 악보 목록"><i data-lucide="list-music" aria-hidden="true"></i></button>
+      <button id="dr-setup" aria-label="설정"><i data-lucide="settings" aria-hidden="true"></i></button>
+    </div>
+  </header>
+  <section class="dr-score" id="dr-score" aria-label="한 번 탭 재생 정지, 두 번 탭 마디 이동, 좌우 드래그 탐색">
+    <div class="dr-score-status"><span id="dr-position" aria-live="polite">25마디 · 1박</span><span id="dr-state">일시정지</span></div>
+    <div id="dr-bars" class="dr-bars"></div>
+  </section>
+  <div class="dr-bottom">
+    <div class="dr-bottom-group"><button id="dr-rewind" aria-label="선택한 마디 수만큼 되감기"><i data-lucide="undo-2" aria-hidden="true"></i></button><button class="dr-number" id="dr-rewind-count" aria-label="되감을 마디 수. 좌우 또는 상하 드래그" data-number="rewind">1</button><span>마디</span><button id="dr-report" aria-label="현재 위치 복사"><i data-lucide="copy" aria-hidden="true"></i></button></div>
+    <button id="dr-play" aria-label="재생"><i data-lucide="play" aria-hidden="true"></i></button>
+    <div class="dr-bottom-group"><button id="dr-marker"><i data-lucide="bookmark-plus" aria-hidden="true"></i>마커</button><button id="dr-sound"><i data-lucide="volume-2" aria-hidden="true"></i>소리</button></div>
+  </div>
+  <div class="dr-loopbar" aria-label="빠른 구간 반복">
+    <i data-lucide="repeat-2" aria-hidden="true"></i><span>현재 마디 중심</span>
+    <button data-loop-size="1" aria-pressed="false">앞뒤 1</button><button data-loop-size="2" aria-pressed="false">앞뒤 2</button><button data-loop-size="3" aria-pressed="false">앞뒤 3</button><button data-loop-size="4" aria-pressed="false">앞뒤 4</button>
+    <span id="dr-loop-label" aria-live="polite">반복 꺼짐</span><button id="dr-loop-detail">조정</button><button id="dr-loop-off">해제</button>
+  </div>
+  <div class="dr-hint" id="dr-feedback" aria-live="polite">탭 재생·정지 · 두 번 탭 이동 · 좌우로 밀어 탐색</div>
+  <section id="dr-bpm-pop" class="dr-pop" hidden aria-label="연습 BPM">
+    <div class="dr-pop-head">연습 BPM<button data-close>완료</button></div>
+    <div class="dr-tempo-number"><button class="dr-number" data-number="bpm" id="dr-bpm-number" aria-label="연습 BPM. 좌우 또는 상하 드래그">94</button><span>BPM</span></div>
+    <div class="dr-hint">오른쪽·위로 올리기 / 왼쪽·아래로 내리기</div>
+    <div class="dr-presets"><button data-preset="47">47</button><button data-preset="56">56</button><button data-preset="66">66</button><button data-preset="75">75</button><button data-preset="85">85</button><button data-preset="94">94</button></div>
+    <button data-preset="94" style="width:100%">원곡 94 BPM</button>
+  </section>
+  <section id="dr-settings-pop" class="dr-pop" hidden aria-label="설정">
+    <div class="dr-pop-head">설정<button data-close>완료</button></div>
+    <div class="dr-setting-list"><button data-setting="화면">화면<i data-lucide="chevron-right" aria-hidden="true"></i></button><button data-setting="악보">악보<i data-lucide="chevron-right" aria-hidden="true"></i></button><button data-setting="가사">가사<i data-lucide="chevron-right" aria-hidden="true"></i></button><button data-setting="곡 정보">곡 정보<i data-lucide="chevron-right" aria-hidden="true"></i></button><button data-setting="파일">파일<i data-lucide="chevron-right" aria-hidden="true"></i></button></div>
+    <div class="dr-setting-detail" id="dr-setting-detail">화면 · 두 줄 고정 보기</div>
+  </section>
+  <section id="dr-sound-pop" class="dr-pop" hidden aria-label="소리">
+    <div class="dr-pop-head">소리<button data-close>완료</button></div><div class="dr-volume"><label>음악<input type="range" value="80" aria-label="음악 음량"></label><label>메트로놈<input type="range" value="50" aria-label="메트로놈 음량"></label><label>준비 마디<button class="dr-number" data-number="count">1</button></label></div>
+  </section>
+  <section id="dr-loop-pop" class="dr-pop" hidden aria-label="반복 구간 조정">
+    <div class="dr-pop-head">반복 구간<button data-close>완료</button></div>
+    <div class="dr-actions"><span>시작</span><button class="dr-number" data-number="start">25</button><span>마디</span></div>
+    <div class="dr-actions" style="margin-top:12px"><span>끝</span><button class="dr-number" data-number="end">28</button><span>마디 끝까지</span></div>
+    <div class="dr-hint">숫자를 좌우·상하로 드래그</div><button id="dr-loop-here">현재 마디를 중심으로</button>
+  </section>
+  <script>
+  (()=>{
+    const root=document.getElementById('drum-touch-proposal'),q=s=>root.querySelector(s);
+    const state={bpm:94,rewind:1,count:1,bar:25,playing:false,loopSize:0,center:25,start:24,end:26,largeControls:false};
+    let base=25,tapTimer,firstTap,drag;
+    const icons=()=>{if(globalThis.lucide)lucide.createIcons({attrs:{width:20,height:20}})};
+    const say=text=>q('#dr-feedback').textContent=text;
+    function close(){root.querySelectorAll('.dr-pop').forEach(p=>p.hidden=true)}
+    function pop(id){const hidden=q(id).hidden;close();q(id).hidden=!hidden}
+    function notes(){let lines='',notes='';for(let j=0;j<5;j++)lines+=`<path d="M0 ${36+j*7} H180"/>`;for(let j=0;j<8;j++){const x=12+j*22;notes+=`<path d="M${x-4} 28l8 8m0-8l-8 8M${x+4} 32V8"/>`;if(j%2===0)notes+=`<ellipse cx="${x}" cy="${j%4===0?60:47}" rx="5" ry="3.4" fill="currentColor" transform="rotate(-20 ${x} ${j%4===0?60:47})"/>`}return `<svg class="dr-staff" viewBox="0 0 180 84" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1">${lines}${notes}<path d="M16 8H82M104 8H170" stroke-width="4"/></g></svg>`}
+    function render(){
+      q('#dr-bpm').textContent=state.bpm;q('#dr-bpm-number').textContent=state.bpm;q('#dr-rewind-count').textContent=state.rewind;
+      q('#dr-position').textContent=state.bar+'마디 · 1박';q('#dr-state').textContent=state.playing?'재생 중':'일시정지';
+      q('#dr-play').innerHTML=`<i data-lucide="${state.playing?'pause':'play'}" aria-hidden="true"></i>`;q('#dr-play').ariaLabel=state.playing?'일시정지':'재생';
+      q('#dr-loop-label').textContent=state.loopSize?`${state.start}–${state.end}마디 · ${state.end-state.start+1}마디 반복`:'반복 꺼짐';
+      root.querySelectorAll('[data-loop-size]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.loopSize)===state.loopSize)));
+      const lyrics=['스베테오 테니이레테','스베테오 우시낫테','키오쿠 유비노 아이다','스리누케테모','코코로나라','코코니 탓테루','소시테 once again','아루키다스요'];
+      q('#dr-bars').innerHTML=Array.from({length:8},(_,i)=>{const b=base+i;return `<div class="dr-bar" data-bar="${b}" data-current="${b===state.bar}" data-loop="${!!state.loopSize&&b>=state.start&&b<=state.end}"><div class="dr-bar-label">${b}마디 · 4/4</div>${notes()}<div class="dr-lyric">${lyrics[i]}</div></div>`}).join('');
+      root.querySelectorAll('[data-number]').forEach(b=>b.textContent=state[b.dataset.number]);icons();
+    }
+    function seek(bar){state.bar=Math.max(1,Math.min(110,bar));if(state.bar<base||state.bar>=base+8)base=Math.floor((state.bar-1)/4)*4+1;render()}
+    q('#dr-tempo').onclick=()=>pop('#dr-bpm-pop');q('#dr-setup').onclick=()=>pop('#dr-settings-pop');q('#dr-sound').onclick=()=>pop('#dr-sound-pop');
+    q('#dr-click').onclick=e=>{const b=e.currentTarget;b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'))};
+    q('#dr-play').onclick=()=>{state.playing=!state.playing;render()};
+    q('#dr-rewind').onclick=()=>seek(state.bar-state.rewind);q('#dr-report').onclick=()=>say(`${state.bar}마디 · 1박 — 위치 복사 버튼`);
+    q('#dr-marker').onclick=()=>say(`${state.bar}마디에 마커 추가`);q('#dr-library').onclick=()=>say('내 악보 목록 열기');
+    q('#dr-loop-detail').onclick=()=>pop('#dr-loop-pop');q('#dr-loop-off').onclick=()=>{state.loopSize=0;render()};
+    q('#dr-loop-here').onclick=()=>{state.center=state.bar;state.loopSize=state.loopSize||1;state.start=Math.max(1,state.center-state.loopSize);state.end=Math.min(110,state.center+state.loopSize);base=state.start;render()};
+    root.querySelectorAll('[data-close]').forEach(b=>b.onclick=close);
+    root.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{state.bpm=Number(b.dataset.preset);render()});
+    root.querySelectorAll('[data-loop-size]').forEach(b=>b.onclick=()=>{if(!state.loopSize)state.center=state.bar;state.loopSize=Number(b.dataset.loopSize);state.start=Math.max(1,state.center-state.loopSize);state.end=Math.min(110,state.center+state.loopSize);base=state.start;render()});
+    const settings={'화면':'한 줄 · 두 줄 · PDF/SVG 검수 · 악보 크기','악보':'PDF / MusicXML · 파트 선택 · 악보 편집','가사':'표시 · 크기 · 가사 위치 편집','곡 정보':'제목 · 가수 · 작사 · 작곡','파일':'HTML 저장 · MusicXML 저장 · 백업 · 복원'};
+    root.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>q('#dr-setting-detail').textContent=settings[b.dataset.setting]);
+    root.querySelectorAll('[data-number]').forEach(b=>{let d;b.onpointerdown=e=>{d={id:e.pointerId,x:e.clientX,y:e.clientY,v:state[b.dataset.number],axis:null};b.setPointerCapture(e.pointerId)};b.onpointermove=e=>{if(!d||d.id!==e.pointerId)return;const dx=e.clientX-d.x,dy=d.y-e.clientY;if(!d.axis&&Math.max(Math.abs(dx),Math.abs(dy))>6)d.axis=Math.abs(dx)>=Math.abs(dy)?'x':'y';if(!d.axis)return;const k=b.dataset.number,min=k==='bpm'?47:k==='count'?0:1,max=k==='bpm'?112:k==='rewind'?10:k==='count'?2:110;state[k]=Math.max(min,Math.min(max,d.v+Math.round((d.axis==='x'?dx:dy)/8)));if(k==='start'||k==='end'){state.end=Math.max(state.start,state.end);state.loopSize=-1}render()};b.onpointerup=()=>d=undefined;b.onpointercancel=()=>d=undefined;b.onkeydown=e=>{if(['ArrowRight','ArrowUp','ArrowLeft','ArrowDown'].includes(e.key)){e.preventDefault();const k=b.dataset.number;state[k]=Math.max(1,state[k]+(['ArrowRight','ArrowUp'].includes(e.key)?1:-1));render()}}});
+    const score=q('#dr-score');score.onpointerdown=e=>{const bar=Number(e.target.closest('[data-bar]')?.dataset.bar||state.bar),now=Date.now();drag={id:e.pointerId,x:e.clientX,y:e.clientY,bar:state.bar,target:bar,moved:false,was:state.playing};score.setPointerCapture(e.pointerId);if(firstTap&&now-firstTap.time<300){clearTimeout(tapTimer);seek(firstTap.bar);state.playing=firstTap.was;firstTap=undefined;drag.double=true;render()}};
+    score.onpointermove=e=>{if(!drag||drag.double)return;const dx=e.clientX-drag.x;if(Math.abs(dx)>8){drag.moved=true;clearTimeout(tapTimer);firstTap=undefined;state.playing=false;seek(drag.bar-Math.round(dx/70))}};
+    score.onpointerup=()=>{if(!drag)return;const d=drag;drag=undefined;if(d.double)return;if(d.moved){state.playing=d.was;render();return}firstTap={time:Date.now(),bar:d.target,was:d.was};if(d.was){state.playing=false;render()}tapTimer=setTimeout(()=>{if(!d.was){state.playing=true;render()}firstTap=undefined},300)};
+    score.onpointercancel=()=>{if(drag){state.playing=drag.was;drag=undefined;render()}};
+    render();
+    if(globalThis.Tweak){const t=new Tweak({container:root,onChange:()=>{root.style.setProperty('padding',state.largeControls?'22px':'16px')}});t.addToggle(state,'largeControls',{label:'컨트롤 주변 여백 넓게'})}
+  })();
+  </script>
+</div>
