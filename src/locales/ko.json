@@ -744,5 +744,6 @@
   "separation.removeConfirm": "목록에서 삭제할까요? 악보와 연습 기록은 보관되며 복원할 수 있습니다.",
   "separation.restoreRemoved": "삭제한 악보 복원",
   "separation.loadBundled": "악보 불러오기",
+  "separation.updateBundled": "악보 업데이트",
   "separation.bundledFailed": "악보를 불러오지 못했습니다. 다시 시도해 주세요."
 }

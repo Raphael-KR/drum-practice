@@ -31,6 +31,7 @@ export async function writeThirdParty() {
   seen.clear(); entries.length=0;
   const pkg=JSON.parse(await readFile('package.json','utf8'));
   for (const name of Object.keys(pkg.dependencies)) await collect(`node_modules/${name}`);
+  entries.push({name:'Bravura pictHalfOpen1 glyph',version:'',license:'OFL-1.1',url:'https://github.com/steinbergmedia/bravura',text:await readFile('src/vendor/Bravura-OFL.txt','utf8')});
   // PDF.js ships these notices for bundled font, CMap and image decoder assets.
   for (const dir of ['standard_fonts','cmaps','wasm','iccs']) {
     const root=`node_modules/pdfjs-dist/${dir}`;

@@ -1,8 +1,10 @@
 import { t as i18nText } from "./i18n";
+import halfOpenGlyph from './vendor/pict-half-open.json';
 /** Approved SCORE-MUSICXML-OSMD-MAPPING.md: render-only annotations retain XML semantics. */
 export type NoteDecoration = {
   ghost: boolean;
   sticking?: string;
+  halfOpen?: boolean;
   color: string;
 };
 const kids = (e: Element, tag: string) =>
@@ -80,7 +82,8 @@ export function prepareDrumDecorations(
       let head = kids(node, "notehead")[0];
       const ghost = head?.getAttribute("parentheses") === "yes",
         sticking = sticks.get(node);
-      if (!ghost && !sticking) continue;
+      const halfOpen = !!node.querySelector('notations > technical > half-muted[smufl="pictHalfOpen1"]');
+      if (!ghost && !sticking && !halfOpen) continue;
       const color =
         head?.getAttribute("color") || node.getAttribute("color") || "#000000";
       if (!head) {
@@ -98,7 +101,7 @@ export function prepareDrumDecorations(
       // Unique temporary colors bind XML annotations to exact chord members across OSMD.
       const token = "#" + (0x710000 + serial++).toString(16);
       head.setAttribute("color", token);
-      decorations.set(token.toLowerCase(), { ghost, sticking, color });
+      decorations.set(token.toLowerCase(), { ghost, sticking, color, ...(halfOpen ? {halfOpen:true} : {}) });
     }
   }
   return decorations;
@@ -166,6 +169,18 @@ export function applyDrumDecorations(
               t.setAttribute("font-size", "16");
               t.setAttribute("fill", rule.color);
               t.setAttribute("data-sticking", rule.sticking);
+            }
+            if (rule.halfOpen) {
+              const stem = n.getSVGGElement().querySelector('.vf-stem path') as SVGGraphicsElement | null;
+              const sb = stem?.getBBox();
+              const size = 10, scale = size / 286;
+              const x = b.x + b.width / 2 - size / 2;
+              const y = Math.min(sb?.y ?? b.y, b.y) - (rule.sticking ? 30 : 16);
+              const p = add('path');
+              p.setAttribute('d', halfOpenGlyph.path);
+              p.setAttribute('transform', `translate(${x} ${y + size}) scale(${scale} ${-scale})`);
+              p.setAttribute('fill', rule.color);
+              p.setAttribute('data-smufl', halfOpenGlyph.glyph);
             }
           }
   for (const el of Array.from(host.querySelectorAll("[fill],[stroke]")))

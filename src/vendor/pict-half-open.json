@@ -1,0 +1,15 @@
+{
+  "glyph": "pictHalfOpen1",
+  "codepoint": "U+E7F6",
+  "font": "Bravura",
+  "fontSHA256": "cdf0f893ee1fdb64b7f6713d71ee0dcfc349c0ac01429a8e451b01a9e79f5f3b",
+  "bounds": [
+    0,
+    0,
+    286,
+    286
+  ],
+  "path": "M143 286C64 286 0 222 0 143C0 64 64 0 143 0C222 0 286 64 286 143C286 222 222 286 143 286ZM253 159H159V253C208 246 246 207 253 159ZM127 253V159H33C40 207 79 246 127 253ZM33 127H127V33C79 40 40 78 33 127ZM159 33V127H253C246 78 208 40 159 33Z",
+  "source": "https://raw.githubusercontent.com/steinbergmedia/bravura/37b194378b710cc40e406ab6c4b07608bb9548ae/redist/otf/Bravura.otf",
+  "license": "OFL-1.1 (Bravura-OFL.txt)"
+}

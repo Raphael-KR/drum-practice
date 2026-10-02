@@ -90,7 +90,7 @@ for (const kind of ["combined"]) {
       (await readFile("src/portable-player.css", "utf8")) +
       (await readFile("src/playback-ui.css", "utf8")),
     worker: worker.outputFiles[0].text,
-    licenses: licenses + "\n\n" + JSON.parse(await readFile("src/third-party.generated.json","utf8")).entries.filter(e => ["opensheetmusicdisplay","vexflow"].includes(e.name) || e.name.startsWith("PDF.js") || e.name === "pdfjs-dist").map(e=>`${e.name} ${e.version}\n${e.text}`).join("\n\n"),
+    licenses: licenses + "\n\n" + JSON.parse(await readFile("src/third-party.generated.json","utf8")).entries.filter(e => ["opensheetmusicdisplay","vexflow","Bravura pictHalfOpen1 glyph"].includes(e.name) || e.name.startsWith("PDF.js") || e.name === "pdfjs-dist").map(e=>`${e.name} ${e.version}\n${e.text}`).join("\n\n"),
   };
   await writeFile(
     `public/portable-${kind}.html`,

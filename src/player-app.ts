@@ -161,6 +161,32 @@ async function restore(id: string) {
     working = false;
   }
 }
+function bundledButton(score: (typeof bundledScores)[number], update = false) {
+  const button = document.createElement("button");
+  button.textContent = t(
+    update ? "separation.updateBundled" : "separation.loadBundled",
+  );
+  button.onclick = async () => {
+    if (working || button.disabled) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(`${import.meta.env.BASE_URL}${score.file}`, {
+        cache: "no-cache",
+      });
+      if (!response.ok) throw new Error(t("separation.bundledFailed"));
+      await importFile(
+        new File([await response.blob()], score.file, {
+          type: "application/zip",
+        }),
+      );
+    } catch (error) {
+      report(error);
+    } finally {
+      button.disabled = false;
+    }
+  };
+  return button;
+}
 export async function showLibrary() {
   await closePlayback();
   document.body.classList.remove("has-song");
@@ -207,6 +233,11 @@ export async function showLibrary() {
       }
     };
     item.querySelector(".practice-card-actions")!.append(remove);
+    const bundled = bundledScores.find((s) => s.id === record.song.id);
+    if (bundled)
+      item
+        .querySelector(".practice-card-actions")!
+        .append(bundledButton(bundled, true));
     const archived = await listPracticeArchives(record.song.id);
     if (archived.length) {
       const button = document.createElement("button");
@@ -224,27 +255,7 @@ export async function showLibrary() {
     item.className = "practice-card";
     const title = document.createElement("h3");
     title.textContent = score.title;
-    const button = document.createElement("button");
-    button.textContent = t("separation.loadBundled");
-    button.onclick = async () => {
-      if (working || button.disabled) return;
-      button.disabled = true;
-      try {
-        const response = await fetch(
-          `${import.meta.env.BASE_URL}${score.file}`,
-        );
-        if (!response.ok) throw new Error(t("separation.bundledFailed"));
-        await importFile(
-          new File([await response.blob()], score.file, {
-            type: "application/zip",
-          }),
-        );
-      } catch (error) {
-        report(error);
-      } finally {
-        button.disabled = false;
-      }
-    };
+    const button = bundledButton(score);
     item.append(title, button);
     list.append(item);
   }

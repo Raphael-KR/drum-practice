@@ -11,3 +11,11 @@ it('normalizes only known open hi-hat and is idempotent',()=>{
  const r=normalizeBundledDrumNotation(xml);expect(r.changed).toBe(true);expect(r.text).toContain('circle-x');expect(normalizeBundledDrumNotation(r.text).changed).toBe(false);
  expect(normalizeBundledDrumNotation(xml.replace('Open hi-hat','Custom instrument')).changed).toBe(false);
 });
+it('uses only explicit percussion half-open semantics, preserving the technical element',()=>{
+ const doc=(smufl:string)=>new DOMParser().parseFromString(`<score-partwise><part><measure><note><unpitched/><duration>1</duration><notations><technical><half-muted ${smufl}/></technical></notations></note></measure></part></score-partwise>`,'application/xml');
+ const d=doc('smufl="pictHalfOpen1"');
+ expect([...prepareDrumDecorations(d).values()][0].halfOpen).toBe(true);
+ expect(d.querySelector('half-muted')?.getAttribute('smufl')).toBe('pictHalfOpen1');
+ expect(prepareDrumDecorations(doc('')).size).toBe(0);
+ expect(prepareDrumDecorations(doc('smufl="brassMuteHalfClosed"')).size).toBe(0);
+});
