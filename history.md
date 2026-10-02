@@ -1811,3 +1811,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 패키지18검사 및 보관함/분리/관리13검사, 타입/i18n/분리 빌드 통과. Safari5182/5183에서 불러오기·저장·열기·재생/정지·마커 이동·SVG/PDF3쪽·가사텍스트 확인.
 - Sites 버전10 공개 배포 succeeded(00:14KST), appgdep_6abfca5730508191a74452a476464b51. 사이트소스 d1f6d24654f5fb01f2e590c3261197c3689a2f8d. 최종패키지 e94f9e2a…를 로컬/빌드/배포사본에서 일치 확인.
 - 음원 신호추정, 가사 음절싱크 미확정, half-muted20개 SVG미표시, PDF 줄별배율 차이는 docs/LOVEHOLIC-PUBLICATION.md에 명시. HTML재생 파일 생성·저장 없음. 수록 완료로 감독 heartbeat중지.
+
+## 2026-10-03 Loveholic 재검토·공통 PDF 오선 정렬
+- 과거 제작 세션과 정본을 재검토. PDF 배율 차이를 파일 한계로 남긴 판단을 정정하고 자산 준비/화면 조립의 MusicXML 전용 조건을 제거했다.
+- 오선 전체 간격 추정·줄 단위 검출/캐시·가사 포함 공통 프레임 적용. 검출 불가 PDF는 기존 표시 유지. Loveholic123마디 검출, 잘림0 계산검사와 Safari iPad mini 응답형 PDF/SVG·재생/정지 확인.
+- 전체330검사 및 분리 빌드 통과. 앱 버전 editor0.4.2/player0.4.4, Sites버전11 succeeded(00:39KST). 기존 악보/음원/HTML파일 보존. 반가림20개 표기와 보컬 싱크의 미확정 상태는 유지.
+- 계획·실패·수정·근거: docs/LOVEHOLIC-REVIEW.md.

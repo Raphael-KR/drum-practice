@@ -10,6 +10,7 @@ import { displayRegion } from "./score-view";
 import { packLabels } from "./lyric-layout";
 import {
   practiceStaffLayout,
+  staffFrameHeight,
   type StaffPosition,
 } from "./practice-staff-layout";
 export interface RowState {
@@ -57,7 +58,7 @@ export function measureWidth(
 ) {
   const height = engravingHeight(stageWidth, s.settings.zoom);
   return staff
-    ? (r.w * height) / (15 * staff.gap * ratio)
+    ? (r.w * height) / (staffFrameHeight(staff) * staff.gap * ratio)
     : (height * r.w) / r.h / ratio;
 }
 export function measurePosition(

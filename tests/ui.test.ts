@@ -83,6 +83,7 @@ beforeAll(async () => {
   };
   HTMLCanvasElement.prototype.getContext = (() => ({
     drawImage() {},
+    getImageData(_x: number, _y: number, width: number, height: number) { return { data: new Uint8ClampedArray(width * height * 4) }; },
     fillRect() {},
     strokeRect() {},
   })) as any;
@@ -107,7 +108,7 @@ it("shows the app name and score library action on the home screen", async () =>
   expect(document.getElementById('view-description')!.textContent).toContain('두 줄');
   set('view','ribbon'); document.getElementById('view')!.dispatchEvent(new Event('change'));
   expect(document.getElementById("song-title")!.textContent).toBe("드럼 연습실");
-  expect(document.querySelector("#welcome h2")!.textContent).toBe("드럼 연습실");
+  expect(document.querySelector("#welcome h2")!.textContent).toBe("악보제작실");
   expect(document.getElementById("original-tempo")!.hidden).toBe(true);
   expect([...document.querySelectorAll("#welcome .actions button")].map(b => b.id)).toEqual(["demo-button", "welcome-library", "welcome-new"]);
   expect(document.querySelector("#welcome-library svg")!.innerHTML).toBe(document.querySelector("#library-button svg")!.innerHTML);
@@ -277,7 +278,7 @@ it("groups screen, playback, score management and app info in settings", () => {
   const buildInfo=JSON.parse(readFileSync('src/build-info.generated.json','utf8'));
   expect(Object.keys(buildInfo).sort()).toEqual(['builtAt','source']);
   expect(buildInfo.source).toMatch(/^[a-f0-9]{12}$/);
-  expect(document.getElementById('app-version')!.textContent).toBe(`${JSON.parse(readFileSync('package.json','utf8')).version} (${buildInfo.source})`);
+  expect(document.getElementById('app-version')!.textContent).toBe(`${JSON.parse(readFileSync('src/app-versions.json','utf8')).editor.version} (${buildInfo.source})`);
   expect(document.querySelector('.app-info h4')).toBeNull();
   expect([...document.querySelectorAll('.app-info dt')].map(e=>e.textContent)).toEqual(['버전','빌드 시각']);
   expect(document.getElementById('app-build')).toBeNull();

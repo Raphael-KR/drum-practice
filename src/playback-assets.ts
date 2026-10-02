@@ -3,6 +3,7 @@ import { highlightPage, type HighlightPage } from "./note-highlight";
 import {
   practicePage,
   measurePageStaff,
+  framePDFStaffs,
   type StaffPosition,
 } from "./practice-staff-layout";
 export interface PlaybackAssets {
@@ -44,13 +45,15 @@ export async function preparePlaybackAssets(
         throw options.decodeError?.(cause, index) ?? cause;
       }
       result.pageRatios.push(img.naturalHeight / img.naturalWidth);
-      if (song.scoreFormat === "musicxml")
         for (const [id, staff] of measurePageStaff(
           img,
           song.regions.filter((r) => r.page === index),
+          song.scoreFormat !== "musicxml",
         ))
           result.practiceStaffs.set(id, staff);
     }
+    if (song.scoreFormat !== "musicxml")
+      framePDFStaffs(song.regions, result.practiceStaffs);
     return result;
   } catch (error) {
     releasePlaybackAssets(result);

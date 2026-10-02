@@ -182,7 +182,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       r,
       stage.clientWidth,
       a.ratios[r.page] || 1.294,
-      s.scoreFormat === "musicxml" ? a.staffs.get(r.id) : undefined,
+      a.staffs.get(r.id),
     );
   }
   function measureHTML(m: Song["measures"][number], i: number, width: number) {
@@ -202,7 +202,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       r,
       ly: s.lyrics.filter((l) => lyricMeasureId(s, l) === m.id),
       layout:
-        isSVG && staff
+        staff
           ? scoreLayout(s, r, width, stage.clientWidth, staff)
           : undefined,
       highlight: a.highlights[r.page],

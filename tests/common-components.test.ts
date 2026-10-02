@@ -11,6 +11,7 @@ import { download } from "../src/download";
 import { encodeAsset, decodeAsset } from "../src/binary-asset";
 vi.mock("../src/practice-staff-layout", () => ({
   practicePage: vi.fn(async (b: Blob) => b),
+  framePDFStaffs: vi.fn(),
   measurePageStaff: vi.fn(() => new Map([["r", { top: 1 }]])),
 }));
 vi.mock("../src/note-highlight", () => ({

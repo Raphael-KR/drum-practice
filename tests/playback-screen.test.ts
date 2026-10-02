@@ -43,7 +43,7 @@ afterEach(() => {
     .forEach((fn) => fn());
   vi.unstubAllGlobals();
 });
-function mount(environment: "web" | "portable") {
+function mount(environment: "web" | "portable", alignPDF = false) {
   const ids = {
     ...(environment === "web" ? webPlaybackBindings : portablePlaybackBindings),
     rewindButton: "back",
@@ -110,7 +110,7 @@ function mount(environment: "web" | "portable") {
     assets: () => ({
       urls: ["data:image/png;base64,"],
       ratios: [1.3],
-      staffs: new Map(),
+      staffs: alignPDF ? new Map(song.regions.map(r => [r.id, {top:r.y + .03,gap:.004,frame:{above:8,below:10}}])) : new Map(),
       highlights: [],
     }),
     highlight: () => highlight,
@@ -241,5 +241,18 @@ for (const environment of ["web", "portable"] as const) {
     screen.dispose();
     click("play");
     expect(p.playing).toBe(true);
+  });
+}
+
+for (const environment of ["web", "portable"] as const) {
+  it(`${environment}: PDF uses the shared staff layout rather than crop scaling`, () => {
+    const {root,song,screen} = mount(environment,true);
+    song.scoreFormat="pdf";
+    for (const view of ["ribbon","rows"] as const) {
+      song.settings.view=view; screen.renderTrack();
+      const crops=[...root.querySelectorAll<HTMLElement>(".crop")];
+      expect(crops.length).toBeGreaterThan(0);
+      expect(crops.every(c=>c.style.backgroundSize.includes("px") && !c.style.backgroundSize.includes("%"))).toBe(true);
+    }
   });
 }

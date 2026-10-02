@@ -32,3 +32,29 @@ it('removes marked headings only from practice pages, retaining musical labels',
  expect(output).not.toContain('Title');expect(output).toContain('Intro');
  expect(await blob.text()).toContain('Title');
 });
+
+import { framePDFStaffs } from '../src/practice-staff-layout';
+it('aligns PDF staves while retaining the full lyric-bearing crop', () => {
+  const regions: Region[] = [
+    {id:'a',page:0,x:.1,y:.1,w:.3,h:.12,beatXs:[0,1]},
+    {id:'b',page:1,x:.1,y:.4,w:.3,h:.19,beatXs:[0,1]},
+  ];
+  const staffs = new Map([['a',{top:.15,gap:.006}],['b',{top:.45,gap:.006}]]);
+  framePDFStaffs(regions, staffs);
+  let gap: number|undefined, baseline: number|undefined;
+  for (const r of regions) {
+    const s=staffs.get(r.id)!;
+    const l=practiceStaffLayout(r,s,250,180);
+    const scale=parseFloat(l.size.split(' ')[1]), offset=parseFloat(l.position.split(' ')[1]);
+    expect(r.y*scale+offset).toBeGreaterThanOrEqual(-.000001);
+    expect((r.y+r.h)*scale+offset).toBeLessThanOrEqual(l.height+.000001);
+    if(gap !== undefined) expect(s.gap*scale).toBeCloseTo(gap);
+    if(baseline !== undefined) expect(s.top*scale+offset).toBeCloseTo(baseline);
+    gap=s.gap*scale; baseline=s.top*scale+offset;
+  }
+});
+it('keeps unreadable or non-five-line PDFs on their existing crop layout', () => {
+  const staffs=new Map([['a',{top:.15,gap:.006}]]);
+  framePDFStaffs([{id:'a'},{id:'undetected'}] as Region[],staffs);
+  expect(staffs.size).toBe(0);
+});
