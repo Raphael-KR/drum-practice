@@ -947,3 +947,33 @@ PRD F01–F14와 Q01–Q10을 유지한다. 구현 여부, 자동 검사, 브라
 - 원본 PDF 음표/쉼표 열과 이미지 기준으로37개 패턴의 정박 좌표 생성(41 포함). 기호마디11개는 명시적 균등 기준. 기존62개 보존, 전체110개 beats+1 표시 좌표 확보.
 - source crop 완전 일치 및 빈 beatXs 조건으로만 보정. 원본/사용자 지정값 보존. 84마디5/4는6개 좌표.
 - 전체88 tests 및 TypeScript·portable·Vite build 통과, localhost 보정모듈 HTTP200 확인. docs/BEAT-ANCHOR-AUDIT.md 갱신. HTML 재내보내기/실기기 검증 미실시.
+
+## 2026-09-19 PDF → MusicXML 대표 검증 및 전체 후보 생성
+- 분리 worktree `codex/pdf-musicxml`, 기반 c30d58e. 원 저장소 앱/가사/서버는 수정하지 않았다.
+- PDF 벡터 글리프·줄기·빔에서 리듬과 두 성부 복원. 9·12·84마디를 먼저 MusicXML로 변환·재렌더 대조한 뒤 전체110마디 후보 생성. beatXs 보간은 음가 인식에 사용하지 않음.
+- 원본 머리1,407개, 반복 확장 후1,487개, XML note1,754개. 총441박·94 BPM, 84만5/4. 반복6개, 4마디쉼표, 72·100의6연음, 7의장식음·3획트레몰로·붙임줄 보존.
+- W3C MusicXML4.0 XSD, 성부별 박자/연속성, 원본 x정렬·머리 개수, XML 재읽기 비교 통과. 수동 대표 리듬 fixture 및 오류 주입8개 통과. Verovio6.3으로 원본과 같은3쪽 렌더 및 PNG 직접 확인.
+- 산출물은 Git 제외 docs/experiments/musicxml/: real-paradis-110-candidate.musicxml, representatives.musicxml, review.html, audit.json, full-render. 코드 scripts/musicxml/, 정본 문서 docs/MUSICXML-CONVERSION.md.
+- 원본에 악기 범례가 없어 드럼명/GM음색은 관례 기반 미확정. 7의장식음 재생 시점·트레몰로 속도 미지정. 모든 마디를 별도 수작업 재전사한 이중 검증은 아님. 110행 감사 파일에 검토 수준과 불확실성 기록.
+- 반복기호 폭/회수 숫자·음표 모양·텍스트 조판은 렌더러 차이로 원본과 다름. 전체 청취·다른 악보 프로그램 재생·사용자 악기매핑 승인은 미실시. commit/push/PR/merge/deploy/restart 미실행.
+
+## 2026-09-19 제공된 Claude MusicXML과 수치 비교
+- 사용자 지정 Downloads MusicXML을 읽기 전용으로 검사. 기존 Codex 후보와 원본 PDF 기준 비교. 입력 두 악보와 앱/가사/서버는 수정하지 않음.
+- Claude 실제107마디,108–110 누락. 포함된 마디 성부 길이는107/107 정상,94BPM/84의5/4 보존. XSD는 score-instrument/midi-instrument 요소 순서 위반으로 실패하나 Verovio 발췌 가져오기는 가능.
+- PDF에서 확인해 별도 기록한5·7·9·12·72·84·100 표본92개 일반 음표 머리 기준: 시작 위치+음가 F1 Claude41.08%,Codex100%. 시작 위치만 Claude67.03%,Codex100%. 표본100%를 전체 정확도로 일반화하지 않음.
+- Claude의72/100 6연음,7 장식음/붙임줄/트레몰로,반복표기 미보존. 같은 조건으로9/12/84 발췌 렌더/원본 대조. GM 후보 매핑과 정확한 오선배치 지표는 주 리듬 지표와 분리.
+- 근거 docs/MUSICXML-COMPARISON.md, scripts/musicxml/compare.py, Git제외 docs/experiments/musicxml-comparison/. 제공 결과물에 대한 평가이며 모델 전체 성능 평가는 아님.
+
+## 2026-09-19 사용자 제공 제목·제작자 메타데이터 반영
+- 원제 風と丘のバラード, 표시제목 바람과 언덕의 발라드, 노래 Real Paradis with のだめオーケストラ, 작사 Jane Su, 작곡 野村陽一郎 반영.
+- scripts/musicxml/song-metadata.json과 export.py를 통해 전체/대표 MusicXML 재생성 시 보존. 제공 링크도 miscellaneous-field로 저장. 기존 파일은 before-creator-metadata에 보존.
+- 두 파일의 part/part-list 변경 없음 직접 대조, 메타데이터 재읽기, XSD/기존 리듬 검사 통과. 가사·앱·서버 미변경. 비교 당시 파일 해시는 역사적 기록으로 유지.
+
+
+## 2026-10-02 Audiveris CLI 자동 인식 비교
+- Audiveris5.11.0으로 원본3쪽을 eng+jpn, batch/transcribe/export 실행, exit0. 원본·기존XML 해시 일치.
+- 별도 결과: /Users/raphael/Playground/drum-practice/docs/experiments/audiveris-20261002/REPORT.md 및 comparison.json, 원시mxl/omr.
+- 110마디, XSD통과. 기존7마디92음표 표본에서 시작F1 61.64%, 시작+길이F1 50.68%. Codex100%, Claude41.08%. 박자표·tempo·장식음·6연음 정보 누락. 수동교정·GUI검증 없음.
+
+## 2026-10-02 변환 방식 선택 정책 확정
+- 사용자 결정에 따라 실제 프로젝트 docs/MUSICXML-CONVERSION-POLICY.md에 선택 기준·보존·검증·비교 한계를 저장. 실제 프로젝트와 변환 worktree AGENTS.md에서 매 변환 전 참조하도록 연결. 앱 소스 및 기존 변경은 보존.

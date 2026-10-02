@@ -14,3 +14,7 @@
 - 작업에 도움이 되는 하위 단계에서 Apple 로컬 STT와 AFM 3를 적극 검토한다. 실행·검증 계약은 docs/APPLE-LOCAL-WORKFLOW.md, 최신 실험 한계는 관련 실험 문서와 history.md를 따른다.
 - 새 실측 결과, 유효한 활용법, 실패 패턴, API·모델 변화가 확인되면 근거 경로·환경·측정값·한계를 에이전트관리팀장 작업 `019fe926-aa3e-7d01-a7cc-25105ef93a95`에 전달한다. 사용자가 이 공유를 명시적으로 요청했다.
 - 실제 작업 중 의미 있는 새 발견만 공유한다. 같은 결과의 반복 보고·서로 재전달하는 순환·별도 주기 감시는 만들지 않는다. 원본 음원이나 불필요한 민감 자료 대신 필요한 근거 요약을 보낸다.
+
+## PDF → MusicXML 변환 방식
+
+- 매 변환 작업 시작 전에 `/Users/raphael/Playground/drum-practice/docs/MUSICXML-CONVERSION-POLICY.md`를 읽고 따른다. 벡터 PDF는 Codex 구조 추출을 우선하고, 스캔·사진은 Audiveris 초벌 후 Codex 대조·교정을 먼저 시험한다. 새로운 양식은 대표 2~3줄로 먼저 평가한다.
