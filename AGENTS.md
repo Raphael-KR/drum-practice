@@ -24,3 +24,7 @@
 ## SVG 출력 규칙 정본
 - 전체 SVG 생성·보정·캐시·마디 표시와 재생 효과는 `docs/SVG-SCORE-RULES.md`를 단일 진입점으로 따른다. 표시 규칙 변경 시 이 문서를 함께 갱신한다.
 - `docs/SCORE-MUSICXML-OSMD-MAPPING.md`는 악기·주법의 MusicXML 입력 의미/승인 범례 정본으로 유지한다. SVG 출력 규칙은 새 문서에 정의하며 과거 검수 기록으로 대신하지 않는다.
+
+## PDF → MusicXML 변환 방식
+
+- 매 변환 작업 시작 전에 `/Users/raphael/Playground/drum-practice/docs/MUSICXML-CONVERSION-POLICY.md`를 읽고 따른다. 벡터 PDF는 Codex 구조 추출을 우선하고, 스캔·사진은 Audiveris 초벌 후 Codex 대조·교정을 먼저 시험한다. 새로운 양식은 대표 2~3줄로 먼저 평가한다.
