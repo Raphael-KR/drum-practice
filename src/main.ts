@@ -13,6 +13,12 @@ import {
 } from "./canonical-xml";
 import { createDialog, dialogHeader } from "./dialog-ui";
 import { download } from "./download";
+import { createScorePackage, readScorePackage } from "./score-package";
+import {
+  attachPracticeManagement,
+  practiceLoopHTML,
+  practiceMarkerHTML,
+} from "./practice-management";
 import {
   retainRevision,
   type EditSnapshot,
@@ -133,7 +139,6 @@ import {
   reflow,
   uid,
   validateSong,
-  type Loop,
   type Region,
   type Song,
 } from "./model";
@@ -163,7 +168,7 @@ let selected = 0,
   drawStart: { x: number; y: number } | undefined;
 let saveTimer = 0,
   busy = false;
-let editingLoopId: string | undefined;
+let practiceManagement: ReturnType<typeof attachPracticeManagement> | undefined;
 let pageRatios: number[] = [];
 let practiceStaffs = new Map<string, StaffPosition>();
 let highlightPages: (HighlightPage | undefined)[] = [];
@@ -214,33 +219,11 @@ app.innerHTML =
   '\n<div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="' +
   i18nText("main.message117") +
   '" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>\n' +
-  '<div class="panels"><section class="panel"><h2>' +
-  i18nText("main.message132") +
-  "</h2>" +
-  '<div class="flex"><button id="set-a">' +
-  i18nText("workspace.message557") +
-  '</button><button id="set-b">' +
-  i18nText("workspace.message558") +
-  "</button></div>" +
-  '<div class="flex"><input id="loop-name" type="text" placeholder="' +
-  i18nText("main.message139") +
-  '" aria-label="' +
-  i18nText("main.message140") +
-  '"><button id="save-loop">' +
-  i18nText("main.message141") +
-  '</button><button id="new-loop">' +
-  i18nText("main.message142") +
-  '</button><button id="stop-loop">' +
-  i18nText("main.message143") +
-  '</button></div><div class="list" id="loops"></div></section><section class="panel"><h2>' +
-  i18nText("icons.message069") +
-  '</h2><div class="flex"><input id="marker-name" type="text" placeholder="' +
-  i18nText("main.message144") +
-  '" aria-label="' +
-  i18nText("main.message145") +
-  '"><button id="add-marker">' +
-  i18nText("icons.message061") +
-  '</button></div><div id="markers" class="list"></div><details><summary>' +
+  '<div class="panels"><section class="panel">' +
+  practiceLoopHTML(true) +
+  '</section><section class="panel">' +
+  practiceMarkerHTML(true) +
+  "<details><summary>" +
   i18nText("main.message146") +
   '</summary><p class="subtle">' +
   i18nText("main.message147") +
@@ -472,24 +455,10 @@ const playback = createPlaybackScreen({
       review = undefined;
     }
   },
-  listsChanged: renderManagedLists,
-  loopDraft: () => ({ id: editingLoopId, name: val("loop-name").value }),
-  loopChanged: (loop) => {
-    if (loop) {
-      editingLoopId = song().loops.some((saved) => saved.id === loop.id)
-        ? loop.id
-        : undefined;
-      val("loop-name").value = loop.name;
-      $("save-loop").textContent = i18nText(
-        editingLoopId ? "main.message263" : "main.message264",
-      );
-    }
-  },
-  markerName: () => {
-    const name = val("marker-name").value.trim();
-    val("marker-name").value = "";
-    return name;
-  },
+  listsChanged: () => practiceManagement?.render(),
+  loopDraft: () => practiceManagement?.draft() ?? { name: "" },
+  loopChanged: (loop) => practiceManagement?.loopChanged(loop),
+  markerName: () => practiceManagement?.markerName() ?? "",
   validateView: (view) => {
     if (view === "compare") {
       reviewPair(record!);
@@ -683,8 +652,7 @@ async function activate(r: RecordData) {
     session?.reset();
     record = r;
     document.body.classList.add("has-song");
-    editingLoopId = undefined;
-    $("save-loop").textContent = i18nText("main.message141");
+    practiceManagement?.reset();
     // Materialize persisted blobs before image decoding; Safari may not load
     // an object URL backed directly by an IndexedDB blob after a reload.
     const prepared = await preparePlaybackAssets(r.pages, r.song, {
@@ -1038,136 +1006,20 @@ seek.onchange = () => {
 seek.onblur = () => {
   $("seek-position").hidden = true;
 };
-function useLoop(l?: Loop, preservePosition = false) {
-  playback.useLoop(l, preservePosition);
-}
-function loopFromForm(): Loop {
-  return playback.loopFromForm(editingLoopId, val("loop-name").value);
-}
-action("save-loop", () => {
-  const l = loopFromForm();
-  const at = song().loops.findIndex((x) => x.id === l.id);
-  if (at < 0) song().loops.push(l);
-  else song().loops[at] = l;
-  playback.clearPreset();
-  useLoop(l, true);
-  queueSave();
+practiceManagement = attachPracticeManagement({
+  root: $("app"),
+  song,
+  playback: () => playback,
+  player: engine,
+  changed: queueSave,
+  fail: error,
+  paginate: paginateList,
 });
-action("stop-loop", () => playback.stopLoop());
-action("new-loop", () => {
-  editingLoopId = undefined;
-  val("loop-name").value = "";
-  $("save-loop").textContent = i18nText("main.message264");
-});
-for (const [id, prefix] of [
-  ["set-a", "loop-a"],
-  ["set-b", "loop-b"],
-])
-  action(id, () => {
-    const loc = locate(song(), engine().current());
-    val(prefix).value = String(loc.index + 1);
-    val(prefix === "loop-a" ? "loop-ab" : "loop-bb").value = String(
-      Math.floor(loc.beat * 4) / 4 + 1,
-    );
-    playback.updateLoopBeatBounds();
-  });
-const addMarker = () => playback.mark();
-action("add-marker", addMarker);
-action("quick-add-marker", addMarker);
 $("open-marker-dialog").onclick = null;
 $("open-marker-dialog").removeAttribute("aria-haspopup");
 function renderLists() {
   playback.renderLists();
 }
-function renderManagedLists() {
-  const s = song();
-  $("active-loop").textContent = player?.loop
-    ? i18nText("main.message271", { value1: player.loop.name })
-    : i18nText("main.message270");
-
-  $("markers").innerHTML = s.markers
-    .map(
-      (m) =>
-        '<span class="listitem"><button data-marker="' +
-        String(esc(m.id)) +
-        '">' +
-        String(esc(m.name)) +
-        " <small>" +
-        String(time(m.time)) +
-        '</small></button><button data-rename-marker="' +
-        String(esc(m.id)) +
-        '" aria-label="' +
-        i18nText("main.message274") +
-        '">✎</button><button data-delete-marker="' +
-        String(esc(m.id)) +
-        '" aria-label="' +
-        i18nText("main.message275") +
-        '">×</button></span>',
-    )
-    .join("");
-  $("loops").innerHTML = s.loops
-    .map(
-      (l) =>
-        '<span class="listitem ' +
-        String(player?.loop?.id === l.id ? "active" : "") +
-        '"><button data-loop="' +
-        String(esc(l.id)) +
-        '">' +
-        String(esc(l.name)) +
-        '</button><button data-rename-loop="' +
-        String(esc(l.id)) +
-        '" aria-label="' +
-        i18nText("main.message276") +
-        '">✎</button><button data-delete-loop="' +
-        String(esc(l.id)) +
-        '" aria-label="' +
-        i18nText("main.message277") +
-        '">×</button></span>',
-    )
-    .join("");
-  paginateList("markers");
-  paginateList("loops");
-}
-
-$("markers").onclick = (e) => {
-  const t = e.target as HTMLElement;
-  const b = t.closest("button") as HTMLButtonElement;
-  if (!b) return;
-  const s = song();
-  if (b.dataset.marker) {
-    const m = s.markers.find((m) => m.id === b.dataset.marker)!;
-    seekFreely(m.time);
-  }
-  if (b.dataset.renameMarker) {
-    const m = s.markers.find((m) => m.id === b.dataset.renameMarker)!;
-    const n = prompt(i18nText("main.message145"), m.name);
-    if (n?.trim()) m.name = n.trim();
-  }
-  if (b.dataset.deleteMarker)
-    s.markers = s.markers.filter((m) => m.id !== b.dataset.deleteMarker);
-  renderLists();
-  queueSave();
-};
-$("loops").onclick = (e) => {
-  const b = (e.target as HTMLElement).closest("button");
-  if (!b) return;
-  const s = song();
-  if (b.dataset.loop) {
-    playback.clearPreset();
-    useLoop(s.loops.find((l) => l.id === b.dataset.loop));
-  }
-  if (b.dataset.renameLoop) {
-    const l = s.loops.find((l) => l.id === b.dataset.renameLoop)!;
-    const n = prompt(i18nText("main.message140"), l.name);
-    if (n?.trim()) l.name = n.trim();
-  }
-  if (b.dataset.deleteLoop) {
-    if (player?.loop?.id === b.dataset.deleteLoop) useLoop();
-    s.loops = s.loops.filter((l) => l.id !== b.dataset.deleteLoop);
-  }
-  renderLists();
-  queueSave();
-};
 for (const b of document.querySelectorAll<HTMLElement>("[data-close]"))
   if (
     ![
@@ -2880,4 +2732,74 @@ management = setupScoreManagement({
     await activate(next);
     await persist();
   },
+});
+
+// Both entry points share one package-import path. The authoring database remains
+// the existing library; an existing identity is never silently overwritten.
+const packageInput = document.createElement("input");
+packageInput.type = "file";
+packageInput.accept = ".drumscore";
+packageInput.hidden = true;
+packageInput.id = "authoring-package-file";
+document.body.append(packageInput);
+for (const [host, id] of [
+  ["library-dialog", "library-package-import"],
+  ["new-dialog", "new-package-import"],
+]) {
+  const button = document.createElement("button");
+  button.id = id;
+  button.type = "button";
+  button.textContent = i18nText("separation.packageImport");
+  button.onclick = () => packageInput.click();
+  $(host).querySelector(".dialoghead")?.after(button);
+  if (!button.isConnected) $(host).prepend(button);
+}
+packageInput.onchange = async () => {
+  const file = packageInput.files?.[0];
+  if (!file) return;
+  packageInput.disabled = true;
+  try {
+    const imported = await readScorePackage(file);
+    if ((await allRecords()).some((r) => r.song.id === imported.song.id)) {
+      if (!confirm(i18nText("separation.importCopy"))) return;
+      imported.song.id = crypto.randomUUID();
+      imported.song.title = i18nText("separation.copyTitle", {
+        title: imported.song.title,
+      });
+      saveCanonical(imported);
+    }
+    await saveRecord(imported);
+    await activate(imported);
+    for (const id of ["new-dialog", "library-dialog"])
+      $<HTMLDialogElement>(id).close();
+    tell(i18nText("separation.saved"));
+  } catch (e) {
+    error(e);
+  } finally {
+    packageInput.value = "";
+    packageInput.disabled = false;
+  }
+};
+const packageExport = document.createElement("button");
+packageExport.id = "export-score-package";
+packageExport.type = "button";
+packageExport.className = "management-row";
+packageExport.textContent = i18nText("separation.packageExport");
+packageExport.title = i18nText("separation.packageDetail");
+const exportDialog = $("song-export-dialog");
+exportDialog.firstElementChild?.after(packageExport);
+action("export-score-package", async () => {
+  if (!record || packageExport.disabled) return;
+  packageExport.disabled = true;
+  try {
+    // Apply the currently visible authoring values before capturing the package.
+    // Existing edit-session persistence still owns saved state and drafts.
+    if (session?.active()) flushEditorForm();
+    await persist();
+    const blob = await createScorePackage(record);
+    download(blob, `${record.song.title}.drumscore`);
+    tell(i18nText("separation.exportReady"));
+  } finally {
+    packageExport.disabled = false;
+  }
 });

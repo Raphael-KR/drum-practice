@@ -1,0 +1,241 @@
+import "./playback-base.css";
+import "./playback-ui.css";
+import "./portable-player.css";
+import "./player-library.css";
+import { t } from "./i18n";
+import notices from "./third-party.generated.json";
+import { escapeHTML } from "./html";
+import { readScorePackage } from "./score-package";
+import {
+  listPracticeRecords,
+  removePracticeRecord,
+  loadPracticeRecord,
+  savePracticeState,
+  importPracticeRecord,
+  listPracticeArchives,
+  restorePracticeArchive,
+} from "./practice-library";
+import { mountPlaybackRuntime } from "./playback-runtime";
+import { playbackInitial, type PlaybackInitial } from "./playback-export";
+import { songScores, useScore } from "./song-scores";
+import { createDialog } from "./dialog-ui";
+import type { RecordData } from "./storage";
+
+const root = document.getElementById("app")!;
+let session: Awaited<ReturnType<typeof mountPlaybackRuntime>> | undefined;
+let working = false;
+let importEpoch = 0;
+function report(error: unknown) {
+  const target = document.getElementById("library-status");
+  if (target)
+    target.textContent = error instanceof Error ? error.message : String(error);
+}
+async function closePlayback() {
+  if (!session) return;
+  await session.flush();
+  session.dispose();
+  await session.flush();
+  session = undefined;
+}
+function preferences(): PlaybackInitial {
+  try {
+    return {
+      ...playbackInitial,
+      ...JSON.parse(localStorage.getItem("drum-player-preferences") || "{}"),
+    };
+  } catch {
+    return { ...playbackInitial };
+  }
+}
+async function openRecord(id: string) {
+  if (working) return;
+  working = true;
+  try {
+    const record = await loadPracticeRecord(id);
+    if (!record) throw Error(t("separation.missing"));
+    await closePlayback();
+    const variants = songScores(record);
+    session = await mountPlaybackRuntime({
+      root,
+      song: structuredClone(record.song),
+      audio: record.audio,
+      pages: record.pages,
+      scores: variants
+        .filter((v) => v.format !== (record.song.scoreFormat ?? "pdf"))
+        .map((v) => ({ song: useScore(record, v).song, pages: v.pages })),
+      initial: preferences(),
+      licenses: notices.entries
+        .map((e) => `${e.name} ${e.version} · ${e.license}\n${e.text}`)
+        .join("\n\n"),
+      changed: async (song, initial) => {
+        await savePracticeState(record.song.id, structuredClone(song));
+        localStorage.setItem(
+          "drum-player-preferences",
+          JSON.stringify(initial),
+        );
+      },
+      onLibrary: () => {
+        void showLibrary().catch(report);
+      },
+    });
+  } catch (e) {
+    try {
+      await showLibrary();
+    } catch (closeError) {
+      report(closeError);
+    }
+    report(e);
+  } finally {
+    working = false;
+  }
+}
+function resolveConflict(): Promise<"replace" | "keep-existing"> {
+  return new Promise((resolve) => {
+    const dialog = createDialog(
+      "package-conflict",
+      t("separation.conflictTitle"),
+      "tool-dialog",
+      root,
+    );
+    const body = document.createElement("div");
+    body.className = "tool-body";
+    body.innerHTML = `<p>${escapeHTML(t("separation.conflictBody"))}</p><div class="package-choice"><button id="keep-package">${escapeHTML(t("separation.keep"))}</button><button id="replace-package">${escapeHTML(t("separation.replace"))}</button></div>`;
+    dialog.append(body);
+    let choice: "replace" | "keep-existing" = "keep-existing";
+    body
+      .querySelector("#keep-package")!
+      .addEventListener("click", () => dialog.close());
+    body.querySelector("#replace-package")!.addEventListener("click", () => {
+      choice = "replace";
+      dialog.close();
+    });
+    dialog.addEventListener(
+      "close",
+      () => {
+        dialog.remove();
+        resolve(choice);
+      },
+      { once: true },
+    );
+    dialog.showModal();
+  });
+}
+async function importFile(file: File) {
+  if (working) return;
+  working = true;
+  const epoch = ++importEpoch;
+  const input = document.querySelector<HTMLInputElement>("#package-file");
+  if (input) input.disabled = true;
+  try {
+    const record = await readScorePackage(file);
+    let result = await importPracticeRecord(record);
+    if (result.status === "conflict")
+      result = await importPracticeRecord(record, await resolveConflict());
+    if (epoch !== importEpoch) return;
+    await showLibrary();
+    const status = document.getElementById("library-status");
+    if (status)
+      status.textContent = t(
+        result.status === "kept" ? "separation.kept" : "separation.saved",
+      );
+  } catch (e) {
+    report(e);
+  } finally {
+    working = false;
+    if (input) input.disabled = false;
+  }
+}
+async function restore(id: string) {
+  if (working) return;
+  const archives = await listPracticeArchives(id);
+  if (!archives.length) return;
+  if (!window.confirm(t("separation.restoreConfirm"))) return;
+  working = true;
+  try {
+    await restorePracticeArchive(archives[0].id);
+    await showLibrary();
+  } catch (e) {
+    report(e);
+  } finally {
+    working = false;
+  }
+}
+export async function showLibrary() {
+  await closePlayback();
+  document.body.classList.remove("has-song");
+  delete document.body.dataset.ready;
+  root.className = "player-library";
+  root.innerHTML = `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><a href="${import.meta.env.DEV ? "./editor.html" : "../editor/editor.html"}">${escapeHTML(t("separation.openEditor"))}</a></header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`;
+  document
+    .querySelector("#import-package")!
+    .addEventListener("click", () =>
+      document.querySelector<HTMLInputElement>("#package-file")!.click(),
+    );
+  document
+    .querySelector("#package-file")!
+    .addEventListener("change", (event) => {
+      const input = event.currentTarget as HTMLInputElement;
+      const file = input.files?.[0];
+      input.value = "";
+      if (file) void importFile(file);
+    });
+  const records = await listPracticeRecords();
+  const list = document.getElementById("practice-records")!;
+  if (!records.length) {
+    list.textContent = t("separation.empty");
+  }
+  for (const record of records) {
+    const item = document.createElement("article");
+    item.className = "practice-card";
+    item.innerHTML = `<div><h3>${escapeHTML(record.song.title)}</h3><p>${escapeHTML(record.song.artist || "")}</p></div><div class="practice-card-actions"><button class="primary" data-open>${escapeHTML(t("separation.open"))}</button></div>`;
+    item.querySelector("[data-open]")!.addEventListener("click", () => {
+      void openRecord(record.song.id);
+    });
+    const remove = document.createElement("button");
+    remove.textContent = t("separation.remove");
+    remove.onclick = async () => {
+      if (working || !window.confirm(t("separation.removeConfirm"))) return;
+      working = true;
+      try {
+        await removePracticeRecord(record.song.id);
+        await showLibrary();
+      } catch (error) {
+        report(error);
+      } finally {
+        working = false;
+      }
+    };
+    item.querySelector(".practice-card-actions")!.append(remove);
+    const archived = await listPracticeArchives(record.song.id);
+    if (archived.length) {
+      const button = document.createElement("button");
+      button.textContent = t("separation.restore");
+      button.onclick = () => {
+        void restore(record.song.id).catch(report);
+      };
+      item.querySelector(".practice-card-actions")!.append(button);
+    }
+    list.append(item);
+  }
+  const live = new Set(records.map((r) => r.song.id));
+  const archives = await listPracticeArchives();
+  const removed = archives.filter((a) => !live.has(a.record.song.id));
+  const seen = new Set<string>();
+  for (const archive of removed) {
+    const id = archive.record.song.id;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const item = document.createElement("article");
+    item.className = "practice-card";
+    const name = document.createElement("h3");
+    name.textContent = archive.record.song.title;
+    const button = document.createElement("button");
+    button.textContent = t("separation.restoreRemoved");
+    button.onclick = () => {
+      void restore(id).catch(report);
+    };
+    item.append(name, button);
+    list.append(item);
+  }
+}
+void showLibrary().catch(report);

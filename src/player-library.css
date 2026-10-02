@@ -1,0 +1,71 @@
+.player-library {
+  max-width: 1120px;
+  margin: auto;
+  padding: 24px;
+}
+.library-header,
+.library-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.library-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+.library-header a {
+  color: var(--blue, #3f74d4);
+  font-weight: 600;
+}
+.library-main {
+  padding: 32px 0;
+}
+.library-heading h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.practice-records {
+  display: grid;
+  gap: 16px;
+}
+.practice-card {
+  background: white;
+  padding: 24px;
+  border: 1px solid var(--line, #d5deeb);
+  border-radius: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+}
+.practice-card h3 {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.practice-card p {
+  color: var(--muted);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.practice-card-actions,
+.package-choice {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+#library-status {
+  min-height: 24px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .player-library {
+    padding: 16px;
+  }
+  .practice-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

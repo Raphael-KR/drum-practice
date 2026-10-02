@@ -6,7 +6,7 @@ for (const format of ['combined']) {
  const runtime=html.match(/id="portable-runtime">([\s\S]*?)<\/script>/)[1];
  const meta=JSON.parse(await readFile(`docs/experiments/html-playback/${format}-metafile.json`,'utf8'));
  const used=Object.values(meta.outputs).flatMap(o=>Object.entries(o.inputs).filter(([,v])=>v.bytesInOutput>0).map(([name])=>name));
- for(const module of ['src/playback-shell.ts','src/playback-assets.ts','src/icon-button.ts','src/binary-asset.ts','src/playback-screen.ts','src/playback-forms.ts','src/playback-position.ts','src/html.ts','src/playback-ui.ts','src/playback-measure.ts','src/icon-svg.ts','src/marker-icon.ts','src/playback-layout.ts','src/playback-actions.ts','src/dialog-ui.ts','src/playback-frame.ts','src/repeat-ui.ts','src/marker-ui.ts','src/settings-ui.ts'])
+ for(const module of ['src/playback-runtime.ts','src/playback-shell.ts','src/playback-assets.ts','src/icon-button.ts','src/binary-asset.ts','src/playback-screen.ts','src/playback-forms.ts','src/playback-position.ts','src/html.ts','src/playback-ui.ts','src/playback-measure.ts','src/icon-svg.ts','src/marker-icon.ts','src/playback-layout.ts','src/playback-actions.ts','src/dialog-ui.ts','src/playback-frame.ts','src/repeat-ui.ts','src/marker-ui.ts','src/settings-ui.ts'])
    assert(used.includes(module), 'Missing shared UI module: '+module);
  for(const selector of ['#editor-dialog','#library-dialog','#new-dialog'])
    assert(!html.includes(selector), 'Authoring CSS bundled: '+selector);

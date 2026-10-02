@@ -96,7 +96,7 @@ for (const file of files) {
       `${file}: copied icon button caption markup`,
     );
 }
-for (const file of ["src/workspace.ts", "src/portable-player.ts"])
+for (const file of ["src/workspace.ts", "src/playback-runtime.ts"])
   assert.equal(
     report.primitives.filter(
       (x) => x.file === file && x.call === "mountPlaybackShell",

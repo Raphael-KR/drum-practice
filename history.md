@@ -1772,3 +1772,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 ## 2026-10-02 PDF→MusicXML main 통합 검증
 - 최신 main을 보존하여3949f3c로 통합. 중복 정책 없음. Python9검사·드럼앱64파일286테스트·타입/i18n/playback검사·HTML재생물 생성 없는 Vite빌드 통과.
 - 자료5397파일 해시검증 백업 후 변환 작업 트리/브랜치 정리. 상세 docs/MUSICXML-INTEGRATION.md. GitHub/push/배포/HTML재생 파일 생성 미실행.
+
+## 2026-10-02 제작 앱·재생 앱 분리
+- editor.html/player.html 독립 진입점·dist/editor 및 dist/player 빌드. 편집 기능과 원본 렌더러를 재생 번들에서 제외.
+- .drumscore v1 ZIP 완성 파일 계약, 제작 입출력, 독립 재생 보관함·동일 구조 기록 보존·구조 충돌 선택·이전 자료 보관/복원·삭제 복원.
+- 공통 playback-runtime/연습 관리·읽기 전용 뷰어로 재생 앱과 기존 HTML 호스트 연결. 기존 제작 미리보기는 공통 screen/shell 유지.
+- 전체70파일325테스트, 타입/i18n/번들 경계/공유 코드 감사, Safari 실제 제작 패키지→정적 재생→기록 저장/복원·PDF/SVG/가사 보기 검증. 최종 뷰어 집중2개 재검증.
+- 상세: docs/plans/EDITOR-PLAYER-SEPARATION.md, docs/SCORE-PACKAGE.md. 실제 사용자 DB 이전·공개 배포·원격 push·곡 포함 HTML 파일 생성 미실행. 빈 HTML 빌드 템플릿 기능은 보존.

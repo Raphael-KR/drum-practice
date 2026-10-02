@@ -191,7 +191,7 @@ it("switches share accessible description, disabled and checked state", () => {
   ).toBe("Description");
 });
 it("both entry points mount the single screen owner", () => {
-  for (const file of ["main.ts", "portable-player.ts"]) {
+  for (const file of ["main.ts", "playback-runtime.ts"]) {
     const source = readFileSync(`src/${file}`, "utf8");
     expect(source).toContain("createPlaybackScreen({");
     for (const call of [
