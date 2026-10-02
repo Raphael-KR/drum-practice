@@ -25,3 +25,6 @@ public/portable-musicxml.html
 public/portable-pdf.html
 
 public/portable-combined.html
+
+# Completed score assets (local/published media, not source)
+public/scores/

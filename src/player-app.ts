@@ -3,6 +3,7 @@ import "./playback-ui.css";
 import "./portable-player.css";
 import "./player-library.css";
 import { t } from "./i18n";
+import bundledScores from "./bundled-scores.json";
 import notices from "./third-party.generated.json";
 import { escapeHTML } from "./html";
 import { readScorePackage } from "./score-package";
@@ -218,6 +219,36 @@ export async function showLibrary() {
     list.append(item);
   }
   const live = new Set(records.map((r) => r.song.id));
+  for (const score of bundledScores.filter((s) => !live.has(s.id))) {
+    const item = document.createElement("article");
+    item.className = "practice-card";
+    const title = document.createElement("h3");
+    title.textContent = score.title;
+    const button = document.createElement("button");
+    button.textContent = t("separation.loadBundled");
+    button.onclick = async () => {
+      if (working || button.disabled) return;
+      button.disabled = true;
+      try {
+        const response = await fetch(
+          `${import.meta.env.BASE_URL}${score.file}`,
+        );
+        if (!response.ok) throw new Error(t("separation.bundledFailed"));
+        await importFile(
+          new File([await response.blob()], score.file, {
+            type: "application/zip",
+          }),
+        );
+      } catch (error) {
+        report(error);
+      } finally {
+        button.disabled = false;
+      }
+    };
+    item.append(title, button);
+    list.append(item);
+  }
+
   const archives = await listPracticeArchives();
   const removed = archives.filter((a) => !live.has(a.record.song.id));
   const seen = new Set<string>();

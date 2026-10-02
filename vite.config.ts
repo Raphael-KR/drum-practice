@@ -32,6 +32,17 @@ export default defineConfig(({ mode }) => {
               fileName: "portable-template.html",
               source: readFileSync("public/portable-template.html"),
             });
+          if (mode === "player") {
+            const scores = JSON.parse(
+              readFileSync("src/bundled-scores.json", "utf8"),
+            );
+            for (const score of scores)
+              this.emitFile({
+                type: "asset",
+                fileName: score.file,
+                source: readFileSync(`public/${score.file}`),
+              });
+          }
           const modules = Object.values(bundle).flatMap((chunk) =>
             chunk.type === "chunk" ? Object.keys(chunk.modules) : [],
           );

@@ -1,39 +1,22 @@
-import { cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, writeFile, rm, readdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 const source = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const target = resolve(process.argv[2] || '../drum-practice-sites');
-if (target === source) throw new Error('Sites mirror must differ from source');
-await mkdir(target, { recursive: true });
-await mkdir(resolve(target,'docs'), {recursive:true});
-await cp(resolve(source,'docs/UI-COMPONENTS.md'),resolve(target,'docs/UI-COMPONENTS.md'));
-for (const entry of ['src','scripts','index.html','package.json','package-lock.json','tsconfig.json','vite.config.ts']) {
-  await cp(resolve(source,entry),resolve(target,entry),{recursive:true});
-}
-for (const folder of ['public/licenses','dist/assets','dist/licenses']) {
-  await cp(resolve(source,folder),resolve(target,folder),{recursive:true});
-}
-for (const name of ['song.json','score.pdf','audio.mp3','score.musicxml','page-1.png','page-2.png','page-3.png']) {
-  for (const base of ['public','dist']) {
-    await mkdir(resolve(target,base,'demo'),{recursive:true});
-    await cp(resolve(source,base,'demo',name),resolve(target,base,'demo',name));
-  }
-}
-await cp(resolve(source,'dist/index.html'),resolve(target,'dist/index.html'));
-for (const name of ['portable-combined.html','portable-template.html','portable-musicxml.html','portable-pdf.html']) {
-  for (const base of ['public','dist']) await cp(resolve(source,base,name),resolve(target,base,name));
-}
-const digests = [];
-async function check(dir) {
- for (const e of await readdir(resolve(source,dir),{withFileTypes:true})) {
-  const path=dir+'/'+e.name;
-  if(e.isDirectory()) { await check(path); continue; }
-  const a=await readFile(resolve(source,path)), b=await readFile(resolve(target,path));
-  if(!a.equals(b)) throw new Error('Mirror mismatch: '+path);
-  digests.push({path,sha256:createHash('sha256').update(a).digest('hex')});
- }
-}
-await check('src');
-await writeFile(resolve(target,'source-parity.json'),JSON.stringify({canonicalProject:source,files:digests},null,2)+'\n');
-console.log(JSON.stringify({target,verifiedSourceFiles:digests.length}));
+if (target === source) throw new Error('Sites checkout must differ from source');
+const manifest = JSON.parse(await readFile(resolve(target,'.openai/hosting.json'),'utf8'));
+if (manifest.project_id !== 'appgprj_6ab0790baa048191aaee49f58c1ffe7b') throw new Error('Wrong Site');
+// Replace only the previous generated mirror; its history is retained in Site Git.
+for(const entry of ['src','scripts','public/demo','dist','index.html','package.json','package-lock.json','tsconfig.json','vite.config.ts','source-parity.json'])
+  await rm(resolve(target,entry),{recursive:true,force:true});
+await mkdir(resolve(target,'dist'),{recursive:true});
+await cp(resolve(source,'dist/player'),resolve(target,'dist'),{recursive:true});
+await cp(resolve(target,'dist/player.html'),resolve(target,'dist/index.html'));
+await writeFile(resolve(target,'.gitignore'),'node_modules/\n.sites-runtime/\n.env*\n*.log\n');
+await writeFile(resolve(target,'README.md'),'# 드럼연습실\n\nCanonical source: /Users/raphael/Playground/drum-practice\n\nPlayer-only static release. Authoring app is local-only. Rebuild canonical player and run scripts/prepare-sites.mjs.\n');
+const digests=[];
+async function scan(dir='') {for(const e of await readdir(resolve(target,'dist',dir),{withFileTypes:true})) {const p=dir?`${dir}/${e.name}`:e.name;if(e.isDirectory()) await scan(p);else digests.push({path:p,sha256:createHash('sha256').update(await readFile(resolve(target,'dist',p))).digest('hex')});}}
+await scan();
+await writeFile(resolve(target,'source-parity.json'),JSON.stringify({canonicalProject:source,app:'player',version:JSON.parse(await readFile(resolve(source,'src/app-versions.json'),'utf8')).player.version,files:digests},null,2)+'\n');
+console.log(JSON.stringify({target,files:digests.length}));
