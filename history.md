@@ -1793,3 +1793,21 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 재생 앱에 함께 제공하는 완성 악보 목록/불러오기 추가. 바람과 언덕의 발라드 PDF·SVG·음원·가사 패키지를 공개 게시.
 - 악보제작실0.4.1 유지, 드럼연습실만0.4.2로 상승. 제작 앱은 배포 제외.
 - 빌드·타입·i18n·경계 검사와 관련33테스트, Safari 미리보기 불러오기·열기 통과. Sites 버전9 배포 succeeded. docs/SITES-PUBLICATION.md 참조.
+
+
+## 2026-10-03 Loveholic PDF → MusicXML 로컬 변환 완료
+- 전역/프로젝트 지침·변환 정책·확정 매핑·SVG 출력 규칙을 재확인. Opus 벡터 양식 첫3줄10마디를 평가한 뒤 전체3쪽32줄123마디·492박·음표머리1580개를 복원. 과거 곡 전용 코드를 무검증 재사용하지 않았다.
+- 새 코드 scripts/musicxml/loveholic.py, loveholic_audio.py, verify_loveholic.py, loveholic_package.mjs. 실제 줄기·빔·깃발/공유줄기에서 음가·동시음을 읽고 구간8개·크레셴도5개·악센트9개·열기36개·닫기1개·원 안＋20개를 보존.
+- XSD·전 마디 XML 재읽기·독립 원본 fixture10마디·오류주입5개·기존Python9개 통과. 관련앱3파일35테스트 통과. guitar-practice 동명 테스트 수집은 기존 fixture 경로 오류로 제외하여 드럼 범위 검증.
+- Safari27.0.1 실제 OSMD2.1.2에서3쪽123마디영역과1/37/80 페이지 시작·한글 구간 확인. half-muted20개 XML 저장/OSMD 표시 미지원. 새 일반 도형·텍스트 대체나 매핑 정본 변경 없음. 인쇄 가사는 원문/좌표로 보존하고 음절 리듬 싱크를 만들지 않았다.
+- 음원 연결은 spectral-flux 신호 추정 첫박0.193초·136.232BPM을 마디start/end에 사용. 인쇄136BPM 유지. 6구간 위상 및 ±1~4박 경쟁점·특징필인/끝점 대조. 전곡 청취 확인을 뜻하지 않으며121–123 쉼표 시간은 외삽.
+- 원본PDF·전체MP3와 각각3쪽SVG/PNG를 포함한 Loveholic.drumscore 생성/재읽기 및 저장ZIP CRC·원시바이트 해시 검증. PDF 줄경계 이전가사 혼입/자기가사 잘림은32줄의 빈 띠 경계로 수정하고머리·빔·가사 포함/비중첩·Safari10→11 직접검사 통과. PDF 줄별 배율 차이는 기존 플레이어 한계로 기록.
+- 최종패키지 SHA256 e94f9e2a54ab584061778a8db3f8418e92247774d15a1d3fc632bf19a8347916. 최종MusicXML SHA256 1dfbd34e7325be0dc61e69b2c4080d71baafc2590bdf2c56056b3fbc7fe29063. docs/experiments/loveholic-20261002/에Git제외 보존. 원본2파일 해시재확인 일치.
+- 근거/재현/한계 docs/LOVEHOLIC-CONVERSION.md. 제작 작업의 앱소스·버전·commit/push/PR/merge/deploy/HTML 재생물 생성 없음. 공유checkout의 다른세션 변경 보존. 수록·배포는 별도 LOVEHOLIC-PUBLICATION.md 범위.
+
+## 2026-10-03 Loveholic 감독·로컬/Sites 수록
+- 제작 세션을 감독하고 원본/SVG32줄 마디그룹,123마디 패키지와 원본해시를 독립 대조했다. Safari 플레이어에서 발견한 PDF crop 문제를 제작 세션에 수정시키고 최종본으로 재검수했다.
+- src/bundled-scores.json에 Loveholic 추가, 드럼연습실0.4.3으로 버전 상승. 악보제작실0.4.1 로컬 전용 유지. 기존 곡/보관함 보존.
+- 패키지18검사 및 보관함/분리/관리13검사, 타입/i18n/분리 빌드 통과. Safari5182/5183에서 불러오기·저장·열기·재생/정지·마커 이동·SVG/PDF3쪽·가사텍스트 확인.
+- Sites 버전10 공개 배포 succeeded(00:14KST), appgdep_6abfca5730508191a74452a476464b51. 사이트소스 d1f6d24654f5fb01f2e590c3261197c3689a2f8d. 최종패키지 e94f9e2a…를 로컬/빌드/배포사본에서 일치 확인.
+- 음원 신호추정, 가사 음절싱크 미확정, half-muted20개 SVG미표시, PDF 줄별배율 차이는 docs/LOVEHOLIC-PUBLICATION.md에 명시. HTML재생 파일 생성·저장 없음. 수록 완료로 감독 heartbeat중지.
