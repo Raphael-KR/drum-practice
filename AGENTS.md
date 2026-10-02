@@ -28,3 +28,7 @@
 ## PDF → MusicXML 변환 방식
 
 - 매 변환 작업 시작 전에 `/Users/raphael/Playground/drum-practice/docs/MUSICXML-CONVERSION-POLICY.md`를 읽고 따른다. 벡터 PDF는 Codex 구조 추출을 우선하고, 스캔·사진은 Audiveris 초벌 후 Codex 대조·교정을 먼저 시험한다. 새로운 양식은 대표 2~3줄로 먼저 평가한다.
+
+## 앱 명칭과 운영 범위
+- 악보제작실(editor.html)은 로컬 전용 제작 앱이다. 공개 배포하지 않는다.
+- 드럼연습실(player.html)이 최신 재생 앱이다. Sites 배포 요청 시 dist/player만 대상으로 한다.

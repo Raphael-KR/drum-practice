@@ -165,7 +165,7 @@ export async function showLibrary() {
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
-  root.innerHTML = `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><a href="${import.meta.env.DEV ? "./editor.html" : "../editor/editor.html"}">${escapeHTML(t("separation.openEditor"))}</a></header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`;
+  root.innerHTML = `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1>${import.meta.env.DEV ? `<a href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`;
   document
     .querySelector("#import-package")!
     .addEventListener("click", () =>

@@ -185,7 +185,7 @@ app.innerHTML =
   '</button></div></header>\n<main><section class="welcome" id="welcome"><span class="tag">' +
   i18nText("main.message100") +
   "</span><h2>" +
-  i18nText("main.message097") +
+  i18nText("separation.editorTitle") +
   '</h2><p class="welcome-lead">' +
   i18nText("main.message101") +
   "</p><p>" +
@@ -1150,8 +1150,8 @@ $("library-list").onclick = async (e) => {
         urls = [];
         $("practice").hidden = true;
         $("welcome").hidden = false;
-        $("song-title").textContent = i18nText("main.message097");
-        document.title = i18nText("main.message097");
+        $("song-title").textContent = i18nText("separation.editorTitle");
+        document.title = i18nText("separation.editorTitle");
         $("original-tempo").hidden = true;
         $("edit-button").hidden = true;
         document.body.classList.remove("has-song");

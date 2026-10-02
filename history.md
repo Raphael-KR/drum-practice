@@ -1779,3 +1779,7 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 공통 playback-runtime/연습 관리·읽기 전용 뷰어로 재생 앱과 기존 HTML 호스트 연결. 기존 제작 미리보기는 공통 screen/shell 유지.
 - 전체70파일325테스트, 타입/i18n/번들 경계/공유 코드 감사, Safari 실제 제작 패키지→정적 재생→기록 저장/복원·PDF/SVG/가사 보기 검증. 최종 뷰어 집중2개 재검증.
 - 상세: docs/plans/EDITOR-PLAYER-SEPARATION.md, docs/SCORE-PACKAGE.md. 실제 사용자 DB 이전·공개 배포·원격 push·곡 포함 HTML 파일 생성 미실행. 빈 HTML 빌드 템플릿 기능은 보존.
+
+## 2026-10-02 앱 명칭·운영 범위 확정
+- 제작 앱을 악보제작실로 명명하고 로컬 전용으로 확정. 재생 앱이 최신 드럼연습실이며 공개 배포 대상은 dist/player만이다.
+- 제작 진입점·홈 문구와 안내를 반영하고 재생 배포본에서 로컬 제작실 링크 제거. 이번 작업은 커밋만 하며 배포하지 않는다.
