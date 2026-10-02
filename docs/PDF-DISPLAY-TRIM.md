@@ -1,6 +1,6 @@
 # PDF 연습 화면 표시용 자르기
 
-2026-10-03 표시 수정·배포 완료. 가사 타이밍은 별도 검수 중. 원본 PDF·MusicXML을 변경하지 않고 재생 화면에서 줄 앞 타악기 표시와 여백을 스킵한다. 그 과정의 인쇄 가사·마디 번호 잘림은 사용자 승인 범위다. 두 줄 재생은 행당 4마디, 전체 SVG 출력은 원본 줄 구성이다.
+2026-10-03 표시 수정·배포 완료. 가사 타이밍은 미확정. 원본 PDF·MusicXML을 변경하지 않고 재생 화면에서 줄 앞 타악기 표시와 여백을 스킵한다. 그 과정의 인쇄 가사·마디 번호 잘림은 사용자 승인 범위다. 두 줄 재생은 행당 4마디, 전체 SVG 출력은 원본 줄 구성이다.
 
 ## 완료 조건
 
@@ -29,4 +29,4 @@
 - Sites 자격 증명 만료는 같은 Site의 새 단기 자격 증명을 발급받아 복구했다. 기존 audience 유지, 공식 site-workflow로 source push/archive 검증 후 배포했다.
 - player0.4.5/editor0.4.3. Sites 버전12, source1ff02ccc59327d1dcf1b94529484e73c94ecb17f, deployment appgdep_6abfd9e2db0081919150df69415c7813 succeeded(2026-10-03 01:21KST). 악보제작실은 로컬 전용. 곡 포함 HTML 파일 생성/저장 없음.
 - 근거: docs/experiments/loveholic-20261002/display-crop-review-20261003/의 build-final.log, full-tests-drum-release.log, player-pdf-rows-final.png, player-pdf-first-system.png, player-svg-bars33-40.png. 원본/패키지 전곡검증은 half-open-package-20261003/에 보존.
-- 남은 항목: 가사 음절/행 타이밍은 제작 세션이 검수 중이며 완료로 간주하지 않는다.
+- 남은 항목: 가사 음절/행 타이밍은 로컬 STT·보컬 분리·두 Whisper 모델·CTC 및 공개 시간 자료 조사 후에도 미확정이다. 대표 전체 구절 채택0/3이며 전곡 실패로 확대하지 않는다. 상세 근거와 미채택 이유는 [가사 시각 검토](LOVEHOLIC-LYRICS-REVIEW.md)에 남겼다. 검증된 동일 녹음 시간 가사 또는 청취로 확인된 구절/음절 경계가 필요하며, 추정값을 패키지에 넣어 해결 완료로 간주하지 않는다.
