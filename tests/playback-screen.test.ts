@@ -53,7 +53,7 @@ function mount(environment: "web" | "portable", alignPDF = false) {
   };
   const root = document.createElement("div");
   document.body.replaceChildren(root);
-  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: playbackTransportRightHTML({ progress: ids.progress, mark: ids.mark, sound: ids.sound }) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog">${loopFieldsHTML()}</dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}`;
+  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: playbackTransportRightHTML({ progress: ids.progress, mark: ids.mark, sound: ids.sound }) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog">${loopFieldsHTML()}<div id="loop-slots"></div></dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}`;
   const stage = root.querySelector<HTMLElement>("#stage")!;
   Object.defineProperty(stage, "clientWidth", {
     value: 800,
@@ -188,12 +188,17 @@ for (const environment of ["web", "portable"] as const) {
     input("music-volume").value = ".3";
     input("music-volume").dispatchEvent(new Event("input"));
     expect(song.settings.musicVolume).toBe(0.3);
+    expect(document.getElementById("music-volume-value")?.textContent).toBe("30%");
+    input("click-volume").value = ".65";
+    input("click-volume").dispatchEvent(new Event("input"));
+    expect(song.settings.clickVolume).toBe(0.65);
+    expect(document.getElementById("click-volume-value")?.textContent).toBe("65%");
     input("restart").checked = true;
     input("restart").dispatchEvent(new Event("change"));
     expect(prefs.restartMeasure).toBe(true);
     expect(p.volumes).toHaveBeenCalled();
   });
-  it(`${environment}: centered repeats, partial endpoints, markers and seeking outside a loop agree`, () => {
+  it(`${environment}: centered repeats, whole-measure endpoints, markers and seeking outside a loop agree`, () => {
     const { screen, p, song, ids, input, click, root } = mount(environment);
     p.position = song.measures[20].start;
     root.querySelector<HTMLButtonElement>('[data-radius="2"]')!.click();
@@ -201,19 +206,13 @@ for (const environment of ["web", "portable"] as const) {
     expect(centerLoop.start).toBe(song.measures[18].start);
     expect(centerLoop.end).toBe(song.measures[22].end);
     click(ids.adjust);
-    input("loop-precise").checked = true;
-    input("loop-ab").value = "2.25";
-    input("loop-bb").value = "3.5";
-    click("apply-loop");
-    expect(p.loop!.start).toBeGreaterThan(centerLoop.start);
-    expect(p.loop!.end).toBeLessThan(centerLoop.end);
+    expect(root.querySelector("#loop-precise")).toBeNull();
     const preserved = structuredClone(p.loop);
-    screen.fillLoop(preserved!);
-    expect(screen.loopFromForm().end).toBeCloseTo(preserved!.end, 4);
     screen.seek(song.measures[30].start);
     expect(p.loop).toBeUndefined();
     expect(screen.lastLoop?.end).toBe(preserved!.end);
     click("mark");
+    expect(root.querySelector<HTMLElement>('[data-drawer-panel="marker"]')!.hidden).toBe(false);
     expect(song.markers).toHaveLength(1);
     screen.seek(0);
     root.querySelector<HTMLButtonElement>("[data-quick-marker]")!.click();
@@ -256,3 +255,35 @@ for (const environment of ["web", "portable"] as const) {
     }
   });
 }
+
+it("fixed control board stays visible while shortcuts and repeat presets are used", () => {
+  const {root,p,song,click,ids,input,screen} = mount("portable");
+  const preset = root.querySelector<HTMLButtonElement>('[data-radius="1"]')!;
+  p.position = song.measures[20].start;
+  preset.click();
+  expect(preset.textContent).toBe("20~22");
+  expect(preset.getAttribute("aria-pressed")).toBe("true");
+  preset.click();
+  expect(p.loop).toBeUndefined();
+  expect(preset.textContent).toBe("앞뒤 1");
+  expect(root.querySelector<HTMLElement>("#playback-drawer")!.hidden).toBe(false);
+  click(ids.adjust);
+  expect(root.querySelector<HTMLElement>("#playback-drawer")!.hidden).toBe(false);
+  expect([...root.querySelectorAll<HTMLElement>(".drawer-panel")].every(panel => !panel.hidden)).toBe(true);
+  click(ids.mark);
+  expect(root.querySelector<HTMLElement>('[data-drawer-panel="marker"]')!.hidden).toBe(false);
+  expect(song.markers).toHaveLength(1);
+  expect(root.querySelector("#add-marker")).toBeNull();
+  expect(root.querySelector("#" + ids.mark)?.getAttribute("aria-pressed")).toBe("true");
+  click(ids.mark);
+  expect(song.markers).toHaveLength(0);
+  expect(root.querySelector("#" + ids.mark)?.getAttribute("aria-pressed")).toBe("false");
+  expect(root.querySelector('[data-drawer-panel="rewind"]')).toBeNull();
+  expect(root.querySelector("#drawer-progress")).toBeNull();
+  expect(input(ids.rewind).closest(".transport")).not.toBeNull();
+  expect(input(ids.rewind).dataset.numericDragBound).toBe("true");
+  input(ids.rewind).value = "3";
+  input(ids.rewind).dispatchEvent(new Event("input"));
+  expect(input(ids.rewind).value).toBe("3");
+  expect(root.querySelector("#loop-dialog")).toBeNull();
+});

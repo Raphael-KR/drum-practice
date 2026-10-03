@@ -55,12 +55,10 @@ for (const [host, binding] of [
       markerContent,
       loopExtra: host === "web" ? loopExtra : undefined,
     });
-    expect(document.querySelector("#practice")!.lastElementChild?.id).toBe(
-      "score-gesture-hint",
-    );
+    expect(document.querySelector("#score-gesture-hint")).toBeNull();
     const ids = [...document.querySelectorAll("[id]")].map((e) => e.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(document.querySelectorAll("#loop-a")).toHaveLength(1);
+    expect(document.querySelectorAll("#loop-a")).toHaveLength(0);
     expect(document.querySelectorAll("#music-volume")).toHaveLength(1);
     expect(document.querySelector("#practice .transport")).not.toBeNull();
     expect(document.querySelector("#practice .repeat-controls")).not.toBeNull();
@@ -109,6 +107,7 @@ it("binary codec preserves bytes and boundary MIME defaults", async () => {
   );
 });
 it("asset decode failure releases all new URLs without touching current assets", async () => {
+  vi.stubGlobal("Blob", NodeBlob);
   let i = 0;
   const revoke = vi.fn();
   vi.stubGlobal("URL", {
@@ -132,7 +131,7 @@ it("asset decode failure releases all new URLs without touching current assets",
     regions: [{ id: "r", page: 0 }],
   } as Song;
   await expect(
-    preparePlaybackAssets([new Blob(), new Blob()], score),
+    preparePlaybackAssets([new NodeBlob([]) as Blob, new NodeBlob([]) as Blob], score),
   ).rejects.toThrow("decode");
   expect(revoke.mock.calls.flat()).toEqual(["blob:1", "blob:2"]);
 });
@@ -158,7 +157,7 @@ it("asset replacement preserves reference identity and revokes old URLs", async 
     practiceStaffs: new Map(),
   };
   const ref = current.urls;
-  const next = await preparePlaybackAssets([new Blob()], {
+  const next = await preparePlaybackAssets([new NodeBlob([]) as Blob], {
     scoreFormat: "pdf",
     regions: [],
   } as unknown as Song);

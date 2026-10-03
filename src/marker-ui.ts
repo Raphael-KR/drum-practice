@@ -16,7 +16,9 @@ export function syncMarkerBadges(root: HTMLElement, s: Song) {
   const marked = markedMeasureIndices(s);
   root.querySelectorAll<HTMLElement>("[data-index]").forEach((el) => {
     const badge = el.querySelector<HTMLElement>(".measure-marker");
-    if (badge) badge.hidden = !marked.has(Number(el.dataset.index));
+    const isMarked = marked.has(Number(el.dataset.index));
+    el.classList.toggle("is-marked", isMarked);
+    if (badge) badge.hidden = !isMarked;
   });
 }
 export function bindMarkerSlots(

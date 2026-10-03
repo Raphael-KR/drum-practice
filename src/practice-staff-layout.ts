@@ -3,6 +3,10 @@ import { displayPage } from "./score-pages";
 import { detectStaff } from "./staff-geometry";
 import type { Region } from "./model";
 export interface StaffPosition {
+  /** Native quarter width divided by native staff gap; ribbon-only scaling. */
+  ribbonQuarterInGaps?: number;
+  /** Native SVG height/width. Rows scale both axes equally. */
+  nativePageRatio?: number;
   top: number;
   gap: number;
   frame?: { above: number; below: number };
@@ -84,9 +88,15 @@ export function practiceStaffLayout(
   staff: StaffPosition,
   width: number,
   budget: number,
+  constrainToCell = true,
 ) {
   const frameHeight = staffFrameHeight(staff);
-  const gap = Math.min(Math.max(50, budget) / frameHeight, width / 25);
+  // Ribbon widths follow the engraving. A short rest bar must not shrink
+  // vertically merely because it occupies fewer horizontal pixels.
+  const gap = constrainToCell && staff.nativePageRatio
+    ? width / region.w * staff.nativePageRatio * staff.gap
+    : Math.min(Math.max(staff.ribbonQuarterInGaps ? 1 : 50, budget) / frameHeight,
+    constrainToCell ? width / 25 : Infinity);
   const pageWidth = width / region.w,
     pageHeight = gap / staff.gap;
   return {
@@ -97,15 +107,30 @@ export function practiceStaffLayout(
 }
 
 /** CSS scales page width and height independently to align variable-width bars. */
-export async function practicePage(blob: Blob): Promise<Blob> {
+export async function practicePage(blob: Blob, crops: {source:Region; display:Region}[] = []): Promise<Blob> {
   const page = await displayPage(blob);
   if (page.type !== "image/svg+xml") return page;
   const doc = new DOMParser().parseFromString(
     await page.text(),
     "image/svg+xml",
   );
+  doc.querySelectorAll("metadata[data-ribbon-timeline]").forEach(e => e.remove());
   doc.documentElement.setAttribute("preserveAspectRatio", "none");
   doc.querySelectorAll("[data-score-heading]").forEach((e) => e.remove());
+  const view = (doc.documentElement.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+  const [, , width, height] = view;
+  // Rehearsal frames and text form one pair. Move both by the same prefix
+  // amount on the practice copy so trimming cannot cut the section name.
+  if (width > 0 && height > 0) for (const {source, display} of crops) {
+    if (display.x <= source.x) continue;
+    for (const element of doc.querySelectorAll('[data-section-top="safe"]')) {
+      const x = Number(element.getAttribute('x')), y = Number(element.getAttribute('y'));
+      if (x >= source.x*width && x < (source.x+source.w)*width &&
+          y >= source.y*height && y <= (source.y+source.h)*height) {
+        element.setAttribute('x', String(x+(display.x-source.x)*width));
+      }
+    }
+  }
   return new Blob([new XMLSerializer().serializeToString(doc)], {
     type: page.type,
   });

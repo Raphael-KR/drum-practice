@@ -77,3 +77,29 @@ it('covers every measure and preserves source data and custom crops',()=>{
  expect(displayRegion(song,{...r,y:r.y+.001}).beatXs).toEqual([]);
  expect(displayRegion(song,song.regions[83]).beatXs.length).toBe(6);
 });
+
+import svgCrops from '../src/svg-display-crops.json';
+it('removes the 26-unit empty prefix from all 31 reviewed SVG system starts',()=>{
+ const s={...song,id:svgCrops.songId,scoreFormat:'musicxml' as const};
+ expect(svgCrops.regions).toHaveLength(31);
+ expect(svgCrops.regions.some(r=>r.id==='xml-r1')).toBe(false);
+ for(const c of svgCrops.regions){
+  const {left,...r}=c, before=JSON.stringify(r), d=displayRegion(s,r);
+  expect((d.x-r.x)*1500).toBeCloseTo(26);
+  expect(d.beatXs[0]*d.w*1500).toBeCloseTo(23.00912);
+  r.beatXs.forEach((x,i)=>expect(d.x+d.w*d.beatXs[i]).toBeCloseTo(r.x+r.w*x));
+  expect(d.x+d.w).toBeCloseTo(r.x+r.w);
+  expect(JSON.stringify(r)).toBe(before);
+  const edited={...r,w:r.w+.001};expect(displayRegion(s,edited)).toBe(edited);
+  expect(displayRegion({...s,id:'other'},r)).toBe(r);
+ }
+});
+
+it('preserves reviewed lyric centers through a clef crop, including hidden anchors',()=>{
+ const r={id:'pdf',page:0,x:.1,y:.2,w:.4,h:.1,beatXs:[0,.5,1],
+  lyricAnchors:[{lyricId:'a',quarterOffset:.5,x:.05},{lyricId:'b',quarterOffset:2,x:.7}]};
+ const before=structuredClone(r),d=trimRegionLeft(r,.15);
+ expect(d.lyricAnchors![0].x).toBeLessThan(0);
+ r.lyricAnchors.forEach((a,i)=>expect(d.x+d.w*d.lyricAnchors![i].x).toBeCloseTo(r.x+r.w*a.x));
+ expect(r).toEqual(before);
+});

@@ -1,6 +1,6 @@
 import { it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { markMeasure, sortedMarkerSlots, markedMeasureIndices } from '../src/marker-slots';
+import { toggleMeasureMarker, markMeasure, sortedMarkerSlots, markedMeasureIndices } from '../src/marker-slots';
 import type { Song } from '../src/model';
 const fixture=():Song=>({...JSON.parse(readFileSync('public/demo/song.json','utf8')),markers:[]});
 it('shows three empty slots and anchors markers at the beginning of the measure',()=>{
@@ -24,4 +24,15 @@ it('refreshes a duplicate without using another slot',()=>{
   markMeasure(s,s.measures[9].start+.3,'unused');markMeasure(s,s.measures[39].start,'d');
   expect(s.markers.map(m=>m.id)).toEqual(['c','a','d']);
   expect(s.markers).toHaveLength(3);
+});
+
+it('toggles the current measure without evicting other markers or consuming a name on removal',()=>{
+ const s=fixture();
+ for(let i=0;i<5;i++) s.markers.push({id:String(i),name:String(i),time:s.measures[i].start});
+ const original=structuredClone(s.markers);
+ toggleMeasureMarker(s,s.measures[9].start+.2,'new',()=> 'Fill');
+ expect(s.markers).toHaveLength(6);
+ expect(s.markers[5]).toEqual({id:'new',name:'Fill',time:s.measures[9].start});
+ toggleMeasureMarker(s,s.measures[9].start+.4,'unused',()=>{throw new Error('must not consume name');});
+ expect(s.markers).toEqual(original);
 });

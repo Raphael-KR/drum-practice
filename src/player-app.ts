@@ -1,3 +1,5 @@
+import "./help.css";
+import { installHelp } from "./help";
 import "./playback-base.css";
 import "./playback-ui.css";
 import "./portable-player.css";
@@ -52,11 +54,17 @@ async function openRecord(id: string) {
   if (working) return;
   working = true;
   try {
-    const record = await loadPracticeRecord(id);
+    let record = await loadPracticeRecord(id);
     if (!record) throw Error(t("separation.missing"));
     await closePlayback();
+    const { prepareBrowserScore } = await import('./browser-score');
+    record = await prepareBrowserScore(record, message => {
+      const status = document.getElementById('library-status');
+      if (status) status.textContent = message;
+    });
     const variants = songScores(record);
     session = await mountPlaybackRuntime({
+      canonicalXML: record.canonicalXML,
       root,
       song: structuredClone(record.song),
       audio: record.audio,
@@ -69,7 +77,7 @@ async function openRecord(id: string) {
         .map((e) => `${e.name} ${e.version} · ${e.license}\n${e.text}`)
         .join("\n\n"),
       changed: async (song, initial) => {
-        await savePracticeState(record.song.id, structuredClone(song));
+        await savePracticeState(id, structuredClone(song));
         localStorage.setItem(
           "drum-player-preferences",
           JSON.stringify(initial),
@@ -206,6 +214,7 @@ export async function showLibrary() {
       input.value = "";
       if (file) void importFile(file);
     });
+  installHelp(root);
   const records = await listPracticeRecords();
   const list = document.getElementById("practice-records")!;
   if (!records.length) {
@@ -281,3 +290,8 @@ export async function showLibrary() {
   }
 }
 void showLibrary().catch(report);
+
+window.addEventListener("focus", () => {
+  if (root.classList.contains("player-library") && !working && !document.querySelector("dialog[open]"))
+    void showLibrary().catch(report);
+});

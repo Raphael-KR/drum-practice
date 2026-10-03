@@ -28,9 +28,16 @@ interface RowHost {
   resume: boolean;
   measureHTML: (m: Measure, i: number, w: number) => string;
   layoutLyrics: () => void;
+  cellWidth?: number;
 }
 export function engravingHeight(stageWidth: number, zoom: number) {
   return (clamp(stageWidth * 0.245, 170, 340) * zoom) / 2;
+}
+/** 100% shows sixteen quarter notes; uniform glyph scale at every zoom. */
+export function ribbonHeight(width: number, zoom: number, staff?: StaffPosition) {
+  return staff?.ribbonQuarterInGaps
+    ? (width / 16) * zoom / staff.ribbonQuarterInGaps * staffFrameHeight(staff)
+    : engravingHeight(width, zoom);
 }
 export function scoreLayout(
   s: Song,
@@ -46,7 +53,8 @@ export function scoreLayout(
     width,
     s.settings.view === "rows"
       ? clamp(width * 0.52, 100, 180)
-      : engravingHeight(stageWidth, s.settings.zoom),
+      : ribbonHeight(stageWidth, s.settings.zoom, staff),
+    s.settings.view === "rows",
   );
 }
 export function measureWidth(
@@ -56,7 +64,7 @@ export function measureWidth(
   ratio: number,
   staff?: StaffPosition,
 ) {
-  const height = engravingHeight(stageWidth, s.settings.zoom);
+  const height = ribbonHeight(stageWidth, s.settings.zoom, staff);
   return staff
     ? (r.w * height) / (staffFrameHeight(staff) * staff.gap * ratio)
     : (height * r.w) / r.h / ratio;
@@ -104,8 +112,9 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
         renderedBrowseWidth = NaN;
         stage.classList.add("paused-score-scroll");
       }
-      const width = stage.clientWidth / 4;
+      const width = h.cellWidth ?? stage.clientWidth / 4;
       if (width !== renderedBrowseWidth) {
+        pausedBrowseIndex = -1;
         renderedBrowseWidth = width;
         const measures = song().measures;
         ribbon.innerHTML = Array.from(
@@ -142,7 +151,8 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       rowWindow = -1;
     }
     const windowIndex = Math.floor(index / 4);
-    if (windowIndex === rowWindow) return;
+    if (windowIndex === rowWindow && renderedBrowseWidth === h.cellWidth) return;
+    renderedBrowseWidth = h.cellWidth ?? stage.clientWidth / 4;
     rowWindow = windowIndex;
     const s = song();
     const currentOnTop = (windowIndex - playbackRowOrigin) % 2 === 0;
@@ -154,7 +164,7 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     ];
     ribbon.innerHTML = indices
       .filter((i) => i < s.measures.length)
-      .map((i) => measureHTML(s.measures[i], i, stage.clientWidth / 4))
+      .map((i) => measureHTML(s.measures[i], i, h.cellWidth ?? stage.clientWidth / 4))
       .join("");
     layoutLyrics();
   } finally {
@@ -197,7 +207,8 @@ export function layoutScoreLyrics(
     );
     const baseline = Math.max(...items.map(({ rect }) => rect.top));
     items.forEach(({ el, rect }, i) => {
-      el.style.marginLeft = `${positions[i] - rect.left}px`;
+      // Source-reviewed PDF underlay must stay at the corresponding note center.
+      el.style.marginLeft = el.dataset.pdfLyricAnchor ? "0px" : `${positions[i] - rect.left}px`;
       el.style.top = `${baseline - rect.top}px`;
     });
   }

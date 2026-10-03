@@ -7,6 +7,8 @@ export interface Region {
   w: number;
   h: number;
   beatXs: number[];
+  /** Reviewed PDF note centers, independent of playback beat interpolation. */
+  lyricAnchors?: { lyricId: string; quarterOffset: number; x: number }[];
 }
 export interface Measure {
   id: string;
@@ -84,6 +86,8 @@ export interface Song {
   lyricArchive?: { revision: string; lyrics: Lyric[] }[];
   markers: Marker[];
   loops: Loop[];
+  /** Stable eight-slot references; older saved loops remain preserved. */
+  repeatSlots?: string[];
   settings: Settings;
   audioName: string;
   /** Original score filename; legacy name retained for saved-record compatibility. */
@@ -262,6 +266,17 @@ export function validateSong(x: unknown): asserts x is Song {
     )
       throw Error(i18nText("model.message383"));
     ids.add(r.id);
+    if (r.lyricAnchors !== undefined) {
+      const lyricIds = new Set<string>();
+      if (!Array.isArray(r.lyricAnchors) || r.lyricAnchors.length > 100000)
+        throw Error(i18nText("model.message383"));
+      for (const a of r.lyricAnchors) {
+        if (!a || typeof a.lyricId !== "string" || !a.lyricId || lyricIds.has(a.lyricId) ||
+            !finite(a.quarterOffset) || a.quarterOffset < 0 || !finite(a.x) || a.x < 0 || a.x > 1)
+          throw Error(i18nText("model.message383"));
+        lyricIds.add(a.lyricId);
+      }
+    }
     if (
       r.beatXs.some(
         (v, i) =>

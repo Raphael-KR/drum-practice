@@ -1,3 +1,4 @@
+import { ZOOM_TICKS, zoomFromSlider } from "./score-zoom";
 import { setIconButton } from "./icon-button";
 /** Shared playback form markup. Authoring content is appended by the web host. */
 import { dialogHeader } from "./dialog-ui";
@@ -17,18 +18,15 @@ export function soundFieldsHTML() {
   ]
     .map(
       ([id, key]) =>
-        `<label>${t(key as "main.message129")}<input id="${id}" type="range" min="0" max="1" step=".01"></label>`,
+        `<label class="volume-channel"><output for="${id}" id="${id}-value">100%</output><input id="${id}" aria-label="${t(key as "main.message129")}" type="range" min="0" max="1" step=".01"><span>${t(key as "main.message129")}</span></label>`,
     )
     .join("")}</div>`;
 }
 export function zoomFieldHTML() {
-  return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("portable-player.message455")}</strong><input id="zoom" type="range" min="0.5" max="2" step="0.05"></label>`;
+  return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("portable-player.message455")}</strong><span class="zoom-scale"><input id="zoom" type="range" min="0" max="100" step="1" value="50" list="zoom-ticks"><datalist id="zoom-ticks">${ZOOM_TICKS.map(p=>`<option value="${p}"></option>`).join("")}</datalist><span class="zoom-tick-labels" aria-hidden="true">${ZOOM_TICKS.map(p=>`<span>${Math.round(zoomFromSlider(p)*100)}%</span>`).join("")}</span></span><output id="zoom-value" for="zoom">100%</output></label>`;
 }
 export function loopFieldsHTML() {
-  return `<div class="playback-loop-fields"><div class="flex"><label>${t("main.message133")}<input id="loop-a" type="number" min="1" value="1"></label><label>${t("main.message136")}<input id="loop-b" type="number" min="1" value="1"></label></div>
-    <div class="loop-precision"><label><input id="loop-precise" type="checkbox">${t("workspace.message554")}</label><div id="loop-beat-controls" class="flex" hidden>
-    <label>${t("workspace.message555")}<input id="loop-ab" type="number" min="1" step=".25" value="1"></label><label>${t("workspace.message556")}<input id="loop-bb" type="number" min="1" step=".25" value="5"></label></div></div>
-    <p id="loop-range-help" class="subtle">${t("workspace.message552")}</p><button id="apply-loop" class="primary">${t("workspace.message559")}</button></div>`;
+  return "";
 }
 export function progressFieldHTML(id: string) {
   return `<label class="progress-number" title="${t("workspace.message546")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="0" max="100" step="1" value="0" aria-label="${t("workspace.message547")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span aria-hidden="true">%</span></label>`;
@@ -39,19 +37,8 @@ export function playbackTransportRightHTML(ids: {
   sound: string;
 }) {
   return (
-    progressFieldHTML(ids.progress) +
-    playbackButton(
-      ids.mark,
-      "bookmark",
-      t("main.message268"),
-      t("icons.message069"),
-    ) +
-    playbackButton(
-      ids.sound,
-      "sliders",
-      t("icons.message070"),
-      t("icons.message070"),
-    )
+    playbackButton(ids.mark, "bookmark", t("main.message268")) +
+    progressFieldHTML(ids.progress)
   );
 }
 export function playbackPreferenceFieldsHTML(
@@ -77,16 +64,11 @@ export function screenSettingsHTML(
   compare = false,
 ) {
   return (
-    `<div class="settings-control-description"><label class="view-select-row"><strong class="settings-item-title">${t("main.message108")}</strong><span class="view-select-control"><span id="view-selected-text" aria-hidden="true"></span><select id="view" aria-label="${t("main.message108")}"><option value="ribbon">${t("main.message109")}</option><option value="rows">${t("main.message110")}</option>${compare ? `<option value="compare">${t("main.message111")}</option>` : ""}</select></span></label><p id="view-description" class="subtle"></p></div>` +
+    `<div class="settings-choice-row"><div class="settings-choice-buttons" role="group" aria-label="${t("main.message108")}">${["ribbon", "rows", ...(compare ? ["compare"] : [])].map((value, i) => `<button type="button" data-setting-control="view" data-setting-value="${value}">${t((["main.message109", "main.message110", "main.message111"] as const)[i])}</button>`).join("")}</div><p id="view-description" class="subtle"></p><span id="view-selected-text" hidden></span><select id="view" hidden><option value="ribbon">${t("main.message109")}</option><option value="rows">${t("main.message110")}</option>${compare ? `<option value="compare">${t("main.message111")}</option>` : ""}</select></div>` +
+    `<div id="pdf-view-row" class="settings-choice-row"><div class="settings-choice-buttons" role="group" aria-label="${t("settings.scoreFormat")}"><button type="button" data-setting-control="${ids.pdf}" data-setting-value="true">${t("settings.pdfOriginal")}</button><button type="button" data-setting-control="${ids.pdf}" data-setting-value="false">${t("settings.musicxml")}</button></div><p id="pdf-view-status" class="subtle">${t("main.message227")}</p><input id="${ids.pdf}" type="checkbox" hidden disabled></div>` +
     zoomFieldHTML() +
-    settingsSwitch(
-      ids.highlight,
-      t("portable-player.message439"),
-      t("main.message255"),
-      true,
-      { descriptionId: "note-highlight-description" },
-    ) +
-    `<div class="settings-group">${settingsSwitch(ids.pdf, t("portable-player.message438"), t("main.message227"), false, { rowId: "pdf-view-row", descriptionId: "pdf-view-status", disabled: true })}${settingsSwitch(ids.fullscreen, t("portable-player.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
+    settingsSwitch(ids.highlight, t("portable-player.message439"), t("main.message255"), true, { descriptionId: "note-highlight-description" }) +
+    `<div class="settings-group">${settingsSwitch(ids.fullscreen, t("portable-player.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
   );
 }
 export type SettingsCategory = "screen" | "playback" | "score" | "info";
@@ -98,7 +80,7 @@ export function settingsFrameHTML() {
       "settings-dialog",
       "settings-heading",
     ) +
-    `<div class="settings-layout"><nav class="settings-nav" aria-label="${t("workspace.message561")}"></nav><div class="settings-detail"><h3 id="settings-detail-heading" hidden></h3></div></div>`
+    `<div class="settings-layout"><aside class="settings-sidebar"><nav class="settings-nav" aria-label="${t("workspace.message561")}"></nav>${soundFieldsHTML()}</aside><div class="settings-detail"><h3 id="settings-detail-heading" hidden></h3></div></div>`
   );
 }
 export function settingsPanel(
@@ -139,24 +121,42 @@ export function selectPlaybackSettings(
   root: ParentNode,
   category: SettingsCategory,
 ) {
-  root
-    .querySelectorAll<HTMLElement>("[data-settings-panel]")
-    .forEach((panel) => {
-      panel.hidden = panel.dataset.settingsPanel !== category;
-    });
-  root
-    .querySelectorAll<HTMLElement>("[data-settings-category]")
-    .forEach((button) => {
-      const active = button.dataset.settingsCategory === category;
+  const detail = root.querySelector<HTMLElement>(".settings-detail")!;
+  const panels = [...detail.querySelectorAll<HTMLElement>("[data-settings-panel]")];
+  const mark = (current: string) => {
+    root.querySelectorAll<HTMLElement>("[data-settings-category]").forEach(button => {
+      const active = button.dataset.settingsCategory === current;
       button.classList.toggle("primary", active);
-      button.setAttribute("aria-current", active ? "page" : "false");
+      button.setAttribute("aria-current", active ? "location" : "false");
     });
+  };
+  panels.forEach(panel => {
+    panel.hidden = false;
+    if (!panel.querySelector(".settings-section-heading")) {
+      const heading = document.createElement("h3");
+      heading.className = "settings-section-heading";
+      heading.textContent = componentName(`settings.${panel.dataset.settingsPanel}`);
+      panel.prepend(heading);
+    }
+  });
+  if (!detail.dataset.scrollNavigation) {
+    detail.dataset.scrollNavigation = "true";
+    detail.addEventListener("scroll", () => {
+      const top = detail.getBoundingClientRect().top;
+      const sections = [...detail.querySelectorAll<HTMLElement>("[data-settings-panel]")];
+      const current = sections.find(panel => panel.getBoundingClientRect().bottom > top + 32);
+      if (current) mark(current.dataset.settingsPanel!);
+    });
+  }
+  const scroll = () => {
+    const panel = panels.find(panel => panel.dataset.settingsPanel === category);
+    if (panel) detail.scrollTop += panel.getBoundingClientRect().top - detail.getBoundingClientRect().top;
+    mark(category);
+  };
+  scroll();
   const heading = root.querySelector<HTMLElement>("#settings-detail-heading")!;
-  heading.textContent =
-    category === "info"
-      ? t("main.message097")
-      : componentName(`settings.${category}`);
-  heading.hidden = category !== "info";
+  heading.textContent = category === "info" ? t("main.message097") : componentName(`settings.${category}`);
+  heading.hidden = true;
 }
 
 export function metronomeControlHTML() {
@@ -173,11 +173,33 @@ export function repeatBarHTML(ids: {
   summaryId: string;
   stopId: string;
 }) {
-  return `<section ${ids.repeat ? `id="${ids.repeat}"` : ""} class="repeat-controls" aria-label="${t("workspace.message549")}"><div class="repeat-actions">${playbackButton(ids.adjust, "repeat", t("icons.message067"), t("icons.message068"))}${repeatControlsHTML(ids)}</div><div id="${ids.markers}" class="marker-slots" role="group" aria-label="${t("portable-player.message452")}"></div></section>`;
+  return `<section ${ids.repeat ? `id="${ids.repeat}"` : ""} class="repeat-controls" aria-label="${t("workspace.message549")}"><div class="repeat-actions">${playbackButton(ids.adjust, "repeat", t("icons.message067"))}${repeatControlsHTML(ids)}</div><div id="${ids.markers}" class="marker-slots" role="group" aria-label="${t("portable-player.message452")}"></div></section>`;
 }
 export function appInfoHTML(
   version: string,
   build: { source: string; builtAt: string },
 ) {
   return `<section class="settings-group app-info"><dl><dt>${t("portable-player.message456")}</dt><dd id="app-version">${escapeHTML(version)} (${escapeHTML(build.source)})</dd><dt>${t("portable-player.message457")}</dt><dd id="app-built-at">${escapeHTML(formatDate(new Date(build.builtAt), { timeZone: "Asia/Seoul", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }))} KST</dd></dl></section>`;
+}
+
+
+/** The visible choices reuse the existing settings change handlers. */
+export function syncSettingsChoices(root: ParentNode) {
+  root.querySelectorAll<HTMLButtonElement>("[data-setting-control]").forEach(button => {
+    const control = root.querySelector<HTMLInputElement | HTMLSelectElement>(`#${button.dataset.settingControl}`);
+    if (!control) return;
+    const value = control instanceof HTMLInputElement ? String(control.checked) : control.value;
+    const active = value === button.dataset.settingValue;
+    button.setAttribute("aria-pressed", String(active));
+    button.classList.toggle("primary", active);
+    const option = control instanceof HTMLSelectElement ? [...control.options].find(o => o.value === button.dataset.settingValue) : undefined;
+    button.disabled = control.disabled || !!option?.disabled;
+    button.onclick = () => {
+      if (button.disabled || active) return;
+      if (control instanceof HTMLInputElement) control.checked = button.dataset.settingValue === "true";
+      else control.value = button.dataset.settingValue!;
+      control.dispatchEvent(new Event("change", { bubbles: true }));
+      syncSettingsChoices(root);
+    };
+  });
 }

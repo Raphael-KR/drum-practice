@@ -1,9 +1,9 @@
+import { openScoreDatabase } from "./score-database";
 import { validateSong, type Song } from "./model";
 import type { RecordData } from "./storage";
 import { scoreStructureSignature } from "./score-package";
 import { useScore } from "./song-scores";
 
-const DATABASE = "drum-practice-player";
 type Media = { bytes: ArrayBuffer; type: string };
 type Stored = Omit<RecordData, "pdf" | "audio" | "pages" | "otherScores"> & {
   mediaFormat: "bytes-v1";
@@ -64,6 +64,7 @@ async function encode(record: RecordData): Promise<Stored> {
   return { ...record, mediaFormat: "bytes-v1", pdf, audio, pages, otherScores };
 }
 function decode(record: Stored): RecordData {
+  if (!("mediaFormat" in record)) return record as RecordData;
   const media = (value: Media) => new Blob([value.bytes], { type: value.type });
   const { mediaFormat: _, ...rest } = record;
   return {
@@ -78,19 +79,7 @@ function decode(record: Stored): RecordData {
     })),
   };
 }
-function open(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DATABASE, 1);
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore("songs", { keyPath: "song.id" });
-      request.result.createObjectStore("archives", { autoIncrement: true });
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-    request.onblocked = () =>
-      reject(new Error("Playback library upgrade blocked"));
-  });
-}
+const open = openScoreDatabase;
 async function read<T>(
   work: (store: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T> {
@@ -228,10 +217,7 @@ export function importPracticeRecord(
               result = { status: "conflict", record: decode(old) };
               return;
             }
-            tx.objectStore("archives").add({
-              archivedAt: Date.now(),
-              record: old,
-            });
+
           } else {
             stored.song.settings = {
               ...old.song.settings,
@@ -245,6 +231,7 @@ export function importPracticeRecord(
               ...marker,
               time: remap(marker.time, old.song, stored.song),
             }));
+            stored.song.repeatSlots = old.song.repeatSlots?.slice();
             stored.song.loops = old.song.loops.map((loop) => ({
               ...loop,
               start: remap(loop.start, old.song, stored.song),
@@ -252,6 +239,8 @@ export function importPracticeRecord(
             }));
             validateSong(stored.song);
           }
+          // A shared record may include an authoring draft even with identical bars.
+          tx.objectStore("archives").add({ archivedAt: Date.now(), record: old });
           songs.put(stored);
           result = { status: "updated", record: decode(stored) };
         } catch (error) {
@@ -405,6 +394,7 @@ export function savePracticeState(id: string, song: Song): Promise<void> {
           stored.song.settings = state.settings;
           stored.song.markers = state.markers;
           stored.song.loops = state.loops;
+          stored.song.repeatSlots = state.repeatSlots;
           validateSong(stored.song);
           store.put(stored);
         } catch (error) {

@@ -378,3 +378,28 @@ it.each([true,false])('honors exact resume position with restartMeasure=%s and c
     expect(p.cycles[0].count).toBe(0);
   } finally {p.pause();vi.unstubAllGlobals();}
 });
+
+
+it.each([false, true])("replays from zero after natural completion with restartMeasure=%s", async (restartMeasure) => {
+  vi.stubGlobal("AudioContext", Context);
+  vi.stubGlobal("window", { setInterval: () => 1 });
+  const p = new Player(() => ({ restartMeasure, countOff: false }));
+  try {
+    p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+    p.original = { duration: 296.88 } as AudioBuffer;
+    p.rendered = p.original;
+    await p.play();
+    (p.ctx as unknown as Context).currentTime = p.cycles[0].endAt + 0.01;
+    p.tick();
+    expect(p.playing).toBe(false);
+    expect(p.position).toBe(p.duration);
+    await p.play();
+    expect(p.playing).toBe(true);
+    expect(p.cycles[0].from).toBe(0);
+    const source = [...p.nodes].find(n => (n as unknown as Node).buffer) as unknown as Node;
+    expect(source.started[1]).toBe(0);
+  } finally {
+    p.pause();
+    vi.unstubAllGlobals();
+  }
+});

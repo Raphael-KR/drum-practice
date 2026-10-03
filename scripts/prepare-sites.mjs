@@ -3,7 +3,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 const source = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const target = resolve(process.argv[2] || '../drum-practice-sites');
+const target = process.argv[2] ? resolve(process.argv[2]) : resolve(source, 'deployment/sites');
 if (target === source) throw new Error('Sites checkout must differ from source');
 const manifest = JSON.parse(await readFile(resolve(target,'.openai/hosting.json'),'utf8'));
 if (manifest.project_id !== 'appgprj_6ab0790baa048191aaee49f58c1ffe7b') throw new Error('Wrong Site');

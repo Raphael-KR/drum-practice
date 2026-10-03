@@ -1,6 +1,7 @@
 import { scoreAnchorCorrections } from './score-anchor-data';
 import type { Region, Song } from './model';
 import pdfDisplayCrops from './pdf-display-crops.json';
+import svgDisplayCrops from './svg-display-crops.json';
 
 /** Display-only horizontal crop. Preserve absolute page coordinates of every beat. */
 export function trimRegionLeft(region: Region, left: number): Region {
@@ -13,6 +14,9 @@ export function trimRegionLeft(region: Region, left: number): Region {
     w: region.w - trim,
     // Do not clamp: a musical anchor before the visible crop remains before it.
     beatXs: region.beatXs.map(x => (x - fraction) / (1 - fraction)),
+    ...(region.lyricAnchors ? {lyricAnchors: region.lyricAnchors.map(a => ({
+      ...a, x: (a.x - fraction) / (1 - fraction),
+    }))} : {}),
   };
 }
 
@@ -20,7 +24,14 @@ export function trimRegionLeft(region: Region, left: number): Region {
 // Only its system-start regions contain the repeated percussion clef at 59–66pt.
 // Stop at 69pt: before the first notes and printed time signatures.
 export function displayRegion(song: Song, region: Region): Region {
-  if (song.scoreFormat === 'musicxml') return region;
+  if (song.scoreFormat === 'musicxml') {
+    // Reviewed OSMD system prefixes: omit only the empty percussion-clef slot.
+    // Geometry and anchors guard against applying this to a re-engraved score.
+    const crop = song.id === svgDisplayCrops.songId && svgDisplayCrops.regions.find(c =>
+      c.id === region.id && (['page','x','y','w','h'] as const).every(k => Math.abs(c[k]-region[k]) < 1e-8) &&
+      c.beatXs.length === region.beatXs.length && c.beatXs.every((x,i) => Math.abs(x-region.beatXs[i]) < 1e-8));
+    return crop ? trimRegionLeft(region, crop.left) : region;
+  }
   if (song.id === pdfDisplayCrops.songId) {
     const crop = pdfDisplayCrops.regions.find(c => c.id === region.id &&
       (['page','x','y','w','h'] as const).every(k => Math.abs(c[k] - region[k]) < 1e-8));

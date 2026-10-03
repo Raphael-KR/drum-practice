@@ -1,3 +1,4 @@
+import { applyDrumLegend } from "./drum-legend";
 import { t as i18nText } from "./i18n";
 import halfOpenGlyph from './vendor/pict-half-open.json';
 /** Approved SCORE-MUSICXML-OSMD-MAPPING.md: render-only annotations retain XML semantics. */
@@ -175,7 +176,8 @@ export function applyDrumDecorations(
               const sb = stem?.getBBox();
               const size = 10, scale = size / 286;
               const x = b.x + b.width / 2 - size / 2;
-              const y = Math.min(sb?.y ?? b.y, b.y) - (rule.sticking ? 30 : 16);
+              const stemTop = n.vfnote[0].getStemExtents().topY;
+              const y = Math.min(stemTop, sb?.y ?? b.y, b.y) - (rule.sticking ? 30 : 16);
               const p = add('path');
               p.setAttribute('d', halfOpenGlyph.path);
               p.setAttribute('transform', `translate(${x} ${y + size}) scale(${scale} ${-scale})`);
@@ -192,53 +194,12 @@ export function applyDrumDecorations(
     throw Error(i18nText("drum-notation.message026"));
 }
 
-/** Known bundled conversion only; never infer instruments from glyphs or MIDI. */
+/** Compatibility entry point; all songs use the same approved legend. */
 export function normalizeBundledDrumNotation(text: string) {
   const doc = new DOMParser().parseFromString(text, "application/xml");
-  if (doc.querySelector("parsererror"))
-    throw Error(i18nText("drum-notation.message027"));
-  const mapping: Record<string, [string, string, string, string]> = {
-    "P1-hh": ["Closed hi-hat", "G", "5", "x"],
-    "P1-hh-open": ["Open hi-hat", "G", "5", "circle-x"],
-    "P1-ride": ["Ride cymbal", "F", "5", "x"],
-    "P1-crash": ["Crash cymbal", "A", "5", "x"],
-  };
-  let changed = false;
-  for (const n of Array.from(doc.querySelectorAll("part > measure > note"))) {
-    const id = n.querySelector("instrument")?.getAttribute("id") || "",
-      rule = mapping[id];
-    if (!rule) continue;
-    const instrument = Array.from(
-      doc.querySelectorAll("score-instrument"),
-    ).find((x) => x.id === id);
-    if (instrument?.querySelector("instrument-name")?.textContent !== rule[0])
-      continue;
-    const u = n.querySelector("unpitched");
-    if (!u) continue;
-    for (const [tag, value] of [
-      ["display-step", rule[1]],
-      ["display-octave", rule[2]],
-    ]) {
-      const e = u.querySelector(tag);
-      if (e && e.textContent !== value) {
-        e.textContent = value;
-        changed = true;
-      }
-    }
-    const head = n.querySelector("notehead");
-    if (head) {
-      if (head.textContent !== rule[3]) {
-        head.textContent = rule[3];
-        changed = true;
-      }
-      if (head.hasAttribute("filled")) {
-        head.removeAttribute("filled");
-        changed = true;
-      }
-    }
-  }
-  return {
-    text: changed ? new XMLSerializer().serializeToString(doc) : text,
-    changed,
-  };
+  if (doc.querySelector("parsererror")) throw Error(i18nText("drum-notation.message027"));
+  const before = new XMLSerializer().serializeToString(doc);
+  applyDrumLegend(doc);
+  const after = new XMLSerializer().serializeToString(doc);
+  return {text: after === before ? text : after, changed: after !== before};
 }

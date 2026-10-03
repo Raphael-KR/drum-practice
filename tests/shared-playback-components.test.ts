@@ -222,3 +222,28 @@ it("portable switch visibility uses the shared component selector", () => {
     document.getElementById("highlight")!.closest(".settings-switch"),
   ).not.toBeNull();
 });
+
+
+it("does not turn automatic end-of-track alignment into a seek", () => {
+  const stage = document.createElement("div");
+  const s = song();
+  const seek = vi.fn();
+  const selected = vi.fn();
+  const dispose = installScoreScroll(stage, {
+    enabled: () => true, song: () => s,
+    offsets: s.measures.map((_, i) => i * 100),
+    widths: s.measures.map(() => 100),
+    position: (i, beat, width) => beat / s.measures[i].beats * width,
+    seek, selected,
+  });
+  stage.scrollLeft = s.measures.length * 100;
+  stage.style.setProperty("--scroll-x", `${stage.scrollLeft}px`);
+  stage.dispatchEvent(new Event("scroll"));
+  expect(seek).not.toHaveBeenCalled();
+  expect(selected).not.toHaveBeenCalled();
+  stage.scrollLeft -= 50;
+  stage.dispatchEvent(new Event("scroll"));
+  expect(seek).toHaveBeenCalledOnce();
+  expect(selected).toHaveBeenCalledOnce();
+  dispose();
+});

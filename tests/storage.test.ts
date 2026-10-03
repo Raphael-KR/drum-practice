@@ -29,7 +29,7 @@ it("round-trips blobs, edited syllables, markers, loops and 81% rate", async () 
   expect(await reopened.pages[0].text()).toBe("page");
   expect(await reopened.audio.text()).toBe("audio");
   const db = await new Promise<IDBDatabase>((resolve) => {
-    const request = indexedDB.open("drum-practice", 1);
+    const request = indexedDB.open("drum-practice", 2);
     request.onsuccess = () => resolve(request.result);
   });
   const raw = await new Promise<any>((resolve) => {

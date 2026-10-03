@@ -18,14 +18,15 @@ export function resizeScoreStage(
 ) {
   const height =
     Math.max(
-      100,
+      s.settings.view === "rows" && stage.closest(".drawer-playback") ? (stage.clientHeight - 84) / 2 - 30 : 0,
+      s.settings.view === "rows" && stage.closest(".drawer-playback") ? 0 : 100,
       ...Array.from(ribbon.querySelectorAll<HTMLElement>(".crop"), (e) =>
         parseFloat(e.style.height),
       ),
     ) + 30;
   stage.style.setProperty("--row-content-height", `${height}px`);
   stage.style.setProperty("--browse-row-pitch", `${height + 28}px`);
-  stage.style.height = `${s.settings.view === "ribbon" ? engravingHeight(stage.clientWidth, s.settings.zoom) + 94 : height * 2 + 84}px`;
+  stage.style.height = `${s.settings.view === "ribbon" ? Math.max(engravingHeight(stage.clientWidth, s.settings.zoom), ...Array.from(ribbon.querySelectorAll<HTMLElement>(".crop"), e => parseFloat(e.style.height) || 0)) + 94 : height * 2 + 84}px`;
 }
 export function timeAtScroll(
   s: Song,
@@ -65,6 +66,10 @@ export function installScoreScroll(
   const listener = () => {
     if (!h.enabled()) return;
     const x = stage.scrollLeft;
+    // Frame alignment also emits scroll. Only a new viewport position is a
+    // user seek; otherwise the final audio position becomes a score position.
+    const alignedX = Number.parseFloat(stage.style.getPropertyValue("--scroll-x"));
+    if (Number.isFinite(alignedX) && x === alignedX) return;
     stage.style.setProperty("--scroll-x", `${x}px`);
     const t = timeAtScroll(h.song(), x, h.offsets, h.widths, h.position);
     if (t !== undefined) {

@@ -2,7 +2,7 @@
 
 ## Goal and scope
 - Goal: reproduce and fix MusicXML `normal` notehead `filled="no"` in upstream OSMD.
-- Scope: isolated upstream checkout `/Users/raphael/Playground/osmd-hollow-fix`; converter, VexFlow patch table, regression tests.
+- Scope: isolated upstream checkout (current path: `/Users/raphael/Playground/drum-practice/dependencies/osmd-hollow-fix`); converter, VexFlow patch table, regression tests. The checkout moved on 2026-10-03 without changing the investigated commit.
 - Acceptance: clean upstream fails regression tests, fixed source passes; real SVG visual check and build.
 - Exclusions: copyrighted song/audio/lyrics in public contribution; no replacement of the app's OSMD dependency in this task.
 - Verification: Safari MCP / Karma and production build; public proposal status recorded separately.

@@ -28,3 +28,8 @@ public/portable-combined.html
 
 # Completed score assets (local/published media, not source)
 public/scores/
+
+# Project-owned local checkouts and preserved historical artifacts.
+/deployment/sites/
+/dependencies/osmd-hollow-fix/
+/local-archives/

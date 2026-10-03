@@ -107,32 +107,30 @@ it("shows the app name and score library action on the home screen", async () =>
   set('view','rows'); document.getElementById('view')!.dispatchEvent(new Event('change'));
   expect(document.getElementById('view-description')!.textContent).toContain('두 줄');
   set('view','ribbon'); document.getElementById('view')!.dispatchEvent(new Event('change'));
-  expect(document.getElementById("song-title")!.textContent).toBe("드럼 연습실");
-  expect(document.querySelector("#welcome h2")!.textContent).toBe("악보제작실");
+  expect(document.getElementById("song-title")!.textContent).toBe("악보제작기");
+  expect(document.querySelector("#welcome h2")!.textContent).toBe("제작 중인 악보");
   expect(document.getElementById("original-tempo")!.hidden).toBe(true);
-  expect([...document.querySelectorAll("#welcome .actions button")].map(b => b.id)).toEqual(["demo-button", "welcome-library", "welcome-new"]);
+  expect(document.getElementById("demo-button")!.hidden).toBe(true);
+  expect(document.getElementById("welcome-new")!.textContent).toContain("새 악보 만들기");
+  expect(document.querySelector(".editor-player-link")!.getAttribute("href")).toBe("/player.html");
+  await vi.waitFor(() => expect(document.getElementById("editor-home-list")!.textContent).toContain("아직 제작 중인 악보가 없습니다"));
   expect(document.querySelector("#welcome-library svg")!.innerHTML).toBe(document.querySelector("#library-button svg")!.innerHTML);
   click("welcome-library");
   await vi.waitFor(() => expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(true));
   (document.getElementById("library-dialog") as HTMLDialogElement).close();
 });
-it("loads demo, saves named markers and loops and applies the selected BPM", async () => {
+it("loads demo, exposes fixed range slots and applies the selected BPM", async () => {
   click("demo-button");
   await vi.waitFor(() =>
     expect(document.querySelectorAll(".measure")).toHaveLength(110),
   );
   expect(document.querySelectorAll(".measure")).toHaveLength(110);
   await vi.waitFor(async () => expect((await allRecords()).some(r => r.song.id === "real-paradis")).toBe(true));
-  set("marker-name", "DOM 테스트 필인");
-  click("add-marker");
-  expect(document.getElementById("markers")!.textContent).toContain(
-    "DOM 테스트 필인",
-  );
-  set("loop-a", "25");
-  set("loop-b", "29");
-  set("loop-name", "DOM 후렴");
-  click("save-loop");
-  expect(document.getElementById("loops")!.textContent).toContain("DOM 후렴");
+  expect(document.getElementById("marker-name")).toBeNull();
+  click("open-marker-dialog");
+  expect(document.querySelectorAll("#section-shortcuts button")).toHaveLength(8);
+  expect(document.querySelectorAll("#loop-slots button")).toHaveLength(8);
+  expect(document.getElementById("loop-a")).toBeNull();
   set("rate", "89");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() =>
@@ -143,7 +141,7 @@ it("loads demo, saves named markers and loops and applies the selected BPM", asy
   await vi.waitFor(async () => {
     const r = (await allRecords()).find((r) => r.song.id === "real-paradis")!;
     expect(r.song.settings.rate).toBeCloseTo(89 / 94, 12);
-    expect(r.song.loops.at(-1)!.name).toBe("DOM 후렴");
+
   });
 });
 it("renders the boundary ru once in measure 11, never at the end of measure 10",()=>{
@@ -195,9 +193,11 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   );
   expect(document.getElementById("original-tempo-value")!.textContent).toBe("= 94");
   expect(document.querySelector(".practice-dock")).toBeNull();
-  expect(document.querySelectorAll("#repeat-controls [data-loop-radius]")).toHaveLength(4);
-  expect(document.getElementById("open-sound-dialog")!.closest(".transport-right")).not.toBeNull();
-  expect(document.getElementById("progress-percent")!.closest(".transport-right")).not.toBeNull();
+  expect(document.querySelectorAll(".repeat-presets [data-loop-radius]")).toHaveLength(4);
+  expect(document.getElementById("open-sound-dialog")).toBeNull();
+  expect(document.getElementById("sound-dialog")).toBeNull();
+  expect(document.getElementById("music-volume")!.closest(".settings-sidebar")).not.toBeNull();
+  expect(document.getElementById("progress-percent")!.closest(".dock-navigation")).not.toBeNull();
   expect(document.getElementById("seek")!.closest<HTMLElement>(".seekrow")!.hidden).toBe(true);
   expect(document.querySelectorAll("#practice details")).toHaveLength(0);
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -213,7 +213,7 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   errorSpy.mockRestore();
   expect(document.getElementById("view")!.closest("#screen-dialog")).not.toBeNull();
   expect(document.querySelectorAll('input[name="score-view"]')).toHaveLength(0);
-  expect(document.getElementById('view')!.hidden).toBe(false);
+  expect(document.getElementById('view')!.hidden).toBe(true);
   expect((document.querySelector('#view option[value="compare"]') as HTMLOptionElement).disabled).toBe(true);
   expect((document.getElementById('prefer-pdf') as HTMLInputElement).checked).toBe(true);
   expect((document.getElementById('prefer-pdf') as HTMLInputElement).disabled).toBe(true);
@@ -264,11 +264,11 @@ it("groups screen, playback, score management and app info in settings", () => {
   click("open-settings-dialog");
   expect((document.getElementById("settings-dialog") as HTMLDialogElement).open).toBe(true);
   expect([...document.querySelectorAll<HTMLElement>("[data-settings-category]")].map(e=>e.dataset.settingsCategory)).toEqual(["screen","playback","score","info"]);
-  expect(document.querySelectorAll("[data-settings-panel]:not([hidden])")).toHaveLength(1);
+  expect(document.querySelectorAll("[data-settings-panel]:not([hidden])")).toHaveLength(4);
   expect(document.getElementById("auto-fullscreen")!.closest("#screen-dialog")).not.toBeNull();
   click("open-score-settings");
   expect(document.getElementById("backup-dialog")!.closest<HTMLElement>("[data-settings-panel]")!.hidden).toBe(false);
-  expect(document.getElementById("screen-dialog")!.hidden).toBe(true);
+  expect(document.getElementById("screen-dialog")!.hidden).toBe(false);
   click("open-score-settings");
   expect(document.getElementById("edit-button")!.closest<HTMLElement>("[data-settings-panel]")!.hidden).toBe(false);
   expect(document.getElementById('lyrics-button')!.closest('#score-settings')).not.toBeNull();
@@ -427,17 +427,15 @@ it("keeps centred repeat anchored when changing radius and uses inclusive end ba
   set("seek", String(song.measures[24].start + .2));
   document.getElementById("seek")!.dispatchEvent(new Event("input"));
   (document.querySelector('[data-loop-radius="2"]') as HTMLButtonElement).click();
-  expect(document.getElementById('loop-summary')!.textContent).toBe('23–27마디 · 5마디 반복');
+  expect(document.querySelector('[data-loop-radius="2"]')!.textContent).toBe('23~27');
   set('seek', String(song.measures[25].start));
   document.getElementById('seek')!.dispatchEvent(new Event('input'));
   (document.querySelector('[data-loop-radius="1"]') as HTMLButtonElement).click();
-  expect(document.getElementById('loop-summary')!.textContent).toBe('24–26마디 · 3마디 반복');
+  expect(document.querySelector('[data-loop-radius="1"]')!.textContent).toBe('24~26');
   click('open-loop-dialog');
-  expect((document.getElementById('loop-b') as HTMLInputElement).value).toBe('26');
-  set('loop-a','25'); set('loop-b','28'); click('apply-loop');
-  expect(document.getElementById('loop-summary')!.textContent).toBe('25–28마디 · 4마디 반복');
+  expect(document.activeElement).toBe(document.querySelector('#loop-slots button'));
   click('home');
-  expect(document.getElementById('loop-summary')!.textContent).toBe('반복 꺼짐');
+  expect(document.querySelector('[data-loop-radius="1"]')!.textContent).toBe('앞뒤 1');
 });
 it("selects a measure on single tap and plays that measure on double tap", async () => {
   const view = document.getElementById('view') as HTMLSelectElement;
@@ -502,8 +500,8 @@ it("separates tap playback, percent drag, marker activation and cancelled gestur
   fire(percent,'pointerdown',100); fire(percent,'pointermove',100,84); fire(percent,'pointercancel',100,84);
   animationFrame(0); expect(Number(percent.value)).toBe(initial+10);
   await new Promise(ok=>setTimeout(ok,510));
-  percent.click(); expect((document.getElementById('marker-dialog') as HTMLDialogElement).open).toBe(true);
-  (document.getElementById('marker-dialog') as HTMLDialogElement).close();
+  percent.click(); expect(document.querySelector('[data-drawer-panel="progress"]')).toBeNull();
+
   click('home');
 });
 it("browses all paused rows vertically without seeking, then restores playback following", async () => {
@@ -659,28 +657,35 @@ it('remembers the settings category and returns from a child only when opened th
   settings.close();
 });
 
-it('keeps only the app heading and groups PDF with fullscreen below the divider', async () => {
+it('groups view and format choices above the existing switches', async () => {
   const {selectSettingsCategory}=await import('../src/workspace');
   for(const category of ['screen','playback','score'] as const){
     selectSettingsCategory(category);
     expect(document.getElementById('settings-detail-heading')!.hidden).toBe(true);
   }
-  selectSettingsCategory('info'); expect(document.getElementById('settings-detail-heading')!.hidden).toBe(false);
+  selectSettingsCategory('info'); expect(document.getElementById('settings-detail-heading')!.hidden).toBe(true);
   const pdf=document.getElementById('pdf-view-row')!;
-  expect(pdf.parentElement!.classList.contains('settings-group')).toBe(true);
-  expect(pdf.nextElementSibling!.contains(document.getElementById('auto-fullscreen'))).toBe(true);
-  expect(document.querySelector('.view-select-row > strong')!.textContent).toBe('악보 스타일');
+  expect(pdf.classList.contains('settings-choice-row')).toBe(true);
+  expect([...pdf.querySelectorAll('button')].map(b => b.textContent)).toEqual(['PDF 원본 악보', 'MusicXML 악보']);
+  const viewButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-setting-control="view"]')];
+  expect(viewButtons.map(b => b.textContent)).toEqual(['한 줄로 이어 보기', '두줄로 고정 보기', 'PDF · MusicXML 검수']);
+  viewButtons[1].click();
+  expect((document.getElementById('view') as HTMLSelectElement).value).toBe('rows');
+  expect(viewButtons[1].getAttribute('aria-pressed')).toBe('true');
+  viewButtons[0].click();
+  expect((document.getElementById('view') as HTMLSelectElement).value).toBe('ribbon');
   expect(document.getElementById('zoom')!.closest('label')!.querySelector('strong')!.textContent).toBe('악보 크기');
 });
 
-it("marks immediately from the transport and renders sorted fixed slots on the score", async () => {
+it("opens marker management and renders sorted fixed slots on the score", async () => {
   click("home");
   set("seek","25"); document.getElementById("seek")!.dispatchEvent(new Event("input"));
   click("open-marker-dialog");
-  expect((document.getElementById("marker-dialog") as HTMLDialogElement).open).toBe(false);
+  expect((document.querySelector('[data-drawer-panel="marker"]') as HTMLElement).hidden).toBe(false);
+
   expect(document.querySelectorAll("#quick-markers button")).toHaveLength(3);
-  expect(document.querySelector("#repeat-controls > .repeat-actions > :first-child")!.id).toBe("open-loop-dialog");
-  expect(document.querySelector('#quick-markers')!.parentElement!.id).toBe('repeat-controls');
+  expect(document.querySelector(".dock-repeat > :nth-child(3)")!.id).toBe("open-loop-dialog");
+  expect(document.querySelector('#quick-markers')!.parentElement!.className).toBe('dock-navigation');
   expect(document.querySelectorAll('.measure-marker:not([hidden])').length).toBeGreaterThan(0);
   const ids=[...document.querySelectorAll<HTMLElement>('#quick-markers [data-quick-marker]')].map(e=>e.textContent!);
   expect(ids.map(Number)).toEqual(ids.map(Number).sort((a,b)=>a-b));

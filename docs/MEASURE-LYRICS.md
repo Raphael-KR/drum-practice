@@ -21,6 +21,6 @@
 ## 실제 Loveholic 수록 및 배포
 - 원본 대조된 77개 마디 가사 패키지 SHA256 26b97bd8b5a1611c4667d42a3fa9205cc6190a8c469000aec9944f45d689fcc1를 직접 ZIP CRC/항목 수 검사한 뒤 public/scores/loveholic.drumscore에 반영했다.
 - 로컬 앱의 실제 악보 업데이트 버튼으로 저장 후 재열기 확인. Safari 응답형1133×744(실제 innerWidth1132)에서 PDF/SVG × 한줄/두줄 캡처 검수. 77항목 중앙 정렬, 4마디/행, 페이지 가로 넘침 없음. 캡처 printed-lyrics-package-20261003/player-*.png.
-- release 빌드와71파일338검사 통과. player0.4.6/editor0.4.4. Sites 버전13 배포 succeeded, source c5d4260b90ddaea641e5e19aea5c8f9c64c484cc, deployment appgdep_6abfe9dde62081918ecea2119f4a80a4. 2026-10-03 02:29KST. 악보제작실은 공개 배포 제외.
+- release 빌드와71파일338검사 통과. player0.4.6/editor0.4.4. Sites 버전13 배포 succeeded, source c5d4260b90ddaea641e5e19aea5c8f9c64c484cc, deployment appgdep_6abfe9dde62081918ecea2119f4a80a4. 2026-10-03 02:29KST. 악보제작기은 공개 배포 제외.
 - 새 시간 자료 조사에서는 원문 대조 출처만 확보됐다. 외부 문구로 사용자 악보를 덮어쓰지 않았다. 음원 청취에 의한 음절별 싱크 검증으로 주장하지 않는다.
 - 재생 검수: 스크립트 click 후 AudioContext resume이 진행되지 않아 재열기로 초기화하고 실제 Safari 버튼 입력을 사용했다. 재생→일시정지 전환,10→17마디 진행 및 정지 확인. 합성 클릭 실패를 앱 재생 실패로 단정하지 않는다.

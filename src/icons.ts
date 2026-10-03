@@ -35,8 +35,8 @@ export function arrangeIcons() {
     [
       "welcome-new",
       "plus",
-      i18nText("icons.message055"),
-      i18nText("icons.message055"),
+      i18nText("editorHome.new"),
+      i18nText("editorHome.new"),
     ],
     ["library-button", "library", i18nText("icons.message054")],
     [
@@ -80,19 +80,12 @@ export function arrangeIcons() {
       "open-loop-dialog",
       "repeat",
       i18nText("icons.message067"),
-      i18nText("icons.message068"),
     ],
     [
       "open-marker-dialog",
       "bookmark",
       i18nText("icons.message069"),
-      i18nText("icons.message069"),
-    ],
-    [
-      "open-sound-dialog",
-      "sliders",
-      i18nText("icons.message070"),
-      i18nText("icons.message070"),
+      "",
     ],
     [
       "open-screen-dialog",

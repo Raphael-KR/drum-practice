@@ -1,3 +1,6 @@
+import { normalizeDrumScore } from "./drum-legend";
+import { installDrumBeams } from "./drum-beams";
+import { RIBBON_TIMELINE_VERSION } from "./ribbon-timeline";
 import { t as i18nText } from "./i18n";
 import {
   annotateNoteHighlights,
@@ -7,6 +10,12 @@ import { prepareDrumDecorations, applyDrumDecorations } from "./drum-notation";
 import { REST_LAYOUT_VERSION, restCenterShift } from "./whole-rest-layout";
 import { compressSVG } from "./score-pages";
 import JSZip from "jszip";
+import {
+  ribbonSpacing,
+  installRibbonEngraving,
+  type RibbonSpacing,
+} from "./ribbon-engraving";
+import { displayPage } from "./score-pages";
 import { uid, type Region } from "./model";
 
 export interface XMLMeasure {
@@ -300,12 +309,13 @@ export function interpolateX(
     }
   return points.at(-1)!.x;
 }
-export async function renderMusicXML(
+async function renderMusicXMLPass(
   blob: Blob,
   progress: (s: string) => void,
   partId?: string,
+  timeline?: RibbonSpacing,
 ) {
-  const parsed = parseMusicXML(await readMusicXML(blob), partId);
+  const parsed = parseMusicXML(normalizeDrumScore(await readMusicXML(blob)), partId);
   progress(i18nText("musicxml.message412"));
   const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
   const host = document.createElement("div");
@@ -332,6 +342,7 @@ export async function renderMusicXML(
     osmd.EngravingRules.NewPageAtXMLNewPageAttribute = true;
     // Keep rehearsal boxes above cymbal stems, inside the seven-space top margin.
     osmd.EngravingRules.RehearsalMarkYOffset = 25;
+    osmd.EngravingRules.StemWidth = 0.1;
     osmd.EngravingRules.RenderMultipleRestMeasures = false;
     osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures = false;
     const renderDocument = parsed.document.cloneNode(true) as Document;
@@ -342,6 +353,15 @@ export async function renderMusicXML(
       if (/^\s*BPM\s*[:=]?\s*\d+(?:\.\d+)?\s*$/i.test(words.textContent || ""))
         words.remove();
     }
+    if (timeline) {
+      renderDocument.querySelectorAll("print").forEach((e) => e.remove());
+      osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 1;
+      osmd.EngravingRules.NewSystemAtXMLNewSystemAttribute = false;
+      osmd.EngravingRules.NewPageAtXMLNewPageAttribute = false;
+      osmd.EngravingRules.RenderTitle = false;
+      host.style.width = `${Math.max(1500, ...parsed.measures.map((m) => ((m.beats * 4) / m.denominator) * timeline.quarter + 200))}px`;
+    }
+
     const decorations = prepareDrumDecorations(renderDocument);
     await osmd.load(renderDocument);
     // MusicXML owns first-system spacing. OSMD 2.1.2 does not apply this
@@ -366,6 +386,8 @@ export async function renderMusicXML(
         tenths / 10 - rules.TitleTopDistance - rules.SheetTitleHeight,
       );
     }
+    installDrumBeams(osmd);
+    if (timeline) installRibbonEngraving(osmd, timeline);
     osmd.render();
     applyDrumDecorations(host, osmd, decorations);
     // This drum practice viewer omits percussion clef glyphs, including system
@@ -405,6 +427,8 @@ export async function renderMusicXML(
         element.setAttribute("data-section-top", "safe");
       }
     }
+    if (timeline)
+      host.querySelectorAll(".vf-timesignature").forEach((e) => e.remove());
     const svgs = Array.from(host.querySelectorAll("svg"));
     if (!svgs.length) throw Error(i18nText("musicxml.message413"));
     // OSMD 2.1.2 ignores filled="no" for normal short-note heads.
@@ -448,6 +472,7 @@ export async function renderMusicXML(
     for (const row of osmd.GraphicSheet.MeasureList)
       for (const g of row) {
         if (!g?.hasOnlyRests || g.staffEntries.length !== 1) continue;
+        if (timeline && !g.staffEntries.every(e => e.graphicalVoiceEntries.every(v => v.notes.every(n => n.sourceNote.isRest())))) continue;
         const page = g.ParentMusicSystem.Parent;
         const box = g.PositionAndShape;
         const left =
@@ -464,7 +489,7 @@ export async function renderMusicXML(
           for (const note of voice.notes) {
             if (
               !note.sourceNote.isRest() ||
-              !note.sourceNote.Pitch ||
+              (!timeline && !note.sourceNote.Pitch) ||
               !(
                 note.sourceNote.IsWholeMeasureRest ||
                 note.sourceNote.Length.RealValue ===
@@ -477,7 +502,12 @@ export async function renderMusicXML(
             ).getSVGGElement();
             if (!glyph) continue;
             const bounds = glyph.getBBox();
-            const dx = restCenterShift(left, right, bounds.x, bounds.width);
+            const nativeLeft = timeline
+              ? (g as unknown as {getVFStave(): {getX(): number}}).getVFStave().getX()
+              : left;
+            const dx = timeline
+              ? restCenterShift(nativeLeft, nativeLeft + (timeline.uniformQuarters && timeline.rowWidth ? timeline.rowWidth : g.parentSourceMeasure.Duration.RealValue * 4 * timeline.quarter), bounds.x, bounds.width)
+              : restCenterShift(left, right, bounds.x, bounds.width);
             glyph.setAttribute(
               "transform",
               `translate(${dx} 0) ${glyph.getAttribute("transform") || ""}`,
@@ -542,6 +572,24 @@ export async function renderMusicXML(
       }
       return rows;
     });
+    // Native wedges live outside .vf-measure. Include their ink in playback
+    // crop bounds, otherwise an above-staff crescendo is cut at the beam top.
+    for (const row of osmd.GraphicSheet.MeasureList) for (const g of row) {
+      if (!g) continue;
+      const page = g.ParentMusicSystem.Parent;
+      const key = Math.round((g.PositionAndShape.AbsolutePosition.y -
+        page.PositionAndShape.AbsolutePosition.y) * 1000);
+      const bounds = systemBounds[page.PageNumber - 1].get(key);
+      if (!bounds) continue;
+      for (const expression of g.ParentStaffLine.AbstractExpressions as any[]) {
+        for (const line of expression.Lines ?? expression.lines ?? []) {
+          const box = line.SVGElement?.getBBox?.();
+          if (!box) continue;
+          bounds.top = Math.min(bounds.top, box.y - 1);
+          bounds.bottom = Math.max(bounds.bottom, box.y + box.height + 1);
+        }
+      }
+    }
     // Keep XML page/row boundaries; trim only the unused SVG canvas below ink.
     // Regions below are normalized against these final page dimensions.
     for (const svg of svgs) {
@@ -582,7 +630,11 @@ export async function renderMusicXML(
       const sx = 1,
         sy = 1;
       const x = Math.max(0, (p.x - pp.x + box.BorderLeft) * 10 * sx),
-        right = Math.min(width, (p.x - pp.x + box.BorderRight) * 10 * sx);
+        right = timeline
+          ? x +
+            (timeline.uniformQuarters && timeline.rowWidth ? timeline.rowWidth :
+            (parsed.measures[i].beats * 4) / parsed.measures[i].denominator * timeline.quarter)
+          : Math.min(width, (p.x - pp.x + box.BorderRight) * 10 * sx);
       const staffY = (p.y - pp.y) * 10;
       const bounds = systemBounds[pi].get(Math.round(staffY * 100));
       const y = Math.max(0, bounds ? bounds.top - 5 : staffY - 50),
@@ -629,8 +681,102 @@ export async function renderMusicXML(
         beatXs,
       });
     }
-    return { pages, regions, parsed };
+    const staffs = regions.map((r, i) => {
+      const stave = (osmd.GraphicSheet.MeasureList[i][0] as any).getVFStave();
+      const height = svgs[r.page].viewBox.baseVal.height;
+      return {
+        top: stave.getYForLine(0) / height,
+        gap: (stave.getYForLine(1) - stave.getYForLine(0)) / height,
+      };
+    });
+    return {
+      pages,
+      regions,
+      parsed,
+      staffs,
+      spacing: timeline ?? ribbonSpacing(osmd),
+    };
   } finally {
     host.remove();
   }
+}
+
+/** Preserve print pages; the optional metadata contains native, time-spaced engraving. */
+async function engraveMusicXML(
+  blob: Blob,
+  progress: (s: string) => void,
+  partId?: string,
+) {
+  const printed = await renderMusicXMLPass(blob, progress, partId);
+  const ribbon = await renderMusicXMLPass(
+    blob,
+    progress,
+    partId,
+    {...printed.spacing, rowWidth: undefined},
+  );
+  const durations = printed.parsed.measures.map(m => m.beats * 4 / m.denominator);
+  const uniformQuarters = Math.max(...durations);
+  // Rows reserve glyph clearance and distribute remaining space by time.
+  // Do not reuse the ribbon global shortest-duration spacing for row glyph size.
+  const rows = await renderMusicXMLPass(blob, progress, partId, {...printed.spacing, uniformQuarters});
+  const document = new DOMParser().parseFromString(
+    await (await displayPage(printed.pages[0])).text(),
+    "image/svg+xml",
+  );
+  const metadata = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "metadata",
+  );
+  metadata.setAttribute(
+    "data-ribbon-timeline",
+    String(RIBBON_TIMELINE_VERSION),
+  );
+  metadata.textContent = JSON.stringify({
+    version: RIBBON_TIMELINE_VERSION,
+    rows: rows ? {version: RIBBON_TIMELINE_VERSION, ...printed.spacing, uniformQuarters,
+      regions: rows.regions, staffs: rows.staffs,
+      pages: await Promise.all(rows.pages.map(async p => (await displayPage(p)).text()))} : undefined,
+    ...printed.spacing,
+    regions: ribbon.regions,
+    printStaffs: printed.staffs,
+    staffs: ribbon.staffs,
+    pages: await Promise.all(
+      ribbon.pages.map(async (page) => (await displayPage(page)).text()),
+    ),
+  });
+  document.documentElement.append(metadata);
+  printed.pages[0] = await compressSVG(
+    new XMLSerializer().serializeToString(document),
+  );
+  return {
+    pages: printed.pages,
+    regions: printed.regions,
+    parsed: printed.parsed,
+  };
+}
+
+/** Shared browser engraving. Cache is derived from source, never from bundled SVG. */
+export async function renderMusicXML(
+  blob: Blob,
+  progress: (s: string) => void,
+  partId?: string,
+) {
+  const { cachedScoreRender, scoreRenderKey } =
+    await import("./score-render-cache");
+  const text = await readMusicXML(blob);
+  const parsed = parseMusicXML(text, partId);
+  const key = await scoreRenderKey(text, parsed.partId);
+  const start = performance.now();
+  const { value, hit } = await cachedScoreRender(key, () =>
+    engraveMusicXML(
+      new Blob([text], { type: "application/vnd.recordare.musicxml+xml" }),
+      progress,
+      parsed.partId,
+    ),
+  );
+  performance.measure(hit ? "score-render:cache-hit" : "score-render:cold", {
+    start,
+    detail: { key, measures: parsed.measures.length },
+  });
+  return { ...value, parsed };
 }

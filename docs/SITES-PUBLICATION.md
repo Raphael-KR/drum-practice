@@ -8,7 +8,7 @@
 
 ## 정본과 발행 경로
 
-정본은 `/Users/raphael/Playground/drum-practice`다. Sites 발행 사본은 `/Users/raphael/Playground/drum-practice-sites`이며 제품 코드를 독립적으로 수정하지 않는다.
+정본은 `/Users/raphael/Playground/drum-practice`다. Sites 발행 사본은 `/Users/raphael/Playground/drum-practice/deployment/sites`이며 제품 코드를 독립적으로 수정하지 않는다.
 정본 웹앱을 수정하고 빌드한 뒤 `scripts/prepare-sites.mjs`로 발행 사본을 갱신한다. HTML 내보내기 역시 동일한 정본 코드/템플릿을 사용한다.
 Sites 사이트 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b`. 새로 만들지 말고 사본의 `.openai/hosting.json`을 사용한다.
 공개 주소: https://drum-practice-studio.dgkma.chatgpt.site
@@ -56,7 +56,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 
 ## 2026-10-02 23:33 KST — 재생 앱0.4.2
 - 기존 공개 주소 유지, Sites 버전9 배포 succeeded. appgdep_6abfc0b9ad588191aa94cdfe13517db2.
-- Sites 소스 cacb6ed786c32d19c08951c86da0f32f7d36dab2. 이 배포부터 최신 드럼연습실(재생 앱)만 게시한다. 악보제작실0.4.1은 로컬 전용이다.
+- Sites 소스 cacb6ed786c32d19c08951c86da0f32f7d36dab2. 이 배포부터 최신 드럼연습실(재생 앱)만 게시한다. 악보제작기0.4.1은 로컬 전용이다.
 - prepare-sites.mjs는 dist/player를 정적 발행 사본으로 옮기고 player.html을 루트 index.html로 연결한다. 이전 제작 앱 미러 소스·불필요한 자산은 사이트의 현재 트리에서 제거하며 Git 이력은 보존한다.
 - 바람과 언덕의 발라드 완성 패키지8,363,473bytes 포함(PDF·SVG·음원·가사). 제작 앱 실제 내보내기로 만든 분리 검증 원본 패키지를 사용했고 QA 반복/마커 변경 전 자료다. public/scores에 두되 정본 Git에서는 미디어를 제외한다.
 - 빈 보관함에서 악보 불러오기→저장→열기를 Safari 격리 로컬 미리보기로 확인. 기존 연습 기록은 자동 덮어쓰지 않는다. 빌드/타입/i18n/재생 번들 경계, 관련33테스트 통과.
@@ -67,10 +67,24 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - 기존 곡에 Loveholic123마디 패키지9,953,962bytes를 추가했다. PDF/SVG 각3쪽·음원·인쇄 가사 텍스트·구간 마커 포함. 전체 배포 약18.85MB.
 - 제작 세션 감독·독립 대조 중 PDF crop 결함을 발견해 수정받고 Safari 로컬에서 재검수했다. 페이지/줄별 마디32그룹 일치,31개 집중 검사 및 분리 빌드 통과.
 - 음원은 신호 추정 타이밍, 가사 음절 싱크는 미확정. half-muted20개 SVG 미표시와 PDF 줄별 배율 차이 등 상세 한계는 `docs/LOVEHOLIC-PUBLICATION.md`에 기록한다.
-- 악보제작실0.4.1 로컬 전용 유지. 공개 범위 유지. 곡 포함 HTML 파일은 생성하지 않았다.
+- 악보제작기0.4.1 로컬 전용 유지. 공개 범위 유지. 곡 포함 HTML 파일은 생성하지 않았다.
 
 ## 2026-10-03 00:39 KST — 재생 앱0.4.4
 - PDF 오선 정렬을 공통 재생 경로에 적용. 줄별 crop 차이로 생기던 크기/높이 변동을 수정하고 인쇄 가사 영역을 보존한다. 검출 불가 PDF는 기존 crop 표시 유지.
 - 70파일330검사, 분리 빌드 통과. Safari iPad mini 응답형 모드 PDF 한줄/두줄·SVG 전환·재생/정지 확인. 시뮬레이터 MCP는 승인 오류로 터치 검증 미수행.
 - Sites 버전11, 소스 bda593d5eab00ee29cb18a15f5987f52d67d2bba, 배포 appgdep_6abfd017a2108191b4fe9f73650e3911 succeeded. 기존 악보 두 개와 패키지 해시 유지.
 - 제작앱0.4.2는 로컬 전용. 곡 포함 HTML 저장 없음. 상세 반복 검증: LOVEHOLIC-REVIEW.md.
+
+
+## 2026-10-03 12:20 KST — 브라우저 직접 MusicXML 조판 배포
+- Sites 버전14, 배포 `appgdep_6ac074788f288191ac47759bf515610c` succeeded. 기존 공개 주소/공개 범위 유지.
+- Sites 소스 `6630b7b19abb197723bbf611b0d65abebf750f19`. 직전 검증된 dist/player 10파일과 배포본 바이트 일치, 루트 index는 player.html과 일치. Loveholic/Real Paradis 패키지 포함.
+- 공통 MusicXML 직접 조판·캐시 및 최신 로컬 재생 화면을 게시. 제작앱은 로컬 전용 유지. 배포 성공은 Sites 서버 응답으로 확인했으며 이번 배포 후 별도 공개 브라우저 검수는 수행하지 않았다.
+- 사용자 결정: 에이전트의 독립 HTML 재생 파일 생성·저장은 향후 작업 범위에서도 제외. 필요 시 사용자가 앱에서 직접 저장한다. 앱 내 내보내기 기능과 빌드용 템플릿은 유지한다. AGENTS.md에 반영.
+
+## 2026-10-03 17:04 KST — Sites 버전15
+- 사용자 게시 요청에 따라 기존 공개 주소와 공개 범위를 유지하여 배포 성공. 배포 ID `appgdep_6ac0b7066a088191939562aab03b495c`, Sites 소스 커밋 `53e779f38c6b83686f461f8dd8fc31a5fb566385`.
+- 슬라이더 중앙100%·눈금·흡착, 한 줄 네 마디 기준, 두 줄 읽기 크기·기둥/연결선 보정, 홈 글자 크기와 Loveholic PDF 가사 위치 수정 포함.
+- Loveholic 및 바람과 언덕의 발라드 패키지 포함. 원본 public 패키지와 배포 사본 SHA256 일치 확인.
+- 전체79파일370테스트, 최신 build:apps 및 앱 경계 검사 통과. Sites 서버의 succeeded 응답으로 게시 확인; 배포 후 공개 브라우저 검수는 별도로 하지 않음.
+- 악보제작기은 로컬 전용 유지. 독립 HTML 재생 파일 생성·저장, 정본 저장소 커밋/버전 변경은 수행하지 않음.

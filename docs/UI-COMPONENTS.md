@@ -29,7 +29,6 @@
 | mark | 현재 마디 마킹 | 현재 마디 마킹 | Mark current measure | playback.primary |
 | sound | 소리 | 소리 | Sound | playback.primary |
 | loop | 반복 구간 조정 | 반복 구간 조정 | Adjust loop | playback.secondary |
-| recenter | 현재 마디로 | 현재 마디로 | Center on current measure | playback.secondary |
 | loopOff | 반복 해제 | 반복 해제 | Turn loop off | playback.secondary |
 | markers | 최근 마커 3개 | 최근 마커 3개 | Three recent markers | playback.secondary |
 | view | 악보 스타일 | 악보 스타일 | Score layout | settings |

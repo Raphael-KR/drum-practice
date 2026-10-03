@@ -27,7 +27,7 @@ button {
   padding: 9px 15px;
   cursor: pointer;
 }
-button:hover {
+button:hover:not(:disabled) {
   background: #e3ede6;
 }
 button:disabled {
@@ -125,7 +125,9 @@ textarea:focus-visible {
 }
 :root {
   --accent: #3f74d4;
+  --accent-hover: #315faf;
   --accent-soft: #edf3ff;
+  --accent-soft-hover: #dbe7ff;
   --ink: #24334b;
   --muted: #64748b;
   --line: #d4dfef;

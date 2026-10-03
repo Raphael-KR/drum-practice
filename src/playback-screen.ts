@@ -1,3 +1,8 @@
+import { mountLoopSlots } from "./loop-slots";
+import { mountPlaybackDrawer } from "./playback-drawer";
+import { syncSettingsChoices } from "./playback-forms";
+import { zoomFromSlider, sliderFromZoom, snapZoomSlider } from "./score-zoom";
+import type { RibbonAsset } from "./playback-assets";
 import { closeDialogOnBackdrop } from "./dialog-ui";
 import { setIconButton } from "./icon-button";
 /** The single playback screen owner. Hosts supply assets, persistence and authoring hooks. */
@@ -7,13 +12,13 @@ import { installHelp } from "./help";
 import { t } from "./i18n";
 import { icon, tempoNote } from "./icon-svg";
 import { lyricMeasureId } from "./lyric-grid";
-import { markMeasure } from "./marker-slots";
+import { toggleMeasureMarker } from "./marker-slots";
 import {
   bindMarkerSlots,
   markerSlotsHTML,
   syncMarkerBadges,
 } from "./marker-ui";
-import { clamp, locate, uid, type Loop, type Song } from "./model";
+import { clamp, locate, uid, xAtBeat, type Loop, type Song } from "./model";
 import type { HighlightPage } from "./note-highlight";
 import { bindNumericDrag, installNumericInputs } from "./numeric-drag";
 import {
@@ -46,8 +51,6 @@ import { arrangePlaybackUI, type PlaybackBindings } from "./playback-ui";
 import { scrubTime } from "./practice-controls";
 import type { StaffPosition } from "./practice-staff-layout";
 import {
-  fillRepeatFields,
-  repeatPoint,
   repeatPreset,
   updateRepeatControls,
 } from "./repeat-ui";
@@ -90,6 +93,7 @@ export interface PlaybackScreenHost {
     ratios: number[];
     staffs: Map<string, StaffPosition>;
     highlights: (HighlightPage | undefined)[];
+    ribbon?: Map<number, RibbonAsset>;
   };
   highlight(): boolean;
   formats(): string[];
@@ -103,9 +107,6 @@ export interface PlaybackScreenHost {
   };
   trackChanged?(): void;
   listsChanged?(): void;
-  loopChanged?(loop?: Loop): void;
-  loopDraft?(): { id?: string; name: string };
-  markerName?(): string;
   validateView?(view: Song["settings"]["view"]): void;
   settingsChanged?(): void;
 }
@@ -114,12 +115,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   arrangePlaybackUI(root, ids);
   installUIStandard(h.environment, root);
   installHelp(root);
+  const drawer = mountPlaybackDrawer(root, ids);
   const get = <T extends HTMLElement = HTMLElement>(id: string) =>
     root.querySelector<T>(`#${id}`)!;
   const input = (id: string) => get<HTMLInputElement>(id);
   const stage = get("stage"),
     ribbon = get("ribbon");
-  const disposers: (() => void)[] = [];
+  const disposers: (() => void)[] = [drawer.dispose];
   const listen = (target: EventTarget, type: string, fn: EventListener) => {
     target.addEventListener(type, fn);
     disposers.push(() => target.removeEventListener(type, fn));
@@ -139,7 +141,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
   if (ids.settings)
     disposers.push(installScreenControls(get(ids.settings), h.display.report));
-  for (const name of ["settings", "tempo", "sound", "loop", "marker"]) {
+  for (const name of ["settings", "tempo", "loop", "marker"]) {
     const dialog = root.querySelector<HTMLDialogElement>(`#${name}-dialog`);
     if (!dialog) continue;
     disposers.push(closeDialogOnBackdrop(dialog));
@@ -168,31 +170,49 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   let disposed = false;
   const available = () => h.ready() && !h.busy();
   function position(index: number, beat: number, width: number) {
-    return measurePosition(h.song(), index, beat, width, widthOf);
+    const s = h.song(),
+      asset = ribbonAsset(index);
+    if (asset) {
+      if (s.settings.view === "rows") return width * xAtBeat(asset.region, s.measures[index], beat);
+      // The phase is shared by every bar, including empty bars; no end-of-bar acceleration.
+      return width * (asset.phase + beat / s.measures[index].beats);
+    }
+    return measurePosition(s, index, beat, width, widthOf);
+  }
+  function ribbonAsset(index: number) {
+    if (h.song().scoreFormat !== "musicxml") return undefined;
+    const asset = h.assets().ribbon?.get(index);
+    return h.song().settings.view === "rows" ? asset?.row ?? asset : asset;
   }
   function widthOf(m: Song["measures"][number]) {
     const s = h.song(),
       a = h.assets(),
-      r = displayRegion(
-        s,
-        s.regions.find((r) => r.id === m.regionId)!,
-      );
+      timeline = ribbonAsset(s.measures.indexOf(m)),
+      r =
+        timeline?.region ??
+        displayRegion(
+          s,
+          s.regions.find((r) => r.id === m.regionId)!,
+        );
     return measureWidth(
       s,
       r,
       stage.clientWidth,
-      a.ratios[r.page] || 1.294,
-      a.staffs.get(r.id),
+      timeline?.ratio ?? a.ratios[r.page] ?? 1.294,
+      timeline?.staff ?? a.staffs.get(r.id),
     );
   }
   function measureHTML(m: Song["measures"][number], i: number, width: number) {
     const s = h.song(),
       a = h.assets(),
-      r = displayRegion(
-        s,
-        s.regions.find((r) => r.id === m.regionId)!,
-      );
-    const staff = a.staffs.get(r.id),
+      timeline = ribbonAsset(s.measures.indexOf(m)),
+      r =
+        timeline?.region ??
+        displayRegion(
+          s,
+          s.regions.find((r) => r.id === m.regionId)!,
+        );
+    const staff = timeline?.staff ?? a.staffs.get(r.id),
       isSVG = s.scoreFormat === "musicxml";
     return renderMeasure({
       s,
@@ -201,19 +221,36 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       width,
       r,
       ly: s.lyrics.filter((l) => lyricMeasureId(s, l) === m.id),
-      layout:
-        staff
-          ? scoreLayout(s, r, width, stage.clientWidth, staff)
-          : undefined,
-      highlight: a.highlights[r.page],
-      pageURL: a.urls[r.page],
-      pageRatio: a.ratios[r.page] || 1.294,
+      layout: staff
+        ? scoreLayout(s, r, width, stage.clientWidth, staff)
+        : undefined,
+      highlight: timeline?.highlight ?? a.highlights[r.page],
+      pageURL: timeline?.url ?? a.urls[r.page],
+      pageRatio: timeline?.ratio ?? a.ratios[r.page] ?? 1.294,
       isSVG,
       positionInMeasure: position,
     });
   }
   function layoutLyrics() {
     layoutScoreLyrics(stage, ribbon, h.song().settings.view);
+  }
+  let loopSlots: ReturnType<typeof mountLoopSlots> | undefined;
+  function rowCellWidth() {
+    const s = h.song(), base = stage.clientWidth / 4;
+    if (!stage.clientHeight) return base;
+    const assets = h.assets();
+    const naturalHeight = Math.max(1, ...s.regions.map(region => {
+      const staff = assets.staffs.get(region.id);
+      return staff ? scoreLayout(s, displayRegion(s, region), base, stage.clientWidth, staff)?.height || 100 : 100;
+    }));
+    // Size rows from the full available width; surrounding UI must not shrink notation.
+    const width = base;
+    const fittedHeight = naturalHeight + 30;
+    stage.style.setProperty("--two-row-stage-height", `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`);
+    stage.style.setProperty("--fitted-row-width", `${stage.clientWidth}px`);
+    stage.style.setProperty("--row-content-height", `${fittedHeight}px`);
+    stage.style.setProperty("--browse-row-pitch", `${fittedHeight + 28}px`);
+    return width;
   }
   function renderRows(index: number) {
     renderScoreRows(
@@ -222,10 +259,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
         ribbon,
         song: h.song,
         playing: h.player().playing,
-        scrubbing: !!scrub,
+        scrubbing: !!scrub || !!loopSlots?.selecting,
         resume: !!scrub?.resume,
         measureHTML,
         layoutLyrics,
+        cellWidth: rowCellWidth(),
       },
       rows,
       index,
@@ -259,6 +297,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function open(id: string) {
     gestures.cancel();
+    if (id === "loop" || id === "marker") { drawer.show(id); return; }
     get<HTMLDialogElement>(`${id}-dialog`).showModal();
   }
   async function play(fromMeasureStart?: boolean) {
@@ -310,6 +349,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     });
     get(ids.markers).innerHTML = markerSlotsHTML(s, "data-quick-marker");
     syncMarkerBadges(ribbon, s);
+    loopSlots?.render();
     h.listsChanged?.();
   }
   function seek(time: number) {
@@ -384,6 +424,14 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     finish: finishScrub,
   });
   disposers.push(gestures.dispose);
+  loopSlots = mountLoopSlots(root, stage, {
+    song: h.song, player: h.player, changed: h.changed,
+    pause: () => { gestures.cancel(); pause(); renderTrack(); frame(); stationary = h.player().current(); },
+    use: loop => { clearPreset(); useLoop(loop); },
+    ready: available,
+  });
+  disposers.push(loopSlots.dispose);
+
   disposers.push(
     installPlaybackWheel(stage, {
       ready: available,
@@ -408,6 +456,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       enabled: () =>
         available() &&
         !h.player().playing &&
+        !loopSlots?.selecting &&
         native &&
         h.song().settings.view === "ribbon",
       song: h.song,
@@ -429,15 +478,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
         else if (h.ready()) seek((v * h.player().duration) / 100);
       },
       onCancel: () => finishScrub(true),
-      onTap: () => {
-        if (h.ready()) open("marker");
-      },
     }),
   );
+  disposers.push(bindNumericDrag(input(ids.rewind)));
   disposers.push(bindNumericDrag(input(ids.tempoInput)));
   disposers.push(
     installPlaybackKeys({
-      ready: available,
+      ready: () => available() && !loopSlots?.selecting,
       cancel: gestures.cancel,
       toggle: () => run(toggle),
       mark,
@@ -474,6 +521,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const p = h.player(),
       v = input(ids.progress),
       time = p.current();
+    const measure = locate(h.song(), time).measure;
+    const marked = !!measure && h.song().markers.some(marker => locate(h.song(), marker.time).measure?.id === measure.id);
+    get(ids.mark).setAttribute("aria-pressed", String(marked));
+    const markerLabel = t(marked ? "marker.current.remove" : "marker.current.add");
+    get(ids.mark).title = markerLabel;
+    get(ids.mark).setAttribute("aria-label", markerLabel);
     if (!scrub && document.activeElement !== v)
       v.value = String(Math.round(clamp(time / (p.duration || 1), 0, 1) * 100));
     v.setAttribute("aria-valuenow", v.value);
@@ -493,8 +546,9 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       performance.now() < copiedUntil
         ? t("main.message244")
         : playbackPosition(s, time).label;
-    if (get(ids.position).textContent !== label)
-      get(ids.position).textContent = label;
+    const positionButton = root.querySelector<HTMLElement>(`#${ids.position}`);
+    if (positionButton && positionButton.textContent !== label)
+      positionButton.textContent = label;
     native = updateScoreFrame({
       root,
       stage,
@@ -506,7 +560,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       loop: p.loop,
       highlight: s.scoreFormat === "musicxml" && h.highlight(),
       native,
-      scrubbing: !!scrub,
+      scrubbing: !!scrub || !!loopSlots?.selecting,
       stationary,
       offsets,
       widths,
@@ -557,7 +611,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     click.setAttribute("aria-pressed", String(s.settings.click));
     input("music-volume").value = String(s.settings.musicVolume);
     input("click-volume").value = String(s.settings.clickVolume);
-    input("zoom").value = String(s.settings.zoom);
+    for (const id of ["music-volume", "click-volume"]) {
+      const output = root.querySelector(`#${id}-value`);
+      if (output) output.textContent = `${Math.round(Number(input(id).value) * 100)}%`;
+    }
+    input("zoom").value = String(sliderFromZoom(s.settings.zoom));
+    input("zoom").setAttribute("aria-valuetext", `${Math.round(s.settings.zoom * 100)}%`);
+    get("zoom-value").textContent = `${Math.round(s.settings.zoom * 100)}%`;
     input("view").value = s.settings.view;
     const select = get<HTMLSelectElement>("view");
     get("view-selected-text").textContent =
@@ -572,6 +632,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     h.settingsChanged?.();
   }
   function syncDisplay() {
+    syncSettingsChoices(root);
     const view = h.ready() ? h.song().settings.view : input("view").value;
     const select = get<HTMLSelectElement>("view");
     get("view-selected-text").textContent =
@@ -631,12 +692,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       ].start,
     );
   });
-  action(ids.position, async () => {
+  if (root.querySelector(`#${ids.position}`)) action(ids.position, async () => {
     await copyPosition(playbackPosition(h.song(), h.player().current()).text);
     copiedUntil = performance.now() + 1400;
     get(ids.position).textContent = t("main.message244");
   });
-  action(ids.sound, () => open("sound"));
   const click = input("click");
   listen(click, click.type === "checkbox" ? "change" : "click", () => {
     if (!available()) return;
@@ -652,6 +712,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const change = () => {
       if (!available()) return;
       h.song().settings[key] = clamp(Number(input(id).value), 0, 1);
+      const output = root.querySelector(`#${id}-value`);
+      if (output) output.textContent = `${Math.round(h.song().settings[key] * 100)}%`;
       h.player().volumes();
       h.changed();
     };
@@ -676,74 +738,26 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
             throw e;
           }
           s.view = view;
-        } else s.zoom = clamp(Number(input(id).value), 0.5, 2);
+        } else s.zoom = zoomFromSlider(Number(input(id).value));
         sync();
         renderTrack();
         h.changed();
       }),
     );
+  let draggingZoom = false;
+  listen(input("zoom"), "pointerdown", () => { draggingZoom = true; });
+  listen(window, "pointerup", () => { draggingZoom = false; });
+  listen(window, "pointercancel", () => { draggingZoom = false; });
+  listen(input("zoom"), "keydown", () => { draggingZoom = false; });
   listen(input("zoom"), "input", () => {
     if (!available()) return;
-    h.song().settings.zoom = clamp(Number(input("zoom").value), 0.5, 2);
+    if (draggingZoom) input("zoom").value = String(snapZoomSlider(Number(input("zoom").value)));
+    h.song().settings.zoom = zoomFromSlider(Number(input("zoom").value));
+    input("zoom").setAttribute("aria-valuetext", `${Math.round(h.song().settings.zoom * 100)}%`);
+    get("zoom-value").textContent = `${Math.round(h.song().settings.zoom * 100)}%`;
     renderTrack();
     h.changed();
   });
-  function fillLoop(loop: Loop) {
-    const f = fillRepeatFields(root, h.song(), loop);
-    const precise = input("loop-precise");
-    precise.checked = f.precise;
-    precision();
-    bounds();
-  }
-  function precision() {
-    get("loop-beat-controls").hidden = !input("loop-precise").checked;
-    get("loop-range-help").textContent = t(
-      input("loop-precise").checked ? "main.message259" : "main.message260",
-    );
-  }
-  function bounds() {
-    for (const [bar, beat] of [
-      ["loop-a", "loop-ab"],
-      ["loop-b", "loop-bb"],
-    ]) {
-      const m = h.ready() && h.song().measures[Number(input(bar).value) - 1];
-      if (!m) continue;
-      input(bar).max = String(h.song().measures.length);
-      input(beat).max = String(m.beats + (bar === "loop-b" ? 1 : 0));
-      input(beat).value = String(
-        clamp(Number(input(beat).value), 1, Number(input(beat).max)),
-      );
-    }
-  }
-  listen(input("loop-precise"), "change", precision);
-  for (const id of ["loop-a", "loop-b"]) listen(input(id), "change", bounds);
-  function loopFromForm(
-    id: string = h.loopDraft?.().id ?? uid(),
-    name = h.loopDraft?.().name ?? "",
-  ): Loop {
-    const point = (bar: string, beat: string, end: boolean) =>
-      repeatPoint(
-        h.song(),
-        Number(input(bar).value),
-        input("loop-precise").checked ? Number(input(beat).value) : undefined,
-        end,
-      );
-    const start = point("loop-a", "loop-ab", false),
-      end = point("loop-b", "loop-bb", true);
-    if (!validLoop(start, end, h.player().duration))
-      throw Error(t("main.message265"));
-    return {
-      id,
-      name:
-        name.trim() ||
-        t("main.message266", {
-          value1: Number(input("loop-a").value),
-          value2: Number(input("loop-b").value),
-        }),
-      start,
-      end,
-    };
-  }
   function useLoop(loop?: Loop, preservePosition = false) {
     gestures.cancel();
     const p = h.player();
@@ -757,9 +771,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       () => {
         if (loop) {
           lastLoop = loop;
-          fillLoop(loop);
         }
-        h.loopChanged?.(loop);
         renderLists();
       },
       h.fail,
@@ -772,21 +784,23 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     clearPreset();
     useLoop();
   }
-  function quickRepeat(value: number, recenter = false) {
+  function quickRepeat(value: number) {
     if (!available()) return;
+    if (h.player().loop && radius === value) { stopLoop(); return; }
     const preset = repeatPreset(
       h.song(),
       h.player().current(),
       h.player().duration,
       value,
-      recenter || !h.player().loop ? undefined : center,
+      !h.player().loop ? undefined : center,
     );
     center = preset.center;
     radius = value;
     useLoop(preset.loop, true);
+    drawer.show("loop", false);
   }
   listen(
-    get(ids.repeat || ids.summary).closest(".repeat-controls")!,
+    root.querySelector(".repeat-presets")!,
     "click",
     (e) => {
       const b = (e.target as Element).closest(`[${ids.radiusAttribute}]`);
@@ -794,27 +808,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
         run(() => quickRepeat(Number(b.getAttribute(ids.radiusAttribute))));
     },
   );
-  action("recenter-loop", () => quickRepeat(radius || 1, true));
-  action(ids.stop, stopLoop);
-  action(ids.adjust, () => {
-    fillLoop(
-      h.player().loop ||
-        lastLoop ||
-        repeatPreset(h.song(), h.player().current(), h.player().duration, 1)
-          .loop,
-    );
-    open("loop");
-  });
-  action("apply-loop", () => {
-    const l = loopFromForm();
-    clearPreset();
-    useLoop(l, true);
-    get<HTMLDialogElement>("loop-dialog").close();
-  });
+
+  action(ids.adjust, () => loopSlots?.focus());
   function mark() {
     if (!available()) return;
-    markMeasure(h.song(), h.player().current(), uid(), h.markerName?.());
+    toggleMeasureMarker(h.song(), h.player().current(), uid());
     renderLists();
+    progress();
     h.changed();
   }
   action(ids.mark, mark);
@@ -875,6 +875,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       : undefined;
   observer?.observe(stage);
   function reset() {
+    loopSlots?.cancel();
     gestures.cancel();
     clearPreset();
     lastLoop = undefined;
@@ -900,9 +901,6 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     rate,
     seek,
     mark,
-    fillLoop,
-    loopFromForm,
-    updateLoopBeatBounds: bounds,
     useLoop,
     stopLoop,
     clearPreset,

@@ -109,10 +109,8 @@ def verify(xml, ir, schema):
                     mapped = mappings[instrument]
                     assert el.findtext("unpitched/display-step") == mapped[3]
                     assert el.findtext("unpitched/display-octave") == str(mapped[4])
-                    expected_head = "normal" if instrument == "hh-open" else mapped[5]
+                    expected_head = mapped[5]
                     assert el.findtext("notehead") == expected_head
-                    if instrument == "hh-open":
-                        assert el.find("notehead").get("filled") == "no"
                 notes.append((voice, onset, duration, instrument, grace))
                 if not chord and not grace:
                     voice_events.setdefault(voice, []).append(

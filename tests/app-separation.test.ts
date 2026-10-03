@@ -37,7 +37,7 @@ it('producer package -> player -> revision preserves practice -> structure confl
  expect((await loadPracticeRecord(s.id))!.song.measures[0].id).toBe(revised.measures[0].id);
  await importPracticeRecord(structural,'replace');
  const archives=await listPracticeArchives(s.id);
- expect(archives).toHaveLength(1);
+ expect(archives).toHaveLength(2); // Same-structure updates also preserve authoring records.
  const restored=await restorePracticeArchive(archives[0].id);
  expect(restored.song.markers).toEqual(s.markers);
  expect(restored.song.title).toBe('Revision');

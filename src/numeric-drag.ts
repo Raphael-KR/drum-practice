@@ -139,7 +139,8 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
       options.onStart?.(drag.value);
     }
     event.preventDefault();
-    const distance = drag.axis === 'x' ? dx : -dy;
+    // Both directions stay active throughout the gesture, including turns.
+    const distance = dx - dy;
     preview(stepValue(input, drag.value, Math.round(distance / pixelsPerStep), options.allowedValues));
   };
   const pointerUp = (event: PointerEvent) => {

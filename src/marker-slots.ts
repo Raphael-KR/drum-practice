@@ -36,3 +36,15 @@ export function markMeasure(
 export function markedMeasureIndices(song: Song): Set<number> {
   return new Set(recentMarkers(song).map((m) => locate(song, m.time).index));
 }
+
+/** Toggle this measure only; markers elsewhere are never evicted. */
+export function toggleMeasureMarker(song: Song, position: number, id: string, name?: () => string | undefined) {
+  const measure = locate(song, position).measure;
+  if (!measure) return;
+  const matches = (marker: Marker) => locate(song, marker.time).measure?.id === measure.id;
+  if (song.markers.some(matches)) {
+    song.markers = song.markers.filter(marker => !matches(marker));
+  } else {
+    song.markers.push({id, time: measure.start, name: name?.() || i18nText("marker-slots.message378", {value1: measure.label})});
+  }
+}

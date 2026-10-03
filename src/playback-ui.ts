@@ -8,16 +8,8 @@ export interface RepeatControls {
 }
 /** Same visible content; only event-routing identifiers belong to each host. */
 export function repeatControlsHTML(ids: RepeatControls) {
-  return `<span class="repeat-heading">${t("portable-player.message449")}</span>
-    <div class="repeat-presets">${[1, 2, 3, 4]
-      .map(
-        (radius) =>
-          `<button type="button" ${ids.radiusAttribute}="${radius}" aria-pressed="false">${t("workspace.message550", { radius })}</button>`,
-      )
-      .join("")}</div>
-    <output id="${ids.summaryId}" aria-live="polite">${t("main.message270")}</output>
-    <button id="recenter-loop" title="${t("workspace.message551")}">${t("portable-player.message450")}</button>
-    <button id="${ids.stopId}">${t("portable-player.message451")}</button>`;
+  return `<div class="repeat-presets">${[1, 2, 3, 4]
+    .map(radius => `<button type="button" ${ids.radiusAttribute}="${radius}" aria-pressed="false">${t("workspace.message550", {radius})}</button>`).join("")}</div>`;
 }
 
 export interface PlaybackBindings {
@@ -81,7 +73,7 @@ export function arrangePlaybackUI(root: HTMLElement, ids: PlaybackBindings) {
     "playback-title": ids.title,
     "playback-tempo": ids.tempo,
   };
-  for (const [role, id] of Object.entries(roles)) get(id).classList.add(role);
+  for (const [role, id] of Object.entries(roles)) get(id)?.classList.add(role);
   const transport = root.querySelector<HTMLElement>(".transport")!;
   const left = transport.querySelector<HTMLElement>(".transport-left")!;
   const right = transport.querySelector<HTMLElement>(".transport-right")!;
@@ -97,11 +89,7 @@ export function arrangePlaybackUI(root: HTMLElement, ids: PlaybackBindings) {
   }
   actions.append(
     get(ids.adjust),
-    repeat.querySelector(".repeat-heading")!,
     repeat.querySelector(".repeat-presets")!,
-    get(ids.summary),
-    get("recenter-loop"),
-    get(ids.stop),
   );
   repeat.replaceChildren(actions, get(ids.markers));
 }
@@ -120,6 +108,7 @@ export function transportHTML(options: {
   rewindId: string;
   rewindButton: string;
   positionId: string;
+  showPosition?: boolean;
   right: string;
 }) {
   return `<div class="transport">
@@ -127,7 +116,7 @@ export function transportHTML(options: {
       ${playbackButton("home", "start", t("icons.message051"))}
       <label><input id="${options.rewindId}" type="number" min="1" max="10" step="1" value="1" aria-label="${t("main.message118")}"></label>
       ${playbackButton(options.rewindButton, "rewind", t("icons.message053"))}
-      <button id="${options.positionId}" title="${t("main.message120")}" aria-label="${t("main.message120")}"></button>
+      ${options.showPosition === false ? "" : `<button id="${options.positionId}" title="${t("main.message120")}" aria-label="${t("main.message120")}"></button>`}
     </div>
     ${playbackButton("play", "play", t("icons.message052"))}
     <div class="flex transport-right">${options.right}</div>

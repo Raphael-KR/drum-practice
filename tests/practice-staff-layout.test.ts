@@ -58,3 +58,45 @@ it('keeps unreadable or non-five-line PDFs on their existing crop layout', () =>
   framePDFStaffs([{id:'a'},{id:'undetected'}] as Region[],staffs);
   expect(staffs.size).toBe(0);
 });
+
+import { measureWidth, scoreLayout } from '../src/playback-layout';
+import type { Song } from '../src/model';
+it('keeps ribbon staff scale and baseline constant for narrow final rest bars', () => {
+  const song={settings:{view:'ribbon',zoom:1}} as Song;
+  const staff={top:.8,gap:.006};
+  const gaps:number[]=[], tops:number[]=[];
+  for (const w of [.25,.112,.05,.025]) {
+    const r={id:'r',page:0,x:.1,y:.7,w,h:.1,beatXs:[.04,1]};
+    const width=measureWidth(song,r,1133,1.4,staff);
+    const layout=scoreLayout(song,r,width,1133,staff)!;
+    const scale=parseFloat(layout.size.split(' ')[1]);
+    gaps.push(staff.gap*scale);
+    tops.push(staff.top*scale+parseFloat(layout.position.split(' ')[1]));
+    expect(parseFloat(layout.size)*r.w).toBeCloseTo(width);
+  }
+  gaps.forEach(g=>expect(g).toBeCloseTo(gaps[0]));
+  tops.forEach(y=>expect(y).toBeCloseTo(tops[0]));
+});
+
+it('keeps rehearsal text and frame together on the cropped practice copy only',async()=>{
+ const source={id:'r',page:0,x:.1,y:.1,w:.3,h:.3,beatXs:[.2,1]};
+ const display={...source,x:.126,w:.274};
+ const input='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><rect data-section-top="safe" x="121" y="120"/><text data-section-top="safe" x="124" y="135">A</text><text x="500" y="120">Other</text></svg>';
+ const blob=new Blob([input],{type:'image/svg+xml'});
+ const doc=new DOMParser().parseFromString(await(await practicePage(blob,[{source,display}])).text(),'image/svg+xml');
+ expect(Number(doc.querySelector('rect')!.getAttribute('x'))).toBeCloseTo(147);
+ expect(Number(doc.querySelector('text')!.getAttribute('x'))).toBeCloseTo(150);
+ expect(doc.querySelectorAll('text')[1].getAttribute('x')).toBe('500');
+ expect(await blob.text()).toBe(input);
+});
+
+it('scales native playback rows uniformly regardless of source page aspect or crop width', () => {
+  for (const ratio of [1,2,3]) for (const w of [.2,.4]) {
+    const region = {id:'r',page:0,x:.1,y:.1,w,h:.2,beatXs:[0,1]};
+    const staff = {top:.15,gap:.01,nativePageRatio:ratio};
+    const layout = practiceStaffLayout(region,staff,275,100,true);
+    const [pw,ph] = layout.size.split(' ').map(parseFloat);
+    expect(ph/pw).toBeCloseTo(ratio);
+    expect(ph*staff.gap).toBeCloseTo(275/w*ratio*.01);
+  }
+});

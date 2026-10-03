@@ -43,19 +43,32 @@ describe('numeric drag inputs', () => {
     expect(commit).toHaveBeenCalledExactlyOnceWith(97);
   });
 
-  it('locks the dominant axis and supports up increase and down decrease', () => {
+  it('supports up increase and down decrease', () => {
     const field = input('1', { step: '0.25', min: '1', max: '4' });
     cleanups.push(bindNumericDrag(field));
     pointer(field, 'pointerdown', 100, 100);
     pointer(window, 'pointermove', 102, 84);
     expect(field.value).toBe('1.5');
-    pointer(window, 'pointermove', 180, 76);
+    pointer(window, 'pointermove', 102, 76);
     expect(field.value).toBe('1.75');
-    pointer(window, 'pointerup', 180, 76);
+    pointer(window, 'pointerup', 102, 76);
     pointer(field, 'pointerdown', 100, 100);
     pointer(window, 'pointermove', 100, 108);
     expect(field.value).toBe('1.5');
     pointer(window, 'pointerup', 100, 108);
+  });
+
+  it('continues vertically after a horizontal start without releasing', () => {
+    const field = input();
+    cleanups.push(bindNumericDrag(field));
+    pointer(field, 'pointerdown', 100, 100);
+    pointer(window, 'pointermove', 116, 100);
+    expect(field.value).toBe('96');
+    pointer(window, 'pointermove', 116, 84);
+    expect(field.value).toBe('98');
+    pointer(window, 'pointermove', 116, 108);
+    expect(field.value).toBe('95');
+    pointer(window, 'pointerup', 116, 108);
   });
 
   it('uses updated field bounds, step, and min as the step base', () => {

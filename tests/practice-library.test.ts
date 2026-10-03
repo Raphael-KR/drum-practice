@@ -58,7 +58,7 @@ function record(): RecordData {
 }
 async function raw(store: string): Promise<any[]> {
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
-    const r = indexedDB.open("drum-practice-player", 1);
+    const r = indexedDB.open("drum-practice", 2);
     r.onsuccess = () => resolve(r.result);
     r.onerror = () => reject(r.error);
   });
@@ -233,6 +233,8 @@ it("saves frequent state and score switches without reading any Blob bytes", asy
   const state = structuredClone(input.song);
   state.settings.position = 2;
   state.settings.rate = 0.9;
+  state.loops = [{id:"saved-range",name:"1~1",start:0,end:2}];
+  state.repeatSlots = ["", "saved-range", "", "", "", "", "", ""];
   await savePracticeState(state.id, state);
   state.scoreFormat = "musicxml";
   await savePracticeState(state.id, state);
@@ -241,6 +243,7 @@ it("saves frequent state and score switches without reading any Blob bytes", asy
   expect(loaded.song.regions[0].id).toBe("svg-region");
   expect(loaded.song.measures[0].regionId).toBe("svg-region");
   expect(loaded.song.settings.position).toBe(2);
+  expect(loaded.song.repeatSlots).toEqual(state.repeatSlots);
   expect(await loaded.pdf.text()).toBe("xml");
   expect(await loaded.pages[0].text()).toBe("svg");
   expect(await loaded.audio.text()).toBe("audio");

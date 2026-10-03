@@ -27,7 +27,7 @@
 - 전후 비교를 window 변수에 두자 개발 서버 HMR로 변수가 소실됐다. sessionStorage에 QA snapshot을 두고 재검증하여 보존 true를 확인했다. 기록 손실로 오판하지 않는다.
 - npm test는 별도 guitar-practice 프로젝트까지 수집해 해당 fixture 누락 등으로 실패했다. 프로젝트의 test:drum으로 범위를 지정하여70파일334테스트 통과. 분리 빌드와 tsc도 통과. 다른 프로젝트의 실패는 이번 변경의 통과로 덮지 않는다.
 - Sites 자격 증명 만료는 같은 Site의 새 단기 자격 증명을 발급받아 복구했다. 기존 audience 유지, 공식 site-workflow로 source push/archive 검증 후 배포했다.
-- player0.4.5/editor0.4.3. Sites 버전12, source1ff02ccc59327d1dcf1b94529484e73c94ecb17f, deployment appgdep_6abfd9e2db0081919150df69415c7813 succeeded(2026-10-03 01:21KST). 악보제작실은 로컬 전용. 곡 포함 HTML 파일 생성/저장 없음.
+- player0.4.5/editor0.4.3. Sites 버전12, source1ff02ccc59327d1dcf1b94529484e73c94ecb17f, deployment appgdep_6abfd9e2db0081919150df69415c7813 succeeded(2026-10-03 01:21KST). 악보제작기은 로컬 전용. 곡 포함 HTML 파일 생성/저장 없음.
 - 근거: docs/experiments/loveholic-20261002/display-crop-review-20261003/의 build-final.log, full-tests-drum-release.log, player-pdf-rows-final.png, player-pdf-first-system.png, player-svg-bars33-40.png. 원본/패키지 전곡검증은 half-open-package-20261003/에 보존.
 - 남은 항목: 가사 음절/행 타이밍은 로컬 STT·보컬 분리·두 Whisper 모델·CTC 및 공개 시간 자료 조사 후에도 미확정이다. 대표 전체 구절 채택0/3이며 전곡 실패로 확대하지 않는다. 상세 근거와 미채택 이유는 [가사 시각 검토](LOVEHOLIC-LYRICS-REVIEW.md)에 남겼다. 검증된 동일 녹음 시간 가사 또는 청취로 확인된 구절/음절 경계가 필요하며, 추정값을 패키지에 넣어 해결 완료로 간주하지 않는다.
 

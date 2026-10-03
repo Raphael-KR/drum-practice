@@ -84,19 +84,10 @@ export function updateRepeatControls(
   },
 ) {
   const range = loop && loopMeasureRange(s, loop.start, loop.end);
-  root.querySelector(`#${bindings.summary}`)!.textContent = range
-    ? t("main.message269", {
-        value1: range.first + 1,
-        value2: range.last + 1,
-        value3: range.last - range.first + 1,
-      })
-    : t("main.message270");
-  (root.querySelector(`#${bindings.stop}`) as HTMLElement).hidden = !loop;
-  (root.querySelector("#recenter-loop") as HTMLElement).hidden = !loop;
-  root.querySelector(`#${bindings.adjust}`)?.classList.toggle("is-on", !!loop);
   root.querySelectorAll<HTMLElement>(`[${bindings.attribute}]`).forEach((b) => {
     const active =
       !!loop && Number(b.getAttribute(bindings.attribute)) === radius;
+    b.textContent = active && range ? `${range.first + 1}~${range.last + 1}` : t("workspace.message550", {radius: Number(b.getAttribute(bindings.attribute))});
     b.classList.toggle("primary", active);
     b.setAttribute("aria-pressed", String(active));
   });

@@ -1781,17 +1781,17 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 상세: docs/plans/EDITOR-PLAYER-SEPARATION.md, docs/SCORE-PACKAGE.md. 실제 사용자 DB 이전·공개 배포·원격 push·곡 포함 HTML 파일 생성 미실행. 빈 HTML 빌드 템플릿 기능은 보존.
 
 ## 2026-10-02 앱 명칭·운영 범위 확정
-- 제작 앱을 악보제작실로 명명하고 로컬 전용으로 확정. 재생 앱이 최신 드럼연습실이며 공개 배포 대상은 dist/player만이다.
+- 제작 앱을 악보제작기로 명명하고 로컬 전용으로 확정. 재생 앱이 최신 드럼연습실이며 공개 배포 대상은 dist/player만이다.
 - 제작 진입점·홈 문구와 안내를 반영하고 재생 배포본에서 로컬 제작실 링크 제거. 이번 작업은 커밋만 하며 배포하지 않는다.
 
 ## 2026-10-02 앱별 독립 버전 관리
-- 악보제작실0.4.1 / 드럼연습실0.4.1을 독립 버전 관리 시작점으로 지정. 기존 공용0.4.0 이후 분리·명칭 변경 반영.
+- 악보제작기0.4.1 / 드럼연습실0.4.1을 독립 버전 관리 시작점으로 지정. 기존 공용0.4.0 이후 분리·명칭 변경 반영.
 - src/app-versions.json을 정본으로 각 앱 정보 화면 연결. 공통 소스 fingerprint와 빌드 시각은 그대로 제공하며 앱 버전은 별도다.
 - version:app 명령과 영향 앱별 커밋 규칙 추가. 공개 배포·곡 포함 HTML 생성 없음.
 
 ## 2026-10-02 드럼연습실0.4.2 Sites 업데이트
 - 재생 앱에 함께 제공하는 완성 악보 목록/불러오기 추가. 바람과 언덕의 발라드 PDF·SVG·음원·가사 패키지를 공개 게시.
-- 악보제작실0.4.1 유지, 드럼연습실만0.4.2로 상승. 제작 앱은 배포 제외.
+- 악보제작기0.4.1 유지, 드럼연습실만0.4.2로 상승. 제작 앱은 배포 제외.
 - 빌드·타입·i18n·경계 검사와 관련33테스트, Safari 미리보기 불러오기·열기 통과. Sites 버전9 배포 succeeded. docs/SITES-PUBLICATION.md 참조.
 
 
@@ -1807,13 +1807,615 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 
 ## 2026-10-03 Loveholic 감독·로컬/Sites 수록
 - 제작 세션을 감독하고 원본/SVG32줄 마디그룹,123마디 패키지와 원본해시를 독립 대조했다. Safari 플레이어에서 발견한 PDF crop 문제를 제작 세션에 수정시키고 최종본으로 재검수했다.
-- src/bundled-scores.json에 Loveholic 추가, 드럼연습실0.4.3으로 버전 상승. 악보제작실0.4.1 로컬 전용 유지. 기존 곡/보관함 보존.
+- src/bundled-scores.json에 Loveholic 추가, 드럼연습실0.4.3으로 버전 상승. 악보제작기0.4.1 로컬 전용 유지. 기존 곡/보관함 보존.
 - 패키지18검사 및 보관함/분리/관리13검사, 타입/i18n/분리 빌드 통과. Safari5182/5183에서 불러오기·저장·열기·재생/정지·마커 이동·SVG/PDF3쪽·가사텍스트 확인.
 - Sites 버전10 공개 배포 succeeded(00:14KST), appgdep_6abfca5730508191a74452a476464b51. 사이트소스 d1f6d24654f5fb01f2e590c3261197c3689a2f8d. 최종패키지 e94f9e2a…를 로컬/빌드/배포사본에서 일치 확인.
 - 음원 신호추정, 가사 음절싱크 미확정, half-muted20개 SVG미표시, PDF 줄별배율 차이는 docs/LOVEHOLIC-PUBLICATION.md에 명시. HTML재생 파일 생성·저장 없음. 수록 완료로 감독 heartbeat중지.
+
+
+## 2026-10-03 악보 제작 문제 해결 순서와 재발 방지 기록
+- 사용자 지시를 프로젝트 AGENTS.md와 MUSICXML-CONVERSION-POLICY.md에 반영: 막히면 정본 문서 → 과거 악보 제작 세션 → 웹 순서로 확인. 이미 확정된 내용은 다시 질문하지 않는다.
+- docs/MUSICXML-TROUBLESHOOTING.md에 Loveholic 해결 사례 7개를 증상·원인·해결·검증·다음 적용 기준으로 기록. Opus 좌표, 로컬 XSD resolver, 래스터/폰트, PDF 줄 경계, 테스트 수집 범위, macOS 파일명 충돌 및 확정 매핑 재질문을 포함.
+- 일시 재시도 회복의 원인 미확정, half-muted 표시 미지원, 추정 음원/가사 타이밍은 해결 완료와 구분. 곡별 제작 문서에서 문제 해결 기록을 연결.
+- 문서 참조 경로와 diff 형식 확인. 악보·음원·패키지·앱 소스·버전은 이번 문서 작업에서 변경하지 않음. 다른 세션의 재생 코드 변경 보존.
+
+
+## 2026-10-03 악보 문서 구조·모순 정리
+- 사용자 지시를 AGENTS.md와 변환 정책에 기록: 문서가 모순되면 history → 다른 관련 문서 → 과거 악보 제작 세션 → 웹 순서로 검토. 근거 확인 순서와 현재 승인 규칙의 우선순위를 구분.
+- 2026-09-20 history의 범례 선택·고스트/스티킹 승인·메인 앱 적용과 매핑/SVG 문서, 기존 제작 세션 01a0b7de-deef-7572-8833-02cf6080ddb1 인계, W3C MusicXML4.0 공식 notehead/words/half-muted를 대조.
+- 확정 매핑 문서의 R/L words 보류 안내를 후속 사용자 승인에 맞춰 정정. 고스트의 OSMD 자체 미지원과 앱 괄호 보완 적용, 새 표기 조사와 승인된 SVG 보완을 구분. 승인된 악기 위치·주법 규칙은 유지.
+- SVG의 모호한 현재 곡을 Real Paradis110마디·검증 날짜로 특정하고 Loveholic123마디 별도 배치를 연결. 정책에 문서 역할 표, Loveholic 제작 기록에 완료/한계/미확정/후속 작업 표, 비교·통합 문서에 당시 검증 범위를 표시.
+- 변경 이유·근거·다음 적용 기준은 docs/MUSICXML-TROUBLESHOOTING.md의 문서 모순·범위 정리에 기록. 문서 링크·제목·diff 형식 확인. 앱/악보/음원/패키지는 이 문서 작업에서 변경하지 않고 다른 세션의 재생 개선 작업 보존.
 
 ## 2026-10-03 Loveholic 재검토·공통 PDF 오선 정렬
 - 과거 제작 세션과 정본을 재검토. PDF 배율 차이를 파일 한계로 남긴 판단을 정정하고 자산 준비/화면 조립의 MusicXML 전용 조건을 제거했다.
 - 오선 전체 간격 추정·줄 단위 검출/캐시·가사 포함 공통 프레임 적용. 검출 불가 PDF는 기존 표시 유지. Loveholic123마디 검출, 잘림0 계산검사와 Safari iPad mini 응답형 PDF/SVG·재생/정지 확인.
 - 전체330검사 및 분리 빌드 통과. 앱 버전 editor0.4.2/player0.4.4, Sites버전11 succeeded(00:39KST). 기존 악보/음원/HTML파일 보존. 반가림20개 표기와 보컬 싱크의 미확정 상태는 유지.
 - 계획·실패·수정·근거: docs/LOVEHOLIC-REVIEW.md.
+
+## 2026-10-03 — 줄별 마디 구성·줄 앞 타악기 표기의 과거 결정 대조
+
+- 사용자 원문을 확인: 9/21 01:46:57(KST)의 고정4마디 폐기는 전체 SVG 줄 구성, 9/21 09:33:37의 4마디 고정 언급은 두 줄 재생 화면의 좌우 탐색 제거 요청이었다. 과거 적용 범위를 구분했다.
+- 9/19 02:04:02의 시작 기호·여백 자르기 승인은 마디 번호 유지 조건이었다. 가사·숫자 손실 허용의 과거 원문은 찾지 못했으며, 오늘 사용자의 명시적 재확인을 최신 기준으로 기록했다.
+- docs/SVG-SCORE-RULES.md의 최신 두 줄 행 구성·가로 자르기 허용과 과거 이력을 분리했다. docs/MUSICXML-TROUBLESHOOTING.md에 원문 시각·범위·확인 한계·재발 방지를 기록했다. 상하 crop의 내용 보존과 줄 앞 가로 자르기를 구분했다.
+- 이번 범위는 결정 조회·문서 정리다. 재생 코드·패키지·원본 미디어는 변경하지 않았으며 화면 적용 완료로 보고하지 않는다. 문서 diff 검사 수행.
+
+## 2026-10-03 — 타악기 표시 자르기의 최신 결정 확정
+
+- 사용자 명시적 확정: “타악기 표시 자르기를 하고, 그걸 하면서 가사나 숫자가 잘려도 괜찮다.”
+- docs/SVG-SCORE-RULES.md §3에 최신 확정 결정으로 기록했다. 줄 앞 타악기 표기·여백 자르기에서 인쇄 가사·마디 숫자 손실을 허용하며, 해당 자르기에는 과거 마디 번호 유지 조건보다 이 결정이 우선한다.
+- docs/MUSICXML-TROUBLESHOOTING.md의 승인 이력을 함께 갱신했다. 문서만 변경했으며 앱 버전은 유지한다. 문서 diff 검사 수행.
+
+
+## 2026-10-03 표시 규칙 최종 정정
+- 사용자 직접 확정: 두 줄 재생은 행당4마디, 전체 SVG는 원본 줄별 마디 구성, PDF는 타악기 표시·여백 스킵 시 인쇄 가사·마디 번호 잘림 허용, 원본 PDF·MusicXML 보존.
+- 두 줄 재생까지 원본 줄 구성을 적용한다는 중간 해석을 철회하고 SVG-SCORE-RULES.md 및 MUSICXML-TROUBLESHOOTING.md를 정정. 문서 수정이며 코드·패키지 변경 또는 PDF 자르기 구현 완료를 뜻하지 않는다.
+
+## 2026-10-03 PDF 표시 trim·전용 half-open·악보 업데이트
+- Loveholic32줄 PDF 시작 표시 crop, 원본 좌표 보존, SVG 우회. 명시적 pictHalfOpen1에 공식 Bravura glyph 보완20개. 라이선스 보존.
+- 보관함 악보 업데이트는 기존 import/merge 재사용. Safari 실제 실행으로 연습 상태 보존 확인.334드럼 테스트·분리 빌드 통과.
+- player0.4.5/editor0.4.3, Sites버전12 succeeded. 새 패키지 ab36ce61… 원본PDF/음원 보존. HTML재생파일 생성 없음. 가사 정렬은 별도 진행 중.
+- 실패/복구와 검증 증거는 docs/PDF-DISPLAY-TRIM.md에 기록.
+
+## 2026-10-03 제작 측 반열림·PDF 경계 후속 검증
+- 공식 SMuFL pictHalfOpen1과 MusicXML half-muted smufl 속성을 확인. 20개 속성 외 후보 XML 차이 없음. 공식 Bravura OTF glyph path·revision·해시·OFL 보존 후 개발 세션의 공통 출력에 연결.
+- 새 패키지 ab36ce61084b9d619520b1ded8cd6a26aa7745a9bcc92b1698fc8078b8e71a1f와 XML 2f5e346d571a1fc8eca404d40e117b94526b349030d0a1520a055d9fa7923802를 별도 폴더에 생성. XSD·123마디/492박/1,580머리·20개 SVG 실제 확대 검수·ZIP 재읽기·PDF/MP3 바이트 보존 확인. 기존 결과 보존.
+- 원본 PDF 구조·32줄 래스터를 대조한 표시 경계를 개발 세션에 전달. 첫 줄 박자표/첫 음표 보존, 원본 박 좌표 유지 및 123개 영역 fingerprint 포함. 제작 측 원본·PDF variant 영역 변경 없음.
+- generator의 half-open에 전용 smufl/메타데이터를 반영. 새 generator-review 폴더의 전곡 XSD/10개 원본 fixture·5개 오류 주입 거부 통과. 초기 산출물은 덮어쓰지 않음.
+- 현재 미해결로 남아 있던 반열림 안내를 초기 제작 이력으로 정정. 상세 docs/LOVEHOLIC-CONVERSION.md, MUSICXML-TROUBLESHOOTING.md. 공통 코드·Safari/iPad·배포는 개발 세션의 별도 책임/증거다.
+- 가사 정렬은 로컬 STT·분리 보컬·Whisper·CTC로 교차 시험 중. STT의 25/21은 인식 세그먼트 수이며 실행 횟수가 아니다(조건별 1회). 실제 macOS 27.0.1과 함께 팀장 공유를 정정. 미확인 시각은 패키지에 적용하지 않았다. 근거 docs/LOVEHOLIC-LYRICS-REVIEW.md.
+- 후속 large-v3 자유 인식·강제 정렬로 첫/중간/끝 대표 7/37/116행을 교차 검증. 첫 한국어 prefix는 두 조건 0.06초 차이이나 모델 차이·영어 끝 미확인, 중간 시작 0.46초 차이, 마지막 원문 구절 오인식으로 전체 구절 모두 미채택. 실패를 전곡 25행 결과로 확대하지 않음.
+- find-timed-lyrics 스킬로 LRCLIB 추가 질의·TypingTube·카라오케 미러 파일목록·공개 가사/TJ/반복 영상·Bilibili 후보를 확인. 실제 시간 파일/원음원 싱크를 확보하지 못했고 오류/접근불가/metadata 확인 범위를 구분해 기록. 외부 가사 전체·인증값 저장과 원음원 외부 업로드 없음.
+- source-regeneration-review-20261003에서 원본 PDF 재추출 데이터 일치·XSD/fixture/오류 주입 재검증. 기존 출력 재실행은 파일 변경 전 거부하도록 생성기 보호, 전 파일 해시 유지 확인. Python 7파일 구문·JS 구문·diff 검사 통과. 원본/초기/새 패키지 해시·ZIP CRC·manifest 기준 미디어와 canonicalXML 바이트 재확인. 작업용 5187 수신기 종료, 다른 서버/앱은 보존.
+
+## 2026-10-03 — 인쇄 악보 기반 가사 제작 경로 재확인
+
+- 사용자 정정에 따라 음원 STT/강제 정렬을 인쇄 가사 수록의 선행 조건에서 제외했다. 지난 2026-09-19 정본 구현과 현재 scorePosition → projectLyrics → canonical XML 저장/복원 경로를 재확인했다.
+- 기존 제작 세션 01a0fd08-ba73-7482-b10e-40e637a1efc0에 원본 인쇄 가사 대조와 기존 경로 재사용을 전달했다. 앱 코드와 배포는 감독 세션 담당으로 유지한다. 새 가사 패키지 완료 여부와 기존 구현 검증을 구분한다.
+- 전제 오류와 재사용 근거는 docs/PDF-DISPLAY-TRIM.md에 기록했다. 과거 음원 정렬 실패 기록은 보존한다.
+
+## 2026-10-03 — 마디 중앙 인쇄 가사 저장·재생 경로
+
+- 제작 세션 실측에서 줄 시작과 가사 시작이 다른 사례를 확인하여 줄 전체 시작값을 음절 시각으로 쓰지 않는다. 독립 Song.measureLyrics 계약을 추가해 가창 음가 없이 XML manifest 저장·복원 및 공통 마디 중앙 표시를 지원했다. docs/MEASURE-LYRICS.md 참조.
+- 전체338검사, 분리 빌드 통과. Safari 합성 fixture 표시/왕복 확인, 실제 곡 패키지 검수는 후속 단계다. 로컬 사용자 저장 곡 변경 및 HTML 재생 파일 생성 없음.
+
+
+## 2026-10-03 제작 측 인쇄 가사77마디 패키지 검증
+- 음원 인식 성공을 인쇄 가사 수록의 선행 조건으로 삼은 전제를 정정했다. 원본25줄353문자의 bbox/마디 경계 대조,13fixture 및 전25줄 contact sheet 시각 대조로77마디 귀속 확인.37번줄 첫 가사는39마디,80번줄은82마디임을 기록했다.
+- 개발 세션의 measureLyrics 계약을 사용한 새 패키지26b97bd8… 및 XMLc2dcf86e…를 printed-lyrics-package-20261003에 생성했다. lyrics=[] 유지, 가창 시각/음가 생성0. P1/123마디492박1580머리/20반열림 XSD·왕복 및 ZIP CRC,PDF/MP3·PDF variant·마디시각/영역/설정 보존 통과.
+- 실제 공통 renderMeasure의 SVG77중앙 표시·XML복원 및 집중3파일31테스트 통과. Safari Transport closed로 승인된 ego 사용. QA grid 높이/실제SVG비율을 교정해 시각 확인했다. 실제 앱 import/iPad/배포는 개발 세션의 별도 책임이다.
+- docs/LOVEHOLIC-LYRICS-REVIEW.md, LOVEHOLIC-CONVERSION.md, MUSICXML-TROUBLESHOOTING.md에서 현재 인쇄 가사 제작과 과거 음원 시각 시험을 구분했다. 사용자 저장 곡·원본·기존 결과를 보존하고 제작 측 commit/push/deploy/HTML생성은 수행하지 않았다.
+
+## 2026-10-03 — Loveholic 마디 가사 로컬·Sites 수록
+
+- 검증된77개 마디 가사 패키지를 로컬 번들에 수록하고 실제 악보 업데이트/재열기, Safari1133×744 PDF/SVG 한줄/두줄 표시를 검수했다. release338검사 및 분리 빌드 통과.
+- player0.4.6/editor0.4.4, Sites13 배포 succeeded(02:29KST). 상세 해시/검증/제한은 docs/MEASURE-LYRICS.md. HTML 재생 파일 생성 없음, 편집 앱 공개 없음.
+
+## 2026-10-03 — 한 줄 보기 마지막 마디 축소 수정
+- 사용자 캡처에서 Loveholic 120~123마디 축소 발견. 원인은 practiceStaffLayout의 width/25 세로 배율 제한을 한 줄 보기에도 적용한 것. 좁은 온쉼표 마디일수록 작아짐. 이전 부분 캡처 검수는 마지막 마디를 놓쳤음.
+- 공통 scoreLayout에서 고정 셀 제한을 rows에만 적용. ribbon은 engravingHeight 기준 오선 간격·기준선 유지. 원본과 마디 가로 폭은 보존.
+- 회귀 테스트 추가. test:drum 71파일/339테스트 통과, build:apps 및 경계 검사 통과.
+- 로컬 Safari 1132px 폭 실제 DOM 전체 123마디 대조: 오선 간격 8.967px, 기준선 62.769px (반올림 오차 <0.000002px). 119~123마디 캡처 직접 확인: docs/experiments/loveholic-20261002/svg-final-bars-fixed.png.
+- 빌드 중 Vite 자동 새로고침으로 첫 캡처가 목록 화면이 됨. 빌드 완료 후 악보를 다시 열어 전수 측정·캡처 재수행. HTML 재생 파일 생성·저장 안 함. Sites 배포 안 함.
+
+## 2026-10-03 — SVG 재생 줄 시작 여백 수정
+- 사용자 승인에 따라 SVG 재생 보기의 빈 타악기 슬롯을 제거. Loveholic 전체 123마디 중 첫 마디 제외 시스템 시작 31곳, 26 SVG 단위. 정확한 geometry/beat fingerprint로 다른 악보·재조판 오적용 방지.
+- 단순 crop은 A1/B 등 구간 표시를 자를 수 있어 practicePage 복제본에서 표시 프레임·텍스트를 함께 이동. 전체 SVG/원본은 불변.
+- Safari 1132px 로컬 실제 화면에서 24·25마디 앞 여백이 같아진 것을 캡처 확인: docs/experiments/loveholic-20261002/svg-prefix-fixed.png. 31곳 note/section bbox 전수 검사: 잘림 0, 구간 표시 요소 14개. 123마디 원본 앵커 절대 위치 최대 오차 1.11e-16, 첫 마디 불변.
+- test:drum 71파일/341테스트 통과, build:apps와 앱 경계 검사 통과. Sites 미배포, 독립 HTML 재생 파일 생성·저장 안 함.
+
+## 2026-10-03 — 맥락형 도움말 구현 / 상시 조작 안내 제거
+- docs/UX-PRINCIPLES.md의 한 페이지 기본·실제 위치 기반 오버레이·현재 모달 우선·닫기/포커스 복원 계획 검토 후 적용.
+- help.ts/help-content.ts/help.css 공통 구현. 라이브 영역 번호와 설명, 설정/편집/목록 맥락, 작은 화면 페이지·좌우 키/스와이프. 상단 모달 안으로 [?] 이동하여 native top-layer 접근 보장. 닫을 때 리스너/ResizeObserver 정리.
+- 화면 하단 score-gesture-hint 생성 두 경로(shell/ui-standard)와 CSS 제거. 조작 설명·실제 구현된 Space/좌우/M 단축키를 i18n 도움말에 통합. 공통 CSS를 두 앱 및 내보내기 템플릿 빌드에 연결. 독립 HTML 재생 파일 생성 안 함.
+- Safari 1132×744: 재생 도움말 3영역·한 페이지·넘침 없음, 하단 안내 없음, Esc 후 [?] 포커스. 설정 도움말 전환, 제작실 곡 정보 도움말과 겹친 설정/편집 모달 유지 확인. 캡처 docs/experiments/help-playback-20261003.png.
+- 개발 중 파일 변경으로 Safari 모듈 로드가 실패해 일시 빈 화면. CLI 서버 200 확인 후 새로고침으로 복구; 검수 재수행. 테스트 72파일/344개, 두 앱 빌드/경계 검사 통과. 최종 문구 조정 후 빌드와 도움말·공통 UI 집중 테스트 17개 재통과.
+- 실제 iPad 터치 스와이프·회전·전체화면 전환 미검증. Sites 미배포.
+
+## 2026-10-03 — Loveholic 표준 가사 성부 제작
+- 사용자 요청 “Loveholic도 Real Paradis처럼”에 따라 인쇄 원문353문자·269단위를 독립 DrumPracticeLyrics의 note/lyric/text에 저장. 원본 음표/쉼표 underlay265개 직접 대응,48/99/107/109마디4개는 평행 구절에 따른3.5박 추정으로 명시. 표시 음가와 실제 가창 길이 구분, confirmed=false 유지.
+- 최신 XML: docs/experiments/loveholic-20261002/standard-lyrics-package-20261003/Loveholic-final.musicxml. SHA256 e84578fe97421141fe6944f6a18aa72fdce746fb788ee2bc1ffcd082110f6df8. 원본 P1동일,123마디492박1580머리20half-muted·XSD4.0·ZIP/XML 바이트·원본 미디어 보존 통과. 초기/반열림/이전 중앙 가사 패키지 해시 유지.
+- 원본25줄/15fixture, 독립 XML타임라인269개 일치, 가사 누락/텍스트/음가/시작4가지 오류 주입 거부. 캐시 비우고 복원269개, 음원 연결+5초에도 악보 위치 유지·두 번째 XML저장 동일. Safari 실제 저장 패키지+공통 표시 SVG/PDF 각각269개·겹침0. IndexedDB 쓰기0, 실제 저장 곡 import/iPad/배포 검증과 구분. 집중3파일35테스트·Python/JS구문·diff검사 통과.
+- 매핑 문서의 가사 절을 인쇄 underlay 기반 표시 성부도 포함하도록 최신 요청에 맞춰 정정. 원인/해결/검증/다음 적용은 docs/MUSICXML-TROUBLESHOOTING.md 및 docs/LOVEHOLIC-LYRICS-REVIEW.md.
+- 표준 가사 XML과 근거를 드럼 연습실 웹앱 개발 세션에 전달. 병행 공통 박 간격 렌더러 변경으로 이 폴더 .drumscore는 잠정 캐시. 최종 재생 캐시·공개 수록은 개발 세션 소유. 제작 세션에서는 공통 src/public/앱 버전·Git commit/push·배포·HTML 생성 안 함.
+
+## 2026-10-03 — 가사 기준은 악보, 가창 차이 제외
+- 최신 사용자 결정: “악보가 스탠다드다.” 가사 위치·음가는 원본 악보 기준이며 가수가 다르게 부르는 시각·길이는 반영하지 않는다. 실제 가창 시각·길이 측정·기록 및 STT/강제 정렬/시간 가사 검색을 추가 완료 조건에서 제외.
+- MUSICXML-CONVERSION-POLICY/확정 매핑/정본 계약과 Loveholic 현재 안내·문제 해결 기록을 정정. 과거 음원 실험은 이력으로 보존. Loveholic4개 악보 판독 추정과 음원 재생 연결·파생 초 캐시는 기존대로 구분. DrumPracticeLyrics 저장 구조와 기존 XML/패키지는 변경하지 않음.
+- 문서만 수정. 앱 버전·코드·미디어·공개 수록·배포·Git commit/push 변경 없음. 문서 저장 내용 및 diff 검사 후 개발 세션에 최신 결정 전달.
+
+## 2026-10-03 SVG 한 줄 보기 시간 비례 조판
+
+- 사용자 승인안을 `docs/SVG-RIBBON-TIMELINE-PLAN.md`에 기록하고 SVG 정본 규칙에 반영했다.
+- 인쇄 SVG를 가로로 변형하지 않고 OSMD/VexFlow native 박 위치를 재배치한 별도 재생 캐시를 준비했다. 공통 player 화면/HTML 템플릿이 같은 자산·선형 진행 좌표를 호출한다. player는 renderer-free 경계를 유지한다.
+- 두 bundled 악보233마디 전수 박 거리·오선 높이·마디 경계, 음표 수/크기 보존 검증. Safari1132×744에서 m2/m10, 마지막 마디, 실제 재생, BPM 변경, PDF/두 줄 전환 확인. 검증 수치와 실패/해결 이력은 위 계획문서 및 `docs/experiments/ribbon-timeline-20261003/audit.json`.
+- 기존 bundled 원본 XML/PDF/음원/song/전체 SVG 배치 보존. 첫 페이지 비표시 metadata 추가만 적용. 기존 패키지 백업 후 로컬 player의 같은 원본 캐시만 갱신했고 사용자 markers/loops/settings를 유지했다.
+- 독립 HTML 재생 파일 생성·저장, Sites 배포, Git 커밋/push는 하지 않았다.
+- 최종 검증: `npm run test:drum -- --maxWorkers=4` 73파일347테스트 통과. `npx tsc --noEmit`, `npm run build:apps`, player renderer-free 경계 검사, `git diff --check` 통과. SVG metadata 추가된 두 로컬 패키지를 최신 공통 준비 함수로 다시 열어123/110마디 캐시를 확인했다.
+
+## 2026-10-03 — Loveholic 표준 가사 패키지 재생 캐시 갱신
+- 개발 세션에서 시간 비례 SVG 렌더러 검증 완료를 전달받은 뒤 제작 측에서 새 standard-lyrics-final-package-20261003 폴더에 재패키징. 기존 canonical XML·음표·가사·마디 시각·원본 미디어/PDF variant 그대로 보존. 이전 결과 덮어쓰기 없음.
+- Loveholic.drumscore SHA256 3bbb8ba0013e38e8f652c432b3f8f76591df453f8a796c0698a193c4bcaf409a /10,483,505바이트. XML e84578fe97421141fe6944f6a18aa72fdce746fb788ee2bc1ffcd082110f6df8 기존 검증본과 바이트 동일. ZIP변경은 score/pages/0와manifest뿐.
+- 실제 저장 패키지+공통 preparePlaybackAssets ribbon123개/staff123좌표, 한 줄 가사269표시/겹침0, 박당 너비 편차5.68e-14px·오선 간격 편차1.78e-15px. 두 줄31행269표시/겹침0. XML왕복269위치·음원 연결+5초 불변·XSD4.0/ZIP CRC/원본PDF·MP3/PDF variant 보존 통과.
+- XML1580머리/14쉼표·half-open20개 보존. 최초 SVG카운트 비교는 vf-notehead가 쉼표도 포함해 실패; 집계 기준을 맞춰 인쇄/재생SVG 모두1594그룹 확인. 원인·다음 적용은 MUSICXML-TROUBLESHOOTING에 기록.
+- Safari 로컬 가사7마디/두 줄 마지막123마디 캡처 직접 확인. 근거 final-validation/ribbon-browser-validation/rows-browser-validation JSON. QA는 IndexedDB쓰기0이며 저장 곡import/실제재생/public배포는 개발 세션 소유.
+- 제작 도우미 refresh/QA확장·JS구문·diff검사 통과. 개발 세션에 경로·해시·검증 전달. 공통src/public/앱버전/Git/배포 및 독립HTML생성 변경 없음.
+
+## 2026-10-03 — 프로젝트 파생 폴더 통합
+
+- 사용자 승인한 Playground 프로젝트당 홈폴더 하나 원칙에 따라 세 폴더를 같은 파일시스템에서 rename했다. 기존 소스·dirty 변경과 원본 자료는 보존했다.
+- `/Users/raphael/Playground/drum-practice-sites` → `/Users/raphael/Playground/drum-practice/deployment/sites`.
+- `/Users/raphael/Playground/osmd-hollow-fix` → `/Users/raphael/Playground/drum-practice/dependencies/osmd-hollow-fix`.
+- `/Users/raphael/Playground/drum-practice-local-archives` → `/Users/raphael/Playground/drum-practice/local-archives`.
+- 전후32,508항목(일반 파일29,042개, symlink52개)의 상대경로·inode·device·mode·uid/gid, 파일 SHA256/mtime/크기, symlink 대상/해결 여부와 전체 xattr digest가 동일했다. 파일 합계511,652,915바이트. Archive의5398파일은 기존5397자료와 보존 manifest를 포함한다.
+- Sites Git `c5d4260b90ddaea641e5e19aea5c8f9c64c484cc`/main, upstream Git `b62a6ca1d451e8cb5e9e70b271cb520ff1526e2c`/fix/normal-notehead-fill 및 clean 상태·remote·config가 유지됐다. 두 저장소 `git fsck --no-reflogs` 종료0(upstream dangling commit 안내만 있음). 기존 hosting project ID 유지.
+- `prepare-sites.mjs` 기본 경로만 정본 루트 기준 `deployment/sites`로 바꾸고 명시적 CLI 경로는 기존 cwd 기준을 유지했다. 구문 검사·비파괴 경로 계산3사례·old path 부재·Git ignore3경로·diff 공백 검사 통과. 현재 문서 참조를 갱신하되 과거 경로 기록과 보관된 venv shebang은 보존했다. 보관 venv는 실행환경으로 쓰지 않는다.
+- 앱 기능·버전·미디어·배포 자산 내용은 바꾸지 않았다. prepare-sites 실행, 재빌드, GUI, 새 백업, Git commit/push, 배포는 하지 않았다.
+- Vitest 파일 목록 확인에서 이동한 archive 테스트26개가 새로 수집되는 것을 발견했다. `test`와 `test:drum` 명령에 파생3경로 제외를 추가하여 정본 드럼 테스트73파일만 유지했다. 보관본을 현재 테스트로 실행하지 않았다.
+
+
+## 2026-10-03 브라우저 MusicXML 공통 조판·캐시 전환
+
+- 승인 설계/판정 기준/상세 실측: `docs/BROWSER-MUSICXML-RENDERING.md`. 제작/재생앱 공통 renderMusicXML과 prepareBrowserScore 사용. 원문/파트/OSMD/정책 해시, 별도 파생 캐시4개, 손상/저장실패 복구. 원본과 연습 위치/루프 유지.
+- Loveholic 비교 후 제공 두 곡233마디 대조 통과. iPad mini Safari 시뮬레이터 최초 조판886/837ms, 캐시29/56ms; Loveholic RSS 관측114.31→117.53MiB. 실제 기기/peak 수치 아님.
+- iPad 보기 전환·744→1133 회전에서80마디1박/79–81반복 유지, 추가 조판0, overflow0. Safari 재생 중 조판 증가 없음.
+- 해결: 캐시 동일-ms 정렬, 테스트 Blob API 불일치, 비활성 Safari RAF, Xcode MCP 실패의 대체 QA 경로, HMR 기록 덮어쓰기. 원인/해결과 재검증은 위 문서 참조.
+- 중복 ensureCenteredRestCache 제거. 악기 표기 보완/PDF/기존 인쇄 crop 호환은 필요성 재검토 후 유지.
+- 최종75파일356테스트, build:apps, check:playback 통과. 실물 iPad 장시간 재생/터치는 미검증. HTML 재생 파일 내보내기/Sites 배포/commit/push 없음.
+
+
+## 2026-10-03 12:20 KST — 브라우저 직접 MusicXML 조판 배포
+- Sites 버전14, 배포 `appgdep_6ac074788f288191ac47759bf515610c` succeeded. 기존 공개 주소/공개 범위 유지.
+- Sites 소스 `6630b7b19abb197723bbf611b0d65abebf750f19`. 직전 검증된 dist/player 10파일과 배포본 바이트 일치, 루트 index는 player.html과 일치. Loveholic/Real Paradis 패키지 포함.
+- 공통 MusicXML 직접 조판·캐시 및 최신 로컬 재생 화면을 게시. 제작앱은 로컬 전용 유지. 배포 성공은 Sites 서버 응답으로 확인했으며 이번 배포 후 별도 공개 브라우저 검수는 수행하지 않았다.
+- 사용자 결정: 에이전트의 독립 HTML 재생 파일 생성·저장은 향후 작업 범위에서도 제외. 필요 시 사용자가 앱에서 직접 저장한다. 앱 내 내보내기 기능과 빌드용 템플릿은 유지한다. AGENTS.md에 반영.
+
+
+## 2026-10-03 한 줄 가독성 기준 승인·정량화 검토
+- 사용자 승인: 읽기 좋은 음표 크기, 적절한 가로 밀도, 여러 마디 선행 보기, BPM에 따른 이동. 정확한 비율만으로 편안함을 판정하지 않는다.
+- 정본 SVG-SCORE-RULES.md/UX-PRINCIPLES.md에 반영. RIBBON-READABILITY.md에 계산식과 미확정 후보(16박 중심,12–20박 비교), 물리적 제약, 검증 절차 기록.
+- 현재 곡 전체 최대간격 산정 코드 확인. 어떤 기호가 최대값을 유발하는지는 추가 계측 필요. 이번 요청은 문서·검토만 수행, 코드/배포/HTML 생성 변경 없음.
+
+
+## 2026-10-03 50% 한 줄4마디 가독성 구현
+- RIBBON-READABILITY.md/SVG-SCORE-RULES.md 기준 확정. 내부 꾸밈음의 전역 시작 여백 오적용과 과도한 padding 제거, native 간격208→98/372→145.
+- 공통 표시에서50%=16박, 동일 XY배율, BPM 독립, 캐시 v7-density50. PDF/두 줄/인쇄 경로 보존.
+- 실제 iPad mini Safari 캡처에서 밀집/끝구간 확인. 가로1099CSS px: 두 곡16박, 선행4.69/6.80초. 확대/보기 변경 상태 유지. 가사 영역 높이와 온마디 쉼표 보정 실패/수정 기록을 정량 검토 문서에 포함.
+- 76파일358테스트와 앱 빌드 통과. HTML 파일 생성·저장/Sites 배포/commit 없음. 병행 가사 패키지 교체는 제작 세션에서 수행했으며 유지.
+
+
+## 2026-10-03 Loveholic PDF 가사를 실제 대응 음표 위치로 수정
+
+- 사용자25–32마디 캡처의 중앙 문구 문제: 로컬 수록본77중앙/음절0이었다. 기존169257… 수록본을 보존하고269단위+PDF 표시 좌표 패키지18c7410748b222a6a4fcd6d83d73621200e504b8245b65d099cb6f27c550b80d로 교체. XML e84578…/원본미디어/기존출력 유지.
+- PDF 줄기·정수박 보간의7.8446px 차이를 원본 대응 음표 중심으로 수정. region/lyricId/음악적 위치에 묶인 anchor 검증, crop 좌표 변환, px 계산, 가로 packing 예외. SVG·편집 후 fallback을 유지한다.
+- Safari 실제 악보 업데이트·열기·PDF 두 줄·재열기269/중앙0/문자 불일치0. 전269최대0.0973CSSpx미만,25–32마디27개0.023px미만. 전체77파일362테스트/TypeScript 통과.
+- 상세 원인·보존·검증: docs/LOVEHOLIC-PDF-LYRIC-PLACEMENT.md, MUSICXML-TROUBLESHOOTING.md. 수정 범위와 실제 화면 근거를 드럼연습실 개발 세션에 전달. commit/push/배포/독립HTML 생성 없음; Git 통합 시 앱 버전은 개발 세션에서 처리한다.
+
+### 2026-10-03 드럼 연결선 방향 규칙
+- 사용자 승인: 높이 방향이 뒤집히는 묶음/동일 높이는 수평, 단조 진행은 완만한 기울기. 공통 renderMusicXML에 drum-beams 어댑터 적용, 캐시 v9.
+- 최초 어댑터가 존재하지 않는 getBeam()을 가정해 원생 결과가 유지됨. Safari 실제 SVG에서 87마디 4박 높이차 19.35단위를 확인한 뒤 native note.beam 속성으로 수정하고 어댑터 회귀 검사를 추가함.
+- Mac Safari 직접 조판 결과 87마디 2박 수평, 4박 높이차 5단위(오선 간격10의 절반). screenshot: docs/experiments/drum-beams-20261003/loveholic-87.png. 음표와 줄기 연결을 확대 화면에서 확인.
+- 실제 iPad 검증·Sites 배포·HTML 재생 파일 생성 없음. 두 줄 보기의 비균등 확대는 이번 연결선 수정으로 해결했다고 주장하지 않음.
+- 최종 검증: 78개 테스트 파일·365개 테스트 통과, TypeScript noEmit 통과. Mac Safari 공통 조판 실제 출력 확인(실물 iPad/시뮬레이터 실행 없음).
+
+### 2026-10-03 두 줄 보기 비균등 확대 제거·기둥 비율
+- 공통 재생 화면이 rows에서도 native 재생 조판을 호출하도록 연결. SVG 배경 양축 배율을 동일하게 계산. PDF 경로는 유지.
+- 같은 박자 길이는 ribbon 자산 재사용, 혼합 박자는 같은 폭으로 재조판한 rows 자산을 metadata에 보관. 자산 해제·교체 시 row URL도 정리. 원본 미디어 변경 없음.
+- 기둥 두께 1.5→1 native SVG단위. OSMD 설정 단위는 SVG단위의 1/10이므로 0.1 사용. 캐시 v10-uniform-rows-stems.
+- Mac Safari 실제 공통 재생 화면에서 Loveholic123마디/Real Paradis110마디 전부 양축 배율비1, 각 줄4셀, 기둥 stroke-width1 확인. 87/72마디 이동 상태 유지. 스크린샷·측정: docs/experiments/uniform-rows-20261003/.
+- 최초 Safari 자산 읽기에서 I/O read 오류 발생, 재실행 후 두 곡 정상 표시 및 측정. 이를 물리 iPad 검증으로 보고하지 않음.
+- 전곡 밀집도 때문에 Real Paradis가 Loveholic보다 작은 음표로 표시되는 한계는 유지. 두 곡간 동일 음표 크기까지 해결했다고 주장하지 않음.
+- 집중 검사 후 전체78파일367테스트 통과. 실제 iPad/시뮬레이터 검증·Sites배포·HTML재생파일 저장 없음.
+- editor/player 양쪽 빌드 및 앱 경계 검사 통과. 번들 크기 경고는 기존대로 남음.
+
+### 2026-10-03 배율 혼동·두 줄 축소·홈 글자 보완
+- 사용자 Safari 캡처 후 실제 input값1.3(130%), range0.5~2 확인. 중앙50%로 오인할 수 있는 숫자 없는 UI를 수정: 실제 퍼센트 output 표시. QA에서50% 적용 시 stage1098/bar274.5=4. 저장 배율은 초기화하지 않음.
+- 홈 글꼴 관련 파일에 앞선 조판 수정 diff는 없었음. 기본15px가 작으므로 홈만18px, 카드제목20px로 명시하고 Safari computedStyle 확인.
+- v10이 두 줄에도 전곡 최대 시간밀도를 재사용해 Real Paradis 음표를 축소한 회귀. 두 줄 별도 간격 조판으로 변경: 머리·장식음 clearance 우선, 여유폭은 시간비례로 배분. 한 줄 규칙·인쇄 배치는 유지. 두 줄 진행선은 해당 beatXs를 사용.
+- Mac Safari viewport1132에서 Real Paradis 오선간격4.73→8.578px, 동일XY배율 유지.6마디 전후5~12마디 화면 검수. Loveholic50%는12마디 부근에서4마디 분량 화면 검수. 근거 docs/experiments/uniform-rows-20261003/*readable.png 및 loveholic-50.png.
+- 초기 회귀테스트2개 실패: 한 줄 경로에도 불필요하게 두 줄 metrics를 읽어 모의 tickcontext API와 충돌. 두 줄 조판에서만 metrics를 읽도록 수정. 기존 검사를 삭제하거나 완화하지 않음.
+- 실물iPad/시뮬레이터 실행, Sites배포, HTML재생파일 저장 없음. Safari 화면은현재1132CSSpx; 물리iPad측정이 아님.
+- 최종 회귀:78파일368테스트·TypeScript 통과. 양쪽 앱 빌드·경계 검사 통과(마지막 불필요한 metrics 읽기 제거 후 TypeScript와전체테스트 재확인).
+
+### 2026-10-03 슬라이더 중앙100%·눈금·흡착
+- 사용자 정정:50%란 슬라이더 중앙을 의미. 중앙100%에서4/4 네마디로 화면 기준 변경.50~200% 범위를 보존하며 중앙100%로 변환하는 공통 score-zoom 구현 추가.
+- 50/75/100/150/200%눈금, 실제값 output 및 aria-valuetext 제공. 포인터만3슬라이더단위 자석효과; 키보드 미세조정은 흡착안함.
+- Mac Safari 공통화면:position48→50흡착/output100%,stage1098/bar274.5=4. position54는해제,키보드51은유지. 캡처 docs/experiments/uniform-rows-20261003/zoom-centered.png. 실제iPad·배포·HTML저장 없음.
+- TypeScript 검사와 전체79파일370테스트 통과.
+
+## 2026-10-03 17:04 KST — Sites 버전15
+- 사용자 게시 요청에 따라 기존 공개 주소와 공개 범위를 유지하여 배포 성공. 배포 ID `appgdep_6ac0b7066a088191939562aab03b495c`, Sites 소스 커밋 `53e779f38c6b83686f461f8dd8fc31a5fb566385`.
+- 슬라이더 중앙100%·눈금·흡착, 한 줄 네 마디 기준, 두 줄 읽기 크기·기둥/연결선 보정, 홈 글자 크기와 Loveholic PDF 가사 위치 수정 포함.
+- Loveholic 및 바람과 언덕의 발라드 패키지 포함. 원본 public 패키지와 배포 사본 SHA256 일치 확인.
+- 전체79파일370테스트, 최신 build:apps 및 앱 경계 검사 통과. Sites 서버의 succeeded 응답으로 게시 확인; 배포 후 공개 브라우저 검수는 별도로 하지 않음.
+- 악보제작기은 로컬 전용 유지. 독립 HTML 재생 파일 생성·저장, 정본 저장소 커밋/버전 변경은 수행하지 않음.
+
+### 2026-10-03 곡 종료 후 재생 버튼으로 처음부터 다시 재생
+- 요구: 자연 종료 후 재생 버튼은 음원0초부터 시작. 중간 정지·마디 처음부터 재생 설정·구간 반복은 기존 정책 유지.
+- 공통 엔진에는 duration 도달 후0초 재시작이 이미 존재. 한 줄 정지 화면의 자동 scrollLeft 정렬 이벤트가 seek로 재해석되어 끝 위치를 악보 위치로 바꿀 수 있었음. 공통 scroll 처리에서 프레임이 기록한 위치와 같은 이벤트는 무시하고 실제 새 위치만 seek.
+- 회귀: 자연 종료→정지→재생을 restartMeasure 양쪽 설정에서 확인(음원 source offset0); 자동 스크롤은 seek하지 않고 사용자가 이동하면 seek하는 검사 추가.
+- 최초 집중 실행은 하위 guitar-practice의 동명 테스트까지 수집해 그 프로젝트 fixture 부재로 실패. 드럼 전용 test:drum으로 범위를 바로잡음. 드럼79파일373테스트 및 TypeScript 검사 통과. 이번 변경의 실제 브라우저 검증은 미수행.
+- Sites 재배포·독립 HTML 재생 파일 생성·저장·커밋 없음.
+
+### 2026-10-03 설정 연속 스크롤·메뉴 폭 축소
+- 공통 settingsPanel/selectPlaybackSettings와 CSS에서 모든 섹션을 표시하고 제목·배경색으로 구분. 버튼은 섹션 이동, 직접 스크롤은 현재 항목 강조. 개별 앱에 별도 설정 UI를 복제하지 않음.
+- 좌측 열을 내용 기준 너비로 변경하고 공통 버튼 좌우 padding12px 유지. Mac Safari에서 네 버튼 모두85.953px, 모든 섹션 표시 및 서로 다른 배경색 확인. 재생 버튼 이동 scrollTop394/섹션상단오차0.188px, 다시 위로 스크롤하면 화면 강조 확인. 캡처 docs/experiments/settings-scroll-20261003/settings.png.
+- 닫힌 모달에서 좌표가 없으므로 호출부에서 모달을 먼저 열고 위치를 계산. 초기 requestAnimationFrame 지연 구현은 단일 프레임 mock을 사용하는 기존 UI 검사6개와 충돌했으며 불필요한 지연을 제거하고 명시적 열기 순서로 수정. 최종 드럼79파일373테스트·TypeScript 통과.
+- 실물 iPad 검증·Sites 배포·HTML 재생 파일 생성·저장 없음.
+
+### 2026-10-03 화면 설정 선택 버튼
+- 공통 screenSettingsHTML에서 보기 방식/악보 형식을 같은 크기 버튼 두 행으로 표시. 기존 select/checkbox는 숨긴 상태 모델로 유지하고 공통 syncSettingsChoices가 기존 change 처리와 선택·비활성을 연결한다. 별도 형식 전환 로직을 복제하지 않음.
+- 음표 따라가기·전체화면 스위치와 한 줄 악보 크기, 제작실 검수 보기 유지. 캡션 오른쪽 배치, 좁은 화면은 하단 배치.
+- 초기 타입 검사에서 번역키 배열의 string 추론을 발견해 const tuple로 수정. 기존 dropdown/구분선 위치 검사는 변경된 버튼 구조와 실제 선택 전환 검사로 갱신.79파일373테스트·TypeScript·i18n 검사 통과.
+- Mac Safari 최초 로컬 연결 실패 뒤 같은 주소 재접속 성공. 네 버튼168.67~168.69×52 CSSpx, 한 줄 및 PDF 선택·강조와 PDF 시 음표 따라가기 비활성 확인. 화면 캡처 docs/experiments/settings-choices-20261003/settings.png. 실제 iPad 검사·Sites 배포·독립 HTML 저장 없음.
+
+### 2026-10-03 선택 버튼 호버 대비 수정
+- 공통 primary 버튼에 활성 호버 전용 배경/테두리 토큰 #315faf와 흰 글자를 지정. 일반 흰 버튼의 연한 호버 배경이 선택 버튼에 적용되던 대비 문제 수정.
+- CSS diff 검사 통과. Safari hover 도구는 성공 응답 후 :hover 상태가 유지되지 않아 실제 포인터 검증 근거로 삼지 않음. 로드된 동일 CSS 규칙을 임시 클래스에 적용해 좌측 선택 메뉴와 보기/형식 버튼의 진한 파랑·흰 글자 계산값 확인 후 임시 스타일 제거.
+- Sites 배포 및 HTML 재생 파일 생성 없음.
+
+### 2026-10-03 재생 화면 호버 전수 점검
+- 재생(#play), 메트로놈(label), 마커 슬롯, 도움말(ID), BPM의 개별 배경 선언이 공통 button:hover를 덮거나 같은 배경을 적용하던 원인 확인. 활성 반복 버튼도 선택 색 유지하며 더 진한 파랑으로 호버. 진행률·되감기 숫자 조절에도 표시 추가.
+- 공통 색 토큰: 일반 #edf3ff, 연한 파랑 표면 #dbe7ff, 선택 상태 #315faf/흰 글자. disabled 버튼은 공통 호버에서 제외.
+- Safari에 로드된 실제 호버 CSS를 같은 specificity의 임시 클래스로 적용해 현재 재생 화면 23개 버튼/조절부 모두 배경색 변화 확인. 초기 CSSOM 탐색이 빈 cssRules를 가진 style rule까지 재귀하여 규칙을 누락했으나 selectorText 우선 처리로 수정. 임시 스타일·클래스는 제거. 실제 포인터 지속 상태 검증과 구분한다. git diff --check 통과.
+- CSS만 변경하여 전체 기능 테스트 반복은 생략. Sites 배포·HTML 재생 파일 생성 없음.
+
+### 2026-10-03 마디·박자와 재생 조절 글자 확대
+- 공통 재생 CSS에서 마디 라벨·박자표·현재 박·진행선 위 표시를 가사 기본 크기와 같은15px로 통일(기존 마디11~12px). 박자표 small도 크기를 상속한다.
+- 현재 위치 버튼, 반복 조정 캡션·현재 마디 중심·앞뒤 프리셋·반복 상태를16px로 확대. 버튼 동작/악보 배율/가사 크기는 유지.
+- Mac Safari computedStyle에서 라벨15px=가사15px, 위치/반복16px 확인. 검사 대상 조절부 가로 잘림0, 문서 가로 overflow없음. 캡처 .tmp/readable-controls.png 확인(사용자가 연습 BPM 모달을 연 상태라 일부 화면은 가려짐). CSS diff 검사 통과. CSS만 변경하여 전체 테스트 반복 생략.
+- Sites 배포·HTML 재생 파일 생성·실물 iPad 검사 없음.
+
+### 2026-10-03 원 안 X 머리 비율 보정
+- 사용자 승인 외형: 원 안 X를 하이햇 X와 동일하게, 원 확대, 선1. 공통 circled-cross.ts가 native 렌더링 직전 circle-x chord member의 글리프를 VexFlow noteheadXBlack(v3e)로 지정하고 그 머리 경계 중심에 반지름 max(width,height)/2+2, 선1 원을 추가한다. XML 의미/악기 ID는 변경하지 않으며 circle-x 표시 규칙에 공통 적용한다.
+- SVG-SCORE-RULES.md 규칙 기록, score-render-cache 정책v12. 인쇄/한줄/두줄 공통 조판에서 적용. 원본 PDF·MusicXML 보존.
+- Safari MCP Transport closed로 로컬 ego-browser(TaskSpace5) 검증. Loveholic123마디 렌더 성공,87마디와 주변 원/X 시각 확인. 캡처 docs/experiments/circled-cross-20261003/loveholic.png. 실제 iPad 검증으로 간주하지 않음.
+- 80파일374테스트 통과. 새 테스트 mock 함수 인자 선언 누락을 타입 검사에서 수정 후 재검사. Sites 배포·독립 HTML 저장 없음.
+
+### 2026-10-03 크래시 오선 여백·하프오픈 위치
+- 확대된 circle-x 원 하단이 오선에 닿는 문제: 오선 위 머리에 한해 원 테두리 하단과 맨 위 오선 사이2 SVG단위 확보. 원/X 함께 이동. XML 음높이/악기 의미는 그대로 유지.
+- 33~35마디 ⊕(pictHalfOpen1) 배치가 개별 SVG 음표 그룹 안에서 stem path를 못 찾으면 머리 기준으로 내려가던 문제: VexFlow native getStemExtents().topY를 추가 기준으로 사용해 연결선 위로 배치.
+- 공통 규칙/캐시v13 갱신. ego-browser Loveholic 전123마디 조판 성공,33~35 및37마디 원/기호 위치 시각 확인. 근거 docs/experiments/circled-cross-20261003/loveholic-33-clearance.png. Safari 연결은 앞선 Transport closed 상태로 이번 검증은 Chromium이며 실물 iPad 검증 아님.
+- 80파일374테스트·TypeScript 통과. 원본 PDF·MusicXML 보존, Sites 배포·HTML 재생 파일 생성 없음.
+
+## 2026-10-03 Loveholic 재생 크레셴도 종료점/잘림 수정
+- 문제: 전체 SVG는 정상이나 재생 SVG의 36/62/79/95/119마디 crescendo가 최소 2 engraving units로 축소됨.
+- 확인: OSMD 종료 timestamp는 각 마디 시작(35/61/78/94/118), EndOffsetFraction은 1 whole note. 1마디=1시스템인 재생 조판의 마디 끝 좌표 처리와 충돌.
+- 해결: `installMeasureEndWedges`에서 명시적 마디 끝 offset만 네이티브 마지막 시간 엔트리로 일시 연결, 네이티브 wedge 길이/충돌 계산 사용, 원래 입력 객체 복원. 한 줄과 두 줄 공통 적용. 정본 XML, PDF, 인쇄 조판 보존.
+- 1차 수정 후 실제 화면에서 wedge 윗선 잘림을 발견. `.vf-measure` 밖에 있는 wedge 선의 실제 SVG bounds도 crop에 포함하여 해결. 캐시 v14 갱신.
+- 검증: `npm run test:drum` 81 files / 377 tests 통과, `npx tsc --noEmit` 통과. 종료점 내부/마디끝/예외복원 회귀 테스트 추가. 기존 Safari MCP Transport closed 때문에 이전에 승인된 ego-browser 대체 경로로 데스크톱 로컬 확인. 36·62 두 줄, 79 한 줄 실제 화면 확인 및 캡처. 실제 iPad 검증 아님.
+- HTML 재생 파일 생성/저장, Sites 배포, Git commit/push는 수행하지 않음. OSMD 2.1.x 내부 어댑터이므로 버전 업 시 종료점 계약 재검증 필요.
+
+## 2026-10-03 마디 선택·호버·마커 레이어
+- 공통 `playback-measure.ts`에 pointer-events:none 레이어 추가, `marker-ui.ts`에 초기/변경 마커 상태 클래스 연결, `playback-ui.css`에 선택/호버/마커 조합과 재생 상태 규칙 적용.
+- 로컬 ego-browser에서 Loveholic 36마디 마커/선택 주황색+파란 테두리, 35마디 실제 포인터 호버 파란색 확인. 35마디 클릭 후 선택 이동 및 36마디 마커 주황색 유지 확인. 레이어는 클릭을 가로채지 않음.
+- `npx tsc --noEmit` 통과, `npm run test:drum` 81 files / 377 tests 통과. HTML 재생 파일 저장 및 Sites 배포 없음. 실제 iPad 검증 없음.
+
+## 2026-10-03 한 줄 보기 좌표 표시 통일
+- 진행선 위 마디·카운트·박자를 하나의 파란 배경/흰 글자 박스로 변경. 카운트의 별도 배경 제거.
+- 한 줄 보기에서도 모든 마디 번호 뒤 박자를 표시하도록 공통 measure-signature 노출 규칙 사용. 두 줄 보기 유지.
+- 로컬 ego-browser 한 줄 실제 렌더링 및 computed style 확인: 박스 rgb(63,116,212), 세 항목 모두 흰 글자, 비선택 마디 박자 노출. CSS만 변경. HTML 저장/배포 없음.
+
+## 2026-10-03 바람과 언덕의 발라드 오픈 하이햇 복원
+- 원인: normalizeBundledDrumNotation에 P1-hh-open을 circle-x로 변환하는 기존 규칙이 남아 있었음. 크래시 circle-x 외형 확대가 해당 글리프에도 적용되어 차이가 더 커짐.
+- 사용자 승인대로 작은 빈 머리 normal filled=no로 복원. 저장자료 정규화 및 공통 렌더링 복사본에 적용하며 원본 보관 파일은 보존. 크래시 및 half-open 유지, 캐시 v15 갱신.
+- 검증: 전체 81 files/378 tests 통과 후 렌더 복사본 회귀 테스트 추가·집중 8 tests 통과, tsc 통과. ego-browser 실제 로컬 화면에서 31~36마디 작은 빈 머리 복원 확인. GUI는 기존 Safari 연결 장애에 따른 ego 대체 경로. 실제 iPad 검증 및 Sites 배포/HTML 저장 없음.
+
+## 2026-10-03 공통 악보 범례 복구·두 곡 전곡 정리
+- 범위: 확정 범례 재적용, 잘못된 악기 분류 이관, 킥 성부 분리, 한 줄/두 줄/인쇄 공통 호출, 패키지 갱신. 성공 조건: 타격 시점/음가/가사/방향지시 보존, XSD 통과, 기존 기능 테스트, 실제 화면 확인.
+- `src/drum-legend.ts`가 이름 기반 공통 표기 및 혼합 킥 성부 분리를 담당. renderer와 browser-score가 공통 정상화 결과 사용. 곡별 오픈하이햇 빈 원 복원 및 circle-x 전체 확대 후처리 제거. 미등록 악기는 원형 유지.
+- Loveholic 제작기가 Y 기호를 Open Hi-Hat로 오분류한 데이터 89개를 사용자가 확인한 Crash로 이관. PDF SHA256으로 한정한 입력 이관 모듈이며 곡별 표시 예외 아님. 제작기와 이전 빈 원 검증 규칙도 수정.
+- Loveholic 킥 380개, 바람과 언덕 킥 354개 모두 아래 기둥. 두 곡 나머지 악기 위 기둥 확인. Loveholic 타격성부의 기존 화음에서 킥만 독립 성부로 이동하며 발음 시점/음가 보존. 이미 분리된 성부는 유지.
+- 두 public/scores 패키지의 canonicalXML과 파생 SVG를 갱신. 이전 패키지 `docs/experiments/common-legend-20261003/original/` 보존. score/source, audio/source, PDF alternates/source 바이트 동일 확인. PDF 원본 배치 유지.
+- 검증: 변경 전 두 곡 전곡 타격 이벤트/음가/가사/방향지시 동등 및 정규화 멱등성 테스트 통과. 최종 전체 81 files/379 tests, tsc 통과. 두 canonicalXML MusicXML4.0 XSD 통과. 저장 패키지 SHA/원본 보존 결과 verification.json.
+- GUI: 기존 Safari transport 장애 대체 경로인 ego-browser에서 Loveholic 33~40 크래시/킥 분리/half-open/crescendo 및 바람과 언덕 29~36 open hi-hat/킥 화면 확인. 실제 iPad 검증 아님.
+- 한계: 알려지지 않은 악기는 이름/모양에서 추측하지 않고 보존. 추가 범례 중 이번 두 곡에 없는 악기의 실제 곡 검수는 수행하지 않음. 연속되지 않은 킥은 새 성부에서 개별 꼬리로 표기하며 음가는 원래대로 유지. 원본 PDF는 사용자 원본이므로 표준 범례로 다시 그리지 않음.
+- HTML 재생 파일 생성/저장, Sites 배포, commit/push 없음.
+
+## 2026-10-03 사용자 범위 정정: 성부 구성 보존
+- 공통화는 범례 표기에 한정. 자동 킥 성부 분리 및 기둥 변경 코드를 제거하고, 두 패키지를 보존된 분리 전 원본에서 표기만 다시 정규화했다. 분리됐던 중간 패키지도 split-voice-superseded/에 보존.
+- 원본 대비 전곡 note/chord/voice/stem/beam/rest/duration 및 backup/forward 구조 동일 확인. 두 canonicalXML XSD 통과, XML/PDF/음원 원본 바이트 보존. voice-preservation.json 기록.
+- 전체 81 files/379 tests 및 tsc 통과. Loveholic 33~40 실제 로컬 화면에서 원래 혼합 성부 유지와 표준 크래시 표시 확인. 캐시 v17 갱신. HTML 저장 및 Sites 배포 없음.
+
+## 2026-10-03 23:43 KST Sites v16 배포
+- 사용자 배포 지시로 dist/player만 빌드·배포. i18n/tsc/production build 통과. 최신 공통 범례+원래 성부 보존 패키지 2곡 포함. 별도 HTML 재생 파일 저장 및 editor 공개 제외.
+- Sites source commit 60c70f6a88a7272478f2323492a63d47765ec5b3, 저장 version16, deployment appgdep_6ac11470fe2881919ca6ae09218468d3 succeeded. URL https://drum-practice-studio.dgkma.chatgpt.site . 기존 public audience 유지.
+- 원본 저장소 commit/push는 별도 수행하지 않음. Sites 전용 체크아웃 소스 커밋/push는 배포 절차에서 수행. 배포 성공은 Sites native 상태로 확인; 공개 URL 브라우저 QA 추가 수행 없음.
+
+## 2026-10-03 도움말에 공통 범례 전체 수록
+- 요청: 확정된 악보 공통 범례를 도움말에 모두 수록.
+- 공통 도움말 상단에 접이식 범례를 추가했다. 확정 매핑 문서의 27개 항목과 위치·모양·주법 의미를 대조했다. 오픈 하이햇/열기/닫기/반열림, 크래시/차이나, 킥 위치와 곡별 성부 보존을 구분했다.
+- 구현: src/help-legend.ts, src/help.ts, src/help.css, src/locales/ko.json. UX 지침에 유지보수 기준 기록.
+- 검증: test:drum 81파일 380테스트 통과, TypeScript 및 i18n 검사 통과. 로컬 브라우저 도움말 열기·범례 펼치기 성공, 27항목과 가로 넘침 없음(DOM 실측 308px) 확인. 최초 화면 캡처는 CDP Page.captureScreenshot 시간 초과; 기능 확인과 시각 캡처 상태를 구분한다.
+- 배포·커밋·앱 버전 상승 및 HTML 재생 파일 생성/저장은 수행하지 않았다.
+
+## 2026-10-03 범례를 별도 모달로 분리
+- 사용자 화면 피드백 반영: 도움말 본문의 접이식 범례를 제거하고 닫기 버튼 왼쪽에 [범례] 버튼을 배치했다.
+- 공통 dialog 구현을 사용하여 화면 너비·높이 약 90%의 반투명 모달을 열며 27개 항목은 그대로 유지한다. 3/2/1열 반응형 배치와 내부 스크롤, 닫기 후 도움말 유지·초점 복귀, 도움말 종료 시 범례 정리를 적용했다.
+- 검증: 81파일 381테스트, TypeScript, i18n 통과. 로컬 ego 브라우저 실제 클릭으로 열기·닫기와 초점 복귀 확인. DOM 실측 너비비 0.899997, 높이비 0.9, 27항목, 가로 넘침 없음, 배경 alpha 0.94, 3열 확인. 화면 캡처를 통한 시각 검수는 이번 수정에서 수행하지 않았다.
+- Sites 배포, Git 커밋, HTML 재생 파일 생성·저장은 수행하지 않았다.
+
+## 2026-10-04 범례 전체 화면·오선 그림·스크롤 제거
+- 사용자 피드백에 따라 모달을 100vw×100dvh로 확대하고 배경 불투명도를 94%에서 72%로 낮췄다. 뒤의 도움말 패널은 범례가 열린 동안 숨겨 겹침을 없앴다.
+- 중복 제목과 상단 설명 두 줄, 하단 일반 리듬 설명을 제거했다. 접근성 이름은 dialog에 유지한다. 확정 범례 27개는 유지한다.
+- 드럼·킥 9항목에 오선과 음표머리 위치를 보여 주는 코드 기반 SVG 도해를 추가했다. 이는 도움말 위치 도해이며 실제 곡의 성부·조판을 바꾸지 않는다.
+- 가로 3열 / 세로 2열+하단 주법 배치로 내부 스크롤을 제거했다. 로컬 Chromium viewport 1133×744에서 마지막 항목 bottom 642.875px, 744×1133에서 931.914px, 27항목 및 가로 넘침 없음 확인. 실제 iPad 검증이 아닌 데스크톱 viewport 계측이다. 스크린샷 시각 확인은 미실시.
+- 81파일 381테스트, TypeScript, i18n 검사 통과. Sites 배포 및 HTML 재생 파일 생성·저장 없음.
+
+## 2026-10-04 공통 범례 전체 오선 도해 시안
+- 모든 범례를 오선+연결선+명칭·설명으로 보여달라는 요청에 따라 27개 SVG/PNG 시안 제작.
+- docs/design/legend-diagram/common-legend.svg 및 common-legend.png, 생성 스크립트·표기 근거·OFL 보관.
+- Bravura 전용 글리프 사용, 전체 PNG 시각 검수. Quick Look 잘림은 resvg로 해결. 앱 반영·배포·HTML 재생 파일 생성 없음.
+
+## 2026-10-04 범례 모달 Liquid Glass 스타일
+- Apple Materials/Adopting Liquid Glass 지침을 참고한 웹 CSS 표현으로 변경. 네이티브 macOS 재질 API의 완전한 재현을 의미하지 않는다.
+- 배경 blur 28px·saturate 145%, 반투명 다층 그라디언트, 가장자리 하이라이트 적용. Safari용 -webkit-backdrop-filter 포함. 필터 미지원, 투명도 줄이기, 대비 증가에서는 불투명 배경으로 전환.
+- 전체 화면 크기·범례 내용·레이아웃은 유지. 도움말 테스트 5개 통과. 실제 iPad 검증·배포·HTML 재생 파일 생성 없음.
+- 참고: https://developer.apple.com/design/human-interface-guidelines/materials
+
+## 2026-10-04 공통 범례 4줄 시안
+- 요청에 따라 긴 오선 4줄(하이햇·심벌 / 드럼·킥 / 하이햇 주법 / 기타 주법)에 27개 범례를 배치하고 각 음표 아래 명칭·설명을 정렬했다.
+- docs/design/legend-diagram/common-legend-four-staves.svg 및 PNG 생성. 공통 오선 간격·음표 크기 유지, 27개 고유 항목 검사와 PNG 시각 검수 완료.
+- 앱·Sites 변경 없음. HTML 재생 파일 생성·저장 없음.
+
+## 2026-10-04 범례 SVG 자체 유리 효과
+- 4줄 SVG 시안에 사용자 제공 굴절 필터 체인과 반투명 배경·가장자리 반사 추가. 배경만 굴절하고 27개 범례 음표·글자는 선명하게 보존했다.
+- SVG 구문·27개 항목·필터 범위 검사 및 PNG 시각 확인. standalone SVG의 외부 화면 굴절 한계를 README에 명시.
+- 앱 적용·배포·HTML 재생 파일 생성 없음.
+
+## 2026-10-04 도움말 유리 효과·하단 조작부
+- 요청한 도움말 본문과 [도움말 범례 닫기] 박스에 공통 유리 재질을 적용하고 조작부를 우측 하단으로 이동했다. 본문은 위쪽으로 배치, 모바일 하단 여백도 함께 조정했다.
+- 도움말 테스트 5개 통과. 로컬 브라우저 viewport에서 위치·필터 및 범례 왕복 동작 확인. 실제 iPad 검증, Sites 배포, HTML 재생 파일 생성 없음.
+- 실행 검증 중 공통 dialoghead의 top:0과 margin-bottom:12px가 남아 하단 헤더를 전체 높이로 늘리고 클릭을 막는 문제를 발견했다. 도움말 헤더에 top:auto·height:auto·margin:0을 명시하여 해결했다. 위치 변경 시 반대편 inset과 공통 margin도 함께 초기화해야 한다.
+- 최종 재확인: 브라우저가 수정 전 CSS를 캐시하여 첫 재검증에는 수정이 반영되지 않았다. 해당 페이지의 네트워크 캐시를 일시 비활성화해 재로드 후 원래대로 복구했다. 1133×744와 390×844 모두 하단 여백16px·본문/조작부 간격8px, 범례 열기/닫기 클릭 통과.
+
+## 2026-10-04 유리 효과 4줄 SVG 범례 앱 적용
+- 승인된 SVG를 공통 도움말 범례 모달에 인라인으로 연결했다. SVG 자산은 TS 문자열로 번들에 포함하여 외부 파일 경로 의존성을 없앴고 제작앱/재생앱이 같은 구현을 호출한다.
+- 이전 개별 오선·텍스트 레이아웃 CSS 제거, SVG 전체 비율 유지. 생성기와 앱 자산 동기화 경로 추가, SVG 내부 CSS는 해당 SVG 클래스에 한정. 27개 접근성 설명 보존.
+- 81파일 381테스트, TypeScript, i18n, player 빌드 통과. 로컬 브라우저에서 27개 SVG 명칭·굴절필터 1개·모달 내부 넘침 없음·열기/닫기 확인. 시각 캡처 및 실제 iPad 검증은 하지 않음.
+- Sites 배포·커밋·HTML 재생 파일 생성/저장 없음.
+
+## 2026-10-04 View Transitions 모달 열기·닫기
+- 도움말 ? 및 범례 버튼에서 모달로 확대, 닫기/Esc에서 원래 버튼으로 축소하도록 공통 shared-element 전환 구현. 두 모달이 같은 헬퍼 사용.
+- 미지원/모션 감소 즉시 전환, 중복 실행 방지, 임시 스타일 정리 및 초점 복원 포함.
+- 82파일 383테스트 및 TypeScript 통과. 로컬 Chromium에서 도움말 열기→범례 열기→범례 닫기→도움말 닫기 4회 ready 성공·스냅샷 오류 없음·실제 pseudo-element 애니메이션 생성 확인. 최종 열린 dialog 없음, 초점 app-help-button 복귀.
+- 전환 직후 다음 버튼 자동 클릭은 한 차례 overlay 입력 가로채기로 시간 초과했으며, 전환 종료 후 재시도 통과. 실제 iPad/Safari 시각 및 프레임 성능 검증은 미실시.
+- Sites 배포·HTML 재생 파일 생성 없음.
+
+## 2026-10-04 범례 닫기 단순화
+- 범례 모달 헤더를 제거하고 상단 54px 여백을 하단과 동일한 12px로 변경했다. SVG 기본 xMidYMid 비율 유지로 중앙 배치.
+- 공통 전환 헬퍼가 반환하는 닫기 동작을 전체 모달 클릭과 Enter/Space에 연결. Esc와 버튼으로 돌아가는 View Transition 유지.
+- 집중 테스트 8개 및 TypeScript 통과. SVG 자식/빈 공간 클릭 후 도움말 유지·초점 복귀 테스트 포함. Sites 배포 없음.
+
+## 2026-10-04 모달 전용 View Transition 수정
+- 사용자 피드백: 버튼까지 확대/축소되고 범례 확대가 보이지 않음. 버튼↔모달 shared-name 교환을 제거하고 모달만 캡처 대상으로 변경했다.
+- 버튼은 위치·크기 계산에만 사용. 모달 전용 ::view-transition-new/old에 expand(320ms)/collapse(260ms)와 명시적인 translate+균등scale을 적용했다. 배경/root와 버튼은 움직이지 않는다.
+- 집중 테스트 8개와 TypeScript 통과. 브라우저 ready 시 도움말 및 범례 두 열기 모두 help-modal-expand의 실제 transform 키프레임 생성, 전환 이름이 붙은 버튼 0개 확인. 범례 전체 클릭 닫기도 확인. 실제 iPad 및 프레임 시각 검증은 미실시.
+- Sites 배포 없음.
+
+## 2026-10-04 도움말 첫 표시 유리 배경 갱신
+- 사용자 캡처: 첫 열기에 뒤 글씨가 비치고 추가 클릭 후에야 blur가 보임. view-transition-name이 만드는 backdrop root와 종료 후 합성 갱신 경로를 보완했다.
+- 스냅샷 구간에는 읽기 쉬운 높은 불투명도의 유리색 배경을 사용해 선명한 뒤 글씨 노출을 막는다. 종료 시 전환 이름 제거 후 backdrop-filter를 동기적으로 재평가하여 사용자 클릭에 의존하지 않게 했다.
+- 도움말/전환 테스트 8개와 TypeScript 통과. 로컬 브라우저에서 최초 ? 클릭 후 추가 클릭 없이 전환/갱신 클래스 제거 및 blur 복귀를 점검했다. 사용자 환경의 픽셀 수준 Safari 재현 검증은 미완료이므로 완전 해결 확인과 구분한다. 배포 없음.
+
+## 2026-10-04 범례 확대 전환 시작 시점 보완
+- 사용자: 범례 축소는 되지만 확대가 보이지 않음. 이전 CSS 애니메이션 생성 확인은 사용자 Safari에서 확대가 보이는 증거가 아니었음.
+- 확대는 ViewTransition.ready 이후 새 모달 스냅샷에 Web Animations API로 320ms 전환을 명시적으로 시작하도록 변경. View Transitions API는 유지. 축소 CSS는 유지.
+- 도움말/전환 테스트 8개·TypeScript 통과. ready 이후 animate 호출 회귀 검사 추가. 사용자 Safari에서의 시각적 해결 여부는 아직 미확인. Sites 배포 없음.
+
+## 2026-10-04 Safari MCP 범례 확대 실측 및 수정
+- Safari MCP로 로컬 player(127.0.0.1:5174), 1024×664 화면에서 재현. 수정 전 320ms 확대의 rAF Animation.currentTime 표본은 [0,297,307,320]ms로, 중간 프레임이 거의 표시되지 않았다. 애니메이션 생성 여부만 확인한 이전 검증으로는 부족했다.
+- 전환 중에만 범례 SVG glass-colour의 turbulence/refraction 필터를 해제했다. 정적 유리 그라디언트·가장자리 반사·음표는 유지하고 종료 후 필터를 복원한다.
+- 수정 후 자연 재생 표본: [0,25,28,42,55,69,83,97,111,125,139,153,167,180,194,208,222,236,250,264,278,292,306,320]ms. 이번 표본의 최대 간격은 297→25ms. SVG 필터 비용이 전환 지연에 기여함을 비교 확인했다.
+- 별도 재열기에서 60ms에 일시 정지해 실제 확대 중간 화면을 캡처했다: docs/experiments/legend-safari-transition-20261004/expansion-60ms.png. 이후 재개하여 dialog open=true, 전환 클래스 제거, filter=url(#legend-liquid-refraction) 복원 확인.
+- 실제 iPad 검증 및 Sites 배포는 하지 않았다. 프레임 간격은 이번 데스크톱 Safari 관측값이며 다른 기기 성능 보장은 아니다.
+- 도움말·모달 전환 집중 테스트 8개 통과. Safari 페이지 재로드로 계측용 임시 JavaScript를 제거했다.
+
+## 2026-10-04 버즈 롤 범례 설명 수정
+- 사용자 지정 문구 “스틱을 튀겨 만든 지속음”을 내부 매핑 문서, 범례 SVG·생성기·앱 자산 및 접근성 설명에 반영했다. 기존 기호와 매핑은 유지.
+- 소스와 SVG의 문구 일치 및 이전 설명 제거를 확인했다. 배포 없음.
+
+## 2026-10-04 범례 유리 블록 두께
+- 네 블록 하단에 4px 유리 단면과 7px 위치의 옅은 그림자, 안쪽 반사선과 상하 가장자리 반사를 추가했다. 추가 필터 없이 정적 벡터로 구현. 생성기·SVG·앱 자산 동기화, 27개 범례 유지 확인.
+- 기본 Python에 fontTools가 없어 기존 glyph-venv로 생성했다. 흰색 인쇄 PDF와 기존 전달 파일은 유지. 배포 없음.
+- Safari MCP에서 실제 범례 화면을 캡처하여 네 블록의 단면·반사 및 글자 잘림 없음 확인(tmp/legend-thick-glass.png).
+
+## 2026-10-04 볼륨을 설정 왼쪽으로 통합
+- 공통 설정 프레임에 음악·메트로놈 세로 믹서를 추가하고 현재 퍼센트를 표시했다. 기존 재생바 소리 버튼·별도 볼륨 대화상자 및 클릭/아이콘 초기화 연결을 제거했다. 좁은 화면은 가로 슬라이더 배치.
+- 최초 테스트에서 제거된 버튼의 아이콘 초기화가 null 오류를 일으켜 해당 등록도 제거했다. 광범위 파일명 필터가 기타 프로젝트 테스트까지 포함한 실행은 중단 결과와 구분하고 정식 test:drum으로 재검증했다.
+- TypeScript 및 드럼 전체 82파일 384테스트 통과. 두 볼륨 값과 퍼센트 갱신 회귀 검사 포함.
+- Safari MCP 로컬 player에서 설정 배치 캡처(tmp/volume-settings.png), 세로 방향 및 이전 sound-dialog 없음 확인. input 이벤트로 음악35%·메트로놈60% 표시 확인 후 기존80%·30% 복원. 실제 음향 청취와 실제 iPad 검증은 미실시.
+- Sites 배포·HTML 재생 파일 생성·커밋 없음.
+
+## 2026-10-04 마커 버튼·슬롯 정리
+- 재생바 마커는 접근성 이름을 유지한 아이콘 전용 버튼으로 바꾸고 진행률 앞에 배치했다. 저장 마커 슬롯은 악보 마킹과 같은 주황 배경 토큰을 사용하며, 숫자는 진한 주황색으로 대비를 확보했다. 빈 슬롯은 기존 구분 유지.
+- TypeScript·관련 테스트34개 통과. Safari MCP에서 아이콘만 표시, 마커→진행률 순서, 슬롯의 공통 주황 배경 실제 계산값 및 화면 확인(tmp/marker-controls.png). 배포 없음.
+
+## 2026-10-04 진행률 포커스 표시 수정
+- 숫자 입력에만 생기는 굵은 포커스 링 제거. 포인터 입력은 링을 숨기고 키보드 focus-visible은 %를 포함한 외곽에 2px로 표시한다. Safari readonly 입력의 포인터 포커스도 명시적으로 구분한다.
+- TypeScript·집중 테스트10개 통과. Safari MCP 포인터 이벤트/포커스로 내부 outline-style:none 확인. 배포 없음.
+
+## 2026-10-04 진행률 포커스 공통 스타일로 정정
+- 사용자 결정에 따라 포인터 포커스 숨김·얇은 테두리를 철회했다. 내부 입력의 링만 제거하고 숫자와 % 전체 컨트롤에 공통 3px 파란 테두리·3px 간격을 적용한다. 클릭/탭과 키보드 모두 focus-within으로 표시한다.
+
+## 2026-10-04 설정 슬라이더 호버
+- 음악·메트로놈·악보 크기 range에 공통 hover/active 색상 및 은은한 그림자 효과를 추가했다. native 세로/가로 슬라이더 크기와 조작은 유지. 모션 감소 시 전환 제거. 배포 없음.
+- Safari MCP 실제 hover로 음악·악보 크기의 색상/필터 변화 확인. 마우스가 떠나면 음악 슬라이더 filter:none 복귀 확인.
+
+## 2026-10-04 재생기 위치 복사 버튼 제거
+- 재생기 재생바에서 현재 마디·박 위치 복사 버튼을 제거했다. 제작실은 유지하며 악보의 진행 위치 표시도 유지한다. 버튼 없는 구성에서 갱신·이벤트 바인딩을 안전하게 처리했다.
+- TypeScript 및 관련42테스트 통과. Safari 로컬 재생기에서 버튼 제거·재생바·악보 위치 표시 존재 확인. 배포 없음.
+
+## 2026-10-04 악보제작기 목록 중심 시작 화면
+- 승인 방향: 큰 소개 카드 대신 제작 중인 악보 목록·새 악보 만들기. 상단 악보제작기 명칭과 드럼연습실 이동 링크, 곡명/아티스트/편집 열기. 빈 목록에만 시작 안내.
+- 기존 보관함 데이터에서 목록을 읽고 편집 열기를 activate→openEditor에 연결했다. 기존 보관함 관리/추가 기능은 유지. 초기 화면의 재생 관련 상단 버튼은 숨겼다.
+- 아이콘 초기화가 새 악보 만들기 문구를 악보 추가로 덮어쓰는 것을 발견하여 해당 라벨도 정정. 이전 소개 화면을 기대하던 테스트를 새 시작 화면 기준으로 변경했다.
+- TypeScript 및 전체82파일384테스트 통과. Safari MCP에서 빈 목록 실제 화면(tmp/editor-home.png), 새 악보 만들기 클릭→새 곡 준비 창 표시 확인. 해당 Safari 제작실 저장소는 비어 있어 저장된 카드의 편집 열기는 실브라우저 미검증.
+- 제작실은 로컬 전용 유지. 배포·HTML 재생 파일 생성 없음.
+
+## 2026-10-04 제작실·연습실 공통 악보 저장소
+- 사용자 요청으로 두 앱의 악보를 동일 origin의 drum-practice v2 / songs에 통합했다. 연결·스키마·이관 정본은 src/score-database.ts. 기존 제작실 저장소 유지, 플레이어 전용 DB의 악보와 복원 기록을 원자적으로 이관한다.
+- 같은 ID는 제작실 레코드 우선, 플레이어 레코드는 archives에 보존. 원래 플레이어 DB는 삭제하지 않는다. migrations 표식을 트랜잭션 안에서 재확인해 동시 실행·재이관을 방지한다. 패키지 업데이트는 구조가 같아도 이전 제작 이력을 복원 기록으로 보존한다.
+- 두 앱 목록은 창 활성화 시 다시 읽는다. 열린 편집/재생 세션을 강제 갱신하지 않는다. 동일 곡 동시 편집의 자동 병합은 미지원. origin이 다른 로컬/배포 서버·기기 사이 동기화는 범위 밖.
+- 초기 전체검사에서 한국어 오류 문구 미등록과 과거 archive 개수 기대값 실패. 메시지 카탈로그 등록 및 동일 구조 업데이트도 보존하는 변경 기준에 맞춰 기대값 수정했다.
+- 검증: 교차 읽기/쓰기·연습 저장 시 정본/미디어 보존·기존DB 충돌·동시/반복이관 집중검사 포함 전체83파일386테스트 통과. TypeScript 및 build:apps/앱 경계검사 통과(기존 큰 번들 경고 남음).
+- Safari MCP 실제 같은 origin에서 기존 플레이어 Loveholic이 제작실 목록에 나타남 확인, 편집 열기로 곡 정보·MusicXML/PDF/가사/음원 접근 확인. 다시 player 목록에서도 Loveholic 유지 확인. 제작 내용 변경 없이 확인했다.
+- 설계 변경: docs/plans/EDITOR-PLAYER-SEPARATION.md. Sites 배포·원격 push·커밋 및 독립 HTML 재생 파일 저장 없음(빌드 템플릿 생성은 기존 빌드 과정).
+
+## 2026-10-04 연습실 가져오기 버튼 문구
+- 초기 화면 separation.add를 “악보 가져오기”로 변경했다. 제작실 가져오기 문구와 파일 처리 기능은 유지.
+
+## 2026-10-04 — 현재 마디로 반복 중심 이동 제거
+- 사용자 결정에 따라 공통 재생 UI의 `현재 마디로` 버튼, 클릭 처리, quickRepeat의 전용 recenter 분기, 표시 갱신, 아이콘과 카탈로그·번역 항목을 제거했다. 기존 반복 구간 설정과 중심 유지 동작은 유지한다.
+- UI 구성 문서 재생성 및 iPad UX 제안의 해당 설명을 갱신했다.
+- 검증: 드럼 전체 83개 파일 386개 테스트 통과 (`tmp/remove-recenter-tests.log`), TypeScript 및 i18n 검사 통과. src 내 전용 식별자 잔존 없음. 배포·커밋은 하지 않았다.
+
+## 2026-10-04 — 재생바 한 줄 및 공통 컨트롤 서랍
+- 승인 계획 `docs/plans/PLAYBACK-DRAWER.md` 구현. 가로 한 줄/세로 두 줄, 초기 반복 서랍, 동일 트리거 닫기 및 다른 내용 전환. 마커·진행률·되감기·반복 폼을 기존 상태와 연결하고 제작실 위치 복사는 유지했다.
+- 반복 프리셋 활성 구간 표기/재클릭 해제 및 원래 표기 복구. 별도 해제·반복 요약 제거. 공통 도움말 유리 CSS/창 전환 로직을 공유하며 내용 페이드도 공통 CSS 사용.
+- iPad QA에서 발견한 가로 두 줄 악보 잘림은 stage 높이에 맞춘 동일 비율 축소로 수정했다.
+- Safari MCP 개발 확인 후 실제 iPad mini A17 Pro iOS27 Safari에서 가로/세로, 반복 토글, 서랍 전환/닫기/열기, 재생·정지, 진행률 45→64% 이동 확인. 증거 `docs/experiments/playback-drawer-20261004/`. 소리 품질·애니메이션 프레임 성능은 미계측.
+- 드럼 전체83파일387테스트 통과(`tmp/drawer-tests-final-drum.log`), build:apps 및 앱경계 통과(`tmp/drawer-build-final.log`). 기본 npm test는 기타 하위 프로젝트까지 수집하여 실패하므로 별도 기록. 큰 번들 경고 유지.
+- 기존 다른 작업의 score-rest-correction.ts EOF 공백은 보존. 버전/커밋/배포/원격 push 없음.
+
+## 2026-10-04 — Safari 재생바 전체 버튼 반복 QA
+- 사용자 요청으로 Safari MCP에서 재생바 버튼을 하나씩 클릭하고 매 상태 PNG를 저장했다. 1차17상태, 수정 후 가로23상태 및 세로23상태를 재검수했다.
+- 발견/수정: 서랍 닫힘 상태에서 우측 도움말 버튼이 앞뒤4를 가렸다. 공통 playback-ui.css에서 닫힌 재생바 위로 도움말 위치를 옮기며 가로/세로 높이를 구분했다.
+- 최종 가로/세로에서 마커관리, 3개 마커슬롯, 진행률, 처음으로, 재생/정지, 되감기, 되감을 마디수, 반복조정, 앞뒤1~4 선택/해제를 전부 클릭했다. 캡처상 버튼 겹침·글자 소실·서랍 배치 이상을 추가 발견하지 않았다. Safari 콘솔 error는 빈 목록, 최종 도움말/재생바 겹침 검사도 0개.
+- 증거: docs/experiments/playback-button-qa-20261004/ (r1/r2/r3 원본 PNG, contact JPG, interactions.json, final-closed.png). 이번 세로 검수는 데스크톱 Safari 창 크기 변경이며 iPad 실기 검증으로 부르지 않는다.
+- 테스트 범위는 재생바 13버튼 및 진행률 컨트롤이다. 서랍 내부 저장/삭제 버튼과 상단 도구는 이번 전수 클릭 범위가 아니다. 실제 사용자 마커/저장구간은 추가·삭제하지 않았다. 커밋/배포 없음.
+- 집중 회귀: 기타 하위 프로젝트를 제외한 playback-screen/ui 경로 검사 3파일50테스트 통과 (`tmp/playback-button-qa-tests.log`).
+
+## 2026-10-04 — 재생바와 서랍 시각적 분리
+- 사용자 요청으로 공통 재생바를 불투명한 블루그레이 컨트롤 패널, 하단 서랍을 청록색 유리 패널로 분리했다. 외곽 통합 상자는 제거하고 12px 간격·독립 모서리·서랍 상단 경계를 적용했다.
+- 공통 CSS 색상 변수 사용. Safari MCP 가로/세로 캡처에서 두 영역 분리와 버튼 배치 확인. 증거: docs/experiments/playback-button-qa-20261004/separated-surfaces*.png. 동작 코드는 변경하지 않았다. 배포/커밋 없음.
+
+## 2026-10-04 — 세 자리 마커 번호 중앙 정렬
+- 44px 슬롯의 좌우10px 패딩 때문에 112가 내용 폭을 넘겨 오른쪽으로 치우쳤다. 공통 슬롯 CSS의 좌우 패딩을2px로 줄이고 flex 중앙정렬·등폭 숫자를 적용했다.
+- Safari에서 80/96/112의 텍스트 중심과 버튼 중심, 가로 넘침을 실측하고 캡처 확인. 증거: docs/experiments/playback-button-qa-20261004/marker-centered.png.
+
+## 2026-10-04 — 닫힌 서랍 공간과 정지 두 줄 유지
+- 공통 CSS에서 숨긴 서랍의 레이아웃 높이를 유지하도록 변경했다. 전역 hidden의 display:none!important를 해당 서랍에 한해 덮어쓰며 내용과 포인터 입력은 숨긴다. 이전 도움말 위치 보정은 더 이상 필요하지 않아 제거했다.
+- 정지 두 줄 행 높이를 사용 가능한 악보 높이에 맞추고 행 경계 스크롤 스냅을 적용했다. 화면 폭 변경 시 현재 마디 행으로 재정렬한다. 세로 탐색과 SVG 종횡비는 유지한다.
+- Safari MCP 로컬5174에서 가로1188×796 및 세로744×1029 확인. 열림/닫힘 모두 가로 stage439px·재생바y514px·서랍176px, 세로 stage496px·재생바y639px·서랍220px로 동일했다. 두 화면 모두 정지 시 두 행 표시를 캡처 확인했다.
+- 증거: docs/experiments/playback-button-qa-20261004/reserved-closed.png, reserved-landscape.png. 이번 검증은 데스크톱 Safari이며 iPad 시뮬레이터 재검증은 하지 않았다.
+- 관련3파일50테스트 통과(tmp/reserved-drawer-tests.log), TypeScript 검사 통과. 배포·커밋 없음.
+
+## 2026-10-04 — 서랍 전용 펼침·접힘 전환
+- 사용자 정정에 따라 재생 서랍을 버튼 중심 확대/축소에서 상단 경계 기준 세로 펼침/접힘으로 변경했다. 공통 transitionSurface의 drawer 모션과 공통 CSS 키프레임을 사용한다. 도움말/범례 모달 모션은 유지한다.
+- 처음 표시와 재열기 모두 적용. 닫힌 공간 확보와 열린 상태의 내용 페이드 유지. Safari MCP에서 열기/닫기 View Transition 키프레임 및 재생바 고정 위치 확인.
+- 집중2파일16테스트 및 TypeScript 통과. 배포·커밋 없음.
+
+## 2026-10-04 — 재생바와 서랍 접합
+- 사용자 요청으로 서랍 상단 margin12px와 부모 flex gap6px를 모두 제거했다. 재생바 아래 모서리와 서랍 위 모서리를 직각으로 연결했다. 기존 색상 구분·유리 효과·펼침 동작·닫힌 자리 확보 유지.
+- Safari MCP에서 열린 서랍 상단과 재생바 하단 사이 0px 확인. 공통 CSS 변경이며 배포·커밋 없음.
+
+## 2026-10-04 — 재생바 기본 표면 복원
+- 사용자 요청으로 재생바의 블루그레이 색상과 추가 그림자를 제거하고 기존 panel/border 공통 토큰으로 복원했다. 리퀴드 글래스는 하단 서랍에만 적용한다. 간격0과 연결된 모서리 유지.
+- Safari 적용 스타일 확인: 재생바 불투명 패널·backdrop-filter none·그림자 none, 서랍 blur28px/saturate145% 유지. 배포·커밋 없음.
+
+## 2026-10-04 — 범례 툴팁 제거와 확대
+- SVG title 제거, aria-label 유지. 생성기와 앱 번들 SVG를 함께 갱신했다. 이름22→28, 설명17→22, 음표·주법 기호1.3배. 음표 기준 위치는 유지하고 긴 설명을 두 줄로 분리했다. 모달 여백8px.
+- Safari MCP에서 title요소/속성0 확인. iPad mini A17 Pro iOS27 시뮬레이터 Safari 가로 화면에서27개 항목 표시·겹침/잘림 없음 확인. 증거 docs/experiments/legend-readability-20261004/ipad-landscape.png. 기기 세션 종료.
+- help/drum-legend 집중2파일9테스트 통과(tmp/legend-readability-tests.log). 별도 배포·커밋 없음.
+
+## 2026-10-04 — 단일 고정 조작판
+- 최신 승인으로 서랍 토글/내용교체/초기 열림 애니메이션을 제거했다. 진행률·되감을 마디 수·마커·반복을 함께 고정 표시하며 재생바 단축 버튼은 해당 영역 포커스만 이동한다. 기존 상태/저장 이벤트는 그대로 사용한다.
+- 공통 CSS로 조작 버튼/입력 높이44px, 가로2열/세로3행 배치. 유리 표면 위의 조작 영역과 불투명 재생바 유지. 긴 마커/반복 목록은 내부 스크롤. 조작판 높이 가로240px, 세로380px.
+- Safari MCP에서 단축 버튼 재클릭 후 네 영역 유지와 정밀 반복 입력을 확인했다. iPad mini A17 Pro iOS27 Safari 가로/세로 캡처 검수 중 압축되던 마커 행을46px 최소높이로 수정했다. 가로에서 악보 두 줄이 잘리지 않도록 마디 축소의50px 하한을 제거했다.
+- 증거 docs/experiments/fixed-board-20261004/ipad-landscape.png 및 ipad-portrait.png(세로 최종 여백 축소 전). 드럼 전체검사 통과 후 마지막 악보 높이 조정의 playback-screen 집중검사·TypeScript 재검증. 로그 tmp/fixed-board-full-tests.log, tmp/fixed-board-final-test.log, tmp/fixed-board-tsc.log. 기기 제어 세션 종료, 배포·커밋 없음.
+- 최신 승인 명세 docs/plans/PLAYBACK-DRAWER.md에 이전 서랍 결정을 대체함을 명시했다.
+
+## 2026-10-04 — 조작판 명칭과 스크롤 제거
+- 도움말/접근성 명칭을 조작판으로 정정했다. 조작판과 내부 영역의 스크롤 제거. 저장 마커/반복은 공통 페이지 컴포넌트로 한 항목씩 이전·다음 이동하며 항목 삭제 후 페이지 범위도 보정한다. 기존 데이터는 유지한다.
+- Safari MCP에서 이전/다음 이동, 조작판 및 네 영역·목록의 scrollHeight=clientHeight, overflow clip 확인. TypeScript와 집중4파일51테스트 통과(tmp/control-board-fixed-tests.log). 배포·커밋 없음.
+
+## 2026-10-04 — 재생바 기능 중복 제거
+- 조작판의 곡 위치 슬라이더·되감기 수 입력/설명/출력을 제거했다. 곡 위치 재생바의 드래그/키보드 조절 유지, 되감기 실제 숫자 입력을 재생바로 옮겨 공통 상하좌우 숫자 드래그를 연결했다. 제작실 위치 복사는 반복 영역에 보존했다.
+- 조작판은 마커/반복 두 영역만 유지하고 높이는 가로180px·세로310px로 줄였다. 스크롤 금지·저장 목록 페이지 이동 유지. 재생바 기능 중복 금지를 UX/승인 계획에 명시하고 도움말을 갱신했다.
+- Safari MCP에서 두 영역만 존재, 되감기 입력의 재생바 소속, 진행률/되감기 숫자 드래그 연결 확인. 집중4파일68테스트 및 TypeScript 통과(tmp/board-no-duplicates-tests.log). 배포·커밋 없음.
+
+## 2026-10-04 — 숫자판 상하좌우 연속 드래그
+- 공통 numeric-drag의 최초 우세축 고정을 제거했다. 수평 이동량에서 수직 이동량을 뺀 거리로 계산하여 오른쪽/위 증가·왼쪽/아래 감소, 드래그 도중 방향 변경을 함께 처리한다. 최소/최대·취소·키보드 동작 유지.
+- 회귀검사로 수평 시작 후 위/아래 전환을 추가했다. 집중3파일58테스트와 TypeScript 통과. Safari MCP 합성 PointerEvent에서 되감기 숫자1→오른쪽3→위5→아래2→취소1 확인. 실제 터치 제스처 검증과는 구분한다.
+- 배포·커밋 없음. 고정 저장 슬롯 수/초과 데이터 처리 질문은 아직 사용자 답변 대기 상태다.
+
+### 2026-10-04 — 현재 마디 마커 토글
+- 재생바 마커 아이콘은 조작판 포커스 이동 대신 현재 마디 마커 표기/삭제를 토글한다. M 단축키도 같은 동작이다.
+- 조작판의 현재 위치 표시 버튼을 제거했다. 이름 입력은 유지하며 삭제 때 입력 이름을 소비하지 않는다. 다른 마디의 저장 마커는 보존한다.
+- 검증: 관련 테스트 53개 통과, 추가 토글 보존 테스트 포함 marker-slots 4개 통과, tsc 통과. Safari 로컬 player에서 아이콘 두 번 클릭 시 표기/삭제 및 aria-pressed 전환, 중복 버튼 제거 확인.
+
+### 2026-10-04 — 마커 영역 간소화
+- 마커 이름 입력칸과 연결 콜백을 제거했다. 새 마커는 마디 기반 기본 이름을 사용한다.
+- 공통 재생 CSS에서 마커 패널의 별도 배경·테두리·그림자를 제거했다.
+- 관련 테스트 53개 및 TypeScript 검사 통과. Safari 로컬 player에서 입력칸 없음, 마커 패널 투명 배경·테두리 0·그림자 없음 확인.
+
+### 2026-10-04 — 마커 페이지 버튼 제거
+- 마커 조작판에서 이전·다음과 페이지 전환 호출을 제거했다. 최근 마커 3개를 고정 슬롯으로 표시하며 저장된 나머지 마커 데이터는 보존한다.
+- Safari에서 페이지 버튼 없음·3개 고정 슬롯 확인. 관련 테스트 및 타입 검사 수행.
+
+### 2026-10-04 — 자동 섹션 바로가기
+- 조작판의 저장 마커 목록을 악보 rehearsal 기반 섹션 바로가기로 교체. 2행×4열, 앞 8개, 섹션명과 시작 마디, 남는 슬롯 비활성. 사용자 마커 데이터와 독립.
+- editor의 canonicalXML과 player의 악보 정본을 공통 컴포넌트에 연결했다. 동일 위치의 파트 중복 표기는 합치고, 다른 마디의 동일 이름은 유지한다. 구조화된 표기가 없으면 빈 슬롯.
+- 검증: 관련 5개 파일 55개 테스트 및 tsc 통과. Safari에서 러브홀릭의 1·21·37·53·63·80·96·112마디 슬롯 확인 및 클릭. iPad mini iOS 27에서 가로/세로 2×4 배치, 엔딩 버튼 터치 후 112마디 이동 확인.
+- 캡처: docs/experiments/section-shortcuts-20261004/ipad-landscape.png, ipad-portrait.png. 외부 배포·커밋 없음.
+
+### 2026-10-04 — PC 악보제작기 섹션 편집
+- 편집창에 [섹션] 탭 추가. PC 폭을 사용하는 표에서 시작 마디·이름을 추가/수정/삭제하고 [섹션 적용] 후 기존 상단 저장으로 확정한다.
+- 정본 MusicXML rehearsal 변경, SVG/재생 자산 재생성, 섹션 바로가기 반영. 편집 개수 무제한, 바로가기 앞8개. PDF 원본과 음표/성부/타이밍 보존.
+- 기존 편집 세션의 되돌리기/다시 실행 및 저장을 사용하며 섹션 변경의 되돌리기에도 SVG를 재생성한다.
+- 검증: 섹션 편집·바로가기·기존 UI 관련 44개 테스트 통과, tsc 통과. PC Safari 1188px 뷰포트/1140px 편집창에서 8개 섹션 표시, 첫 이름 임시 변경→적용→바로가기 반영→되돌리기 후 원래 B(후렴) 복원 확인. QA 임시 이름은 보존하지 않았다.
+- 캡처: docs/experiments/section-editor-20261004/desktop.png. 공개 배포·Git 커밋 없음.
+
+### 2026-10-04 — 제작 앱 명칭 통일
+- 앱 제목, 앱 버전 명칭, 이동 링크, 안내·도움말, README 및 프로젝트 문서의 제작 앱 이름을 악보제작기로 통일했다.
+- 기존 기능과 파일명/editor.html 경로는 유지한다.
+- 검증: 소스·문서·테스트의 이전 명칭 검색 결과 없음, UI 관련 테스트 39개 통과. Safari는 페이지 열기 실패 상태여서 이번 런타임 화면 확인은 완료하지 못했다.
+
+### 2026-10-04 — 바로가기 2×4 밀집 배치
+- 공유 재생 CSS에서 버튼 높이48px·너비100%, 두 행 간격6px·전체102px로 고정해 큰 행간과 크기 불균형을 제거했다.
+
+### 2026-10-04 — 바로가기 4행×2열
+- 사용자 요청으로 공통 바로가기 격자를 4행×2열로 변경. 버튼48px·간격6px 유지, 조작판 고정 높이를 함께 조정하여 하단 슬롯이 잘리지 않게 했다.
+
+### 2026-10-04 — 바로가기 한 줄 표기·오른쪽 여백 제거
+- 섹션명과 마디 번호를 가로 한 줄로 배치했다. 내부 flex 래퍼가 내용 크기로 축소되던 것을 전체 너비로 확장하여 두 열이 바로가기 패널을 채우도록 변경했다.
+
+### 2026-10-04 — 조작판 고정 높이 회귀 수정
+- 4행 바로가기를 위해 조작판을234/424px로 늘린 변경을 철회하고 기존 가로180px·세로310px로 복원했다.
+- 바로가기 4행은 내부 공간을 균등 분할하며 외부 악보 레이아웃 높이에 영향을 주지 않는다.
+- Safari 가로 확인: 조작판180px, 내부 격자156px, 버튼8개 모두36px, 텍스트 넘침과 하단 잘림 없음.
+
+### 2026-10-04 — 두 줄 악보 하단 예약 여백 축소
+- 두 줄 맞춤의 기존144px 예약 중 불필요한 하단28px를 제거했다. 가용 높이 증가로 가로 축소도 줄어든다.
+- 마디 표시·가사 공간, 음표 종횡비, 조작판 고정 높이를 유지한다. 제거된 빈 하단을 전제로 하던 마스크도 제거했다.
+
+### 2026-10-04 — 두 줄 악보 오른쪽 외곽 구분선 제거
+- 재생/정지 두 줄 DOM 구조 모두에서 매 줄 네 번째 마디의 UI 오른쪽 테두리를 투명하게 했다. 마디 사이 구분선·선택 강조·원본 SVG 세로선과 마디 폭은 유지한다.
+
+### 2026-10-04 두 줄 악보 폭 기준 높이 고정
+- 사용자 결정에 따라 전체 내부 폭/4를 마디 폭으로 사용하고, 원본 비율과 가사 공간으로 두 줄 높이를 산정. 제목줄 아래 여백0, 재생바 간격2px. 조작판180px/세로310px 정책 유지.
+- Safari MCP 로컬 player(1188×758) 확인: 악보 내부 폭1154px와 렌더 폭1154px 일치, stage419px, 조작판180px. 화면 캡처로 두 줄 음표·가사 및 조작판 표시 확인. 한 줄 모드 CSS에는 적용하지 않음.
+- 검증: playback-screen 11 tests 통과, tsc --noEmit 통과. 공개 배포/커밋 없음.
+
+### 2026-10-04 재생바 연회색 배경
+- 공통 CSS의 dock 색상 토큰을 연회색 #e8ebef, 경계 #cbd2da로 변경하여 흰 악보와 버튼을 구분. 조작판 유리 효과 유지.
+- Safari MCP 계산 스타일 및 캡처 확인: 배경 rgb(232,235,239), 재생바82px/조작판180px 유지. 색상만 변경.
+
+### 2026-10-04 섹션 바로가기 마디 표시 간격
+- 바로가기의 숫자와 마디 사이에 thin space를 추가하여 숫자를 구분. 버튼 크기와 배치는 유지.
+
+### 2026-10-04 섹션 바로가기 정렬과 세로 여백
+- 공통 CSS에서 섹션명 왼쪽·마디 표시 오른쪽 정렬. 바로가기 패널의 세로 여백을 줄여 버튼 높이36→40px, 조작판180px 유지.
+- Safari MCP에서 8개 버튼 좌우 정렬·가로 넘침 없음 및 고정 높이 확인.
+
+### 2026-10-04 악보 드래그 반복 구간 8슬롯
+- 계획: docs/plans/PLAYBACK-DRAWER.md의 확정8슬롯 설계. 오른쪽 폼을4행×2열 슬롯으로 교체, 숫자/이름 입력·구간 적용·박 정밀 조정 코드 제거. 공통 src/loop-slots.ts가 마디 드래그·선택 강조·양축 자동 스크롤·저장/반복/재지정/삭제/취소를 담당한다.
+- 곡의 repeatSlots에8개 ID를 보관하여 빈칸 위치를 유지. 기존 loops 데이터 보존, player의 practice 저장 및 악보 업데이트에도 슬롯 연결 유지. 조작판180/310px 고정 유지.
+- Safari MCP:8슬롯 배치 확인. Safari MCP는 연속드래그 API가 없어 지침에 따른 ego-browser 실제 마우스 검증: 한 줄 오른쪽 자동스크롤13.5→261.5px, 두 줄 아래4.5→388.5px 및1~14 선택 갱신. pointerup 저장, 반복 true/false, 길게 누름→재지정→Esc 원값1~18 유지, 재접속1~3/1~4/1~18 슬롯 복원 확인. QA는 ego의 별도 로컬 자료에서 수행.
+- iPad mini iOS27 시뮬레이터: 세로 슬롯 배치, 빈 슬롯 터치→악보 드래그 대기 확인. 연속드래그 명령 문서/스킬이 제공되지 않아 실제 iPad 연속드래그/자동스크롤은 미검증. Chromium 검증을 iPad 검증으로 간주하지 않음.
+- 검증: tsc 통과. 전체486 tests 통과, 기존 섹션 편집/바로가기 한글 리터럴 등록 검사1개 실패(이번 range문구는 locale 등록). 저장소 재조회 포함 집중25tests 통과. 증거 docs/experiments/range-slots-20261004/. 커밋·배포 없음.
+
+### 2026-10-04 누적 변경 커밋
+- 악보 공통 표기·SVG 렌더링, 유리 범례/도움말, 공용 악보 저장소·섹션 편집, 고정 조작판·구간 드래그8슬롯 등 누적 소스/문서/테스트를 기록. 양쪽 앱 minor 버전0.5.0. 생성 이미지/PDF/임시·실험 출력은 제외.
+- 커밋 직전 tsc --noEmit 및 git diff --check 통과. 공식 npm run test:drum:398통과·번역 등록 검사1실패(앞선 섹션 편집/바로가기 미등록 한글 문구). iPad 연속드래그 미검증 상태 유지. push·배포 없음.

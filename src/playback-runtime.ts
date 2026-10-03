@@ -1,3 +1,4 @@
+import type { RibbonAsset } from "./playback-assets";
 import appVersions from "./app-versions.json";
 import { installScoreReader } from "./score-reader";
 import { Player } from "./audio-core";
@@ -33,6 +34,7 @@ import { type StaffPosition } from "./practice-staff-layout";
 export interface PlaybackRuntimeOptions {
   root: HTMLElement;
   song: Song;
+  canonicalXML?: string;
   audio: Blob;
   pages: Blob[];
   scores?: { song: Song; pages: Blob[] }[];
@@ -87,6 +89,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   const loopExtra = document.createElement("div");
   loopExtra.innerHTML = practiceLoopHTML();
   const { addSettings } = mountPlaybackShell($("app"), {
+    showPosition: false,
     ids: {
       ...portablePlaybackBindings,
       markers: "quick-markers",
@@ -107,8 +110,8 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       settings();
     },
     openSettings: () => {
-      settings();
       open("settings");
+      settings();
     },
     markerContent,
     loopExtra,
@@ -222,6 +225,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       ratios: pageRatios,
       staffs: practiceStaffs,
       highlights: highlightPages,
+      ribbon: ribbonAssets,
     }),
     highlight: () => noteHighlightEnabled,
     formats: () => variants.map((v) => v.song.scoreFormat ?? "pdf"),
@@ -234,9 +238,6 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       }
     },
     listsChanged: () => management?.render(),
-    loopDraft: () => management?.draft() ?? { name: "" },
-    loopChanged: (loop) => management?.loopChanged(loop),
-    markerName: () => management?.markerName() ?? "",
   });
   const scoreGestures = {
     cancel: () => playback.cancel(),
@@ -244,6 +245,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   };
   player.onstate = playback.onState;
   management = attachPracticeManagement({
+    canonicalXML: () => options.canonicalXML,
     root,
     song,
     playback: () => playback,
@@ -275,9 +277,10 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
           : undefined,
     });
   }
+  const ribbonAssets = new Map<number, RibbonAsset>();
   function useAssets(next: Awaited<ReturnType<typeof preparePages>>) {
     replacePlaybackAssets(
-      { urls, pageRatios, highlightPages, practiceStaffs },
+      { urls, pageRatios, highlightPages, practiceStaffs, ribbon: ribbonAssets },
       next,
     );
   }
@@ -354,7 +357,9 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     player.pause();
     player.worker?.terminate();
     void player.ctx.close().catch(() => {});
-    for (const u of urls.splice(0)) URL.revokeObjectURL(u);
+    releasePlaybackAssets({urls, ribbon:ribbonAssets});
+    urls.length = 0;
+    ribbonAssets.clear();
     for (const dialog of root.querySelectorAll<HTMLDialogElement>(
       "dialog[open]",
     ))

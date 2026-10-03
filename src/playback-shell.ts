@@ -10,7 +10,6 @@ import {
   metronomeControlHTML,
   playbackTransportRightHTML,
   repeatBarHTML,
-  soundFieldsHTML,
   tempoFieldsHTML,
   loopFieldsHTML,
   settingsFrameHTML,
@@ -32,6 +31,7 @@ export interface PlaybackShellOptions {
   select: (category: SettingsCategory) => void;
   openSettings: () => void;
   compare?: boolean;
+  showPosition?: boolean;
   loopExtra?: HTMLElement;
   markerContent: HTMLElement;
 }
@@ -61,6 +61,7 @@ export function mountPlaybackShell(
       rewindId: ids.rewind,
       rewindButton: ids.rewindButton,
       positionId: ids.position,
+      showPosition: options.showPosition,
       right: playbackTransportRightHTML({
         progress: ids.progress,
         mark: ids.mark,
@@ -76,13 +77,6 @@ export function mountPlaybackShell(
         stopId: ids.stop,
       }),
   );
-  practice.insertAdjacentHTML(
-    "beforeend",
-    `<p id="score-gesture-hint" class="subtle">${t("workspace.message567")}</p>`,
-  );
-  root
-    .querySelector("#stage")
-    ?.setAttribute("aria-describedby", "score-gesture-hint");
   const panel = (name: string, title: string, body: string) => {
     const dialog = createDialog(
       `${name}-dialog`,
@@ -98,7 +92,6 @@ export function mountPlaybackShell(
     return content;
   };
   panel("tempo", t("main.message208"), tempoFieldsHTML(ids.tempoInput));
-  panel("sound", t("icons.message070"), soundFieldsHTML());
   const loop = panel("loop", t("icons.message067"), loopFieldsHTML());
   if (options.loopExtra) loop.append(options.loopExtra);
   panel("marker", t("icons.message069"), "").append(options.markerContent);

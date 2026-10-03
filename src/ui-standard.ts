@@ -64,18 +64,6 @@ export function installUIStandard(
         element.setAttribute("aria-label", componentName(entry.id, "ko", true));
     }
   }
-  const stage = root.querySelector<HTMLElement>("#stage");
-  if (stage) {
-    let help = root.querySelector<HTMLElement>("#score-gesture-hint");
-    if (!help) {
-      help = document.createElement("p");
-      help.id = "score-gesture-hint";
-      help.className = "ui-sr-only";
-      stage.after(help);
-    }
-    help.textContent = uiText("scoreHelp");
-    stage.setAttribute("aria-describedby", help.id);
-  }
   // Native dialogs provide focus trapping/Escape. Supply a programmatic name for each.
   const triggers: Record<string, string[]> = {
     "settings-dialog": ["open-settings-dialog", "settings"],

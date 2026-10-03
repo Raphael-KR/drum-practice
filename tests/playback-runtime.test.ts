@@ -79,7 +79,7 @@ it("mounts either adapter, persists position/preferences and disposes once befor
   ).toBe("내 악보 목록");
   const ids = [...o.root.querySelectorAll("[id]")].map((element) => element.id);
   expect(new Set(ids).size).toBe(ids.length);
-  expect(o.root.querySelector("#markers")).not.toBeNull();
+  expect(o.root.querySelector("#section-shortcuts")).not.toBeNull();
   expect(o.root.querySelector("#quick-markers")).not.toBeNull();
   state.host.afterFrame(12);
   state.host.preferences.write({ restartMeasure: false, countOff: false });

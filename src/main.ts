@@ -1,3 +1,8 @@
+import { mountSectionEditor, writeSections } from "./section-editor";
+import { readSectionShortcuts, type SectionShortcut } from "./section-shortcuts";
+import { syncSettingsChoices } from "./playback-forms";
+import type { RibbonAsset } from "./playback-assets";
+import "./help.css";
 import { Player } from "./audio";
 import { attachBundledScore, repairBundledMetadata } from "./bundled-score";
 import {
@@ -92,7 +97,6 @@ import { SVG_GZIP, displayPage, pageExtension } from "./score-pages";
 import { preferPDF, savePreferPDF, scorePreference } from "./score-preference";
 import {
   correctStoredRests,
-  ensureCenteredRestCache,
 } from "./score-rest-correction";
 import { ScoreReview, copyReviewImage, reviewPair } from "./score-review";
 import { activeScore, songScores, useScore } from "./song-scores";
@@ -171,6 +175,7 @@ let saveTimer = 0,
 let practiceManagement: ReturnType<typeof attachPracticeManagement> | undefined;
 let pageRatios: number[] = [];
 let practiceStaffs = new Map<string, StaffPosition>();
+const ribbonAssets = new Map<number, RibbonAsset>();
 let highlightPages: (HighlightPage | undefined)[] = [];
 let noteHighlightEnabled = readNoteHighlight();
 
@@ -182,23 +187,13 @@ app.innerHTML =
   i18nText("icons.message057") +
   '</button><button id="edit-button" hidden>' +
   i18nText("main.message099") +
-  '</button></div></header>\n<main><section class="welcome" id="welcome"><span class="tag">' +
-  i18nText("main.message100") +
-  "</span><h2>" +
-  i18nText("separation.editorTitle") +
-  '</h2><p class="welcome-lead">' +
-  i18nText("main.message101") +
-  "</p><p>" +
-  i18nText("main.message102") +
-  "<br>" +
-  i18nText("main.message103") +
-  '</p><div class="actions"><button class="primary" id="demo-button">' +
-  i18nText("main.message104") +
-  '</button><button id="welcome-library">' +
-  i18nText("icons.message054") +
-  '</button><button id="welcome-new">' +
-  i18nText("main.message105") +
-  '</button></div><p class="subtle">' +
+  '</button><a class="editor-player-link" href="/player.html">' +
+  i18nText("editorHome.playerLink") +
+  '</a></div></header>\n<main><section class="welcome editor-home" id="welcome"><div class="editor-home-heading"><h2>' +
+  i18nText("editorHome.listTitle") +
+  '</h2><button class="primary" id="welcome-new">' +
+  i18nText("editorHome.new") +
+  '</button></div><div id="editor-home-list" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button><p class="subtle">' +
   i18nText("main.message106") +
   '</p></section>\n<div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>' +
   i18nText("main.message107") +
@@ -368,6 +363,10 @@ app.innerHTML =
   '</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>';
 arrangeWorkspace();
 arrangeIcons();
+if (!isPortable) {
+  $("song-title").textContent = i18nText("separation.editorTitle");
+  document.title = i18nText("separation.editorTitle");
+}
 const playback = createPlaybackScreen({
   root: app,
   environment: "web",
@@ -416,6 +415,7 @@ const playback = createPlaybackScreen({
     ratios: pageRatios,
     staffs: practiceStaffs,
     highlights: highlightPages,
+      ribbon: ribbonAssets,
   }),
   highlight: () => noteHighlightEnabled,
   formats: () => (record ? songScores(record).map((s) => s.format) : []),
@@ -456,9 +456,6 @@ const playback = createPlaybackScreen({
     }
   },
   listsChanged: () => practiceManagement?.render(),
-  loopDraft: () => practiceManagement?.draft() ?? { name: "" },
-  loopChanged: (loop) => practiceManagement?.loopChanged(loop),
-  markerName: () => practiceManagement?.markerName() ?? "",
   validateView: (view) => {
     if (view === "compare") {
       reviewPair(record!);
@@ -621,7 +618,7 @@ async function activate(r: RecordData) {
       if (await repairBundledMetadata(r)) await saveRecord(r);
       r = await attachBundledScore(r, status);
       r = await correctStoredRests(r, status);
-      r = await ensureCenteredRestCache(r, status);
+      r = await (await import('./browser-score')).prepareBrowserScore(r, status);
     }
     const preferred = scorePreference(r).format;
     if (preferred !== (r.song.scoreFormat ?? "pdf"))
@@ -652,7 +649,7 @@ async function activate(r: RecordData) {
     session?.reset();
     record = r;
     document.body.classList.add("has-song");
-    practiceManagement?.reset();
+
     // Materialize persisted blobs before image decoding; Safari may not load
     // an object URL backed directly by an IndexedDB blob after a reload.
     const prepared = await preparePlaybackAssets(r.pages, r.song, {
@@ -666,7 +663,7 @@ async function activate(r: RecordData) {
         ),
     });
     replacePlaybackAssets(
-      { urls, pageRatios, highlightPages, practiceStaffs },
+      { urls, pageRatios, highlightPages, practiceStaffs, ribbon: ribbonAssets },
       prepared,
     );
     try {
@@ -688,8 +685,6 @@ async function activate(r: RecordData) {
     val("seek").max = String(engine().duration);
     $("duration").textContent = time(engine().duration);
     syncSettings();
-    for (const id of ["loop-a", "loop-b"])
-      val(id).max = String(song().measures.length);
     renderTrack();
     renderLists();
     await persist();
@@ -719,6 +714,7 @@ function syncViewChoices() {
     val("prefer-pdf").disabled = true;
     $("pdf-view-status").textContent = i18nText("main.message227");
     val("zoom").closest("label")!.hidden = view !== "ribbon";
+    syncSettingsChoices(document);
     return;
   }
   const formats = songScores(record).map((s) => s.format);
@@ -734,6 +730,7 @@ function syncViewChoices() {
   val("prefer-pdf").disabled = preference.disabled;
   $("pdf-view-status").textContent = preference.message;
   $("pdf-view-row").hidden = compare;
+  syncSettingsChoices(document);
   $("review-help").hidden = !compare;
 
   $("review-availability").textContent = missing.length
@@ -778,7 +775,7 @@ val("prefer-pdf").onchange = async () => {
     // Settings may have changed while the images decoded; retain the latest values.
     next.song.settings = original.song.settings;
     replacePlaybackAssets(
-      { urls, pageRatios, highlightPages, practiceStaffs },
+      { urls, pageRatios, highlightPages, practiceStaffs, ribbon: ribbonAssets },
       prepared,
     );
     prepared = undefined;
@@ -1007,6 +1004,7 @@ seek.onblur = () => {
   $("seek-position").hidden = true;
 };
 practiceManagement = attachPracticeManagement({
+  canonicalXML: () => record?.canonicalXML,
   root: $("app"),
   song,
   playback: () => playback,
@@ -1146,7 +1144,8 @@ $("library-list").onclick = async (e) => {
         engine().pause();
         clearTimeout(saveTimer);
         record = undefined;
-        for (const url of urls) URL.revokeObjectURL(url);
+        releasePlaybackAssets({urls, ribbon:ribbonAssets});
+        ribbonAssets.clear();
         urls = [];
         $("practice").hidden = true;
         $("welcome").hidden = false;
@@ -1176,7 +1175,21 @@ action("new-button", openNew);
 action("welcome-new", openNew);
 async function refreshRecentScore() {
   if (isPortable) return;
-  const recent = chooseRecent(await allRecords());
+  const records = await allRecords();
+  const recent = chooseRecent(records);
+  $("editor-home-list").innerHTML = records.length
+    ? records.map((r, i) => `<article class="editor-home-card"><div><h3>${esc(r.song.title)}</h3><p class="subtle">${esc(r.song.artist || "")}</p></div><button class="primary" data-editor-open="${i}">${i18nText("editorHome.edit")}</button></article>`).join("")
+    : `<p class="editor-home-empty">${i18nText("editorHome.empty")}</p>`;
+  $("editor-home-list").onclick = (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-editor-open]");
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    void (async () => {
+      try { await activate(records[Number(button.dataset.editorOpen)]); await openEditor(); }
+      catch (e) { error(e); }
+      finally { button.disabled = false; }
+    })();
+  };
   $("demo-button").textContent = recent
     ? i18nText("main.message223", { value1: recent.song.title })
     : i18nText("main.message289");
@@ -2131,7 +2144,12 @@ if (isPortable) {
   })().catch(error);
 }
 
-if (!isPortable) void refreshRecentScore().catch(error);
+if (!isPortable) {
+  void refreshRecentScore().catch(error);
+  window.addEventListener("focus", () => {
+    if (!$("welcome").hidden) void refreshRecentScore().catch(error);
+  });
+}
 
 const replaceDialog = createDialog(
   "replace-score-dialog",
@@ -2430,8 +2448,10 @@ function fillMetadata() {
 }
 function applySnapshot(s: EditSnapshot) {
   if (!record) return;
+  const sectionsChanged = JSON.stringify(readSectionShortcuts(record.canonicalXML ?? "")) !== JSON.stringify(readSectionShortcuts(s.canonicalXML ?? ""));
   record.song = structuredClone(s.song);
   record.canonicalXML = s.canonicalXML;
+  if (sectionsChanged) void refreshSectionGeometry(record).catch(error);
   engine().song = record.song;
   engine().loop = undefined;
   selected = clamp(selected, 0, s.song.measures.length - 1);
@@ -2803,3 +2823,62 @@ action("export-score-package", async () => {
     packageExport.disabled = false;
   }
 });
+
+// Desktop authoring tab; section edits use the existing draft/history workflow.
+const sectionPane = document.createElement("section");
+sectionPane.id = "editor-sections";
+sectionPane.hidden = true;
+sectionPane.className = "section-editor";
+$("editor-dialog").querySelector(".editor-body")!.append(sectionPane);
+const sectionTab = document.createElement("button");
+sectionTab.type = "button";
+sectionTab.dataset.pane = "sections";
+sectionTab.textContent = "섹션";
+$("editor-dialog").querySelector(".editor-tabs")!.append(sectionTab);
+const sectionEditor = mountSectionEditor(sectionPane, {
+  song: () => record?.song,
+  xml: () => record?.canonicalXML,
+  apply: async (sections: SectionShortcut[]) => {
+    if (!record || busy) throw Error("악보 처리가 끝난 뒤 다시 시도하세요.");
+    flushEditorForm();
+    const original = record;
+    const xml = writeSections(original.canonicalXML!, sections, original.song.measures.length, original.song.scorePartId);
+    busy = true;
+    try {
+      const next = await (await import("./browser-score")).prepareBrowserScore({...original, canonicalXML: xml}, status);
+      const prepared = await preparePlaybackAssets(next.pages, next.song);
+      if (record !== original) { releasePlaybackAssets(prepared); throw Error("악보가 변경되었습니다. 다시 시도하세요."); }
+      engine().pause();
+      session?.before();
+      Object.assign(original, next);
+      engine().song = original.song;
+      replacePlaybackAssets({urls, pageRatios, highlightPages, practiceStaffs, ribbon:ribbonAssets}, prepared);
+      renderTrack(); renderLists();
+      await drawPage();
+      session?.changed();
+      queueSave();
+    } finally { busy = false; }
+  },
+});
+sectionTab.onclick = () => {
+  sectionEditor.refresh();
+  selectEditorPane("sections");
+};
+
+async function refreshSectionGeometry(original: RecordData) {
+  const expectedXML = original.canonicalXML;
+  const next = await (await import("./browser-score")).prepareBrowserScore(original, status);
+  const prepared = await preparePlaybackAssets(next.pages, next.song);
+  if (record !== original || original.canonicalXML !== expectedXML) {
+    releasePlaybackAssets(prepared); return;
+  }
+  original.pages = next.pages;
+  original.otherScores = next.otherScores;
+  original.song.regions = next.song.regions;
+  original.song.pageCount = next.song.pageCount;
+  original.song.measures.forEach((m,i) => m.regionId = next.song.measures[i].regionId);
+  replacePlaybackAssets({urls, pageRatios, highlightPages, practiceStaffs, ribbon:ribbonAssets}, prepared);
+  sectionEditor.refresh();
+  renderTrack(); renderLists();
+  await drawPage();
+}

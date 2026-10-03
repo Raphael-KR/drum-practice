@@ -92,7 +92,7 @@
       "parent": "",
       "role": "",
       "selectors": {
-        "web": "#score-gesture-hint",
+        "web": "#status",
         "portable": "#status"
       },
       "name": {
@@ -357,23 +357,6 @@
       "accessible": {
         "ko": "component.loop.accessible",
         "en": "Adjust loop"
-      }
-    },
-    {
-      "id": "recenter",
-      "parent": "playback.secondary",
-      "role": "",
-      "selectors": {
-        "web": "#recenter-loop",
-        "portable": "#recenter-loop"
-      },
-      "name": {
-        "ko": "component.recenter.name",
-        "en": "Center on current measure"
-      },
-      "accessible": {
-        "ko": "component.recenter.accessible",
-        "en": "Center on current measure"
       }
     },
     {

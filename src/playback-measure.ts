@@ -59,19 +59,26 @@ export function renderMeasure({
   const syl = ly
     .map((l) => {
       const b = ((l.time - m.start) / (m.end - m.start)) * m.beats;
+      // A changed musical position invalidates its reviewed PDF display anchor.
+      const anchor = !isSVG && l.scorePosition?.measureId === m.id
+        ? r.lyricAnchors?.find(a => a.lyricId === l.id &&
+            Math.abs(a.quarterOffset - l.scorePosition!.quarterOffset) < 1e-8)
+        : undefined;
       const x =
-        s.settings.view === "ribbon"
+        anchor ? anchor.x : s.settings.view === "ribbon"
           ? positionInMeasure(i, b, width) / width
           : xAtBeat(r, m, b);
-      return `<span class="syllable" title="${l.confirmed ? i18nText("main.message232") : i18nText("main.message233")}" style="left:${x * 100}%;${l.text.length > 4 ? "font-size:14px;white-space:normal;max-width:95%;transform:none;" : ""}">${esc(l.text)}</span>`;
+      // The crop uses width pixels; percentage offsets include the measure border.
+      const left = anchor ? `${x * width}px` : `${x * 100}%`;
+      return `<span class="syllable"${anchor ? ' data-pdf-lyric-anchor="true"' : ''} title="${l.confirmed ? i18nText("main.message232") : i18nText("main.message233")}" style="left:${left};${l.text.length > 4 ? `font-size:14px;white-space:normal;max-width:95%;${anchor ? '' : 'transform:none;'}` : ""}">${esc(l.text)}</span>`;
     })
     .join("");
   return (
-    '<div class="measure" data-index="' +
+    '<div class="measure' + (markedMeasureIndices(s).has(i) ? ' is-marked' : '') + '" data-index="' +
     String(i) +
     '" style="width:' +
     String(width) +
-    'px"><span class="label"><span class="measure-marker" aria-label="' +
+    'px"><span class="measure-state-layer" aria-hidden="true"></span><span class="label"><span class="measure-marker" aria-label="' +
     i18nText("main.message234") +
     '" ' +
     String(markedMeasureIndices(s).has(i) ? "" : "hidden") +

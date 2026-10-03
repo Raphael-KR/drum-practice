@@ -136,3 +136,15 @@ it('schedules exactly four quarter-note count-off strokes in any meter and playb
     expect(cyclePosition(c,c.musicAt)).toBe(.23);
   }
 });
+
+it('validates optional PDF lyric anchors and rejects corrupt coordinates or duplicate IDs',()=>{
+ const s=fixture();
+ s.regions[0].lyricAnchors=[{lyricId:'a',quarterOffset:.5,x:.3}];
+ expect(()=>validateSong(s)).not.toThrow();
+ for(const value of [NaN,Infinity,-.1,1.1]){
+  const bad=structuredClone(s);bad.regions[0].lyricAnchors![0].x=value;
+  expect(()=>validateSong(bad)).toThrow();
+ }
+ const bad=structuredClone(s);bad.regions[0].lyricAnchors!.push({...bad.regions[0].lyricAnchors![0]});
+ expect(()=>validateSong(bad)).toThrow();
+});

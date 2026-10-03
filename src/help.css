@@ -1,0 +1,369 @@
+:root { --surface-expand-ms:320; --surface-expand-easing:cubic-bezier(0.22,1,0.36,1); --surface-collapse-time:260ms; --surface-collapse-easing:cubic-bezier(0.4,0,0.8,0.4); }
+.liquid-glass { background:#f4f7fc; }
+#app-help-button {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #c7d4e8;
+  background: #fff;
+  color: #304563;
+  font:
+    600 22px -apple-system,
+    sans-serif;
+  box-shadow: 0 2px 8px #24304418;
+  cursor: pointer;
+}
+#app-help-button:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+#app-help-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #15243c55;
+  color: #243044;
+  overflow: hidden;
+}
+#app-help-dialog::backdrop {
+  background: transparent;
+}
+#app-help-dialog .dialoghead {
+  position: absolute;
+  top: auto;
+  height: auto;
+  margin: 0;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(350px, calc(100% - 32px));
+  box-sizing: border-box;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f7fc;
+  border-radius: 18px;
+  z-index: 2;
+}
+#app-help-dialog h2 {
+  font-size: 20px;
+  margin: 0;
+}
+#app-help-dialog button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid #c7d4e8;
+  background: white;
+  color: #243044;
+}
+#app-help-dialog .help-content {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 80px);
+  width: min(350px, calc(100% - 32px));
+  overflow: auto;
+  background: #f4f7fc;
+  border-radius: 18px;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 2;
+  touch-action: pan-y;
+}
+.help-cards section + section {
+  border-top: 1px solid #d5dfed;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+.help-cards h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+  color: #215bc0;
+}
+.help-cards p,
+.help-shortcuts {
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0;
+  white-space: pre-line;
+  word-break: keep-all;
+}
+.help-shortcuts {
+  border-top: 1px solid #d5dfed;
+  padding-top: 16px;
+  margin-top: 20px;
+  color: #4a5b72;
+}
+.help-pages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+.help-pages[hidden] {
+  display: none;
+}
+.help-marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.help-target {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #9fc7ff;
+  border-radius: 12px;
+  background: #ffffff12;
+}
+.help-target span {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #215bc0;
+  color: white;
+  font: bold 16px sans-serif;
+}
+@media (max-width: 640px) {
+  #app-help-dialog .help-content {
+    top: auto;
+    max-height: 55%;
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + 80px);
+  }
+  #app-help-dialog .dialoghead {
+    width: calc(100% - 32px);
+  }
+}
+#app-help-dialog .help-legend-button {
+  margin-left: auto;
+  margin-right: 10px;
+  padding: 0 14px;
+}
+#app-legend-dialog {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  /* Opaque fallback for browsers without backdrop filtering. */
+  background: #f4f7fc;
+  box-shadow:
+    inset 0 1px 0 #ffffffeb,
+    inset 1px 0 0 #ffffff80,
+    inset 0 -1px 0 #8da7c333;
+  color: #17283e;
+  overflow: hidden;
+}
+#app-legend-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+#app-legend-dialog::backdrop {
+  background: transparent;
+}
+#app-help-dialog:has(~ #app-legend-dialog[open]) {
+  visibility: hidden;
+}
+#app-legend-dialog > .dialoghead {
+  position: absolute;
+  right: 14px;
+  top: 10px;
+  z-index: 1;
+}
+#app-legend-dialog .close-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+/* Keep the approved four-staff illustration undistorted within the modal. */
+.help-legend {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+}
+.help-legend > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.legend-accessible-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Web interpretation of Liquid Glass: diffuse the score behind the legend,
+   retaining its colours without competing with the notation or labels. */
+@supports (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  #app-legend-dialog,
+  #app-help-dialog .dialoghead,
+  #app-help-dialog .help-content,
+  .liquid-glass {
+    background:
+      linear-gradient(135deg, #ffffff80 0%, #eef5ff38 45%, #ffffff66 100%),
+      rgb(239 245 253 / 48%);
+    -webkit-backdrop-filter: blur(28px) saturate(145%);
+    backdrop-filter: blur(28px) saturate(145%);
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  #app-legend-dialog,
+  #app-help-dialog .dialoghead,
+  #app-help-dialog .help-content,
+  .liquid-glass {
+    background: #f4f7fc;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+}
+
+#app-help-dialog .dialoghead,
+#app-help-dialog .help-content,
+.liquid-glass {
+  box-shadow:
+    inset 0 1px 0 #ffffffeb,
+    inset 1px 0 0 #ffffff80,
+    inset 0 -1px 0 #8da7c333,
+    0 8px 28px #14213614;
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  #app-help-dialog .dialoghead,
+  #app-help-dialog .help-content,
+  .liquid-glass {
+    box-shadow: none;
+  }
+}
+
+#app-legend-dialog {
+  padding: 12px;
+  cursor: pointer;
+}
+@supports (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  #app-legend-dialog {
+    background: rgb(239 245 253 / 16%);
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  #app-legend-dialog {
+    background: #f4f7fc;
+  }
+}
+
+/* Only the modal snapshot moves. Buttons remain in the unchanged root layer. */
+html.help-modal-transition::view-transition-group(help-modal-morph) {
+  animation: none;
+}
+html.help-modal-transition::view-transition-old(help-modal-morph),
+html.help-modal-transition::view-transition-new(help-modal-morph) {
+  transform-origin: center;
+  mix-blend-mode: normal;
+}
+html.help-modal-opening::view-transition-new(help-modal-morph) {
+  animation: none;
+  opacity: 0;
+}
+html.help-modal-closing::view-transition-old(help-modal-morph) {
+  animation: help-modal-collapse var(--surface-collapse-time) var(--surface-collapse-easing) both;
+}
+@keyframes help-modal-expand {
+  from {
+    transform: var(--help-modal-collapsed);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes help-modal-collapse {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: var(--help-modal-collapsed);
+    opacity: 0;
+  }
+}
+html.help-modal-transition::view-transition-group(root),
+html.help-modal-transition::view-transition-old(root),
+html.help-modal-transition::view-transition-new(root) {
+  animation: none;
+}
+html.help-modal-transition::view-transition-old(root) {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.help-modal-transition::view-transition-group(*),
+  html.help-modal-transition::view-transition-old(*),
+  html.help-modal-transition::view-transition-new(*) {
+    animation-duration: 0s;
+  }
+}
+
+/* A named snapshot creates a backdrop root: use a readable glass tint while
+   the live backdrop is unavailable, then explicitly refresh its compositor. */
+html.help-modal-transition #app-help-dialog .dialoghead,
+html.help-modal-transition #app-help-dialog .help-content {
+  background: linear-gradient(135deg, #f9fbfff5, #eaf1fbf2);
+}
+#app-help-dialog.glass-repaint .dialoghead,
+#app-help-dialog.glass-repaint .help-content,
+#app-legend-dialog.glass-repaint {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Avoid rasterizing SVG turbulence on every modal transition frame in WebKit.
+   The static glass gradients remain; refraction returns after the transition. */
+html.help-modal-transition .score-legend-illustration .glass-colour {
+  filter: none;
+}
+
+/* Shared fixed-surface content transition. */
+.surface-content-enter {animation:surface-content-enter 160ms ease-out;}
+@keyframes surface-content-enter {from {opacity:0;} to {opacity:1;}}
+@media (prefers-reduced-motion:reduce) {.surface-content-enter {animation:none;}}
+
+/* Drawers reveal below their fixed top edge; modal buttons remain anchors only for modals. */
+html.surface-drawer-transition.help-modal-closing::view-transition-old(help-modal-morph) {
+  animation-name: surface-drawer-close;
+}
+@keyframes surface-drawer-close {
+  from { clip-path: inset(0 0 0% 0); }
+  to { clip-path: inset(0 0 100% 0); }
+}

@@ -1,3 +1,4 @@
+import { openScoreDatabase } from "./score-database";
 import { validateSong, type Song } from "./model";
 import type { ScoreVariant } from "./song-scores";
 import { isPortable } from "./portable";
@@ -52,15 +53,7 @@ function restoreRecord(value: StoredRecord | RecordData): RecordData {
     })),
   };
 }
-function db(): Promise<IDBDatabase> {
-  return new Promise((ok, no) => {
-    const r = indexedDB.open("drum-practice", 1);
-    r.onupgradeneeded = () =>
-      r.result.createObjectStore("songs", { keyPath: "song.id" });
-    r.onsuccess = () => ok(r.result);
-    r.onerror = () => no(r.error);
-  });
-}
+const db = openScoreDatabase;
 async function serializeRecord(record: RecordData): Promise<StoredRecord> {
   validateSong(record.song);
   // Persist owned bytes, not references to browser-managed Blob backing files.

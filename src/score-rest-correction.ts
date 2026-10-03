@@ -1,6 +1,5 @@
 import { t as i18nText } from "./i18n";
 import { matchBundledPDFLayout } from "./score-system-layout";
-import { NOTE_HIGHLIGHT_VERSION } from "./note-highlight";
 import { normalizeBundledDrumNotation } from "./drum-notation";
 import type { RecordData } from "./storage";
 import type { Region } from "./model";
@@ -213,47 +212,4 @@ export function refreshedRegions(
   )
     throw Error(i18nText("score-rest-correction.message531"));
   return generated.map((r) => ({ ...r }));
-}
-
-/** Refresh SVG and matching crop geometry together; preserve source and song timing. */
-export async function ensureCenteredRestCache(
-  record: RecordData,
-  progress: (s: string) => void,
-): Promise<RecordData> {
-  const xml = songScores(record).find((s) => s.format === "musicxml");
-  if (!xml?.pages.length) return record;
-  const { displayPage } = await import("./score-pages");
-  const { REST_LAYOUT_VERSION } = await import("./whole-rest-layout");
-  const first = await displayPage(xml.pages[0]);
-  const markup = first.type === "image/svg+xml" ? await first.text() : "";
-  if (
-    markup.includes(`data-rest-layout="${REST_LAYOUT_VERSION}"`) &&
-    markup.includes(`data-note-highlight="${NOTE_HIGHLIGHT_VERSION}"`)
-  )
-    return record;
-  const { renderMusicXML } = await import("./musicxml");
-  const rendered = await renderMusicXML(xml.source, progress, xml.partId);
-  // Pagination may change; refreshedRegions validates stable measure identities.
-  return record.song.scoreFormat === "musicxml"
-    ? {
-        ...record,
-        pages: rendered.pages,
-        song: {
-          ...record.song,
-          pageCount: rendered.pages.length,
-          regions: refreshedRegions(xml.regions, rendered.regions),
-        },
-      }
-    : {
-        ...record,
-        otherScores: record.otherScores?.map((s) =>
-          s.format === "musicxml"
-            ? {
-                ...s,
-                pages: rendered.pages,
-                regions: refreshedRegions(s.regions, rendered.regions),
-              }
-            : s,
-        ),
-      };
 }

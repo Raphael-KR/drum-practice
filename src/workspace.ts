@@ -45,8 +45,8 @@ export function selectSettingsCategory(category: SettingsCategory) {
 export function openSettings(
   category: SettingsCategory = rememberedCategory(),
 ) {
-  selectSettingsCategory(category);
   (document.getElementById("settings-dialog") as HTMLDialogElement).showModal();
+  selectSettingsCategory(category);
 }
 export function closeSettings() {
   (document.getElementById("settings-dialog") as HTMLDialogElement).close();
@@ -81,13 +81,12 @@ export function arrangeWorkspace() {
   const practice = el("practice");
   document.getElementById("app")!.classList.add("touch-workspace");
   practice.querySelector(".statusline")!.append(el("error-notice"));
-  const loops = el("loops").closest(".panel")!;
-  const markers = el("markers").closest(".panel")!;
+  const loops = el("loop-slots").closest(".panel")!;
+  const markers = el("section-shortcuts").closest(".panel")!;
   const backup = markers.querySelector("details")!;
   backup.querySelector("summary")!.remove();
-  loops.querySelector("h2")!.remove();
+  loops.querySelector("h2")?.remove();
   markers.querySelector("h2")!.remove();
-  el("save-loop").textContent = i18nText("workspace.message560");
   markers.insertAdjacentHTML(
     "beforeend",
     '<span id="active-loop" hidden></span><button id="quick-add-marker" hidden></button>',
@@ -258,7 +257,7 @@ export function selectEditorPane(name: string) {
   currentEditorPane = name;
   const editor = document.getElementById("editor-dialog");
   if (editor) editor.dataset.activePane = name;
-  for (const id of ["score", "lyrics", "meta", "files"]) {
+  for (const id of ["score", "lyrics", "meta", "files", "sections"]) {
     if (!document.getElementById(`editor-${id}`)) continue;
     document.getElementById(`editor-${id}`)!.hidden = id !== name;
     const b = document.querySelector(`[data-pane="${id}"]`)!;

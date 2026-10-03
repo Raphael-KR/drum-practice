@@ -38,11 +38,10 @@ function setup() {
     seek: vi.fn(),
     useLoop: (loop?: Loop) => {
       player.loop = loop;
-      management.loopChanged(loop);
       management.render();
     },
     mark: () => {
-      markMeasure(song, player.current(), "marker", management.markerName());
+      markMeasure(song, player.current(), "marker", undefined);
       management.render();
       changed();
     },
@@ -51,6 +50,7 @@ function setup() {
   management = attachPracticeManagement({
     root,
     song: () => song,
+    canonicalXML: () => '<score-partwise><part><measure><direction><direction-type><rehearsal>전주</rehearsal></direction-type></direction></measure></part></score-partwise>',
     playback: () => playback,
     player: () => player,
     changed,
@@ -72,47 +72,19 @@ function setup() {
     root,
   };
 }
-it("saves, reopens, renames and deletes a named loop through shared controls", () => {
+it("renders independent automatic section shortcuts and seeks their starting measure", () => {
   const c = setup();
-  c.value("loop-name", "Verse");
-  c.click("#save-loop");
-  expect(c.song.loops).toHaveLength(1);
-  expect(c.management.draft()).toEqual({ id: "new", name: "Verse" });
-  c.click("#new-loop");
-  expect(c.management.draft().id).toBeUndefined();
-  c.click('[data-loop="new"]');
-  expect(c.player.loop?.name).toBe("Verse");
-  vi.spyOn(window, "prompt").mockReturnValue("Chorus");
-  c.click('[data-rename-loop="new"]');
-  expect(c.song.loops[0].name).toBe("Chorus");
-  expect(c.player.loop?.name).toBe("Chorus");
-  c.click('[data-delete-loop="new"]');
-  expect(c.song.loops).toHaveLength(0);
-  expect(c.player.loop).toBeUndefined();
-  expect(c.management.draft().id).toBeUndefined();
-  expect(c.changed).toHaveBeenCalled();
-  expect(c.fail).not.toHaveBeenCalled();
+  c.management.render();
+  expect(c.root.querySelectorAll("#section-shortcuts button")).toHaveLength(8);
+  expect(c.root.querySelector("#section-shortcuts")!.textContent).toContain("전주");
+  const before = c.root.querySelector("#section-shortcuts")!.innerHTML;
+  c.playback.mark();
+  expect(c.root.querySelector("#section-shortcuts")!.innerHTML).toBe(before);
+  c.click('[data-section-measure="0"]');
+  expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start);
+  expect(c.song.markers).toHaveLength(1);
 });
-it("adds named markers, escapes names, seeks, renames and deletes", () => {
-  const c = setup();
-  c.value("marker-name", "<img onerror=x>");
-  c.click("#add-marker");
-  expect(c.song.markers[0].name).toBe("<img onerror=x>");
-  expect(c.root.querySelector("img")).toBeNull();
-  c.click('[data-marker="marker"]');
-  expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[8].start);
-  vi.spyOn(window, "prompt").mockReturnValue("Practice");
-  c.click('[data-rename-marker="marker"]');
-  expect(c.song.markers[0].name).toBe("Practice");
-  c.click('[data-delete-marker="marker"]');
-  expect(c.song.markers).toHaveLength(0);
-});
-it("disposes handlers and captures current musical position for loop endpoints", () => {
-  const c = setup();
-  c.click("#set-a");
-  expect((c.root.querySelector("#loop-a") as HTMLInputElement).value).toBe("9");
-  expect(c.playback.updateLoopBeatBounds).toHaveBeenCalledOnce();
-  c.management.dispose();
-  c.click("#add-marker");
-  expect(c.song.markers).toHaveLength(0);
+it("disposes section navigation handlers", () => {
+ const c = setup(); c.management.render(); c.management.dispose();
+ c.click('[data-section-measure="0"]'); expect(c.playback.seek).not.toHaveBeenCalled();
 });

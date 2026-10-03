@@ -108,3 +108,27 @@ it("renders every portable action icon without authoring definitions", () => {
     expect(svg).toMatch(/<(path|circle|rect)/);
   }
 });
+
+it('uses reviewed PDF lyric centers in both views, but falls back after a score edit or for SVG',()=>{
+ const s=JSON.parse(readFileSync('public/demo/song.json','utf8')) as Song;
+ const m=s.measures[0],r={...s.regions.find(r=>r.id===m.regionId)!,
+  lyricAnchors:[{lyricId:'underlay',quarterOffset:.5,x:.37}]};
+ const lyric={id:'underlay',text:'loveholic',time:m.start,end:m.start+.1,confirmed:false,
+  scorePosition:{measureId:m.id,quarterOffset:.5,durationQuarters:.5}};
+ const props={s,m,r,i:0,width:300,ly:[lyric],pageURL:'page.png',pageRatio:1,isSVG:false,positionInMeasure:()=>150};
+ for(const view of ['rows','ribbon'] as const){
+  s.settings.view=view;
+  document.body.innerHTML=renderMeasure(props);
+  const el=document.querySelector<HTMLElement>('.syllable')!;
+  expect(el.style.left).toBe('111px');
+  expect(el.dataset.pdfLyricAnchor).toBe('true');
+  expect(el.style.transform).not.toBe('none');
+ }
+ document.body.innerHTML=renderMeasure({...props,isSVG:true});
+ expect(document.querySelector<HTMLElement>('.syllable')!.style.left).toBe('50%');
+ expect(document.querySelector('[data-pdf-lyric-anchor]')).toBeNull();
+ lyric.scorePosition.quarterOffset=1;
+ document.body.innerHTML=renderMeasure(props);
+ expect(document.querySelector<HTMLElement>('.syllable')!.style.left).toBe('50%');
+ expect(document.querySelector('[data-pdf-lyric-anchor]')).toBeNull();
+});

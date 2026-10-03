@@ -2025,3 +2025,40 @@ body {
 #library-dialog #new-button .icon-caption {
   font-size: 14px;
 }
+
+/* Authoring starts with work in progress, matching the practice library hierarchy. */
+.welcome.editor-home { max-width:none; margin:24px auto; padding:0; border:0; background:transparent; }
+.editor-home-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:28px; }
+.editor-home-heading h2 { font-size:24px; margin:0; }
+.editor-home-card { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:24px; margin-bottom:14px; border:1px solid var(--line); border-radius:20px; background:white; }
+.editor-home-card h3 { margin:0 0 8px; font-size:20px; }
+.editor-home-card p { margin:0; }
+.editor-home-card button { flex-shrink:0; }
+.editor-home-empty { padding:32px 24px; background:white; border:1px solid var(--line); border-radius:20px; }
+.editor-player-link { font-weight:600; color:var(--accent); padding:12px; white-space:nowrap; }
+body:not(.has-song) #app > header .actions > button,
+body:not(.has-song) #app > header .actions > .metronome-toggle { display:none; }
+@media(max-width:600px) { .editor-home-heading { align-items:flex-start; flex-direction:column; } .editor-home-card { padding:18px; } }
+
+/* Desktop score authoring: full-width table, independent of the tablet player. */
+#editor-sections {padding:24px;max-width:1100px;margin:0 auto;width:100%;box-sizing:border-box;}
+.section-editor-heading {display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.section-editor-heading h3 {margin:0 0 8px;}
+.section-editor-heading p {color:var(--muted);margin:0 0 20px;}
+.section-editor-table {width:100%;border-collapse:collapse;margin:16px 0 24px;}
+.section-editor-table th,.section-editor-table td {padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+.section-editor-table th:first-child {width:140px;}
+.section-editor-table th:last-child {width:80px;}
+.section-editor-table input {box-sizing:border-box;width:100%;}
+[data-pane="sections"], #editor-sections, [data-active-pane="sections"] {
+  --tab-tone:#edf0fb;
+  --tab-ink:#494b8f;
+  --tab-color:#6966b5;
+  --tab-label:#fff;
+}
+#editor-sections .section-editor-table {table-layout:fixed;font-size:15px;}
+#editor-sections .section-editor-table th:last-child {width:112px;}
+#editor-sections .section-editor-table input {height:38px;min-height:38px;font-size:15px;padding:6px 10px;}
+#editor-sections .section-editor-table button {min-height:38px;padding:6px 14px;white-space:nowrap;font-size:14px;}
+#editor-sections .section-editor-table td {padding:7px 14px;}
+#editor-sections .form-footer {position:sticky;bottom:0;padding:12px 0;background:var(--tab-tone);}

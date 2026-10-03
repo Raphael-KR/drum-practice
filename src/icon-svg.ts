@@ -7,8 +7,6 @@ const paths: Record<string, string> = {
   close: '<path d="m6 6 12 12M18 6 6 18"/>',
   settings:
     '<path d="m10 3-.6 2.1-2 .9-2-.7-2 3.4 1.5 1.5-.2 2.2L3 14l2 3.4 2-.7 2 .9.6 2.1h4l.6-2.1 2-.9 2 .7 2-3.4-1.5-1.5.2-2.2L21 10l-2-3.4-2 .7-2-.9L14 3Z"/><circle cx="12" cy="11.5" r="3"/>',
-  recenter:
-    '<circle cx="12" cy="12" r="7"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/>',
   play: '<path d="m8 4 13 8-13 8Z" fill="currentColor" stroke="none"/>',
   pause:
     '<path d="M7 5h3v14H7zm7 0h3v14h-3z" fill="currentColor" stroke="none"/>',

@@ -20,7 +20,7 @@ describe('shared UI standard',()=>{
   expect(root.querySelector('.playback-group')!.children).toHaveLength(2);
   document.getElementById('home')!.click();expect(clicks).toBe(1);
   expect(document.getElementById('home')!.getAttribute('aria-label')).toBe('처음으로');
-  expect(document.getElementById('stage')!.getAttribute('aria-describedby')).toBe('score-gesture-hint');
+  expect(document.getElementById('stage')!.getAttribute('aria-describedby')).toBeNull();
   expect(root.querySelector('dialog')!.getAttribute('aria-labelledby')).toBe('settings-dialog-title');
  });
 });

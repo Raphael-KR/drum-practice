@@ -50,7 +50,7 @@ Snare Doubles의 세 빗금은 일반적인 반복음 tremolo 경로로 표시�
 
 ## 근거
 
-로컬 checkout: /Users/raphael/Playground/osmd-hollow-fix
+현재 로컬 checkout: /Users/raphael/Playground/drum-practice/dependencies/osmd-hollow-fix (2026-10-03 경로 정리, 조사 당시 commit 유지).
 
 - src/MusicalScore/SubInstrument.ts: midiInstrument 이름 사전, name/fixedKey 필드.
 - src/MusicalScore/ScoreIO/MusicSheetReader.ts:962: midi-unpitched 읽기.
