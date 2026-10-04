@@ -195,3 +195,9 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - version appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_9c6fc42e368c819195e3af98cd66b306
 - deployment appgdep_6ac23c41b4d4819184c13bae21c11b84 succeeded (2026-10-04T11:45:22.022581+00:00).
 - 가로 버전/빌드 표시를 제목 아래로 이동. 제목바 높이57px 유지(Safari MCP 로컬 수정 전후 실측), 세로 inline 유지. dist/player만 게시.
+
+## 2026-10-04 22:15 KST — Sites38 / player0.6.20
+- build7e6a94b2, source3064e235c416f85ab4e950243e176568554036da.
+- deployment appgdep_6ac25143c9408191a8cac19e0eea71e2 succeeded. 공개/player-only 유지.
+- 정본 기능 커밋 c470012 main push 완료. 드럼438테스트/89파일 및 build:apps 통과.
+- 공개 Safari에서 신규 빌드와 제목바 보기 버튼 로드 확인. 일반 Python HTTP 접근은403 응답이어서 Safari로 확인. 실제 iPad 추가 검수는 미실시.
