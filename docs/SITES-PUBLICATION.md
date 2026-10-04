@@ -233,3 +233,8 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - build 8c5fea89, source 1c494e59d0f3205813c9d6ec5993174c6a2605e4.
 - deployment appgdep_6ac28a4626988191a5f41b0792aeda02 succeeded. 공개/player-only 유지.
 - 정본 2b211b4 main push 완료. 섹션 점등·모달·도움말·호버·숫자판 전체 드래그 개선. 446개 테스트 및 분리 빌드 통과.
+
+## 2026-10-05 02:26 KST — Sites45 / player0.6.27
+- build 688631c6, source 72957b86781305bd9bb89fc4a400e71eac9e6a1b.
+- deployment appgdep_6ac28c54e8608191afd223f6fc619a79 succeeded. 공개/player-only 유지.
+- 정본 cf1d6a2 main push 완료. 악보 선택 화면 새로고침·드럼치는공방 예약 링크 추가. 446개 테스트와 분리 빌드 통과. 운영 HTTP 및 JavaScript 자산의 릴리스 일치 확인.
