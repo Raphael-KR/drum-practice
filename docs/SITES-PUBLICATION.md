@@ -142,3 +142,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 ## 2026-10-04 14:43 KST — 0.6.10 / Sites 28
 - viewport-fit=cover 제거 단일 변수 비교. 417테스트·TypeScript·build:apps 통과.
 - sourcec77e8cb0c005e3d575914f5cca05fa6efe704c1a, deployment appgdep_6ac1e76beaec8191b2af135fa5224079 succeeded. 실제 iPad 결과 미확인.
+
+## 2026-10-04 14:52 KST — player 0.6.11 / Sites 29
+- 제목 옆 빌드표시 v0.6.11 · build 66e993d6. 제목바 높이 유지 확인. 417테스트·build:apps 통과.
+- sourced4ec5c978b833cc0762eda92f7ae49e8a4153bb8, deployment appgdep_6ac1e977f55881919670c59028cbbd9f succeeded.
