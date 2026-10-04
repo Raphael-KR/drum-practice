@@ -2653,3 +2653,5 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 제목바·흰 악보·회색 재생바·민트 조작판이 화면 양끝까지 빈틈없이 이어지도록 main 패딩과 practice 구역 간격 제거.
 - 안전 영역 여백을 각 색상 구역 안으로 옮기고 제목 위 24px 보정 유지. theme-color를 제목바 #f4f7fc로 일치시킴.
 - 417개 테스트, TypeScript, diff 검사 통과. Safari 1188×796에서 각 구역 x=0,width=1188, 수직 경계62→536→616→796 연속 확인. 실제 iPad 상태바 합성은 게시 후 사용자 확인 필요.
+- Safari 세로 744×1133 레이아웃 fixture: 모든 구역 x=0,width=744, 수직 경계106→685→823→1133 연속. 실제 iPad 검증과 구분.
+- build:apps 및 앱 분리 검사 통과. 13:44 KST Sites version21 게시 succeeded, source5588d2cf735b68ca01b26eb8d988ee3aa27deb3d, deployment appgdep_6ac1d97c5fb881918f544cf01e1ea0b4. player-only/public 유지.
