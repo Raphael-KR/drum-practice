@@ -82,12 +82,17 @@ export function updateRepeatControls(
     adjust: string;
     attribute: string;
   },
+  presets: ReadonlyMap<number, Loop> = new Map(),
 ) {
-  const range = loop && loopMeasureRange(s, loop.start, loop.end);
+  const toggle = root.querySelector<HTMLElement>(`#${bindings.adjust}`);
+  toggle?.classList.toggle("primary", !!loop);
+  toggle?.setAttribute("aria-pressed", String(!!loop));
   root.querySelectorAll<HTMLElement>(`[${bindings.attribute}]`).forEach((b) => {
     const active =
       !!loop && Number(b.getAttribute(bindings.attribute)) === radius;
-    b.textContent = active && range ? `${range.first + 1}~${range.last + 1}` : t("workspace.message550", {radius: Number(b.getAttribute(bindings.attribute))});
+    const saved = presets.get(Number(b.getAttribute(bindings.attribute))) ?? (active ? loop : undefined);
+    const range = saved && loopMeasureRange(s, saved.start, saved.end);
+    b.textContent = range ? `${range.first + 1}~${range.last + 1}` : t("workspace.message550", {radius: Number(b.getAttribute(bindings.attribute))});
     b.classList.toggle("primary", active);
     b.setAttribute("aria-pressed", String(active));
   });

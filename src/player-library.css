@@ -1,4 +1,5 @@
-.player-library {
+.player-library,
+body:not(.has-song) #app:has(.editor-home) {
   font-size: 18px;
   max-width: 1120px;
   margin: auto;
@@ -12,7 +13,8 @@
   gap: 20px;
   flex-wrap: wrap;
 }
-.library-header h1 {
+.library-header h1,
+body:not(.has-song) #app:has(.editor-home) > header .brand {
   margin: 0;
   font-size: 28px;
 }
@@ -63,11 +65,32 @@
   overflow-wrap: anywhere;
 }
 @media (max-width: 600px) {
-  .player-library {
+  .player-library,
+body:not(.has-song) #app:has(.editor-home) {
     padding: 16px;
   }
   .practice-card {
     align-items: stretch;
     flex-direction: column;
   }
+}
+
+/* Both library entry screens use the same spacing and card typography. */
+body:not(.has-song) #app:has(.editor-home) > main {
+  padding:32px 0;
+  display:block;
+}
+body:not(.has-song) #app .welcome.editor-home {
+  margin:0; padding:0; max-width:none;
+}
+.editor-home .practice-records { margin-top:60px; }
+.editor-home .practice-card p { font-size:18px; }
+body:not(.has-song) #app:has(.editor-home) > header .editor-player-link {
+  padding:0; font-size:18px;
+}
+body:not(.has-song) #app:has(.editor-home) > header .brand h1 {
+  font-size:28px; margin:0; line-height:normal;
+}
+body:not(.has-song) #app .editor-home button {
+  min-height:44px;
 }

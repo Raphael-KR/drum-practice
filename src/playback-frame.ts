@@ -1,9 +1,11 @@
+import { gridPhase } from "./ribbon-timeline";
 import {
   clamp,
   locate,
   continuousX,
   xAtBeat,
   type Song,
+  type Region,
   type Loop,
 } from "./model";
 import { displayRegion } from "./score-view";
@@ -98,6 +100,7 @@ export function updateScoreFrame(h: {
   position: (i: number, b: number, w: number) => number;
   rows: (i: number) => void;
   compare?: () => void;
+  regionAt?: (index: number) => Region | undefined;
 }) {
   const { s, t, stage, ribbon, count, loop } = h;
   const { index, measure: m, beat } = locate(s, t);
@@ -135,21 +138,29 @@ export function updateScoreFrame(h: {
     h.highlight,
     notePulseBeats(m.beats, m.end - m.start, s.settings.rate),
   );
-  const region = displayRegion(
+  const region = h.regionAt?.(index) ?? displayRegion(
     s,
     s.regions.find((r) => r.id === m.regionId)!,
   );
   const next = s.measures[index + 1];
   const nextRegion =
     next &&
-    displayRegion(
+    (h.regionAt?.(index + 1) ?? displayRegion(
       s,
       s.regions.find((r) => r.id === next.regionId)!,
-    );
+    ));
   // Cross printed bar margins continuously, but never bridge two screen rows.
-  const nextStart =
-    next && index % 4 !== 3 ? 1 + xAtBeat(nextRegion!, next, 0) : 1;
-  const playedThrough = index + continuousX(region, m, beat, 1, nextStart);
+  const currentCell = ribbon.querySelector<HTMLElement>(`[data-index="${index}"]`);
+  const nextCell = ribbon.querySelector<HTMLElement>(`[data-index="${index + 1}"]`);
+  const sameRow = s.settings.uniformSpacing && s.settings.view === "rows"
+    ? !!nextCell && currentCell?.closest(".browse-row") === nextCell.closest(".browse-row")
+    : index % 4 !== 3;
+  const nextStart = next && sameRow
+    ? 1 + xAtBeat(nextRegion!, next, 0) * (s.settings.uniformSpacing && currentCell && nextCell ? nextCell.offsetWidth / currentCell.offsetWidth : 1)
+    : 1;
+  const playedThrough = index + (s.settings.uniformSpacing
+    ? gridPhase(beat * 4 / m.denominator, m.beats * 4 / m.denominator)
+    : continuousX(region, m, beat, 1, nextStart));
   ribbon.querySelectorAll<HTMLElement>("[data-index]").forEach((e) => {
     const measureIndex = Number(e.dataset.index);
     const active = measureIndex === index;

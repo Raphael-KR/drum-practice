@@ -1,8 +1,9 @@
+import { gridPhase } from "./ribbon-timeline";
 import { mountLoopSlots } from "./loop-slots";
 import { mountPlaybackDrawer } from "./playback-drawer";
 import { syncSettingsChoices } from "./playback-forms";
 import { zoomFromSlider, sliderFromZoom, snapZoomSlider } from "./score-zoom";
-import type { RibbonAsset } from "./playback-assets";
+import { selectPlaybackEngraving, type RibbonAsset } from "./playback-assets";
 import { closeDialogOnBackdrop } from "./dialog-ui";
 import { setIconButton } from "./icon-button";
 /** The single playback screen owner. Hosts supply assets, persistence and authoring hooks. */
@@ -12,7 +13,7 @@ import { installHelp } from "./help";
 import { t } from "./i18n";
 import { icon, tempoNote } from "./icon-svg";
 import { lyricMeasureId } from "./lyric-grid";
-import { toggleMeasureMarker } from "./marker-slots";
+import { toggleMeasureMarker, deleteMarkerSlot, pruneMarkerOverflow } from "./marker-slots";
 import {
   bindMarkerSlots,
   markerSlotsHTML,
@@ -41,6 +42,7 @@ import {
 import {
   layoutScoreLyrics,
   measurePosition,
+  ribbonPosition,
   measureWidth,
   renderScoreRows,
   scoreLayout,
@@ -167,33 +169,40 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   let center: number | undefined,
     radius: number | undefined,
     lastLoop: Loop | undefined = h.initialLastLoop;
+  const repeatPresets = new Map<number, ReturnType<typeof repeatPreset>>();
   let disposed = false;
   const available = () => h.ready() && !h.busy();
   function position(index: number, beat: number, width: number) {
     const s = h.song(),
       asset = ribbonAsset(index);
     if (asset) {
+      if (s.settings.uniformSpacing) {
+        const m = s.measures[index];
+        return width * gridPhase(beat * 4 / m.denominator, m.beats * 4 / m.denominator);
+      }
       if (s.settings.view === "rows") return width * xAtBeat(asset.region, s.measures[index], beat);
-      // The phase is shared by every bar, including empty bars; no end-of-bar acceleration.
-      return width * (asset.phase + beat / s.measures[index].beats);
+      // Artwork may use row geometry; motion must use the continuous timeline.
+      const timeline = h.assets().ribbon!.get(index)!;
+      return ribbonPosition(width, beat, s.measures[index].beats, timeline.phase);
     }
     return measurePosition(s, index, beat, width, widthOf);
   }
   function ribbonAsset(index: number) {
     if (h.song().scoreFormat !== "musicxml") return undefined;
     const asset = h.assets().ribbon?.get(index);
-    return h.song().settings.view === "rows" ? asset?.row ?? asset : asset;
+    return selectPlaybackEngraving(asset, h.song().settings.uniformSpacing);
   }
   function widthOf(m: Song["measures"][number]) {
     const s = h.song(),
       a = h.assets(),
-      timeline = ribbonAsset(s.measures.indexOf(m)),
+      timeline = s.scoreFormat === "musicxml" ? a.ribbon?.get(s.measures.indexOf(m)) : undefined,
       r =
         timeline?.region ??
         displayRegion(
           s,
           s.regions.find((r) => r.id === m.regionId)!,
         );
+    if (s.settings.uniformSpacing && timeline?.grid) return stage.clientWidth / 4 * (s.settings.view === "ribbon" ? s.settings.zoom : 1);
     return measureWidth(
       s,
       r,
@@ -228,7 +237,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       pageURL: timeline?.url ?? a.urls[r.page],
       pageRatio: timeline?.ratio ?? a.ratios[r.page] ?? 1.294,
       isSVG,
-      positionInMeasure: position,
+      positionInMeasure: (index, beat, cellWidth) =>
+        timeline && !s.settings.uniformSpacing ? cellWidth * xAtBeat(r, s.measures[index], beat) : position(index, beat, cellWidth),
     });
   }
   function layoutLyrics() {
@@ -245,7 +255,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     }));
     // Size rows from the full available width; surrounding UI must not shrink notation.
     const width = base;
-    const fittedHeight = naturalHeight + 30;
+    const selectedHeight = s.settings.uniformSpacing && s.scoreFormat === "musicxml"
+      ? Math.max(...s.measures.map((_, i) => {
+          const asset = ribbonAsset(i);
+          return asset ? scoreLayout(s, asset.region, widthOf(s.measures[i]), stage.clientWidth, asset.staff)!.height : naturalHeight;
+        })) : naturalHeight;
+    const fittedHeight = Math.max(naturalHeight, selectedHeight) + 30;
     stage.style.setProperty("--two-row-stage-height", `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`);
     stage.style.setProperty("--fitted-row-width", `${stage.clientWidth}px`);
     stage.style.setProperty("--row-content-height", `${fittedHeight}px`);
@@ -282,6 +297,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       compare = s.settings.view === "compare";
     get("practice").classList.toggle("two-rows", s.settings.view !== "ribbon");
     get("practice").classList.toggle("score-review", compare);
+    get("practice").classList.toggle("uniform-spacing", !!s.settings.uniformSpacing && s.scoreFormat === "musicxml");
     input("zoom").closest("label")!.hidden = s.settings.view !== "ribbon";
     if (compare) {
       stage.style.removeProperty("height");
@@ -323,9 +339,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     if (!h.ready()) return;
     const p = h.player();
     if (p.playing && !stage.classList.contains("is-playing")) {
-      rows.playbackRowOrigin = Math.floor(
-        locate(h.song(), p.current()).index / 4,
-      );
+      const index = locate(h.song(), p.current()).index;
+      rows.playbackRowOrigin = Math.floor(index / 4);
       rows.rowWindow = -1;
       stationary = undefined;
     }
@@ -341,12 +356,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function renderLists() {
     if (!h.ready()) return;
     const s = h.song();
+    if (pruneMarkerOverflow(s)) h.changed();
     updateRepeatControls(root, s, h.player().loop, radius, {
       summary: ids.summary,
       stop: ids.stop,
       adjust: ids.adjust,
       attribute: ids.radiusAttribute,
-    });
+    }, new Map([...repeatPresets].map(([key, preset]) => [key, preset.loop])));
     get(ids.markers).innerHTML = markerSlotsHTML(s, "data-quick-marker");
     syncMarkerBadges(ribbon, s);
     loopSlots?.render();
@@ -521,12 +537,6 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const p = h.player(),
       v = input(ids.progress),
       time = p.current();
-    const measure = locate(h.song(), time).measure;
-    const marked = !!measure && h.song().markers.some(marker => locate(h.song(), marker.time).measure?.id === measure.id);
-    get(ids.mark).setAttribute("aria-pressed", String(marked));
-    const markerLabel = t(marked ? "marker.current.remove" : "marker.current.add");
-    get(ids.mark).title = markerLabel;
-    get(ids.mark).setAttribute("aria-label", markerLabel);
     if (!scrub && document.activeElement !== v)
       v.value = String(Math.round(clamp(time / (p.duration || 1), 0, 1) * 100));
     v.setAttribute("aria-valuenow", v.value);
@@ -566,6 +576,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       widths,
       position,
       rows: renderRows,
+      regionAt: i => s.settings.uniformSpacing ? ribbonAsset(i)?.region : undefined,
       compare: () => h.compare?.draw(time),
     });
     progress();
@@ -645,6 +656,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
           : "main.message226",
     );
     const pdf = h.ready() && h.song().scoreFormat !== "musicxml";
+    const spacing = input("uniform-spacing");
+    spacing.disabled = !h.ready() || pdf || view === "compare" || !h.assets().ribbon?.get(0)?.grid;
+    spacing.checked = h.ready() && !!h.song().settings.uniformSpacing;
+    get("uniform-spacing-description").textContent = t(spacing.disabled ? "settings.uniformSpacingUnavailable" : "settings.uniformSpacingDescription");
     const control = input(h.display.highlightId);
     control.disabled = view === "compare" || pdf;
     control.checked = !control.disabled && h.highlight();
@@ -662,12 +677,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const original = h.song().bpm;
     get("tempo-options").innerHTML = [
       ...new Set(
-        [0.5, 0.6, 0.7, 0.8, 0.9].map((f) => Math.round(original * f)),
+        [0.5, 0.6, 0.7, 0.8, 0.9, 0.95].map((f) => Math.round(original * f)),
       ),
     ]
       .map((bpm) => `<button data-tempo="${bpm}">${bpm} BPM</button>`)
       .join("");
-    get("tempo-reset").textContent = t("main.message251", { original });
+    get("tempo-reset").dataset.tempo = String(original);
+    get("tempo-reset").textContent = t("main.message251", { original: `\n${original}` });
     sync();
     open("tempo");
   }
@@ -786,14 +802,16 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function quickRepeat(value: number) {
     if (!available()) return;
-    if (h.player().loop && radius === value) { stopLoop(); return; }
-    const preset = repeatPreset(
+    if (h.player().loop && radius === value) { repeatPresets.delete(value); stopLoop(); return; }
+    const preset = repeatPresets.get(value) ?? repeatPreset(
       h.song(),
       h.player().current(),
       h.player().duration,
       value,
       !h.player().loop ? undefined : center,
     );
+    repeatPresets.delete(value);
+    repeatPresets.set(value, preset);
     center = preset.center;
     radius = value;
     useLoop(preset.loop, true);
@@ -809,7 +827,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     },
   );
 
-  action(ids.adjust, () => loopSlots?.focus());
+  action(ids.adjust, () => {
+    if (!available()) return;
+    if (h.player().loop) { stopLoop(); return; }
+    const recent = [...repeatPresets.entries()].at(-1);
+    if (recent) quickRepeat(recent[0]);
+  });
   function mark() {
     if (!available()) return;
     toggleMeasureMarker(h.song(), h.player().current(), uid());
@@ -817,9 +840,17 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     progress();
     h.changed();
   }
-  action(ids.mark, mark);
   disposers.push(
-    bindMarkerSlots(get(ids.markers), h.song, seek, "data-quick-marker"),
+    bindMarkerSlots(get(ids.markers), h.song, seek, "data-quick-marker", false, {
+      current: () => h.player().current(),
+      toggleCurrent: mark,
+      remove: id => {
+        deleteMarkerSlot(h.song(), id);
+        renderLists();
+        progress();
+        h.changed();
+      },
+    }),
   );
   const prefs = h.preferences;
   input(prefs.restartId).checked = prefs.read().restartMeasure;
@@ -845,6 +876,14 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       }
     }),
   );
+  listen(input("uniform-spacing"), "change", () => {
+    if (!available() || input("uniform-spacing").disabled) return;
+    h.song().settings.uniformSpacing = input("uniform-spacing").checked;
+    renderTrack();
+    sync();
+    frame();
+    h.changed();
+  });
   listen(input(h.display.highlightId), "change", () => {
     const inputElement = input(h.display.highlightId);
     if (!inputElement.disabled) h.display.setHighlight(inputElement.checked);
@@ -878,6 +917,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     loopSlots?.cancel();
     gestures.cancel();
     clearPreset();
+    repeatPresets.clear();
     lastLoop = undefined;
     stationary = undefined;
     native = false;

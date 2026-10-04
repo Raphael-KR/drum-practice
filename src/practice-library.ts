@@ -232,6 +232,7 @@ export function importPracticeRecord(
               time: remap(marker.time, old.song, stored.song),
             }));
             stored.song.repeatSlots = old.song.repeatSlots?.slice();
+            stored.song.markerSlots = old.song.markerSlots?.slice();
             stored.song.loops = old.song.loops.map((loop) => ({
               ...loop,
               start: remap(loop.start, old.song, stored.song),
@@ -395,6 +396,7 @@ export function savePracticeState(id: string, song: Song): Promise<void> {
           stored.song.markers = state.markers;
           stored.song.loops = state.loops;
           stored.song.repeatSlots = state.repeatSlots;
+          stored.song.markerSlots = state.markerSlots;
           validateSong(stored.song);
           store.put(stored);
         } catch (error) {

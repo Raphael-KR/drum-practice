@@ -2028,17 +2028,11 @@ body {
 
 /* Authoring starts with work in progress, matching the practice library hierarchy. */
 .welcome.editor-home { max-width:none; margin:24px auto; padding:0; border:0; background:transparent; }
-.editor-home-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:28px; }
-.editor-home-heading h2 { font-size:24px; margin:0; }
-.editor-home-card { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:24px; margin-bottom:14px; border:1px solid var(--line); border-radius:20px; background:white; }
-.editor-home-card h3 { margin:0 0 8px; font-size:20px; }
-.editor-home-card p { margin:0; }
-.editor-home-card button { flex-shrink:0; }
 .editor-home-empty { padding:32px 24px; background:white; border:1px solid var(--line); border-radius:20px; }
 .editor-player-link { font-weight:600; color:var(--accent); padding:12px; white-space:nowrap; }
 body:not(.has-song) #app > header .actions > button,
 body:not(.has-song) #app > header .actions > .metronome-toggle { display:none; }
-@media(max-width:600px) { .editor-home-heading { align-items:flex-start; flex-direction:column; } .editor-home-card { padding:18px; } }
+
 
 /* Desktop score authoring: full-width table, independent of the tablet player. */
 #editor-sections {padding:24px;max-width:1100px;margin:0 auto;width:100%;box-sizing:border-box;}

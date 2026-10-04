@@ -9,7 +9,7 @@ import { playbackButton, repeatControlsHTML } from "./playback-ui";
 import { settingsSwitch } from "./settings-ui";
 import { componentName } from "./ui-standard";
 export function tempoFieldsHTML(id: string) {
-  return `<label class="tempo-number"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div id="tempo-options"></div><p class="subtle">${t("workspace.message544")}</p><button id="tempo-reset">${t("workspace.message545")}</button>`;
+  return `<label class="tempo-number"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div class="tempo-choices"><div id="tempo-options"></div><button id="tempo-reset">${t("workspace.message545")}</button></div><p class="subtle">${t("workspace.message544")}</p>`;
 }
 export function soundFieldsHTML() {
   return `<div class="playback-sound-fields">${[
@@ -37,7 +37,6 @@ export function playbackTransportRightHTML(ids: {
   sound: string;
 }) {
   return (
-    playbackButton(ids.mark, "bookmark", t("main.message268")) +
     progressFieldHTML(ids.progress)
   );
 }
@@ -67,6 +66,7 @@ export function screenSettingsHTML(
     `<div class="settings-choice-row"><div class="settings-choice-buttons" role="group" aria-label="${t("main.message108")}">${["ribbon", "rows", ...(compare ? ["compare"] : [])].map((value, i) => `<button type="button" data-setting-control="view" data-setting-value="${value}">${t((["main.message109", "main.message110", "main.message111"] as const)[i])}</button>`).join("")}</div><p id="view-description" class="subtle"></p><span id="view-selected-text" hidden></span><select id="view" hidden><option value="ribbon">${t("main.message109")}</option><option value="rows">${t("main.message110")}</option>${compare ? `<option value="compare">${t("main.message111")}</option>` : ""}</select></div>` +
     `<div id="pdf-view-row" class="settings-choice-row"><div class="settings-choice-buttons" role="group" aria-label="${t("settings.scoreFormat")}"><button type="button" data-setting-control="${ids.pdf}" data-setting-value="true">${t("settings.pdfOriginal")}</button><button type="button" data-setting-control="${ids.pdf}" data-setting-value="false">${t("settings.musicxml")}</button></div><p id="pdf-view-status" class="subtle">${t("main.message227")}</p><input id="${ids.pdf}" type="checkbox" hidden disabled></div>` +
     zoomFieldHTML() +
+    settingsSwitch("uniform-spacing", t("settings.uniformSpacing"), t("settings.uniformSpacingDescription")) +
     settingsSwitch(ids.highlight, t("portable-player.message439"), t("main.message255"), true, { descriptionId: "note-highlight-description" }) +
     `<div class="settings-group">${settingsSwitch(ids.fullscreen, t("portable-player.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
   );

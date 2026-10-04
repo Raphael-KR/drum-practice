@@ -10,7 +10,7 @@ it('preserves slot holes, legacy loops and stable indices after JSON persistence
  storeLoopSlot(s,2); expect(savedLoopSlots(s)[2]).toBeUndefined();
  expect(savedLoopSlots(s)[3]?.id).toBe('old3'); expect(s.loops.find(l=>l.id==='old9')).toBeTruthy();
  storeLoopSlot(s,2,measureLoop(s,8,6,'replacement'));
- const loaded=JSON.parse(JSON.stringify(s)); expect(savedLoopSlots(loaded)).toHaveLength(8);
+ const loaded=JSON.parse(JSON.stringify(s)); expect(savedLoopSlots(loaded)).toHaveLength(12);
  expect(savedLoopSlots(loaded)[2]).toMatchObject({start:s.measures[6].start,end:s.measures[8].end});
 });
 it('supports a single measure and bounded edge speeds in both directions',()=>{
@@ -50,4 +50,13 @@ it('long press reveals actions without activating repetition',()=>{
  const c=setup();c.click(0);c.pointer('pointerdown',20);c.pointer('pointerup',20);
  c.root.querySelector('[data-loop-slot="0"]')!.dispatchEvent(new Event('pointerdown',{bubbles:true}));vi.advanceTimersByTime(600);
  expect(c.root.querySelector('[data-replace]')).toBeTruthy();expect(c.p.loop).toBeUndefined();c.control.dispose();
+});
+
+it('extends an existing eight-slot save without moving holes and persists slot twelve',()=>{
+ const s=song(); const first=measureLoop(s,0,1,'first'); s.loops=[first];
+ s.repeatSlots=['',first.id,'','','','','',''];
+ storeLoopSlot(s,11,measureLoop(s,2,3,'twelfth'));
+ const slots=savedLoopSlots(JSON.parse(JSON.stringify(s)));
+ expect(slots).toHaveLength(12); expect(slots[0]).toBeUndefined();
+ expect(slots[1]?.id).toBe('first'); expect(slots[11]?.id).toBe('twelfth');
 });

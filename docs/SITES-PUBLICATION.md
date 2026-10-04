@@ -88,3 +88,10 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - Loveholic 및 바람과 언덕의 발라드 패키지 포함. 원본 public 패키지와 배포 사본 SHA256 일치 확인.
 - 전체79파일370테스트, 최신 build:apps 및 앱 경계 검사 통과. Sites 서버의 succeeded 응답으로 게시 확인; 배포 후 공개 브라우저 검수는 별도로 하지 않음.
 - 악보제작기은 로컬 전용 유지. 독립 HTML 재생 파일 생성·저장, 정본 저장소 커밋/버전 변경은 수행하지 않음.
+
+## 2026-10-04 10:06 KST — Sites 버전17 게시
+- 최신 드럼연습실 게시 성공: https://drum-practice-studio.dgkma.chatgpt.site . 기존 public 범위 유지. 제작앱은 배포하지 않음.
+- 마커5개 통합, 구간12개, 균등 모드 및121~123 온쉼표 복구, 화면 정리, 메트로놈 최대 gain1.5 포함.
+- 전체88파일417테스트, build:apps 및 앱 경계 검사 통과. 배포 정적11파일은 dist/player와 SHA256/바이트 일치 확인.
+- Sites 소스 커밋 c82a274886c95e43d113fc19b9b757317c1c6c2b, version17, deployment appgdep_6ac1a67f31a081919ca45c1a4bd6de98 succeeded. 서버 응답으로 게시 확인; 게시 후 실제 iPad 재생 검수는 별도.
+- 정본 저장소의 작업 변경은 미커밋 상태로 보존. Sites 배포 사본만 helper로 커밋·push.

@@ -17,6 +17,17 @@
   box-shadow: 0 2px 8px #24304418;
   cursor: pointer;
 }
+header .actions #app-help-button {
+  position:static;
+  width:var(--playback-control-size,48px);
+  min-width:var(--playback-control-size,48px);
+  height:var(--playback-control-size,48px);
+  min-height:var(--playback-control-size,48px);
+  padding:8px;
+  border-radius:10px;
+  box-shadow:none;
+  flex:none;
+}
 #app-help-button:focus-visible {
   outline: 3px solid #2563eb;
   outline-offset: 3px;
@@ -41,11 +52,11 @@
 }
 #app-help-dialog .dialoghead {
   position: absolute;
-  top: auto;
+  top: max(16px, env(safe-area-inset-top));
   height: auto;
   margin: 0;
   right: 16px;
-  bottom: max(16px, env(safe-area-inset-bottom));
+  bottom: auto;
   width: min(350px, calc(100% - 32px));
   box-sizing: border-box;
   padding: 12px 18px;
@@ -71,8 +82,8 @@
 #app-help-dialog .help-content {
   position: absolute;
   right: 16px;
-  top: 16px;
-  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 80px);
+  top: calc(max(16px, env(safe-area-inset-top)) + 80px);
+  bottom: max(16px, env(safe-area-inset-bottom));
   width: min(350px, calc(100% - 32px));
   overflow: auto;
   background: #f4f7fc;

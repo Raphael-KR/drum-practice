@@ -49,3 +49,15 @@
 ## 최종 상태
 
 bytes-v1로 설정 저장 후 Safari 새로고침 → 내 곡 재열기 → 실제 악보 표시 성공(`round24-final-loaded`). 한 줄 보기,100%,클릭 켜짐,1마디,일시정지로 복원. 테스트 마커/반복 삭제. DeviceInteractionEndSession에서 Session stopped 확인. 루트 에이전트도 전체화면 수정·복구 결과·최종 재열기 캡처를 직접 확인했다. 결과 요약은 `docs/experiments/round24-results.json`.
+
+
+## 2026-10-04 마커 버튼 통합 검증
+- 환경: iOS27 iPad mini A17 Pro, 9ECBE1E1-D908-45A7-AF31-5F9FEAB568E2, Safari http://127.0.0.1:5174/player.html.
+- 세로에서 5개 마커 때문에 진행률과 처음으로 버튼이 겹친 문제 발견. 세로 재생바를 두 열로 배치하고 재생 그룹의 절대 위치를 해제해 수정. 동일 화면 재캡처로 겹침 해소 확인.
+- 세로 및 가로 전체화면 각각 마커53/63/80/96/112의 이동→재탭 삭제→빈 버튼 등록을 실제 터치로 모두 검증. 삭제 후 빈 아이콘, 등록 후 원래 마디 숫자 재표시 확인. 기존 마커 마디 목록으로 복구.
+- 증거: tmp/marker-ipad-qa/112-restored.png (세로), landscape-112-restored.png (가로), 각 단계 txt/png. 관련29테스트 및 TypeScript 통과.
+- 당시 발견: 가로에서 조작판 하부가 잘림. 아래 상하 여백 활용 수정으로 가로 전체화면에서 해결했다. 일반 Safari 화면은 별도다.
+
+## 2026-10-04 가로 전체화면 상하 여백 활용
+- 사용자 결정: 악보 축소 대신 화면 상하 여백 활용. 공통 재생 CSS에서 가로 전체화면에만 앱 상단 safe-area 여백을 최대12px, 하단0으로 조정했다. 좌우 여백 및 악보·버튼·조작판 크기는 유지한다.
+- iPad mini Safari 전체화면1133×744에서 마지막 행 y698~738로 전체 노출 확인(기존 y718~758). 증거: tmp/marker-ipad-qa/spacing-verified.png 및 txt. TypeScript와 git diff --check 통과.

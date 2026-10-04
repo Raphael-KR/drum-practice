@@ -1,7 +1,7 @@
 /** Disposable derived data only: never writes source scores or practice state. */
 import type { Region } from "./model";
 import { version as osmdVersion } from "opensheetmusicdisplay/package.json";
-export const SCORE_RENDER_POLICY = `osmd-${osmdVersion}:drum-print-ribbon-v17-legend-preserve-voices:svg1500:quarter-native:rows4`;
+export const SCORE_RENDER_POLICY = `osmd-${osmdVersion}:drum-print-ribbon-v20-grid-whole-rest:svg1500:quarter-native:rows4`;
 export interface RenderedScore {
   pages: Blob[];
   regions: Region[];

@@ -30,7 +30,7 @@ export function installHelp(root: HTMLElement) {
       return;
     }
     if (help?.open) return;
-    const parent = activeDialog() || root;
+    const parent = activeDialog() || root.querySelector("header .actions") || root;
     if (button.parentElement !== parent) parent.append(button);
   };
   const observer = new MutationObserver(relocate);

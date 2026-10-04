@@ -1,8 +1,10 @@
+import { gridPhase, RIBBON_HEAD_ANCHOR } from "./ribbon-timeline";
 /** OSMD 2.1.x adapter: change musical positions before native engraving, never scale glyphs. */
 export interface RibbonSpacing {
   quarter: number;
   uniformQuarters?: number;
   rowWidth?: number;
+  fixedGrid?: boolean;
   offset: number;
   constraints?: { measure: number; beat: number; quarter: number; boundary: boolean; left: number; right: number }[];
 }
@@ -80,7 +82,9 @@ export function installRibbonEngraving(osmd: any, spacing: RibbonSpacing) {
           return {q:e.relInMeasureTimestamp.RealValue*4,left,right};
         }) : [];
         const points = spacing.uniformQuarters && spacing.rowWidth
-          ? rowPositions([...rowEntries,{q:duration,left:0,right:0}],spacing.offset,spacing.rowWidth) : undefined;
+          ? (spacing.fixedGrid
+            ? rowEntries.map((e: {q: number}) => gridPosition(e.q, duration, spacing.rowWidth!))
+            : rowPositions([...rowEntries,{q:duration,left:0,right:0}],spacing.offset,spacing.rowWidth)) : undefined;
         measure.setWidth((points ? spacing.rowWidth! : quarters * spacing.quarter) / 10);
         const stave = measure.getVFStave(),
           contexts = new Set();
@@ -149,4 +153,9 @@ export function installMeasureEndWedges(osmd: any) {
     try { return calculate(expression, position); }
     finally { end.Timestamp = timestamp; end.EndOffsetFraction = offset; }
   };
+}
+
+/** A 32nd occupies one eighth of a quarter; tuplets retain fractional grid positions. */
+export function gridPosition(quarter: number, duration: number, width: number) {
+  return width * gridPhase(quarter, duration) - RIBBON_HEAD_ANCHOR;
 }

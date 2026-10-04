@@ -2,6 +2,7 @@
 import { expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import {
+  updateRepeatControls,
   repeatFields,
   repeatPoint,
   repeatPreset,
@@ -246,4 +247,63 @@ it("does not turn automatic end-of-track alignment into a seek", () => {
   expect(seek).toHaveBeenCalledOnce();
   expect(selected).toHaveBeenCalledOnce();
   dispose();
+});
+
+it('marker slot seeks first and deletes only when its measure is already selected',()=>{
+ const s=song();s.markers=[{id:'m',name:'test',time:s.measures[8].start}];
+ document.body.innerHTML=markerSlotsHTML(s,'data-slot');
+ let current=s.measures[0].start;
+ const remove=vi.fn(), seek=vi.fn((time:number)=>{current=time;});
+ const dispose=bindMarkerSlots(document.body,()=>s,seek,'data-slot',false,{current:()=>current,remove});
+ const button=document.querySelector<HTMLButtonElement>('button:not(:disabled)')!;
+ button.click(); expect(seek).toHaveBeenCalledOnce();expect(remove).not.toHaveBeenCalled();
+ current+=0.1;button.click();expect(remove).toHaveBeenCalledWith('m');expect(seek).toHaveBeenCalledOnce();
+ dispose();
+});
+
+it('places the shared uniform spacing switch immediately before note following', async()=>{
+ const {screenSettingsHTML}=await import('../src/playback-forms');
+ const node=document.createElement('div');
+ node.innerHTML=screenSettingsHTML({pdf:'pdf',highlight:'highlight',fullscreen:'fullscreen'});
+ const row=node.querySelector('#uniform-spacing')!.closest('label')!;
+ expect(row.nextElementSibling?.querySelector('#highlight')).not.toBeNull();
+ expect((node.querySelector('#uniform-spacing') as HTMLInputElement).checked).toBe(false);
+});
+
+it("keeps configured ranges visible while the master repeat is off", () => {
+ const s = song();
+ const root = document.createElement("div");
+ root.innerHTML = '<button id="master"></button><button data-radius="1"></button><button data-radius="2"></button>';
+ const a=repeatPreset(s,s.measures[3].start,s.measures.at(-1)!.end,1).loop;
+ const b=repeatPreset(s,s.measures[8].start,s.measures.at(-1)!.end,2).loop;
+ const presets=new Map([[1,a],[2,b]]);
+ const bindings={summary:"",stop:"",adjust:"master",attribute:"data-radius"};
+ updateRepeatControls(root,s,b,2,bindings,presets);
+ const labels=[...root.querySelectorAll("[data-radius]")].map(e=>e.textContent);
+ expect(root.querySelector('#master')!.getAttribute('aria-pressed')).toBe('true');
+ expect(root.querySelector('[data-radius="2"]')!.getAttribute('aria-pressed')).toBe('true');
+ updateRepeatControls(root,s,undefined,undefined,bindings,presets);
+ expect([...root.querySelectorAll("[data-radius]")].map(e=>e.textContent)).toEqual(labels);
+ expect([...root.querySelectorAll('button')].every(e=>e.getAttribute('aria-pressed')==='false')).toBe(true);
+ updateRepeatControls(root,s,b,2,bindings,presets);
+ expect(root.querySelector('[data-radius="2"]')!.classList.contains('primary')).toBe(true);
+});
+
+it('empty bookmark buttons invoke the existing current-measure toggle',()=>{
+ const s=song();s.markers=[];delete s.markerSlots;
+ document.body.innerHTML=markerSlotsHTML(s,'data-slot');
+ const toggleCurrent=vi.fn();
+ const dispose=bindMarkerSlots(document.body,()=>s,vi.fn(),'data-slot',false,{current:()=>0,remove:vi.fn(),toggleCurrent});
+ const buttons=[...document.querySelectorAll<HTMLButtonElement>('.empty-marker-slot')];
+ expect(buttons).toHaveLength(5);
+ for(const button of buttons) {
+  expect(button.disabled).toBe(false);
+  expect(button.getAttribute('aria-label')).toBe('현재 마디에 마커 표기');
+  button.querySelector('path')!.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+ }
+ expect(toggleCurrent).toHaveBeenCalledTimes(5);
+ s.markers=[{id:'current',name:'current',time:s.measures[0].start}];
+ buttons[0].click();
+ expect(toggleCurrent).toHaveBeenCalledTimes(5);
+ dispose();
 });

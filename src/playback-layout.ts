@@ -47,15 +47,20 @@ export function scoreLayout(
   staff?: StaffPosition,
 ) {
   if (!staff) return undefined;
-  return practiceStaffLayout(
+  const layout = practiceStaffLayout(
     r,
     staff,
     width,
     s.settings.view === "rows"
       ? clamp(width * 0.52, 100, 180)
       : ribbonHeight(stageWidth, s.settings.zoom, staff),
-    s.settings.view === "rows",
+    s.settings.view === "rows" || !!staff.nativePageRatio,
   );
+  if (s.settings.view === "ribbon") {
+    const [x, y] = layout.position.split(" ").map(parseFloat);
+    return {...layout, height: layout.height + 24, position: `${x}px ${y + 24}px`};
+  }
+  return layout;
 }
 export function measureWidth(
   s: Song,
@@ -68,6 +73,10 @@ export function measureWidth(
   return staff
     ? (r.w * height) / (staffFrameHeight(staff) * staff.gap * ratio)
     : (height * r.w) / r.h / ratio;
+}
+/** Linear timeline position; phase * width is the shared note-head offset. */
+export function ribbonPosition(width: number, beat: number, beats: number, phase: number) {
+  return width * (phase + beat / beats);
 }
 export function measurePosition(
   s: Song,
@@ -134,8 +143,9 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       }
       if (!scrubbing && pausedBrowseIndex !== index) {
         pausedBrowseIndex = index;
+        const topRow = Math.min(Math.floor(index / 4), Math.max(0, Math.ceil(song().measures.length / 4) - 2));
         const row = ribbon.querySelector<HTMLElement>(
-          `[data-index="${Math.floor(index / 4) * 4}"]`,
+          `[data-index="${topRow * 4}"]`,
         );
         stage.scrollTop = Math.max(
           0,
@@ -156,16 +166,19 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     rowWindow = windowIndex;
     const s = song();
     const currentOnTop = (windowIndex - playbackRowOrigin) % 2 === 0;
-    const upper = currentOnTop ? windowIndex : windowIndex + 1,
-      lower = currentOnTop ? windowIndex + 1 : windowIndex;
+    const lastRow = Math.ceil(s.measures.length / 4) - 1;
+    const atLastRow = lastRow > 0 && windowIndex === lastRow;
+    const upper = atLastRow ? lastRow - 1 : currentOnTop ? windowIndex : windowIndex + 1,
+      lower = atLastRow ? lastRow : currentOnTop ? windowIndex + 1 : windowIndex;
     const indices = [
       ...Array.from({ length: 4 }, (_, j) => upper * 4 + j),
       ...Array.from({ length: 4 }, (_, j) => lower * 4 + j),
     ];
-    ribbon.innerHTML = indices
-      .filter((i) => i < s.measures.length)
-      .map((i) => measureHTML(s.measures[i], i, h.cellWidth ?? stage.clientWidth / 4))
-      .join("");
+    const html = (i: number) => i < s.measures.length
+      ? measureHTML(s.measures[i], i, h.cellWidth ?? stage.clientWidth / 4) : "";
+    ribbon.innerHTML = s.scoreFormat === "musicxml" && s.settings.uniformSpacing
+      ? [indices.slice(0, 4), indices.slice(4)].map(row => `<div class="browse-row"><div class="browse-strip">${row.map(html).join("")}</div></div>`).join("")
+      : indices.map(html).join("");
     layoutLyrics();
   } finally {
     Object.assign(state, {

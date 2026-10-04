@@ -216,6 +216,9 @@ it("keeps the louder music click under its volume control and the count-in indep
     expect(p.click.gain.value).toBe(0);
     p.song!.settings.clickVolume = 1;
     p.volumes();
+    expect(p.click.gain.value).toBe(1.5);
+    p.song!.settings.clickVolume = 2 / 3;
+    p.volumes();
     expect(p.click.gain.value).toBe(1);
 
     p.pulse(2, true);

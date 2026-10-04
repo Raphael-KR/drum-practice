@@ -2,6 +2,7 @@
 // waveshaper restores unity gain below the ceiling and rounds only loud peaks.
 export const MIX_INPUT_GAIN = 0.25;
 export const MIX_LINEAR_LIMIT = 0.9;
+export const METRONOME_MAX_GAIN = 1.5;
 
 export function limitMixedSample(sample: number): number {
   const magnitude = Math.abs(sample);

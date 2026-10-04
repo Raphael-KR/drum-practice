@@ -3,8 +3,8 @@ import { escapeHTML as esc } from "./html";
 import { locate, uid, type Song, type Loop } from "./model";
 
 export function savedLoopSlots(song: Song): (Loop | undefined)[] {
-  const ids = song.repeatSlots ?? song.loops.slice(0, 8).map(l => l.id);
-  return Array.from({ length: 8 }, (_, i) => song.loops.find(l => l.id === ids[i]));
+  const ids = song.repeatSlots ?? song.loops.slice(0, 12).map(l => l.id);
+  return Array.from({ length: 12 }, (_, i) => song.loops.find(l => l.id === ids[i]));
 }
 export function measureLoop(song: Song, a: number, b: number, id: string = uid()): Loop {
   const first = song.measures[Math.min(a, b)], last = song.measures[Math.max(a, b)];

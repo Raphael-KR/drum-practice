@@ -12,6 +12,7 @@ import { compressSVG } from "./score-pages";
 import JSZip from "jszip";
 import {
   ribbonSpacing,
+  gridPosition,
   installRibbonEngraving,
   type RibbonSpacing,
 } from "./ribbon-engraving";
@@ -505,6 +506,8 @@ async function renderMusicXMLPass(
             const nativeLeft = timeline
               ? (g as unknown as {getVFStave(): {getX(): number}}).getVFStave().getX()
               : left;
+            // Full-bar rests represent the whole measure, not its first grid tick.
+            // VexFlow's rest offset can put them left of the cropped grid region.
             const dx = timeline
               ? restCenterShift(nativeLeft, nativeLeft + (timeline.uniformQuarters && timeline.rowWidth ? timeline.rowWidth : g.parentSourceMeasure.Duration.RealValue * 4 * timeline.quarter), bounds.x, bounds.width)
               : restCenterShift(left, right, bounds.x, bounds.width);
@@ -659,7 +662,9 @@ async function renderMusicXMLPass(
       if (!points.length) points.push({ beat: 0, x: 0.08 });
       points.push({ beat: meta.beats, x: 1 });
       const beatXs = Array.from({ length: meta.beats + 1 }, (_, b) =>
-        interpolateX(points, b),
+        timeline?.fixedGrid
+          ? Math.min(1, (gridPosition(b * 4 / meta.denominator, meta.beats * 4 / meta.denominator, timeline.rowWidth!) + 6) / timeline.rowWidth!)
+          : interpolateX(points, b),
       );
       if (
         beatXs.some(
@@ -719,6 +724,7 @@ async function engraveMusicXML(
   // Rows reserve glyph clearance and distribute remaining space by time.
   // Do not reuse the ribbon global shortest-duration spacing for row glyph size.
   const rows = await renderMusicXMLPass(blob, progress, partId, {...printed.spacing, uniformQuarters});
+  const grid = await renderMusicXMLPass(blob, progress, partId, {...printed.spacing, uniformQuarters, fixedGrid: true});
   const document = new DOMParser().parseFromString(
     await (await displayPage(printed.pages[0])).text(),
     "image/svg+xml",
@@ -733,6 +739,9 @@ async function engraveMusicXML(
   );
   metadata.textContent = JSON.stringify({
     version: RIBBON_TIMELINE_VERSION,
+    grid: {version: RIBBON_TIMELINE_VERSION, ...printed.spacing, uniformQuarters,
+      regions: grid.regions, staffs: grid.staffs,
+      pages: await Promise.all(grid.pages.map(async p => (await displayPage(p)).text()))},
     rows: rows ? {version: RIBBON_TIMELINE_VERSION, ...printed.spacing, uniformQuarters,
       regions: rows.regions, staffs: rows.staffs,
       pages: await Promise.all(rows.pages.map(async p => (await displayPage(p)).text()))} : undefined,

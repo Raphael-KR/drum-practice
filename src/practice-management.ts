@@ -8,7 +8,7 @@ export function practiceLoopHTML(heading = false) {
   return `<div id="loop-slots" class="loop-slots" role="group" aria-label="${t("ranges.saved")}"></div>`;
 }
 export function practiceMarkerHTML(heading = false) {
-  return `${heading ? `<h2>${t("icons.message069")}</h2>` : ""}<div id="section-shortcuts" class="section-shortcuts" role="group" aria-label="섹션 바로가기"></div>`;
+  return `${heading ? `<h2>${t("icons.message069")}</h2>` : ""}<div id="section-shortcuts" class="section-shortcuts" role="group" aria-label="${t("sections.shortcuts")}"></div>`;
 }
 type Playback = Pick<ReturnType<typeof createPlaybackScreen>, "seek" | "mark" | "renderLists">;
 interface Options {
@@ -55,8 +55,8 @@ export function attachPracticeManagement(h: Options) {
         : t("main.message270");
     get("section-shortcuts").innerHTML = sectionShortcutSlots(readSectionShortcuts(h.canonicalXML?.() ?? ""), song)
       .map((section, index) => section
-        ? `<button type="button" data-section-measure="${section.measureIndex}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}마디로 이동"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;마디</span></button>`
-        : `<button type="button" disabled aria-label="빈 바로가기 ${index + 1}">—</button>`)
+        ? `<button type="button" data-section-measure="${section.measureIndex}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
+        : `<button type="button" disabled aria-label="${t("sections.empty", {number:index + 1})}">—</button>`)
       .join("");
 
   }

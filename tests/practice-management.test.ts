@@ -75,7 +75,7 @@ function setup() {
 it("renders independent automatic section shortcuts and seeks their starting measure", () => {
   const c = setup();
   c.management.render();
-  expect(c.root.querySelectorAll("#section-shortcuts button")).toHaveLength(8);
+  expect(c.root.querySelectorAll("#section-shortcuts button")).toHaveLength(12);
   expect(c.root.querySelector("#section-shortcuts")!.textContent).toContain("전주");
   const before = c.root.querySelector("#section-shortcuts")!.innerHTML;
   c.playback.mark();

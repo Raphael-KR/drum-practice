@@ -54,6 +54,7 @@ export interface Settings {
   countIn: number;
   countEach: boolean;
   zoom: number;
+  uniformSpacing?: boolean;
   view: "ribbon" | "rows" | "compare";
   position: number;
 }
@@ -85,6 +86,8 @@ export interface Song {
   lyricShifts?: string[];
   lyricArchive?: { revision: string; lyrics: Lyric[] }[];
   markers: Marker[];
+  /** Visible marker IDs; empty strings preserve deleted slots. */
+  markerSlots?: string[];
   loops: Loop[];
   /** Stable eight-slot references; older saved loops remain preserved. */
   repeatSlots?: string[];

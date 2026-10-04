@@ -82,12 +82,6 @@ export function arrangeIcons() {
       i18nText("icons.message067"),
     ],
     [
-      "open-marker-dialog",
-      "bookmark",
-      i18nText("icons.message069"),
-      "",
-    ],
-    [
       "open-screen-dialog",
       "screen",
       i18nText("icons.message071"),

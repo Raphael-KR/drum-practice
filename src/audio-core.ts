@@ -11,7 +11,7 @@ import {
   type Loop,
 } from "./model";
 import { portableWorkerURL } from "./audio-worker";
-import { createMixLimiterCurve, MIX_INPUT_GAIN } from "./audio-levels";
+import { createMixLimiterCurve, MIX_INPUT_GAIN, METRONOME_MAX_GAIN } from "./audio-levels";
 export class Player {
   ctx: AudioContext;
   music: GainNode;
@@ -76,7 +76,7 @@ export class Player {
     if (!this.song) return;
     this.music.gain.value = this.song.settings.musicVolume;
     this.click.gain.value = this.song.settings.click
-      ? this.song.settings.clickVolume
+      ? this.song.settings.clickVolume * METRONOME_MAX_GAIN
       : 0;
   }
   get duration() {

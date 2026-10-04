@@ -15,12 +15,17 @@ import {
 } from "./practice-staff-layout";
 export interface RibbonAsset {
   row?: RibbonAsset;
+  grid?: RibbonAsset;
   region: Region;
   phase: number;
   staff: StaffPosition;
   url: string;
   ratio: number;
   highlight?: HighlightPage;
+}
+/** Both views share the selected engraving; absence preserves legacy row layout. */
+export function selectPlaybackEngraving(asset: RibbonAsset | undefined, uniform = false) {
+  return (uniform ? asset?.grid : undefined) ?? asset?.row ?? asset;
 }
 export interface PlaybackAssets {
   urls: string[];
@@ -33,7 +38,7 @@ export function releasePlaybackAssets(
   assets: Pick<PlaybackAssets, "urls" | "ribbon">,
 ) {
   assets.urls.forEach((url) => URL.revokeObjectURL(url));
-  new Set(Array.from(assets.ribbon?.values() ?? []).flatMap(a => [a.url, ...(a.row ? [a.row.url] : [])])).forEach(
+  new Set(Array.from(assets.ribbon?.values() ?? []).flatMap(a => [a.url, ...(a.row ? [a.row.url] : []), ...(a.grid ? [a.grid.url] : [])])).forEach(
     (url) => URL.revokeObjectURL(url),
   );
 }
@@ -138,7 +143,7 @@ export async function preparePlaybackAssets(
     if (song.scoreFormat !== "musicxml")
       framePDFStaffs(song.regions, result.practiceStaffs);
     if (timeline) {
-      for (const data of [timeline, ...(timeline.rows ? [timeline.rows] : [])]) {
+      for (const data of [timeline, ...(timeline.rows ? [timeline.rows] : []), ...(timeline.grid ? [timeline.grid] : [])]) {
         const ribbonSong = { ...song, regions: data.regions };
         const pageHeights: number[] = [];
         const ratios = data.pages.map((text: string) => {
@@ -189,6 +194,7 @@ export async function preparePlaybackAssets(
               highlight: prepared.highlightPages[region.page],
             };
             if (data === timeline) result.ribbon!.set(index, asset);
+            else if (data === timeline.grid) result.ribbon!.get(index)!.grid = asset;
             else result.ribbon!.get(index)!.row = asset;
           });
         } catch (error) {

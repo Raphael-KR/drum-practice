@@ -108,6 +108,7 @@ import {
   type RecordData,
 } from "./storage";
 import "./style.css";
+import "./player-library.css";
 import {
   arrangeWorkspace,
   openSettingsChild,
@@ -189,11 +190,11 @@ app.innerHTML =
   i18nText("main.message099") +
   '</button><a class="editor-player-link" href="/player.html">' +
   i18nText("editorHome.playerLink") +
-  '</a></div></header>\n<main><section class="welcome editor-home" id="welcome"><div class="editor-home-heading"><h2>' +
+  '</a></div></header>\n<main><section class="welcome editor-home" id="welcome"><div class="editor-home-heading library-heading"><h2>' +
   i18nText("editorHome.listTitle") +
   '</h2><button class="primary" id="welcome-new">' +
   i18nText("editorHome.new") +
-  '</button></div><div id="editor-home-list" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button><p class="subtle">' +
+  '</button></div><div id="editor-home-list" class="practice-records" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button><p class="subtle">' +
   i18nText("main.message106") +
   '</p></section>\n<div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>' +
   i18nText("main.message107") +
@@ -697,6 +698,7 @@ async function activate(r: RecordData) {
     status("");
   } finally {
     busy = false;
+    if (record) renderLists();
   }
 }
 function syncViewChoices() {
@@ -1013,8 +1015,6 @@ practiceManagement = attachPracticeManagement({
   fail: error,
   paginate: paginateList,
 });
-$("open-marker-dialog").onclick = null;
-$("open-marker-dialog").removeAttribute("aria-haspopup");
 function renderLists() {
   playback.renderLists();
 }
@@ -1178,7 +1178,7 @@ async function refreshRecentScore() {
   const records = await allRecords();
   const recent = chooseRecent(records);
   $("editor-home-list").innerHTML = records.length
-    ? records.map((r, i) => `<article class="editor-home-card"><div><h3>${esc(r.song.title)}</h3><p class="subtle">${esc(r.song.artist || "")}</p></div><button class="primary" data-editor-open="${i}">${i18nText("editorHome.edit")}</button></article>`).join("")
+    ? records.map((r, i) => `<article class="editor-home-card practice-card"><div><h3>${esc(r.song.title)}</h3><p class="subtle">${esc(r.song.artist || "")}</p></div><button class="primary" data-editor-open="${i}">${i18nText("editorHome.edit")}</button></article>`).join("")
     : `<p class="editor-home-empty">${i18nText("editorHome.empty")}</p>`;
   $("editor-home-list").onclick = (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-editor-open]");
@@ -2833,13 +2833,13 @@ $("editor-dialog").querySelector(".editor-body")!.append(sectionPane);
 const sectionTab = document.createElement("button");
 sectionTab.type = "button";
 sectionTab.dataset.pane = "sections";
-sectionTab.textContent = "섹션";
+sectionTab.textContent = i18nText("sectionEditor.title");
 $("editor-dialog").querySelector(".editor-tabs")!.append(sectionTab);
 const sectionEditor = mountSectionEditor(sectionPane, {
   song: () => record?.song,
   xml: () => record?.canonicalXML,
   apply: async (sections: SectionShortcut[]) => {
-    if (!record || busy) throw Error("악보 처리가 끝난 뒤 다시 시도하세요.");
+    if (!record || busy) throw Error(i18nText("sectionEditor.busy"));
     flushEditorForm();
     const original = record;
     const xml = writeSections(original.canonicalXML!, sections, original.song.measures.length, original.song.scorePartId);
@@ -2847,7 +2847,7 @@ const sectionEditor = mountSectionEditor(sectionPane, {
     try {
       const next = await (await import("./browser-score")).prepareBrowserScore({...original, canonicalXML: xml}, status);
       const prepared = await preparePlaybackAssets(next.pages, next.song);
-      if (record !== original) { releasePlaybackAssets(prepared); throw Error("악보가 변경되었습니다. 다시 시도하세요."); }
+      if (record !== original) { releasePlaybackAssets(prepared); throw Error(i18nText("sectionEditor.changed")); }
       engine().pause();
       session?.before();
       Object.assign(original, next);

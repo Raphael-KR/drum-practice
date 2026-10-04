@@ -3,10 +3,15 @@ import type { StaffPosition } from "./practice-staff-layout";
 export const RIBBON_TIMELINE_VERSION = 1;
 /** Normal drum notehead centre, in the unscaled OSMD SVG coordinate system. */
 export const RIBBON_HEAD_ANCHOR = 6;
+/** Notehead centre on a padding-free 32nd grid; may cross 1 at a bar transition. */
+export function gridPhase(quarter: number, duration: number) {
+  return (quarter * 8 + 0.5) / (duration * 8);
+}
 export interface RibbonTimeline {
   version: number;
   uniformQuarters?: number;
   rows?: RibbonTimeline;
+  grid?: RibbonTimeline;
   quarter: number;
   offset: number;
   regions: Region[];
@@ -37,6 +42,7 @@ export function validateRibbonTimeline(
   )
     throw Error("Invalid SVG ribbon timeline");
   if (d.rows) validateRibbonTimeline(d.rows, count);
+  if (d.grid) validateRibbonTimeline(d.grid, count);
   if (d.uniformQuarters !== undefined && !(Number.isFinite(d.uniformQuarters) && d.uniformQuarters > 0))
     throw Error("Invalid row duration");
   d.regions.forEach((r, i) => {

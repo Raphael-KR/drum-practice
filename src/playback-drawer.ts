@@ -13,12 +13,14 @@ export function mountPlaybackDrawer(root: HTMLElement, ids: PlaybackBindings & {
   const center = document.createElement("div"); center.className = "dock-play";
   const right = document.createElement("div"); right.className = "dock-repeat";
   const progress = get(ids.progress).closest("label") || get(ids.progress);
-  get(ids.mark).removeAttribute("aria-controls");
-  left.append(get(ids.mark), get(ids.markers), progress);
+  left.append(get(ids.markers), progress);
   center.append(get("home"), get("play"));
   const rewind = get(ids.rewind);
   rewind.classList.add("transport-rewind-number");
-  right.append(get(ids.rewindButton), rewind, get(ids.adjust), root.querySelector(".repeat-presets")!);
+  const rewindControls = document.createElement("div"); rewindControls.className = "dock-rewind";
+  rewindControls.append(get(ids.rewindButton), rewind);
+  center.append(rewindControls);
+  right.append(get(ids.adjust), root.querySelector(".repeat-presets")!);
   const position = root.querySelector<HTMLElement>(`#${ids.position}`);
   transport.replaceChildren(left, center, right);
   get(ids.adjust).querySelector(".icon-caption")?.remove();
@@ -39,12 +41,12 @@ export function mountPlaybackDrawer(root: HTMLElement, ids: PlaybackBindings & {
     panels.set(name, panel); drawer.append(panel);
   }
   group.append(drawer);
-  const triggers: Record<Panel, HTMLElement> = {loop: get(ids.adjust), marker: get(ids.mark)};
+  const triggers = [get(ids.adjust)];
   group.dataset.drawerOpen = "true";
-  for (const trigger of Object.values(triggers)) {
+  for (const trigger of triggers) {
     trigger.removeAttribute("aria-haspopup");
     trigger.removeAttribute("aria-expanded");
-    if (trigger === get(ids.adjust)) trigger.setAttribute("aria-controls", drawer.id);
+    trigger.removeAttribute("aria-controls");
   }
   // Toolbar shortcuts focus their fixed controls; nothing opens or collapses.
   const show = (name: Panel, _toggle = true) => {

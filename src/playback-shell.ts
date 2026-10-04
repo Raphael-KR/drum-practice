@@ -46,7 +46,7 @@ export function mountPlaybackShell(
     ids.tempo,
   );
   const actions = root.querySelector("header .actions")!;
-  actions.insertAdjacentHTML("afterbegin", metronomeControlHTML());
+  root.querySelector(`#${ids.tempo}`)!.insertAdjacentHTML("afterend", metronomeControlHTML());
   actions.insertAdjacentHTML(
     "beforeend",
     playbackButton(ids.settings, "settings", t("icons.message059")),

@@ -146,3 +146,19 @@ it('allocates row clearance without letting a single short duration shrink the w
  expect(p[1]-p[0]).toBeGreaterThanOrEqual(36);
  expect(p[3]-p[2]).toBeGreaterThanOrEqual(16);
 });
+it('engraves sparse and dense bars on identical fixed grid coordinates without scaling notes',()=>{
+ function bar(qs:number[]) {
+  const xs=qs.map(()=>200);
+  const entries=qs.map((q,i)=>({relInMeasureTimestamp:{RealValue:q/4},graphicalVoiceEntries:[{parentVoiceEntry:{IsGrace:false},vfStaveNote:{setStave:()=>{},getAbsoluteX:()=>xs[i],getTickContext:()=>({getMetrics:()=>({notePx:12}),getX:()=>xs[i],setX:(x:number)=>xs[i]=x})}}]}));
+  let width=0;
+  return {xs,get width(){return width},g:{parentSourceMeasure:{Duration:{RealValue:1}},staffEntries:entries,setWidth:(w:number)=>width=w,getVFStave:()=>({getX:()=>0}),formatVoices:()=>{}}};
+ }
+ const sparse=bar([0,1,2,3]),dense=bar(Array.from({length:32},(_,i)=>i/8));
+ const calc={calculateMeasureXLayout:()=>0};
+ installRibbonEngraving({GraphicSheet:{GetCalculator:calc}},{quarter:200,offset:8,rowWidth:320,uniformQuarters:4,fixedGrid:true});
+ for(const b of [sparse,dense]){(calc.calculateMeasureXLayout as any)([b.g]);(b.g.formatVoices as any)(320,b.g);expect(b.width).toBe(32);}
+ expect(sparse.xs).toEqual([dense.xs[0],dense.xs[8],dense.xs[16],dense.xs[24]]);
+ expect(dense.xs[0]+6).toBeCloseTo(5);
+ expect(dense.xs[31]+6).toBeCloseTo(315);
+ expect(320+dense.xs[0]-dense.xs[31]).toBeCloseTo(10);
+});

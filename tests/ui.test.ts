@@ -127,9 +127,8 @@ it("loads demo, exposes fixed range slots and applies the selected BPM", async (
   expect(document.querySelectorAll(".measure")).toHaveLength(110);
   await vi.waitFor(async () => expect((await allRecords()).some(r => r.song.id === "real-paradis")).toBe(true));
   expect(document.getElementById("marker-name")).toBeNull();
-  click("open-marker-dialog");
-  expect(document.querySelectorAll("#section-shortcuts button")).toHaveLength(8);
-  expect(document.querySelectorAll("#loop-slots button")).toHaveLength(8);
+  expect(document.querySelectorAll("#section-shortcuts button")).toHaveLength(12);
+  await vi.waitFor(() => expect(document.querySelectorAll("#loop-slots button")).toHaveLength(12));
   expect(document.getElementById("loop-a")).toBeNull();
   set("rate", "89");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
@@ -369,7 +368,7 @@ it("fills played measures, advances within a measure and clears future shading a
 });
 it("keeps icon controls accessible and updates play and metronome states", async () => {
   expect(document.getElementById("open-settings-dialog")!.getAttribute("aria-label")).toBe("설정");
-  expect(document.getElementById("click")!.closest("label")!.nextElementSibling!.id).toBe("library-button");
+  expect(document.getElementById("click")!.closest("label")!.previousElementSibling!.id).toBe("original-tempo");
   expect(document.getElementById("fullscreen")).toBeNull();
   expect(document.getElementById("save-html")!.closest("#backup-dialog")).not.toBeNull();
   expect(document.getElementById("rate")!.closest("#tempo-dialog")).not.toBeNull();
@@ -388,8 +387,8 @@ it("keeps icon controls accessible and updates play and metronome states", async
 it("offers tempo presets and previews single-BPM dragging until release", async () => {
   click("original-tempo");
   expect(document.getElementById("tempo-dialog")!.hasAttribute("open")).toBe(true);
-  expect(document.querySelectorAll("#tempo-options button")).toHaveLength(5);
-  expect(document.querySelectorAll('#tempo-dialog [data-tempo="94"]')).toHaveLength(0);
+  expect(document.querySelectorAll("#tempo-options button")).toHaveLength(6);
+  expect(document.querySelectorAll('#tempo-dialog [data-tempo="94"]')).toHaveLength(1);
   expect(document.getElementById("tempo-reset")).not.toBeNull();
   (document.querySelector('[data-tempo="75"]') as HTMLButtonElement).click();
   await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(75 / 94));
@@ -433,9 +432,9 @@ it("keeps centred repeat anchored when changing radius and uses inclusive end ba
   (document.querySelector('[data-loop-radius="1"]') as HTMLButtonElement).click();
   expect(document.querySelector('[data-loop-radius="1"]')!.textContent).toBe('24~26');
   click('open-loop-dialog');
-  expect(document.activeElement).toBe(document.querySelector('#loop-slots button'));
+  expect(document.getElementById('open-loop-dialog')!.getAttribute('aria-pressed')).toBe('false');
   click('home');
-  expect(document.querySelector('[data-loop-radius="1"]')!.textContent).toBe('앞뒤 1');
+  expect(document.querySelector('[data-loop-radius="1"]')!.textContent).toBe('24~26');
 });
 it("selects a measure on single tap and plays that measure on double tap", async () => {
   const view = document.getElementById('view') as HTMLSelectElement;
@@ -680,11 +679,11 @@ it('groups view and format choices above the existing switches', async () => {
 it("opens marker management and renders sorted fixed slots on the score", async () => {
   click("home");
   set("seek","25"); document.getElementById("seek")!.dispatchEvent(new Event("input"));
-  click("open-marker-dialog");
+  document.querySelector<HTMLButtonElement>("#quick-markers .empty-marker-slot")!.click();
   expect((document.querySelector('[data-drawer-panel="marker"]') as HTMLElement).hidden).toBe(false);
 
-  expect(document.querySelectorAll("#quick-markers button")).toHaveLength(3);
-  expect(document.querySelector(".dock-repeat > :nth-child(3)")!.id).toBe("open-loop-dialog");
+  expect(document.querySelectorAll("#quick-markers button")).toHaveLength(5);
+  expect(document.querySelector(".dock-repeat > :first-child")!.id).toBe("open-loop-dialog");
   expect(document.querySelector('#quick-markers')!.parentElement!.className).toBe('dock-navigation');
   expect(document.querySelectorAll('.measure-marker:not([hidden])').length).toBeGreaterThan(0);
   const ids=[...document.querySelectorAll<HTMLElement>('#quick-markers [data-quick-marker]')].map(e=>e.textContent!);

@@ -156,3 +156,19 @@ it("paused row frames preserve browsing and resize rebuilds all measures", () =>
   renderScoreRows(h, state, 0);
   expect(h.layoutLyrics).toHaveBeenCalledTimes(2);
 });
+it.each([8, 9, 12, 123])('keeps the last row below the preceding row for %i measures', length => {
+ const stage=document.createElement('div'), ribbon=document.createElement('div');stage.append(ribbon);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({measures:Array.from({length},()=>({}))}) as Song,playing:true,scrubbing:false,resume:false,cellWidth:100,
+ measureHTML:(_:unknown,i:number)=>`<div data-index="${i}"></div>`,layoutLyrics:vi.fn()};
+ renderScoreRows(h,state,length-1);
+ const first=(Math.ceil(length/4)-2)*4;
+ expect([...ribbon.children].map(e=>Number((e as HTMLElement).dataset.index))).toEqual(Array.from({length:length-first},(_,i)=>first+i));
+ h.playing=false;
+ renderScoreRows(h,state,length-1);
+ const rows=[...ribbon.querySelectorAll<HTMLElement>('.browse-row')];
+ rows.forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+ state.pausedBrowseIndex=-1;
+ renderScoreRows(h,state,length-1);
+ expect(stage.scrollTop).toBe((rows.length-2)*200);
+});
