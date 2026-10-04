@@ -2748,3 +2748,11 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 설정 모달 도움말을 dialoghead의 닫기 버튼 앞에 배치. 다른 모달의 위치 규칙은 유지. UX 정본에 사용자 예외 결정 기록.
 - 418 tests/89 files PASS, build:apps PASS. Safari MCP 로컬에서 empty/center, settings-dialog open, help parent=dialoghead/position=static 확인.
 - iPad Device Hub 창 재연결은 cgWindowNotFound로 불가. 이번 실제 iPad 시뮬레이터 검증은 미확인으로 남김.
+
+## 2026-10-04 — player0.6.18 / editor0.6.17: 세로 범례
+
+- 승인된 가로 SVG의 기호를 재사용해 세로 8줄(4/4/4/4/3/2/3/3항목) 범례 추가. 설명은 필요한 곳에서 두 줄로 배치. 가로 4줄 원본과 27개 표기 의미 유지.
+- scripts/build-portrait-legend.mjs로 생성하며 orientation 미디어 쿼리로 전환. 두 SVG의 리소스 ID를 분리한다.
+- 전체 테스트 418개 중 변경된 SVG 수 기대값 1건 실패 후 보정; 관련 help 테스트 6개 재실행 PASS. 나머지 전체 테스트 417개 PASS. build:apps PASS.
+- Safari MCP에서 portrait 표시/27항목/DOM 크기 확인. screenshot은 흰 화면만 반환하여 이미지 검수 불가. ego-browser 840×1240 세로와 1240×840 가로에서 화면 검수, 세로 텍스트 수평 잘림 없음 확인. 실제 iPad Safari 실기기 검증으로 간주하지 않는다.
+- 이미지 근거(로컬 비추적): tmp/legend-portrait-ego.png, tmp/legend-landscape-ego.png.

@@ -1,3 +1,4 @@
+import { scoreLegendPortraitSVG } from "./vendor/score-legend-portrait-svg";
 import { scoreLegendSVG } from "./vendor/score-legend-svg";
 import { t, type MessageKey } from "./i18n";
 export const legendItems = [
@@ -141,10 +142,12 @@ export function scoreLegendHelp() {
   const container = document.createElement("div");
   container.className = "help-legend";
   // Trusted bundled illustration, never user-provided SVG.
-  container.innerHTML = scoreLegendSVG;
-  const svg = container.querySelector("svg")!;
-  svg.setAttribute("aria-hidden", "true");
-  svg.removeAttribute("aria-labelledby");
+  container.innerHTML = scoreLegendSVG + scoreLegendPortraitSVG;
+  container.querySelectorAll("svg").forEach((svg, index) => {
+    svg.classList.add(index ? "legend-portrait" : "legend-landscape");
+    svg.setAttribute("aria-hidden", "true");
+    svg.removeAttribute("aria-labelledby");
+  });
   const descriptions = document.createElement("dl");
   descriptions.className = "legend-accessible-text";
   for (const item of legendItems) {

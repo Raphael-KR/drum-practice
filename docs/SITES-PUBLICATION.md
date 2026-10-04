@@ -180,3 +180,11 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - URL https://drum-practice-studio.dgkma.chatgpt.site
 - 바로가기 중앙 정렬/empty, 설정 도움말 상단 이동. dist/player만 게시. 418 tests/89 files, build:apps PASS.
 - 공개 Safari MCP에서 v0.6.17 build25814550 로드/ready=true, 설정 open=true, 도움말 parent=dialoghead 확인. Device Hub 창 부재로 native iPad 확인은 미실행.
+
+## 2026-10-04 20:22 KST — Sites36 / player0.6.18
+
+- build ba493cf8, source 8ed319f89691449c5b86f9b77a34cef2e9b48067.
+- version appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_53e61d3cb7088191bccaa0af9603d05a
+- deployment appgdep_6ac236d311f0819189b639bb8d36a949 succeeded (2026-10-04T11:22:13.170394+00:00).
+- URL https://drum-practice-studio.dgkma.chatgpt.site
+- 세로 8줄 범례, 가로 원본 유지. dist/player만 게시. 공개 Safari MCP v0.6.18 buildba493cf8와 범례 열기/두 방향 27항목 확인. 실제 iPad 후속 확인 필요.

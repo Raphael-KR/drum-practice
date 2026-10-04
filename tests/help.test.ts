@@ -90,8 +90,16 @@ it("includes all approved legend entries independently of contextual controls", 
     "손 지시",
   ])
     expect(text).toContain(name);
-  expect(legend.querySelectorAll("svg text.name")).toHaveLength(27);
-  expect(legend.querySelectorAll("feDisplacementMap")).toHaveLength(1);
+  expect(legend.querySelectorAll("svg")).toHaveLength(2);
+  for (const svg of legend.querySelectorAll("svg")) {
+    expect(svg.querySelectorAll("text.name")).toHaveLength(27);
+  }
+  const landscape = Array.from(legend.querySelectorAll(".legend-landscape text.name"), e => e.textContent);
+  const portrait = Array.from(legend.querySelectorAll(".legend-portrait text.name"), e => e.textContent);
+  expect(portrait).toEqual(landscape);
+  const ids = Array.from(legend.querySelectorAll("[id]"), e => e.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  expect(legend.querySelectorAll("feDisplacementMap")).toHaveLength(2);
   expect(legend.querySelectorAll("g[filter] text")).toHaveLength(0);
   expect(root.querySelector("#app-legend-dialog h2")).toBeNull();
   expect(text).toContain("위 첫째 덧줄의 ×. 원이 없습니다.");

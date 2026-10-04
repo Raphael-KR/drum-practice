@@ -1,10 +1,10 @@
 {
   "editor": {
     "name": "악보제작기",
-    "version": "0.6.16"
+    "version": "0.6.17"
   },
   "player": {
     "name": "드럼연습실",
-    "version": "0.6.17"
+    "version": "0.6.18"
   }
 }

@@ -386,3 +386,10 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(help-moda
   margin-left:auto;
   margin-right:8px;
 }
+
+/* Portrait has its own eight-row layout, using the same approved notation. */
+.help-legend > .legend-portrait {display:none;}
+@media (orientation:portrait) {
+  .help-legend > .legend-landscape {display:none;}
+  .help-legend > .legend-portrait {display:block;}
+}
