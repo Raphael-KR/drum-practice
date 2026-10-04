@@ -148,3 +148,21 @@ it('validates optional PDF lyric anchors and rejects corrupt coordinates or dupl
  const bad=structuredClone(s);bad.regions[0].lyricAnchors!.push({...bad.regions[0].lyricAnchors![0]});
  expect(()=>validateSong(bad)).toThrow();
 });
+
+it('aligns quarter count-off with the first beat while preserving leading audio at every rate', () => {
+ const firstBeat=.38897134124462235;
+ for (const lead of [firstBeat, 5]) for (const rate of [.5,1,1.5]) {
+  const m={id:'m',regionId:'r',label:'1',beats:4,denominator:4,start:lead,end:lead+4*60/94};
+  const c=makeCycle(10,0,m.end,rate,0,m,true);
+  const first=c.musicAt+lead/rate;
+  const last=c.countAt+3*c.countBeatSeconds;
+  expect(first-last).toBeCloseTo(60/94/rate,10);
+  expect(c.musicAt).toBeGreaterThanOrEqual(10);
+  expect(c.countAt).toBeGreaterThanOrEqual(10-1e-10);
+  expect(cyclePosition(c,c.musicAt)).toBe(0);
+  expect(cyclePosition(c,first)).toBeCloseTo(lead,10);
+  expect(makeCycle(10,0,m.end,rate,0,m,false).musicAt).toBe(10);
+  const onBeat=makeCycle(10,m.start,m.end,rate,0,m,true);
+  expect(onBeat.musicAt).toBeCloseTo(10+4*60/94/rate,10);
+ }
+});

@@ -1,5 +1,7 @@
 # Real Paradis PDF → MusicXML
 
+새 곡의 접수부터 실제 앱 검수·인계까지는 [악보 제작 프로세스](SCORE-PRODUCTION-PROCESS.md)에서 시작한다. 아래 기록은 해당 원본과 당시 제작 도구의 재현 근거다.
+
 > 이 문서는 2026-09-19 변환 실험의 재현 기록이다. 새 변환은 [변환 선택 기준](MUSICXML-CONVERSION-POLICY.md)과 최신 `docs/SCORE-MUSICXML-OSMD-MAPPING.md`, `docs/SVG-SCORE-RULES.md`를 먼저 따른다. 아래 전용 코드의 역사적 후보 매핑·Verovio 표시 보정은 현재 웹앱의 승인 규칙을 대체하지 않는다. 기존 산출물을 재현하는 도구이며 앱에 자동 적용하지 않는다.
 
 - 목표: PDF 기호의 음악적 의미를 복원하고 원본 대조 근거를 남긴다.

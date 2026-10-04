@@ -190,14 +190,17 @@ export function makeCycle(
     ((m.end - m.start) / m.beats / rate) *
     (quarterCountOff ? m.denominator / 4 : 1);
   const count = quarterCountOff ? 4 : countBars * m.beats;
-  const musicAt = at + count * bs;
+  // Count-off ends on the score's first beat, not the beginning of leading audio.
+  // Preserve that audio and never schedule its buffer before the requested start.
+  const leadingSeconds = quarterCountOff ? Math.max(0, m.start - from) / rate : 0;
+  const musicAt = at + Math.max(0, count * bs - leadingSeconds);
   const originalBeat = (m.end - m.start) / m.beats;
   const nextBeat =
     m.start +
     Math.max(0, Math.ceil((from - m.start) / originalBeat - 1e-8)) *
       originalBeat;
   const countAt = quarterCountOff
-    ? at
+    ? at + Math.max(0, leadingSeconds - count * bs)
     : at + Math.max(0, nextBeat - from) / rate;
   return {
     at,
