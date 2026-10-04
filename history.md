@@ -2668,3 +2668,5 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 제목 font-size의 viewport 축소 제거: 가로·세로21px 공통. 기존 공통 굵기 유지.
 - 재생 화면 body 세로 스크롤 및 root/body overscroll-y:auto 허용. 제목에서 Safari 기본 당김/복귀를 사용하도록 제한 해제. 상단 추가 여백 없음 유지.
 - 417테스트, TypeScript, diff 검사 통과. 실제 iPad 당김/복귀와 흐림은 배포 후 실기기 검증 필요.
+- 로컬 Safari 계산 스타일 body overflow-y:scroll, root overscroll-y:auto, 제목21px 확인. build:apps 및 앱 분리 검사 통과.
+- 14:05 KST Sites23 게시 succeeded: sourceebaed064b592db1d25c67c5c4021f729b15c0f22, deployment appgdep_6ac1de8b7e6c8191a9030119f7cbe2f8. 실제 iPad 탄성 스크롤은 미검증.

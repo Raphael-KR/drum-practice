@@ -117,3 +117,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - 구역 가로 구분선 복원, 제목 상단 추가 안전 여백 제거(기본8px 유지).
 - 417테스트·TypeScript·Safari 계산 스타일·build:apps 통과. 실제 iPad 흐림 비교는 미확인.
 - source099536c9ca525fb1473153e71d9b10a8191a8cdf, deployment appgdep_6ac1db5adc4c8191aee4ded7bf0a6cd6 succeeded.
+
+## 2026-10-04 14:05 KST — 0.6.5 / Sites 23
+- 제목21px 통일 및 Safari 페이지 당김 제한 해제. 417테스트·TypeScript·build:apps 통과.
+- sourceebaed064b592db1d25c67c5c4021f729b15c0f22, deployment appgdep_6ac1de8b7e6c8191a9030119f7cbe2f8 succeeded. 실제 iPad 탄성 동작과 제목 흐림은 후속 확인 대상.
