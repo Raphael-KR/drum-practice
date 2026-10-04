@@ -2462,20 +2462,15 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 .drawer-playback .playback-drawer {
   background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 60%),var(--drawer-surface);
 }
-@media (orientation:portrait) {
-  /* Keep the title below the system's translucent top edge on iPad. */
-  .has-song .playback-ui header {padding-top:24px;}
-}
 
 /* Full-bleed color bands: safe areas belong inside each colored region. */
 .has-song #app.drawer-playback {
-  --playback-safe-top:env(safe-area-inset-top, 0px);
   --playback-safe-bottom:env(safe-area-inset-bottom, 0px);
   padding:0;
 }
 .has-song .drawer-playback header {
   background:#f4f7fc;
-  padding-top:calc(8px + var(--playback-safe-top));
+  padding-top:8px;
   padding-left:max(12px, env(safe-area-inset-left, 0px));
   padding-right:max(12px, env(safe-area-inset-right, 0px));
 }
@@ -2491,13 +2486,17 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
   padding-left:max(12px, env(safe-area-inset-left, 0px));
   padding-right:max(12px, env(safe-area-inset-right, 0px));
 }
-@media (orientation:portrait) {
-  .has-song .drawer-playback header {padding-top:calc(24px + var(--playback-safe-top));}
-}
 @media (orientation:landscape) {
   :root:fullscreen .has-song #app.drawer-playback {
-    --playback-safe-top:6px;
     --playback-safe-bottom:6px;
     padding:0;
   }
+}
+
+/* Flat region dividers, without restoring enclosing cards or outer gaps. */
+.has-song .drawer-playback header {border-bottom:1px solid #cbd6e7;}
+.drawer-playback .playback-dock .transport {border-top:1px solid var(--dock-edge);}
+.drawer-playback .playback-drawer {
+  border-top:2px solid var(--drawer-edge);
+  box-shadow:inset 0 -1px var(--drawer-edge);
 }

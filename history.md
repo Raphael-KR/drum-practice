@@ -2655,3 +2655,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 417개 테스트, TypeScript, diff 검사 통과. Safari 1188×796에서 각 구역 x=0,width=1188, 수직 경계62→536→616→796 연속 확인. 실제 iPad 상태바 합성은 게시 후 사용자 확인 필요.
 - Safari 세로 744×1133 레이아웃 fixture: 모든 구역 x=0,width=744, 수직 경계106→685→823→1133 연속. 실제 iPad 검증과 구분.
 - build:apps 및 앱 분리 검사 통과. 13:44 KST Sites version21 게시 succeeded, source5588d2cf735b68ca01b26eb8d988ee3aa27deb3d, deployment appgdep_6ac1d97c5fb881918f544cf01e1ea0b4. player-only/public 유지.
+
+## 2026-10-04 — 0.6.4 구분선 복원과 상단 여백 실험
+- 여백 없는 구역 배색을 유지하며 제목바 아래/재생바 위 얇은 선, 조작판 위 민트색 2px 선과 아래 1px 선 적용.
+- 사용자 요청으로 제목 상단 추가 안전 여백 제거. 기본 내부 패딩 8px만 유지. 실제 iPad 흐림 여부는 게시 후 비교 예정.
+- 417개 테스트, TypeScript, diff 검사 통과.
