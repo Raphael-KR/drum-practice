@@ -2670,3 +2670,7 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 417테스트, TypeScript, diff 검사 통과. 실제 iPad 당김/복귀와 흐림은 배포 후 실기기 검증 필요.
 - 로컬 Safari 계산 스타일 body overflow-y:scroll, root overscroll-y:auto, 제목21px 확인. build:apps 및 앱 분리 검사 통과.
 - 14:05 KST Sites23 게시 succeeded: sourceebaed064b592db1d25c67c5c4021f729b15c0f22, deployment appgdep_6ac1de8b7e6c8191a9030119f7cbe2f8. 실제 iPad 탄성 스크롤은 미검증.
+
+## 2026-10-04 — 0.6.6 흰 바깥 바탕 비교
+- 재생 화면 html/body 배경만 흰색으로 변경. 앱·제목바·각 구역 배색 및 theme-color 유지.
+- 417테스트, TypeScript, diff 검사 통과. 실제 iPad의 당김 시 바탕 노출과 흐림 여부는 게시 후 비교한다.

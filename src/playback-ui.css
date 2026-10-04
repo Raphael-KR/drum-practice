@@ -2510,3 +2510,7 @@ body.has-song:has(.drawer-playback),
   overscroll-behavior-y:auto;
 }
 .has-song .drawer-playback header {touch-action:pan-y;}
+
+/* White page canvas is exposed by Safari rubber-banding; app bands keep their colors. */
+:root:has(.drawer-playback),
+body.has-song:has(.drawer-playback) {background:#fff;}
