@@ -2674,3 +2674,5 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 ## 2026-10-04 — 0.6.6 흰 바깥 바탕 비교
 - 재생 화면 html/body 배경만 흰색으로 변경. 앱·제목바·각 구역 배색 및 theme-color 유지.
 - 417테스트, TypeScript, diff 검사 통과. 실제 iPad의 당김 시 바탕 노출과 흐림 여부는 게시 후 비교한다.
+- Safari 계산 스타일 html/body #fff, 앱/제목바 #f4f7fc 확인. build:apps 통과.
+- 14:11 KST Sites24 게시 succeeded: sourced820a0858ea25a52839b79b6a960c334c8fb4e2a, deployment appgdep_6ac1e005595c819187f64eb59e349456. 실제 iPad 바탕 노출 미확인.
