@@ -27,3 +27,8 @@
 ## 사용자 추가 제안에 따른 비교 (2026-10-04)
 - 최신 사용자 제안에 따라 0.6.9에서 html 배경을 제목바와 같은 #b8d4f5로 변경하고 header 안에 env(safe-area-inset-top)+8px을 적용한다. body 흰색은 유지한다.
 - cover 제거안은 미실시. black-translucent는 현행 설정에 없으며 추가하지 않는다. theme-color는 이미 일치한다. 실기기 결과는 미확인.
+
+## 0.6.10 — cover 단일 변수 비교
+- 동문회 게시 HTML과 직접 참조된 JS/CSS 확인: theme-color #1f4d2e, JS에 theme-color/theme_color/manifest 문자열 없음, HTML manifest 연결 없음. 제목바 CSS --dg-brand-bg-dark:#A24617. 동적 메타 변경/manifest 사용 추정은 확인한 코드에서 뒷받침되지 않는다.
+- drum 진입 HTML3개에서 viewport-fit=cover만 제거. 확대를 제한하는 maximum-scale=1은 복사하지 않는다. 색상·sticky·safe-area·스크롤 구조 유지.
+- 실제 iPad 상태바 및 가로화면 잘림은 게시 후 확인 필요. CSS/단위테스트 성공을 시스템 UI 성공으로 간주하지 않는다.
