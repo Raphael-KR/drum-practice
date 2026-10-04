@@ -98,8 +98,8 @@ body:not(.has-song) #app .editor-home button {
 /* Always visible in screenshots, independent of the changing song title. */
 #app header h1[data-player-build]::after {
   content:attr(data-player-build);
-  display:block;
-  margin-top:3px;
+  display:inline;
+  margin-left:10px;
   font-size:12px;
   line-height:16px;
   font-weight:500;
