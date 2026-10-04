@@ -100,3 +100,6 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - 세로 상단 제목/조작부 두 줄 배치 및50~300% 확대 게시. 기존 public 범위와 player-only 대상 유지. 앱 표시0.6.0.
 - 전체88파일417테스트, build:apps 및 앱 경계 검사 통과. 배포11파일 바이트/해시 정본 일치.
 - Sites source c57ce6d95b4b76035ff605c8ddae975d783efd04, deployment appgdep_6ac1ce67f79c8191859cb5aeec55ecd0 succeeded. https://drum-practice-studio.dgkma.chatgpt.site . 배포 서버 확인이며 게시 후 실기기 재검수는 별도.
+
+### 2026-10-04 13:07 KST —0.6.1 / Sites19 게시
+- 정본 커밋 d9225f0. 전체417테스트 및 build:apps 통과. Sites source fc56acc74fd0365ad81a899cd7870f1f1aa10a31, deployment appgdep_6ac1d101bbf88191b3bff0597c6816d5 succeeded. 기존 공개 주소/범위 유지. 제목 흐림의 실기기 해소 여부는 사용자 확인 필요.
