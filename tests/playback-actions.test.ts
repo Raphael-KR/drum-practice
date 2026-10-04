@@ -163,7 +163,7 @@ it.each([8, 9, 12, 123])('keeps the last row below the preceding row for %i meas
  measureHTML:(_:unknown,i:number)=>`<div data-index="${i}"></div>`,layoutLyrics:vi.fn()};
  renderScoreRows(h,state,length-1);
  const first=(Math.ceil(length/4)-2)*4;
- expect([...ribbon.children].map(e=>Number((e as HTMLElement).dataset.index))).toEqual(Array.from({length:length-first},(_,i)=>first+i));
+ expect([...ribbon.querySelectorAll<HTMLElement>("[data-index]")].map(e=>Number(e.dataset.index))).toEqual(Array.from({length:length-first},(_,i)=>first+i));
  h.playing=false;
  renderScoreRows(h,state,length-1);
  const rows=[...ribbon.querySelectorAll<HTMLElement>('.browse-row')];
@@ -197,4 +197,21 @@ it.each([
  stage.scrollTop=350;
  renderScoreRows(h,state,index);
  expect(stage.scrollTop).toBe(350);
+});
+
+
+it.each([false, true])('preserves four slots before an incomplete final row (uniform %s)', uniformSpacing => {
+ const stage=document.createElement('div'), ribbon=document.createElement('div');stage.append(ribbon);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({scoreFormat:'musicxml',settings:{uniformSpacing},measures:Array.from({length:123},()=>({}))}) as Song,
+ playing:true,scrubbing:false,resume:false,cellWidth:100,
+ measureHTML:(_:unknown,i:number)=>`<div class="measure" data-index="${i}"></div>`,layoutLyrics:()=>{
+ [...ribbon.querySelectorAll('.browse-row')].forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+ }};
+ renderScoreRows(h,state,115);
+ renderScoreRows(h,state,116);
+ expect([...ribbon.querySelectorAll<HTMLElement>('.measure')].map(e=>e.dataset.index ?? 'empty')).toEqual(['120','121','122','empty','116','117','118','119']);
+ h.playing=false;
+ renderScoreRows(h,state,116);
+ expect(stage.scrollTop).toBe(28*200);
 });

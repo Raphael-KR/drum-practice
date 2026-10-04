@@ -117,7 +117,7 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     if (!playing && !resume) {
       // Restore chronological browsing, retaining the active row's screen slot.
       const visible = rowWindow >= 0
-        ? [...ribbon.querySelectorAll<HTMLElement>('[data-index]')].map(e => Number(e.dataset.index))
+        ? [...ribbon.querySelectorAll<HTMLElement>('[data-index], .empty-measure')].map(e => Number(e.dataset.index))
         : [];
       const wasLower = visible.slice(4, 8).includes(index);
       if (rowWindow !== -2) {
@@ -182,8 +182,11 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       ...Array.from({ length: 4 }, (_, j) => upper * 4 + j),
       ...Array.from({ length: 4 }, (_, j) => lower * 4 + j),
     ];
+    // Preserve all four slots when the upcoming final row is incomplete.
+    const width = h.cellWidth ?? stage.clientWidth / 4;
     const html = (i: number) => i < s.measures.length
-      ? measureHTML(s.measures[i], i, h.cellWidth ?? stage.clientWidth / 4) : "";
+      ? measureHTML(s.measures[i], i, width)
+      : `<div class="measure empty-measure" style="width:${width}px"></div>`;
     ribbon.innerHTML = s.scoreFormat === "musicxml" && s.settings.uniformSpacing
       ? [indices.slice(0, 4), indices.slice(4)].map(row => `<div class="browse-row"><div class="browse-strip">${row.map(html).join("")}</div></div>`).join("")
       : indices.map(html).join("");
