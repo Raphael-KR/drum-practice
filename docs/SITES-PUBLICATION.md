@@ -138,3 +138,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - html 파랑 배경 및 헤더 내부 safe-area 적용. body 흰색 유지.
 - 417테스트·TypeScript·Safari 스타일·build:apps 통과. 실제 iPad 상태바 배색과 흐림은 미확인.
 - source95d737441877f5b21d9dc76d0f8fa1faf695e3e3, deployment appgdep_6ac1e66d234c8191aa65836ecefacb34 succeeded.
+
+## 2026-10-04 14:43 KST — 0.6.10 / Sites 28
+- viewport-fit=cover 제거 단일 변수 비교. 417테스트·TypeScript·build:apps 통과.
+- sourcec77e8cb0c005e3d575914f5cca05fa6efe704c1a, deployment appgdep_6ac1e76beaec8191b2af135fa5224079 succeeded. 실제 iPad 결과 미확인.
