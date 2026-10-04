@@ -2599,3 +2599,15 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   .has-song .playback-ui header .row-view-toggle {grid-column:3;grid-row:2;align-self:center;}
   .has-song .playback-ui header .actions {grid-column:4;}
 }
+
+/* Match the adjacent rewind count field's neutral numeric-input appearance. */
+.drawer-playback .playback-dock .progress-number {
+  background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:8px;
+}
+.drawer-playback .playback-dock .progress-number input,
+.drawer-playback .playback-dock .progress-number span {
+  color:inherit;font-size:16px;font-weight:400;letter-spacing:normal;
+}
+.drawer-playback .playback-dock .progress-number:hover:has(input:not(:disabled)) {
+  background:#fff;border-color:var(--line);
+}

@@ -7,7 +7,8 @@ export function zoomFromSlider(position:number) {
 export function sliderFromZoom(zoom:number) {
   return Math.max(0,Math.min(100,zoom<=1 ? (zoom-.5)*100 : 50+(zoom-1)*25));
 }
+const ZOOM_SNAP_POINTS = [0,25,50,62.5,75,87.5,100];
 export function snapZoomSlider(position:number) {
-  const tick=ZOOM_TICKS.find(t=>Math.abs(position-t)<=3);
+  const tick=ZOOM_SNAP_POINTS.find(t=>Math.abs(position-t)<=3);
   return tick ?? position;
 }

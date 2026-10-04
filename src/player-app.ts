@@ -1,3 +1,4 @@
+import { installLandscapeKeyboardGuard } from "./landscape-keyboard";
 import { renderKeepingTopHeader } from "./top-edge-header";
 import "./help.css";
 import { installHelp } from "./help";
@@ -28,6 +29,8 @@ import { createDialog } from "./dialog-ui";
 import type { RecordData } from "./storage";
 
 const root = document.getElementById("app")!;
+const removeKeyboardGuard = installLandscapeKeyboardGuard();
+if (import.meta.hot) import.meta.hot.dispose(removeKeyboardGuard);
 let session: Awaited<ReturnType<typeof mountPlaybackRuntime>> | undefined;
 function showBuildLabel() {
   const title = root.querySelector<HTMLElement>("header h1");

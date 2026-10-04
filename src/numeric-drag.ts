@@ -199,7 +199,8 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
     emit('change');
   };
   const wheel = (event: WheelEvent) => {
-    if (!options.wheel || input.disabled || input.readOnly || event.ctrlKey || event.metaKey || drag) return;
+    const gestureOnly = input.hasAttribute('data-gesture-only');
+    if ((!options.wheel && !gestureOnly) || input.disabled || (input.readOnly && !gestureOnly) || event.ctrlKey || event.metaKey || drag) return;
     const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? -event.deltaY : event.deltaX;
     if (!delta) return;
     event.preventDefault();

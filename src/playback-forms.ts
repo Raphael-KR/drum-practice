@@ -23,7 +23,7 @@ export function soundFieldsHTML() {
     .join("")}</div>`;
 }
 export function zoomFieldHTML() {
-  return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("portable-player.message455")}</strong><span class="zoom-scale"><input id="zoom" type="range" min="0" max="100" step="1" value="50" list="zoom-ticks"><datalist id="zoom-ticks">${ZOOM_TICKS.map(p=>`<option value="${p}"></option>`).join("")}</datalist><span class="zoom-tick-labels" aria-hidden="true">${ZOOM_TICKS.map(p=>`<span>${Math.round(zoomFromSlider(p)*100)}%</span>`).join("")}</span></span><output id="zoom-value" for="zoom">100%</output></label>`;
+  return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("portable-player.message455")}</strong><span class="zoom-scale"><input id="zoom" type="range" min="0" max="100" step="0.5" value="50" list="zoom-ticks"><datalist id="zoom-ticks">${ZOOM_TICKS.map(p=>`<option value="${p}"></option>`).join("")}</datalist><span class="zoom-tick-labels" aria-hidden="true">${ZOOM_TICKS.map(p=>`<span>${Math.round(zoomFromSlider(p)*100)}%</span>`).join("")}</span></span><output id="zoom-value" for="zoom">100%</output></label>`;
 }
 export function loopFieldsHTML() {
   return "";
