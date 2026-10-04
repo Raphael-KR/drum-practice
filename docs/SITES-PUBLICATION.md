@@ -201,3 +201,9 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - deployment appgdep_6ac25143c9408191a8cac19e0eea71e2 succeeded. 공개/player-only 유지.
 - 정본 기능 커밋 c470012 main push 완료. 드럼438테스트/89파일 및 build:apps 통과.
 - 공개 Safari에서 신규 빌드와 제목바 보기 버튼 로드 확인. 일반 Python HTTP 접근은403 응답이어서 Safari로 확인. 실제 iPad 추가 검수는 미실시.
+
+## 2026-10-04 22:26 KST — Sites39 / player0.6.21
+- build1409bbc0, source900acf85f878cf0fb05f1ea12e5466b5aea17d8f.
+- deployment appgdep_6ac253d6e62481919f2b70b44bc99263 succeeded. 공개/player-only 유지.
+- 정본 기능 커밋933c425 main push 완료. TypeScript/build:apps/앱 경계 검사 및 아이콘5개 바이트 대조 통과.
+- 공개 Safari에서 v0.6.21/build1409bbc0, 아이콘 링크와 앱명 드럼연습실 확인. PNG 아이콘180/32/192px 로드 확인. 실제 iPad 홈 화면 아이콘 갱신은 미검증.
