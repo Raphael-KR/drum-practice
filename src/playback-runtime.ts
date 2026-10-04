@@ -1,3 +1,4 @@
+import { renderKeepingTopHeader } from "./top-edge-header";
 import type { RibbonAsset } from "./playback-assets";
 import appVersions from "./app-versions.json";
 import { installScoreReader } from "./score-reader";
@@ -54,8 +55,6 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     initial: { ...playbackInitial, ...options.initial },
   };
   let disposed = false;
-  let headerTintTimer: ReturnType<typeof setTimeout> | undefined;
-  let headerTintStyle: HTMLStyleElement | undefined;
   let pending = Promise.resolve();
   let positionTimer: ReturnType<typeof setTimeout> | undefined;
   root.classList.remove("player-library");
@@ -83,8 +82,8 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     pageRatios: number[] = [];
   const song = () => s;
   document.body.classList.add("has-song");
-  $("app").innerHTML =
-    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML()}</section><p id="status" role="status">${i18nText("portable-player.message453")}</p></main>`;
+  renderKeepingTopHeader(root,
+    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML()}</section><p id="status" role="status">${i18nText("portable-player.message453")}</p></main>`);
   let management: ReturnType<typeof attachPracticeManagement> | undefined;
   const markerContent = document.createElement("div");
   markerContent.innerHTML = practiceMarkerHTML();
@@ -340,14 +339,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     status("");
     document.body.dataset.ready = "true";
     document.body.dataset.readyMs = String(performance.now());
-    // Refresh Safari's browser-chrome sampling after the library-to-player transition.
-    headerTintTimer = setTimeout(() => {
-      if (disposed) return;
-      headerTintStyle = document.createElement("style");
-      headerTintStyle.dataset.playbackHeaderTint = "true";
-      headerTintStyle.textContent = ".has-song .drawer-playback > header {position:sticky;top:0;background:#b8d4f5}";
-      document.head.append(headerTintStyle);
-    }, 3000);
+
   } catch (e) {
     dispose();
     throw e;
@@ -356,8 +348,6 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     if (disposed) return;
     changed();
     disposed = true;
-    clearTimeout(headerTintTimer);
-    headerTintStyle?.remove();
     ready = false;
     window.removeEventListener("pagehide", pagehide);
     window.removeEventListener("pageshow", pageshow);
@@ -376,7 +366,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       "dialog[open]",
     ))
       dialog.close();
-    root.replaceChildren();
+    renderKeepingTopHeader(root, "");
     root.classList.remove("playback-ui");
     document.body.classList.remove("has-song");
     delete document.body.dataset.ready;

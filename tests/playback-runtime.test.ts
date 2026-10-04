@@ -93,7 +93,7 @@ it("mounts either adapter, persists position/preferences and disposes once befor
   runtime.dispose();
   expect(state.dispose).toHaveBeenCalledTimes(1);
   expect(state.close).toHaveBeenCalledTimes(1);
-  expect(o.root.childElementCount).toBe(0);
+  expect(o.root.innerHTML).toBe("<header></header>");
   expect(document.body.dataset.ready).toBeUndefined();
   const second = await mountPlaybackRuntime(o);
   expect(o.root.querySelectorAll("#play")).toHaveLength(1);
@@ -104,7 +104,7 @@ it("cleans up failed audio initialization and propagates failure to library host
   state.load.mockRejectedValueOnce(Error("decode failed"));
   const o = options();
   await expect(mountPlaybackRuntime(o)).rejects.toThrow("decode failed");
-  expect(o.root.childElementCount).toBe(0);
+  expect(o.root.innerHTML).toBe("<header></header>");
   expect(state.close).toHaveBeenCalledTimes(1);
   expect(document.body.classList.contains("has-song")).toBe(false);
 });
@@ -208,6 +208,6 @@ it("keeps a BFCache page usable and saves position, while final pagehide dispose
   );
   await runtime.flush();
   expect(state.dispose).toHaveBeenCalledTimes(1);
-  expect(o.root.childElementCount).toBe(0);
+  expect(o.root.innerHTML).toBe("<header></header>");
   runtime.dispose();
 });

@@ -150,3 +150,14 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 ## 2026-10-04 15:36 KST — 0.6.12 / Sites30
 - source2e7678326d77c5865e7a1e750a01da518229fe33, deployment appgdep_6ac1f3e30ed08191934e1b57f960367d succeeded. build73c9afd1.
 -417테스트/build:apps 통과. 로컬 가로→세로 전환에서는 Safari 배색 적용됐지만 게시본 세로 첫 진입은 흰색으로 남음. 해결 완료 아님. 세로 첫 진입을 기준으로 추가 비교 진행.
+
+## 2026-10-04 15:57 KST — Sites32 / player0.6.14
+
+- 직전 Sites31(player0.6.13, source aca57a3cb0af969a3a9ae8fef4fbea38fee5d2ed)은 배포 성공했으나 native iPad Safari 상단 tint 검증 실패. 타이머 방식 철회.
+- Sites32 source: 69eee47775c12a7fc2f85d32cebbfabdba35dcfe
+- version: appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_38d62ea1b26881919e8ed2197fc204ef
+- deployment: appgdep_6ac1f8bff6cc8191be6b26a1e4ce04e9 — succeeded (2026-10-04T06:57:20.233601+00:00)
+- URL: https://drum-practice-studio.dgkma.chatgpt.site
+- 표시: v0.6.14 · build 2a211ebd. dist/player만 배포, 공개 범위 유지.
+- 15:58–15:59 KST iPad mini(A17 Pro), iPadOS27 native Safari 공개 URL 목록→악보→목록 전환에서 상태바/주소창/탭 파란색 유지 및 제목 선명 확인. 실제 사용자 iPad 홈 화면 실행은 별도 확인 필요.
+- 418 tests/89 files 및 build:apps 통과. 진단 상세: IPAD-STATUS-BAR-DIAGNOSIS.md.

@@ -106,3 +106,14 @@ body:not(.has-song) #app .editor-home button {
   color:#3d526e;
   letter-spacing:0;
 }
+
+/* The first screen supplies Safari's persistent top-edge color before any tap. */
+.player-library { padding-top:0; }
+.player-library > .library-header {
+  position:sticky; top:0; z-index:40;
+  max-width:none;
+  margin-inline:calc(50% - 50vw);
+  padding:16px max(16px, calc(50vw - 50%));
+  background:#b8d4f5;
+  border-bottom:1px solid #cbd6e7;
+}

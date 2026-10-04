@@ -51,3 +51,20 @@
 - body의 hidden/scroll 별도 스크롤 컨테이너 해제. 높이·악보 내부 스크롤·제목 위치는 유지.
 - 악보 준비 후3초에 헤더 규칙을 한 번 등록. 화면 배치/재생을 기다리게 하지 않지만 브라우저 색 갱신은 지연될 수 있다. dispose 취소/정리 유지.
 - iPadOS WebKit 내부 원인의 확정이 아니라 조건별 재현 결과에 근거한 호환성 처리다.
+
+## 2026-10-04 0.6.14: sampled header identity 유지
+
+- 목표: 목록에서 처음 채집한 Safari 상단 색을 곡 열기/닫기에도 유지한다.
+- 범위: player 목록 CSS, 공통 runtime header rendering, timer 제거. 재생 조작/악보 레이아웃은 유지한다.
+- 완료 조건: native iPad Safari에서 목록 → 곡 → 목록의 chrome 색 유지, 같은 header DOM identity 확인.
+- 제외: 동문회 사이트 수정, iPadOS 설정 변경, editor 공개 배포.
+- 검증: header detach 회귀 검사, 전체 테스트/앱 빌드, Safari MCP DOM, iPad mini 27 native chrome.
+
+사용자가 전달한 Claude 분석을 WebKit Page.cpp updateFixedContainerEdges(5289–5322행, main 2026-10-04)와 대조했다. canSampleTopEdge는 사용자 조작/스크롤 이후 재채집을 제한하되 설정 및 parsing 예외가 있다. 이전 색상 요소의 renderer가 남아 있으면 참조를 유지하는 분기가 있다. 따라서 '첫 터치 전에만 읽음'은 절대 규칙으로 기록하지 않는다.
+출처: https://github.com/WebKit/WebKit/blob/main/Source/WebCore/page/Page.cpp
+
+0.6.13/Sites31의 타이머+overflow 수정은 공개 주소의 portrait 첫 진입에서 실패했다(15:49 KST). 0.6.14에서는 타이머를 삭제하고 목록부터 전체 폭 sticky 파란 header를 표시한다. 화면 문자열을 template에서 파싱하고 기존 header 자체는 root에서 분리하지 않으며 속성/자식만 교체한다. dispose에서도 빈 header를 남긴다.
+
+로컬 검증(15:54–15:56 KST): 418 tests/89 files PASS, build:apps PASS. Safari MCP에서 목록 → 악보 → 목록의 header === 초기 header, x/y=0, width=1188 확인. iPad mini iPadOS27 native Safari에서 세 단계 모두 파란 chrome 확인. build 2a211ebd.
+
+공개 검증(15:58–15:59 KST): Sites32 공개 URL을 iPad mini 27 Safari에서 직접 열어 v0.6.14 build2a211ebd 확인. 목록/Real Paradis 두 줄 악보/목록 복귀 모두 status/address/tab 영역이 파란색으로 유지됨. 이전 Sites31 동일 기기/공개 origin 두 줄 악보는 흰색이었다. 제목 선명. 사용자 실제 iPad 홈 화면 실행은 미확인이고 시뮬레이터 Safari 결과로 대체하지 않는다.

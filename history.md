@@ -2722,3 +2722,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 -0.6.12는 게시 후 세로 첫 진입 실패 확인. 해결 완료 주장을 철회하고 대조 조건을 확대.
 - body overflow visible + 악보 준비3초 후 헤더 규칙 단발 등록을 함께 유지. CSS 단독/지연 단독은 실패, 조합은 로컬 세로 첫 진입 성공.
 - 상세 대조: docs/IPAD-STATUS-BAR-DIAGNOSIS.md. 사용자 실제 iPad 상태바가 보이는 전체화면은 별도 확인 대상.
+
+## 2026-10-04 — player 0.6.14 / editor 0.6.13: Safari 첫 header 유지
+
+- 사용자 제공 Claude 분석의 WebKit 조건을 재검토하고 목록부터 sticky 파란 header를 유지한다. 공통 runtime 렌더/해제 시 기존 header를 DOM에서 제거하지 않는다.
+- 실패한 3초 style refresh timer 제거. 기존 악보/조작판 레이아웃 유지.
+- 418 tests/89 files 및 build:apps 통과. Safari MCP DOM identity와 iPad mini 27 로컬 목록→악보→목록 chrome 유지 확인.
+- 상세 원인/공개 검증은 docs/IPAD-STATUS-BAR-DIAGNOSIS.md, docs/SITES-PUBLICATION.md 참조.

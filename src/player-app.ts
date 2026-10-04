@@ -1,3 +1,4 @@
+import { renderKeepingTopHeader } from "./top-edge-header";
 import "./help.css";
 import { installHelp } from "./help";
 import "./playback-base.css";
@@ -207,7 +208,7 @@ export async function showLibrary() {
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
-  root.innerHTML = `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1>${import.meta.env.DEV ? `<a href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`;
+  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1>${import.meta.env.DEV ? `<a href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`);
   showBuildLabel();
   document
     .querySelector("#import-package")!
