@@ -30,8 +30,13 @@ export function installHelp(root: HTMLElement) {
       return;
     }
     if (help?.open) return;
-    const parent = activeDialog() || root.querySelector("header .actions") || root;
-    if (button.parentElement !== parent) parent.append(button);
+    const modal = activeDialog();
+    const settingsHead = modal?.id === "settings-dialog" ? modal.querySelector(".dialoghead") : null;
+    const parent = settingsHead || modal || root.querySelector("header .actions") || root;
+    if (button.parentElement !== parent) {
+      if (settingsHead) parent.insertBefore(button, parent.querySelector(".close-button"));
+      else parent.append(button);
+    }
   };
   const observer = new MutationObserver(relocate);
   observer.observe(root, {

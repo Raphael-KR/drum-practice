@@ -171,3 +171,12 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - URL: https://drum-practice-studio.dgkma.chatgpt.site
 - 추가 요청: portrait에서 섹션명 위/마디수 아래, landscape 한 줄 유지. dist/player만 배포. build:apps PASS.
 - 16:10 KST 공개 URL native iPad mini iPadOS27 portrait Safari에서 v0.6.16 build4dd2ab2c 확인: 바로가기 섹션명/마디수 두 줄, 축소된 제목 여백, 조작판 아래 여백, 파란 Safari chrome 유지. 현재 시뮬레이터는 두 줄 악보 모드이며 사용자 실제 iPad 한 줄/홈 화면 결과는 별도 확인 대상이다.
+
+## 2026-10-04 20:03 KST — Sites35 / player0.6.17
+
+- build25814550, source34d4f7aa50a77f007f4589331e91495c346357ac
+- version appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_e103d61b99a4819188c8ec27d42a2185
+- deployment appgdep_6ac232746b4081918056250420ba6130 succeeded (2026-10-04T11:03:32.286046+00:00).
+- URL https://drum-practice-studio.dgkma.chatgpt.site
+- 바로가기 중앙 정렬/empty, 설정 도움말 상단 이동. dist/player만 게시. 418 tests/89 files, build:apps PASS.
+- 공개 Safari MCP에서 v0.6.17 build25814550 로드/ready=true, 설정 open=true, 도움말 parent=dialoghead 확인. Device Hub 창 부재로 native iPad 확인은 미실행.

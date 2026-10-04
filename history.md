@@ -2741,3 +2741,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자 추가 요청대로 세로모드 바로가기의 섹션명/마디수를 위아래 두 줄로 표시한다. 가로는 기존 한 줄 유지.
 - 상단2px, 세로 조작판290px, 하단 최소16px 여백은 0.6.15 변경을 유지한다.
 - build:apps 및 diff check 통과. CSS만 수정해 기능 테스트 신규 작성/반복은 생략. 공개 native iPad Safari 화면 검증은 배포 기록 참조.
+
+## 2026-10-04 — player0.6.17 / editor0.6.16: 바로가기 정렬 및 설정 도움말
+
+- 바로가기 섹션명/마디수 가운데 정렬, 빈 버튼 문구 — → empty. 글꼴/색상/버튼 크기는 유지.
+- 설정 모달 도움말을 dialoghead의 닫기 버튼 앞에 배치. 다른 모달의 위치 규칙은 유지. UX 정본에 사용자 예외 결정 기록.
+- 418 tests/89 files PASS, build:apps PASS. Safari MCP 로컬에서 empty/center, settings-dialog open, help parent=dialoghead/position=static 확인.
+- iPad Device Hub 창 재연결은 cgWindowNotFound로 불가. 이번 실제 iPad 시뮬레이터 검증은 미확인으로 남김.

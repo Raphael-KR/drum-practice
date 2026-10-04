@@ -2546,3 +2546,11 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   }
   .drawer-playback .section-shortcuts span {text-align:left;}
 }
+
+/* Align shortcut labels without changing their type, colors or dimensions. */
+.drawer-playback .section-shortcuts button {justify-content:center;}
+.drawer-playback .section-shortcuts strong,
+.drawer-playback .section-shortcuts span {text-align:center;}
+@media (orientation:portrait) {
+  .drawer-playback .section-shortcuts button {align-items:center;}
+}

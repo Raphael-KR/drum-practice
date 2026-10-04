@@ -56,7 +56,7 @@ export function attachPracticeManagement(h: Options) {
     get("section-shortcuts").innerHTML = sectionShortcutSlots(readSectionShortcuts(h.canonicalXML?.() ?? ""), song)
       .map((section, index) => section
         ? `<button type="button" data-section-measure="${section.measureIndex}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
-        : `<button type="button" disabled aria-label="${t("sections.empty", {number:index + 1})}">—</button>`)
+        : `<button type="button" disabled aria-label="${t("sections.empty", {number:index + 1})}">empty</button>`)
       .join("");
 
   }

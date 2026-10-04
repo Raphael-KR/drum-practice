@@ -43,7 +43,7 @@ it("moves entry into the active modal and does not show playback shortcuts there
   const settings = root.querySelector<HTMLDialogElement>("#settings-dialog")!;
   settings.showModal();
   await Promise.resolve();
-  expect(settings.querySelector("#app-help-button")).not.toBeNull();
+  expect(settings.querySelector(".dialoghead #app-help-button")).not.toBeNull();
   settings.querySelector<HTMLButtonElement>("#app-help-button")!.click();
   const d = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
   expect(d.textContent).toContain("예비박");
