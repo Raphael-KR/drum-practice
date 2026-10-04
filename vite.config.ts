@@ -33,6 +33,8 @@ export default defineConfig(({ mode }) => {
               source: readFileSync("public/portable-template.html"),
             });
           if (mode === "player") {
+            for (const name of ["apple-touch-icon.png", "apple-touch-icon-180.png", "favicon.ico", "favicon-32.png", "icon-192.png"])
+              this.emitFile({type: "asset", fileName: `icons/${name}`, source: readFileSync(`public/icons/${name}`)});
             const scores = JSON.parse(
               readFileSync("src/bundled-scores.json", "utf8"),
             );

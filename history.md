@@ -2877,3 +2877,14 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 빌드7e6a94b2. 번역 등록 누락 수정 및 기존12칸/퍼센트 기준 테스트를 승인된9칸/마디 기준으로 갱신.
 - test:drum 89파일438개 통과, build:apps 및 앱 경계 검사 통과. npm test는 별도 guitar-practice 복제본까지 수집하므로 프로젝트 전용 test:drum 결과를 정본 검증으로 사용.
 - 기존 미추적 실험/범례 자료는 커밋에서 제외하고 보존. Sites에는 dist/player만 준비.
+
+## 2026-10-04 — 드럼연습실 파비콘·홈 화면 아이콘 (로컬)
+- Downloads의22:18:46~22:19:05 생성 아이콘5개를 public/icons에 복사. 원본 보존.
+- player.html에180px Apple touch icon,32px/192px PNG 및 ICO favicon, 홈 화면 앱명 드럼연습실 연결.1024px 원본도 보관.
+- player 별도 빌드에5개 아이콘 포함, 아이콘 내용을 빌드 해시에 포함. 버전0.6.20 유지, build ab06d774.
+- TypeScript/player 빌드/diff 검사 통과.5개 파일 빌드 바이트 일치 및 로컬 HTTP200 확인. 커밋·푸시·발행 없음.
+
+## 2026-10-04 — 아이콘 릴리스 승인
+- 사용자 커밋·푸시·발행 요청. player0.6.21/build1409bbc0, editor0.6.18 유지.
+- check:i18n, TypeScript, build:apps 및 앱 경계 검사 통과. 아이콘5개 원본/배포 파일 바이트 일치 확인.
+- 원본 아이콘5개를 Git에 포함. 기타 미추적 실험 자료는 보존·제외.
