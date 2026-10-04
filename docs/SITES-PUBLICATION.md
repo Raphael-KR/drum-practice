@@ -161,3 +161,13 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - 표시: v0.6.14 · build 2a211ebd. dist/player만 배포, 공개 범위 유지.
 - 15:58–15:59 KST iPad mini(A17 Pro), iPadOS27 native Safari 공개 URL 목록→악보→목록 전환에서 상태바/주소창/탭 파란색 유지 및 제목 선명 확인. 실제 사용자 iPad 홈 화면 실행은 별도 확인 필요.
 - 418 tests/89 files 및 build:apps 통과. 진단 상세: IPAD-STATUS-BAR-DIAGNOSIS.md.
+
+## 2026-10-04 16:07–16:09 KST — Sites33/34 세로 여백과 두 줄 바로가기
+
+- Sites33: player0.6.15 build8c600335, source f31d8ec2ad5bc04fdb76ab688b6449966094a9d6, deployment appgdep_6ac1fb1b7e948191afb95d6b856db8f7 succeeded. 상단2px/하단16px, 세로 조작판290px.
+- Sites34: player0.6.16 build4dd2ab2c, source cc5ada4cf54662bef3966b0d95409a7ad9437e03.
+- version: appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_db3d5662d98481919af908afaa2283ae
+- deployment: appgdep_6ac1fb9fe3348191865295abbba09db6 succeeded (2026-10-04T07:09:36.236818+00:00).
+- URL: https://drum-practice-studio.dgkma.chatgpt.site
+- 추가 요청: portrait에서 섹션명 위/마디수 아래, landscape 한 줄 유지. dist/player만 배포. build:apps PASS.
+- 16:10 KST 공개 URL native iPad mini iPadOS27 portrait Safari에서 v0.6.16 build4dd2ab2c 확인: 바로가기 섹션명/마디수 두 줄, 축소된 제목 여백, 조작판 아래 여백, 파란 Safari chrome 유지. 현재 시뮬레이터는 두 줄 악보 모드이며 사용자 실제 iPad 한 줄/홈 화면 결과는 별도 확인 대상이다.

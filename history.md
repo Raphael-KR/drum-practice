@@ -2735,3 +2735,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 실제 iPad에서 0.6.14 상단 tint 성공 확인을 받음.
 - 제목 상단 기본 패딩 8→2px, 세로 조작판 310→290px, 앱 하단 최소16px 여백. safe-area와 persistent header 유지.
 - build:apps 통과, Safari MCP header padding 2px 확인. Sites33 게시 성공(build8c600335). 게시 직후 사용자 추가 요청(세로 바로가기 2줄)을 이어서 반영/화면 검증한다.
+
+## 2026-10-04 — player0.6.16 / editor0.6.15: 세로 바로가기 두 줄
+
+- 사용자 추가 요청대로 세로모드 바로가기의 섹션명/마디수를 위아래 두 줄로 표시한다. 가로는 기존 한 줄 유지.
+- 상단2px, 세로 조작판290px, 하단 최소16px 여백은 0.6.15 변경을 유지한다.
+- build:apps 및 diff check 통과. CSS만 수정해 기능 테스트 신규 작성/반복은 생략. 공개 native iPad Safari 화면 검증은 배포 기록 참조.

@@ -2535,3 +2535,14 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   }
   .drawer-playback .playback-drawer {height:290px;}
 }
+
+/* Portrait shortcuts give the section name and measure their own lines. */
+@media (orientation:portrait) {
+  .drawer-playback .section-shortcuts button {
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    gap:4px;
+  }
+  .drawer-playback .section-shortcuts span {text-align:left;}
+}
