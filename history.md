@@ -2729,3 +2729,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 실패한 3초 style refresh timer 제거. 기존 악보/조작판 레이아웃 유지.
 - 418 tests/89 files 및 build:apps 통과. Safari MCP DOM identity와 iPad mini 27 로컬 목록→악보→목록 chrome 유지 확인.
 - 상세 원인/공개 검증은 docs/IPAD-STATUS-BAR-DIAGNOSIS.md, docs/SITES-PUBLICATION.md 참조.
+
+## 2026-10-04 — player0.6.15 / editor0.6.14: 상하단 여백
+
+- 실제 iPad에서 0.6.14 상단 tint 성공 확인을 받음.
+- 제목 상단 기본 패딩 8→2px, 세로 조작판 310→290px, 앱 하단 최소16px 여백. safe-area와 persistent header 유지.
+- build:apps 통과, Safari MCP header padding 2px 확인. Sites33 게시 성공(build8c600335). 게시 직후 사용자 추가 요청(세로 바로가기 2줄)을 이어서 반영/화면 검증한다.

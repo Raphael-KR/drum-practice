@@ -2520,8 +2520,18 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   position:sticky;
   top:0;
   z-index:40;
-  padding-top:calc(8px + env(safe-area-inset-top, 0px));
+  padding-top:calc(2px + env(safe-area-inset-top, 0px));
   background:#b8d4f5;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
+}
+
+/* Keep the portrait control board clear of the bottom screen edge. */
+@media (orientation:portrait) {
+  .has-song #app.drawer-playback {
+    box-sizing:border-box;
+    padding-bottom:max(16px, env(safe-area-inset-bottom, 0px));
+    --playback-safe-bottom:0px;
+  }
+  .drawer-playback .playback-drawer {height:290px;}
 }
