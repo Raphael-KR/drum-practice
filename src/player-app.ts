@@ -5,6 +5,8 @@ import "./playback-ui.css";
 import "./portable-player.css";
 import "./player-library.css";
 import { t } from "./i18n";
+import appVersions from "./app-versions.json";
+import buildInfo from "./build-info.generated.json";
 import bundledScores from "./bundled-scores.json";
 import notices from "./third-party.generated.json";
 import { escapeHTML } from "./html";
@@ -26,6 +28,10 @@ import type { RecordData } from "./storage";
 
 const root = document.getElementById("app")!;
 let session: Awaited<ReturnType<typeof mountPlaybackRuntime>> | undefined;
+function showBuildLabel() {
+  const title = root.querySelector<HTMLElement>("header h1");
+  if (title) title.dataset.playerBuild = `v${appVersions.player.version} · build ${buildInfo.source.slice(0, 8)}`;
+}
 let working = false;
 let importEpoch = 0;
 function report(error: unknown) {
@@ -87,6 +93,7 @@ async function openRecord(id: string) {
         void showLibrary().catch(report);
       },
     });
+    showBuildLabel();
   } catch (e) {
     try {
       await showLibrary();
@@ -201,6 +208,7 @@ export async function showLibrary() {
   delete document.body.dataset.ready;
   root.className = "player-library";
   root.innerHTML = `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1>${import.meta.env.DEV ? `<a href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`;
+  showBuildLabel();
   document
     .querySelector("#import-package")!
     .addEventListener("click", () =>

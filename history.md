@@ -2706,3 +2706,7 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 진입 HTML의 viewport-fit=cover만 제거. 다른 레이아웃·색상 설정 유지. 417테스트·TypeScript·diff 검사 통과.
 - 실제 iPad 상태바 배색·흐림과 가로 화면은 후속 확인 대상.
 - build:apps 통과. 14:43 KST Sites28 게시 succeeded: sourcec77e8cb0c005e3d575914f5cca05fa6efe704c1a, deployment appgdep_6ac1e76beaec8191b2af135fa5224079.
+
+## 2026-10-04 — player 0.6.11 상단 빌드 식별
+- 악보 목록과 재생 화면 제목 아래에 버전 및 소스 해시8자리 표시. 기존 build-info 생성 데이터를 사용하며 곡 제목 갱신 후에도 유지한다.
+- 제작앱 버전0.6.10 유지. 417테스트·TypeScript·diff 검사 통과.

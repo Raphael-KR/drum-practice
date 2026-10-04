@@ -94,3 +94,15 @@ body:not(.has-song) #app:has(.editor-home) > header .brand h1 {
 body:not(.has-song) #app .editor-home button {
   min-height:44px;
 }
+
+/* Always visible in screenshots, independent of the changing song title. */
+#app header h1[data-player-build]::after {
+  content:attr(data-player-build);
+  display:block;
+  margin-top:3px;
+  font-size:12px;
+  line-height:16px;
+  font-weight:500;
+  color:#3d526e;
+  letter-spacing:0;
+}
