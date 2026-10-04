@@ -2469,7 +2469,7 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
   padding:0;
 }
 .has-song .drawer-playback header {
-  background:#f4f7fc;
+  background:#b8d4f5;
   padding-top:8px;
   padding-left:max(12px, env(safe-area-inset-left, 0px));
   padding-right:max(12px, env(safe-area-inset-right, 0px));

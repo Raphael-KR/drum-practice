@@ -2676,3 +2676,7 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 417테스트, TypeScript, diff 검사 통과. 실제 iPad의 당김 시 바탕 노출과 흐림 여부는 게시 후 비교한다.
 - Safari 계산 스타일 html/body #fff, 앱/제목바 #f4f7fc 확인. build:apps 통과.
 - 14:11 KST Sites24 게시 succeeded: sourced820a0858ea25a52839b79b6a960c334c8fb4e2a, deployment appgdep_6ac1e005595c819187f64eb59e349456. 실제 iPad 바탕 노출 미확인.
+
+## 2026-10-04 — 0.6.7 제목바 파랑 강화
+- 흰 바깥 바탕과 구분되도록 제목바 및 theme-color를 #b8d4f5로 변경. 다른 구역과 글자색 유지.
+- 417테스트, TypeScript, diff 검사 통과.
