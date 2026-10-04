@@ -218,3 +218,8 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - deployment appgdep_6ac265b81ef8819188915097fd520a1d succeeded. 공개/player-only 유지.
 - 정본 c8d2fff main push 완료.441테스트/분리 빌드 통과. 카운트오프 수정 및 제작 프로세스 문서 포함. 실제 iPad 청취 확인은 별도.
 - 공개 URL을 Safari에서 열고 곡 진입 후 `v0.6.23 · build f4ee39b7` 표시를 확인했다.
+
+## 2026-10-05 00:27 KST — Sites42 / player0.6.24
+- build bbb7a769, source 50661aeb41128e111457def83d0b377f1f9c9a1e.
+- deployment appgdep_6ac2705276908191ab0c74b8d194a2d2 succeeded. 공개/player-only 유지.
+- 정본 2660dab main push 완료. 116→117마디 불완전 행 빈 칸 보존 수정. 443개 테스트 및 분리 빌드 통과.
