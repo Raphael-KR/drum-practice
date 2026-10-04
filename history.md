@@ -2648,3 +2648,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 ### 2026-10-04 13:17 KST —0.6.2 / Sites20 게시
 - 구역 배색 복원 커밋6681cae. 전체417테스트, TypeScript, build:apps 및 앱 경계 검사 통과.
 - Sites source8f5c994442336416a8c26802884c38ce58b40a03, deployment appgdep_6ac1d34ba5b08191aeb1a6c7dcf87c51 succeeded. 기존 공개 주소와 player-only 범위 유지.
+
+## 2026-10-04 — 0.6.3 여백 없는 구역 배색
+- 제목바·흰 악보·회색 재생바·민트 조작판이 화면 양끝까지 빈틈없이 이어지도록 main 패딩과 practice 구역 간격 제거.
+- 안전 영역 여백을 각 색상 구역 안으로 옮기고 제목 위 24px 보정 유지. theme-color를 제목바 #f4f7fc로 일치시킴.
+- 417개 테스트, TypeScript, diff 검사 통과. Safari 1188×796에서 각 구역 x=0,width=1188, 수직 경계62→536→616→796 연속 확인. 실제 iPad 상태바 합성은 게시 후 사용자 확인 필요.
