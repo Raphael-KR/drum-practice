@@ -2506,7 +2506,7 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 :root:fullscreen:has(.drawer-playback) {overscroll-behavior-y:auto;}
 body.has-song:has(.drawer-playback),
 :root:fullscreen body.has-song:has(.drawer-playback) {
-  overflow-y:scroll;
+  overflow:visible;
   overscroll-behavior-y:auto;
 }
 .has-song .drawer-playback header {touch-action:pan-y;}

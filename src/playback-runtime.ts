@@ -347,7 +347,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       headerTintStyle.dataset.playbackHeaderTint = "true";
       headerTintStyle.textContent = ".has-song .drawer-playback > header {position:sticky;top:0;background:#b8d4f5}";
       document.head.append(headerTintStyle);
-    }, 100);
+    }, 3000);
   } catch (e) {
     dispose();
     throw e;

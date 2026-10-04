@@ -146,3 +146,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 ## 2026-10-04 14:52 KST — player 0.6.11 / Sites 29
 - 제목 옆 빌드표시 v0.6.11 · build 66e993d6. 제목바 높이 유지 확인. 417테스트·build:apps 통과.
 - sourced4ec5c978b833cc0762eda92f7ae49e8a4153bb8, deployment appgdep_6ac1e977f55881919670c59028cbbd9f succeeded.
+
+## 2026-10-04 15:36 KST — 0.6.12 / Sites30
+- source2e7678326d77c5865e7a1e750a01da518229fe33, deployment appgdep_6ac1f3e30ed08191934e1b57f960367d succeeded. build73c9afd1.
+-417테스트/build:apps 통과. 로컬 가로→세로 전환에서는 Safari 배색 적용됐지만 게시본 세로 첫 진입은 흰색으로 남음. 해결 완료 아님. 세로 첫 진입을 기준으로 추가 비교 진행.

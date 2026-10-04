@@ -2717,3 +2717,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 로컬 production build에서도 흰 Safari 상단 재현. dev에서만 정상인 차이를 분리했다.
 - 악보 준비 완료100ms 후 sticky 헤더 스타일을 한 번 등록하여 Safari 배색 갱신. 종료 시 timer/style 정리. 레이아웃과 여백 유지.
 - A/B 및 실패 후보는 docs/IPAD-STATUS-BAR-DIAGNOSIS.md에 기록. 88파일 417테스트 통과. 최종 빌드/배포 검증은 아래 후속 기록 참조.
+
+## 2026-10-04 — Safari 세로 첫 진입 보완 (player0.6.13 / editor0.6.12)
+-0.6.12는 게시 후 세로 첫 진입 실패 확인. 해결 완료 주장을 철회하고 대조 조건을 확대.
+- body overflow visible + 악보 준비3초 후 헤더 규칙 단발 등록을 함께 유지. CSS 단독/지연 단독은 실패, 조합은 로컬 세로 첫 진입 성공.
+- 상세 대조: docs/IPAD-STATUS-BAR-DIAGNOSIS.md. 사용자 실제 iPad 상태바가 보이는 전체화면은 별도 확인 대상.
