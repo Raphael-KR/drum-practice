@@ -2681,3 +2681,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 흰 바깥 바탕과 구분되도록 제목바 및 theme-color를 #b8d4f5로 변경. 다른 구역과 글자색 유지.
 - 417테스트, TypeScript, diff 검사 통과.
 - Safari 제목바 rgb(184,212,245) 확인. build:apps 통과. 14:19 KST Sites25 게시 succeeded: source622952ed8bf00c2ccec33622147aa1d5eac17697, deployment appgdep_6ac1e1e1509c819199e72705363cb0c6.
+
+## 2026-10-04 — 0.6.8 상태바 배색용 sticky 제목바
+- 동문회 로컬 public-layout의 sticky top:0 불투명 헤더와 드럼 일반 헤더의 차이를 확인. 실제 게시 HTML theme-color #b8d4f5는 이미 반영되어 있었음.
+- 드럼 제목바에 sticky/top0/z-index40/불투명 파랑 적용. 흰 바깥 바탕과 추가 여백 없는 배치 유지.
+- 관련 조사: https://bugs.webkit.org/show_bug.cgi?id=319479 의 상단 fixed/sticky 색 샘플링 보고 참고. 미확정 버그 보고이며 현재 iPad 원인의 증명으로 간주하지 않음.
+- 417테스트, TypeScript, diff 검사 통과. 상태바 실제 색상은 사용자 iPad 확인 필요.

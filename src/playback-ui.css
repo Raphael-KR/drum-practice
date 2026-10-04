@@ -2514,3 +2514,13 @@ body.has-song:has(.drawer-playback),
 /* White page canvas is exposed by Safari rubber-banding; app bands keep their colors. */
 :root:has(.drawer-playback),
 body.has-song:has(.drawer-playback) {background:#fff;}
+
+/* Match the alumni site's opaque, top-edge sticky header for Safari tint sampling. */
+.has-song .drawer-playback > header {
+  position:sticky;
+  top:0;
+  z-index:40;
+  background:#b8d4f5;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
