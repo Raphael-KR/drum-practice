@@ -95,3 +95,8 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - 전체88파일417테스트, build:apps 및 앱 경계 검사 통과. 배포 정적11파일은 dist/player와 SHA256/바이트 일치 확인.
 - Sites 소스 커밋 c82a274886c95e43d113fc19b9b757317c1c6c2b, version17, deployment appgdep_6ac1a67f31a081919ca45c1a4bd6de98 succeeded. 서버 응답으로 게시 확인; 게시 후 실제 iPad 재생 검수는 별도.
 - 정본 저장소의 작업 변경은 미커밋 상태로 보존. Sites 배포 사본만 helper로 커밋·push.
+
+### 2026-10-04 12:56 KST — Sites 버전18 게시
+- 세로 상단 제목/조작부 두 줄 배치 및50~300% 확대 게시. 기존 public 범위와 player-only 대상 유지. 앱 표시0.6.0.
+- 전체88파일417테스트, build:apps 및 앱 경계 검사 통과. 배포11파일 바이트/해시 정본 일치.
+- Sites source c57ce6d95b4b76035ff605c8ddae975d783efd04, deployment appgdep_6ac1ce67f79c8191859cb5aeec55ecd0 succeeded. https://drum-practice-studio.dgkma.chatgpt.site . 배포 서버 확인이며 게시 후 실기기 재검수는 별도.

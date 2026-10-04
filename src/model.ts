@@ -347,7 +347,7 @@ export function validateSong(x: unknown): asserts x is Song {
     t.position < 0 ||
     !finite(t.zoom) ||
     t.zoom < 0.5 ||
-    t.zoom > 2 ||
+    t.zoom > 3 ||
     !["ribbon", "rows", "compare"].includes(t.view)
   )
     throw Error(i18nText("model.message389"));

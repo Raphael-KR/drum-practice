@@ -2420,3 +2420,44 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 .two-rows.uniform-spacing .ribbon {display:block;}
 
 .two-rows.uniform-spacing .browse-strip > .measure:last-child {border-right-color:transparent;}
+
+/* Portrait: title above tempo/metronome and the right-aligned action group. */
+@media (orientation:portrait) {
+  .has-song .playback-ui header {
+    display:grid;
+    grid-template-columns:auto auto minmax(0,1fr);
+    gap:8px;
+  }
+  .has-song .playback-ui header .brand {display:contents;}
+  .has-song .playback-ui header .brand h1 {
+    grid-column:1 / -1;
+    grid-row:1;
+    margin:0;
+    width:100%;
+  }
+  .has-song .playback-ui header .brand > button {grid-column:1;grid-row:2;}
+  .has-song .playback-ui header .metronome-toggle {grid-column:2;grid-row:2;}
+  .has-song .playback-ui header .actions {
+    grid-column:3;
+    grid-row:2;
+    justify-self:end;
+    margin-left:0;
+  }
+}
+
+/* Continuous playback surface; outlines belong to controls and selection only. */
+.has-song .drawer-playback {background:#f4f7fc;}
+.has-song .drawer-playback header,
+.drawer-playback #practice > .stage,
+.drawer-playback .playback-dock .transport,
+.drawer-playback .playback-drawer,
+.drawer-playback .drawer-panel {
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+}
+@media (orientation:portrait) {
+  /* Keep the title below the system's translucent top edge on iPad. */
+  .has-song .playback-ui header {padding-top:24px;}
+}
