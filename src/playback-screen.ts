@@ -1,3 +1,4 @@
+import { syncCurrentSection } from "./section-shortcuts";
 import { gridPhase } from "./ribbon-timeline";
 import { mountLoopSlots } from "./loop-slots";
 import { mountPlaybackDrawer } from "./playback-drawer";
@@ -501,6 +502,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   );
   disposers.push(
     bindNumericDrag(input(ids.progress), {
+      surface: input(ids.progress).closest<HTMLElement>(".progress-number") ?? undefined,
       onStart: beginScrub,
       onPreview: (v) => previewScrub(h.song().measures[v - 1]?.start ?? 0),
       onCommit: (v) => {
@@ -599,6 +601,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       compare: () => h.compare?.draw(time),
     });
     progress();
+    syncCurrentSection(root, locate(h.song(), time).index);
     h.afterFrame?.(time);
   }
   async function rate(bpm: number) {

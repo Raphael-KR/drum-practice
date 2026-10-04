@@ -1,3 +1,4 @@
+import { icon, svgFromPath } from "./icon-svg";
 import { createDialog } from "./dialog-ui";
 import { fullScoreLabels } from "./full-score-labels";
 import { t } from "./i18n";
@@ -42,7 +43,19 @@ export function installScoreReader(options: Options) {
     const b = document.createElement("button");
     b.id = id;
     b.type = "button";
-    b.textContent = label;
+    const badge = document.createElement("span");
+    badge.className = "score-reader-action-icon";
+    badge.innerHTML = id === "runtime-full-svg" ? icon("library")
+      : svgFromPath(id === "runtime-full-pdf"
+        ? '<path d="M6 3h8l4 4v14H6Z M14 3v5h4 M9 12h6 M9 16h6"/>'
+        : '<path d="M5 5h14 M5 10h14 M5 15h10 M5 20h7"/>');
+    const text = document.createElement("span");
+    text.className = "score-reader-action-label";
+    text.textContent = label;
+    const arrow = document.createElement("span");
+    arrow.className = "score-reader-action-arrow";
+    arrow.innerHTML = svgFromPath('<path d="m9 5 7 7-7 7"/>');
+    b.append(badge, text, arrow);
     b.className = "score-reader-action";
     b.onclick = () => {
       Promise.resolve().then(run).catch(options.fail);
@@ -99,7 +112,7 @@ export function installScoreReader(options: Options) {
         body.replaceChildren(fragment);
         title(label);
         dialog.showModal();
-        dialog.scrollTop = 0;
+        body.scrollTop = 0;
       } finally {
         prepared.forEach((url) => URL.revokeObjectURL(url));
         if (!disposed) buttons.forEach((b) => (b.disabled = false));
@@ -120,7 +133,7 @@ export function installScoreReader(options: Options) {
           : options.song.lyrics.map((l) => l.text).join(" "));
       body.append(lyrics);
       dialog.showModal();
-      dialog.scrollTop = 0;
+      body.scrollTop = 0;
     });
   }
   return {

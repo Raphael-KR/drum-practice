@@ -24,7 +24,7 @@ header .actions #app-help-button {
   height:var(--playback-control-size,48px);
   min-height:var(--playback-control-size,48px);
   padding:8px;
-  border-radius:10px;
+  border-radius:50%;
   box-shadow:none;
   flex:none;
 }
@@ -380,7 +380,8 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(help-moda
 }
 
 /* Settings help belongs beside the close control in the modal header. */
-#settings-dialog > .dialoghead #app-help-button {
+#settings-dialog > .dialoghead #app-help-button,
+.score-reader-dialog > .dialoghead #app-help-button {
   position:static;
   flex:none;
   margin-left:auto;
@@ -410,3 +411,6 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(help-moda
   .compact-playback-help .help-cards {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
   .compact-playback-help .help-cards section + section {border-top:0;margin:0;padding:0;}
 }
+
+/* Full score/lyrics readers need only their close control. */
+#app-help-button[hidden] {display:none;}

@@ -102,3 +102,18 @@ it("marks only a bookmarked section destination and restores it on removal", () 
  c.song.markers=[]; c.management.render();
  expect(button().classList.contains('is-marked')).toBe(false);
 });
+
+it("lights the current section through its last measure and preserves bookmark colour state", async () => {
+ const {syncCurrentSection}=await import('../src/section-shortcuts');
+ const root=document.createElement('div');
+ root.innerHTML='<button data-section-measure="2" data-section-end="5" class="is-marked"></button><button data-section-measure="5" data-section-end="8"></button><button disabled>empty</button>';
+ const buttons=root.querySelectorAll('button');
+ syncCurrentSection(root,1); expect(root.querySelector('[aria-current]')).toBeNull();
+ for(const i of [2,4]) {syncCurrentSection(root,i);expect(buttons[0].getAttribute('aria-current')).toBe('true');}
+ syncCurrentSection(root,5);
+ expect(buttons[0].classList.contains('is-marked')).toBe(true);
+ expect(buttons[0].hasAttribute('aria-current')).toBe(false);
+ expect(buttons[1].getAttribute('aria-current')).toBe('true');
+ syncCurrentSection(root,8);expect(root.querySelector('[aria-current]')).toBeNull();
+ syncCurrentSection(root,2);expect(buttons[0].getAttribute('aria-current')).toBe('true');
+});

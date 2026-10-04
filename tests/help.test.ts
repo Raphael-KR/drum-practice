@@ -37,20 +37,21 @@ it("opens useful playback help, without a footer or placeholder, and restores fo
   expect(document.activeElement?.id).toBe("app-help-button");
   expect(root.querySelector("#app-help-dialog")).toBeNull();
 });
-it("moves entry into the active modal and does not show playback shortcuts there", async () => {
+it("keeps the main help visible in its header while settings or the reader is open", async () => {
   const root = document.querySelector<HTMLElement>("#app")!;
+  root.insertAdjacentHTML('afterbegin','<header><div class="actions"></div></header>');
+  root.insertAdjacentHTML('beforeend','<dialog class="score-reader-dialog"><div class="dialoghead"></div></dialog>');
   installHelp(root);
-  const settings = root.querySelector<HTMLDialogElement>("#settings-dialog")!;
-  settings.showModal();
   await Promise.resolve();
-  expect(settings.querySelector(".dialoghead #app-help-button")).not.toBeNull();
-  settings.querySelector<HTMLButtonElement>("#app-help-button")!.click();
-  const d = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
-  expect(d.textContent).toContain("예비박");
-  expect(d.textContent).not.toContain("Space");
-  d.close();
-  expect(settings.open).toBe(true);
-  expect(document.activeElement?.id).toBe("app-help-button");
+  const button=root.querySelector<HTMLButtonElement>('#app-help-button')!;
+  for (const modal of root.querySelectorAll<HTMLDialogElement>('dialog')) {
+    modal.showModal(); await Promise.resolve();
+    expect(button.parentElement).toBe(root.querySelector('header .actions'));
+    expect(button.hidden).toBe(false);
+    expect(modal.querySelector('#app-help-button')).toBeNull();
+    modal.close(); await Promise.resolve();
+    expect(button.parentElement).toBe(root.querySelector('header .actions'));
+  }
 });
 it("keeps playback help on one page on small screens", () => {
   vi.stubGlobal("innerWidth", 390);

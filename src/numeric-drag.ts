@@ -1,4 +1,6 @@
 export interface NumericDragOptions {
+  /** Optional enclosing hit area; text/keyboard editing stays on the input. */
+  surface?: HTMLElement;
   /** Called once when a gesture becomes a drag, before its first preview. */
   onStart?: (value: number) => void;
   onPreview?: (value: number) => void;
@@ -67,10 +69,11 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
   const addWindowListener = window.addEventListener.bind(window);
   const removeWindowListener = window.removeEventListener.bind(window);
   const InputEvent = window.Event;
-  const oldTouchAction = input.style.touchAction;
+  const surface = options.surface ?? input;
+  const oldTouchAction = surface.style.touchAction;
   const oldBound = input.getAttribute('data-numeric-drag-bound');
   const oldDragging = input.getAttribute('data-numeric-dragging');
-  input.style.touchAction = 'none';
+  surface.style.touchAction = 'none';
   input.setAttribute('data-numeric-drag-bound', 'true');
   const pixelsPerStep = Math.max(1, options.pixelsPerStep ?? 8);
   const threshold = Math.max(1, options.threshold ?? 6);
@@ -211,9 +214,9 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
     preview(value);
     emit('change');
   };
-  input.addEventListener('wheel', wheel, { passive: false });
-  input.addEventListener('pointerdown', pointerDown);
-  input.addEventListener('click', click, true);
+  surface.addEventListener('wheel', wheel, { passive: false });
+  surface.addEventListener('pointerdown', pointerDown);
+  surface.addEventListener('click', click, true);
   input.addEventListener('change', change);
   input.addEventListener('keydown', keyDown);
   addWindowListener('pointerdown', otherPointerDown, true);
@@ -226,12 +229,12 @@ export function bindNumericDrag(input: HTMLInputElement, options: NumericDragOpt
     if (disposed) return;
     disposed = true;
     cancel();
-    input.style.touchAction = oldTouchAction;
+    surface.style.touchAction = oldTouchAction;
     if (oldBound === null) input.removeAttribute('data-numeric-drag-bound');
     else input.setAttribute('data-numeric-drag-bound', oldBound);
-    input.removeEventListener('wheel', wheel);
-    input.removeEventListener('pointerdown', pointerDown);
-    input.removeEventListener('click', click, true);
+    surface.removeEventListener('wheel', wheel);
+    surface.removeEventListener('pointerdown', pointerDown);
+    surface.removeEventListener('click', click, true);
     input.removeEventListener('change', change);
     input.removeEventListener('keydown', keyDown);
     removeWindowListener('pointerdown', otherPointerDown, true);

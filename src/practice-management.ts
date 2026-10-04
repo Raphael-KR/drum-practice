@@ -1,8 +1,8 @@
 import { markedMeasureIndices } from "./marker-slots";
-import { readSectionShortcuts, sectionShortcutSlots } from "./section-shortcuts";
+import { readSectionShortcuts, sectionShortcutSlots, syncCurrentSection } from "./section-shortcuts";
 import { t } from "./i18n";
 import { escapeHTML as esc } from "./html";
-import { type Song, type Loop } from "./model";
+import { locate, type Song, type Loop } from "./model";
 import type { createPlaybackScreen } from "./playback-screen";
 
 export function practiceLoopHTML(heading = false) {
@@ -55,11 +55,13 @@ export function attachPracticeManagement(h: Options) {
       activeLabel.textContent = active
         ? t("main.message271", { value1: active.name })
         : t("main.message270");
-    get("section-shortcuts").innerHTML = sectionShortcutSlots(readSectionShortcuts(h.canonicalXML?.() ?? ""), song)
+    const sections = readSectionShortcuts(h.canonicalXML?.() ?? "").filter(section => !!song.measures[section.measureIndex]);
+    get("section-shortcuts").innerHTML = sectionShortcutSlots(sections, song)
       .map((section, index) => section
-        ? `<button type="button" class="${marked.has(section.measureIndex) ? "is-marked" : ""}" data-section-measure="${section.measureIndex}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
+        ? `<button type="button" class="${marked.has(section.measureIndex) ? "is-marked" : ""}" data-section-measure="${section.measureIndex}" data-section-end="${sections[index + 1]?.measureIndex ?? song.measures.length}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
         : `<button type="button" disabled aria-label="${t("sections.empty", {number:index + 1})}">empty</button>`)
       .join("");
+    syncCurrentSection(h.root, locate(song, h.player().current()).index);
 
   }
   return {

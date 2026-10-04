@@ -290,3 +290,18 @@ describe('meter controls', () => {
     expect(field.value).toBe('4');
   });
 });
+
+it('drags from the total or container padding and releases its listeners', () => {
+ const field=input('53',{min:'1',max:'123'});
+ const surface=document.createElement('label'),total=document.createElement('span');
+ total.textContent='/123';document.body.append(surface);surface.append(field,total);
+ const commit=vi.fn();const dispose=bindNumericDrag(field,{surface,onCommit:commit});cleanups.push(dispose);
+ for(const target of [total,surface,field]) {
+   pointer(target,'pointerdown',100,100);pointer(window,'pointermove',108,100);pointer(window,'pointerup',108,100);
+ }
+ expect(field.value).toBe('56');expect(commit).toHaveBeenCalledTimes(3);
+ const click=new MouseEvent('click',{bubbles:true,cancelable:true});total.dispatchEvent(click);expect(click.defaultPrevented).toBe(true);
+ dispose();expect(surface.style.touchAction).not.toBe('none');
+ pointer(total,'pointerdown',100,100);pointer(window,'pointermove',116,100);pointer(window,'pointerup',116,100);
+ expect(field.value).toBe('56');
+});

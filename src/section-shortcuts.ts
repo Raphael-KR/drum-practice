@@ -24,3 +24,15 @@ export function sectionShortcutSlots(sections: SectionShortcut[], song: Song) {
   const valid = sections.filter(section => !!song.measures[section.measureIndex]).slice(0, 9);
   return Array.from({length: 9}, (_, index) => valid[index]);
 }
+
+/** Current section includes its start and ends at the next rehearsal mark. */
+export function syncCurrentSection(root: HTMLElement, measureIndex: number) {
+  root.querySelectorAll<HTMLElement>('[data-section-measure]').forEach(button => {
+    const active = measureIndex >= Number(button.dataset.sectionMeasure)
+      && measureIndex < Number(button.dataset.sectionEnd);
+    if (button.classList.contains('is-current-section') === active) return;
+    button.classList.toggle('is-current-section', active);
+    if (active) button.setAttribute('aria-current', 'true');
+    else button.removeAttribute('aria-current');
+  });
+}

@@ -2608,15 +2608,89 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 .drawer-playback .playback-dock .progress-number span {
   color:inherit;font-size:16px;font-weight:400;letter-spacing:normal;
 }
-.drawer-playback .playback-dock .progress-number:hover:has(input:not(:disabled)) {
-  background:#fff;border-color:var(--line);
-}
 
-/* Section destinations mirror their existing bookmark colour. */
+/* Unlit faces stay readable; only the current section receives backlight. */
+.drawer-playback .section-shortcuts button[data-section-measure] {
+  background:#d5dbe2;
+  border-color:#b5bec9;
+  color:#344155;
+  box-shadow:inset 0 2px 5px #24304418;
+}
+/* Section destinations retain their red bookmark identity when unlit. */
 .drawer-playback .section-shortcuts button.is-marked {
-  background:#f52d35;
-  border-color:#243044;
+  background:#a92b34;
+  border-color:#832630;
   color:#fff;
 }
 .drawer-playback .section-shortcuts button.is-marked strong,
 .drawer-playback .section-shortcuts button.is-marked span {color:inherit;}
+
+/* White backlight seen through the button's white or red face. */
+.drawer-playback .section-shortcuts button.is-current-section {
+  background:linear-gradient(180deg,#fff 0%,#fff 42%,#f1f4f7 82%,#e0e6ed 100%);
+  border-color:#b9c5d2;
+  box-shadow:inset 0 2px 1px #fff, inset 0 -2px 3px #8193a433, 0 2px 3px #34415533, 0 0 9px 1px #ffffffcc;
+}
+
+.drawer-playback .section-shortcuts button.is-current-section.is-marked {
+  background:radial-gradient(ellipse at center,#ff303b 0%,#ff1825 65%,#f52d35 100%);
+  border-color:#ff4650;
+  color:#fff;
+  box-shadow:inset 0 0 16px #ff3440, 0 0 5px 2px #ff2635aa, 0 0 14px #ff263580;
+}
+
+/* Compact, consistent destinations for the full score and lyrics readers. */
+#reader-settings.settings-panel {
+  display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
+  gap:8px;background:#faf7f0;padding:16px;
+}
+#reader-settings .settings-section-heading {flex-basis:auto;margin:0 0 6px;}
+#reader-settings .score-reader-action {
+  display:flex;align-items:center;gap:12px;width:100%;min-height:58px;
+  margin:0;padding:10px 14px;text-align:left;
+  background:#fff;border:1px solid #dce2e9;border-radius:12px;
+  box-shadow:0 2px 4px #24304408;color:var(--ink);
+}
+.score-reader-action-icon {
+  display:flex;align-items:center;justify-content:center;flex:0 0 36px;
+  height:36px;border-radius:10px;background:#edf3fc;color:#4877be;
+}
+.score-reader-action-icon .ui-icon {width:22px;height:22px;}
+.score-reader-action-label {flex:1;min-width:0;font-size:15px;font-weight:600;line-height:1.4;}
+.score-reader-action-arrow {display:flex;color:#91a0b3;}
+.score-reader-action-arrow .ui-icon {width:16px;height:16px;}
+#reader-settings .score-reader-action:not(:disabled):hover {background:#f5f8fd;border-color:#b6c9e4;}
+#reader-settings .score-reader-action:not(:disabled):active {background:#eaf1fb;box-shadow:inset 0 1px 3px #24304412;}
+
+/* Keep viewer chrome outside the score's scroll surface. */
+.score-reader-dialog[open] {
+  display:flex;flex-direction:column;height:92dvh;padding:0;overflow:hidden;
+}
+.score-reader-dialog > .dialoghead {
+  position:relative;top:auto;margin:0;padding:14px 18px;flex:none;
+  border-bottom:1px solid var(--line);background:#f4f7fc;
+}
+.score-reader-dialog > .score-reader-pages {
+  flex:1;min-height:0;overflow:auto;padding:0 18px 18px;
+  overscroll-behavior:contain;
+}
+
+/* Pointer feedback remains distinct from selected/current-section lighting. */
+@media (hover:hover) {
+  .playback-ui header .row-view-toggle > button:hover:not(:disabled) {
+    background:#dbe7fa;border-color:var(--accent);color:var(--accent);
+  }
+  .playback-ui header .row-view-toggle > button[aria-pressed=true]:hover:not(:disabled) {
+    background:#c9dcfa;box-shadow:inset 0 0 0 1px var(--accent);
+  }
+  .drawer-playback .playback-dock .progress-number:hover:has(input:not(:disabled)) {
+    background:#e8f0fc;border-color:var(--accent);
+  }
+  .drawer-playback .section-shortcuts button[data-section-measure]:hover:not(:disabled) {
+    filter:brightness(1.08);
+    outline:2px solid #6e91bd;outline-offset:-3px;
+  }
+  .drawer-playback .section-shortcuts button.is-current-section:hover:not(:disabled) {
+    filter:brightness(.96);
+  }
+}
