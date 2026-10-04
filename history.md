@@ -2687,3 +2687,4 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 드럼 제목바에 sticky/top0/z-index40/불투명 파랑 적용. 흰 바깥 바탕과 추가 여백 없는 배치 유지.
 - 관련 조사: https://bugs.webkit.org/show_bug.cgi?id=319479 의 상단 fixed/sticky 색 샘플링 보고 참고. 미확정 버그 보고이며 현재 iPad 원인의 증명으로 간주하지 않음.
 - 417테스트, TypeScript, diff 검사 통과. 상태바 실제 색상은 사용자 iPad 확인 필요.
+- Safari sticky/top0/#b8d4f5/backdrop-filter:none 확인. build:apps 통과. 14:28 KST Sites26 게시 succeeded: sourceb58db49c721361265e9c9b1376653bc9908f3dab, deployment appgdep_6ac1e3f5fbe881919729c91d43ad5d30.

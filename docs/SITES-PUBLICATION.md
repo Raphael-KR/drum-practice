@@ -129,3 +129,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 ## 2026-10-04 14:19 KST — 0.6.7 / Sites 25
 - 제목바 및 theme-color #b8d4f5 적용. 417테스트·TypeScript·Safari 스타일·build:apps 통과.
 - source622952ed8bf00c2ccec33622147aa1d5eac17697, deployment appgdep_6ac1e1e1509c819199e72705363cb0c6 succeeded.
+
+## 2026-10-04 14:28 KST — 0.6.8 / Sites 26
+- 동문회와 동일한 sticky top0 불투명 제목바 적용. 417테스트·TypeScript·Safari 스타일·build:apps 통과.
+- sourceb58db49c721361265e9c9b1376653bc9908f3dab, deployment appgdep_6ac1e3f5fbe881919729c91d43ad5d30 succeeded. 실제 iPad 상태바 색상은 미확인.
