@@ -223,3 +223,8 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - build bbb7a769, source 50661aeb41128e111457def83d0b377f1f9c9a1e.
 - deployment appgdep_6ac2705276908191ab0c74b8d194a2d2 succeeded. 공개/player-only 유지.
 - 정본 2660dab main push 완료. 116→117마디 불완전 행 빈 칸 보존 수정. 443개 테스트 및 분리 빌드 통과.
+
+## 2026-10-05 01:21 KST — Sites43 / player0.6.25
+- build cdffdb8c, source 2df1b682e3dfca5d952187bd9d0e278c32346a61.
+- deployment appgdep_6ac27cdf20ec8191b6c214940f66078c succeeded. 공개/player-only 유지.
+- 정본 7aea646 main push 완료. 북마크 시작 마디 바로가기의 빨강/흰 글씨 표시 반영. 444개 테스트 및 분리 빌드 통과.
