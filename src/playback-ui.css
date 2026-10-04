@@ -2445,7 +2445,7 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
   }
 }
 
-/* Continuous playback surface; outlines belong to controls and selection only. */
+/* Borderless playback regions retain their distinct original surface colors. */
 .has-song .drawer-playback {background:#f4f7fc;}
 .has-song .drawer-playback header,
 .drawer-playback #practice > .stage,
@@ -2456,6 +2456,11 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
   border-radius:0;
   box-shadow:none;
   background:transparent;
+}
+.drawer-playback #practice > .stage {background:white;}
+.drawer-playback .playback-dock .transport {background:var(--dock-surface);}
+.drawer-playback .playback-drawer {
+  background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 60%),var(--drawer-surface);
 }
 @media (orientation:portrait) {
   /* Keep the title below the system's translucent top edge on iPad. */

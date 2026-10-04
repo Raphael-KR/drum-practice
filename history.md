@@ -2640,3 +2640,7 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 
 ### 2026-10-04 13:07 KST —0.6.1 / Sites19 게시
 - 정본 커밋 d9225f0. 전체417테스트 및 build:apps 통과. Sites source fc56acc74fd0365ad81a899cd7870f1f1aa10a31, deployment appgdep_6ac1d101bbf88191b3bff0597c6816d5 succeeded. 기존 공개 주소/범위 유지. 제목 흐림의 실기기 해소 여부는 사용자 확인 필요.
+
+### 2026-10-04 구역 배색 복원 —0.6.2
+- 사용자 실기기 캡처에서 제목 흐림 해소 확인. 상단 여백 유지.
+- 단색 통일 해석을 정정: 악보 흰색·재생바 기존 dock-surface 회색·조작판 기존 drawer-surface 연녹색 그라데이션 복원. 바깥 테두리/모서리/그림자는 없는 상태 유지.
