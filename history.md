@@ -2680,3 +2680,4 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 ## 2026-10-04 — 0.6.7 제목바 파랑 강화
 - 흰 바깥 바탕과 구분되도록 제목바 및 theme-color를 #b8d4f5로 변경. 다른 구역과 글자색 유지.
 - 417테스트, TypeScript, diff 검사 통과.
+- Safari 제목바 rgb(184,212,245) 확인. build:apps 통과. 14:19 KST Sites25 게시 succeeded: source622952ed8bf00c2ccec33622147aa1d5eac17697, deployment appgdep_6ac1e1e1509c819199e72705363cb0c6.

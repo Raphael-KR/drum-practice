@@ -125,3 +125,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 ## 2026-10-04 14:11 KST — 0.6.6 / Sites 24
 - 바깥 html/body 흰색과 앱 배경 분리. 417테스트·TypeScript·Safari 스타일·build:apps 통과.
 - sourced820a0858ea25a52839b79b6a960c334c8fb4e2a, deployment appgdep_6ac1e005595c819187f64eb59e349456 succeeded. 공개/player-only 유지.
+
+## 2026-10-04 14:19 KST — 0.6.7 / Sites 25
+- 제목바 및 theme-color #b8d4f5 적용. 417테스트·TypeScript·Safari 스타일·build:apps 통과.
+- source622952ed8bf00c2ccec33622147aa1d5eac17697, deployment appgdep_6ac1e1e1509c819199e72705363cb0c6 succeeded.
