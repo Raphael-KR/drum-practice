@@ -891,5 +891,7 @@
   "sections.empty": "빈 바로가기 {number}",
   "playback.view.group": "악보 보기",
   "playback.view.single": "1줄 보기",
-  "playback.view.double": "2줄 보기"
+  "playback.view.double": "2줄 보기",
+  "library.refresh": "새로고침",
+  "library.booking": "드럼치는공방 예약"
 }

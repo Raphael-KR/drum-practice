@@ -1,3 +1,4 @@
+import { icon } from "./icon-svg";
 import { installLandscapeKeyboardGuard } from "./landscape-keyboard";
 import { renderKeepingTopHeader } from "./top-edge-header";
 import "./help.css";
@@ -211,8 +212,9 @@ export async function showLibrary() {
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
-  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1>${import.meta.env.DEV ? `<a href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`);
+  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><a class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</div></header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`);
   showBuildLabel();
+  root.querySelector("#library-refresh")!.addEventListener("click", () => location.reload());
   document
     .querySelector("#import-package")!
     .addEventListener("click", () =>
