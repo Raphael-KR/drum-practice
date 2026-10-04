@@ -237,4 +237,4 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 ## 2026-10-05 02:26 KST — Sites45 / player0.6.27
 - build 688631c6, source 72957b86781305bd9bb89fc4a400e71eac9e6a1b.
 - deployment appgdep_6ac28c54e8608191afd223f6fc619a79 succeeded. 공개/player-only 유지.
-- 정본 cf1d6a2 main push 완료. 악보 선택 화면 새로고침·드럼치는공방 예약 링크 추가. 446개 테스트와 분리 빌드 통과. 운영 HTTP 및 JavaScript 자산의 릴리스 일치 확인.
+- 정본 cf1d6a2 main push 완료. 악보 선택 화면 새로고침·드럼치는공방 예약 링크 추가. 446개 테스트와 분리 빌드 통과. 운영 HTTP 직접 검증은 403으로 제한됨. Sites의 succeeded 결과로 발행 확인. Safari 운영 화면에서 새로고침·예약 버튼 노출 확인.
