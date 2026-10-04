@@ -2693,3 +2693,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자 실제 iPad 캡처로 sticky 변경 실패 확인. 앱 CSS blur는 없으며, theme-color 배포 누락도 아님.
 - WebKit 가장자리 요소 판정 소스와 현행 DOM/스크롤 구조 대조. 원인 확정 전 cover와 문서 스크롤을 분리 비교하는 계획을 docs/IPAD-STATUS-BAR-DIAGNOSIS.md에 기록.
 - 조사만 수행. 앱 버전·공개 배포 유지.
+
+## 2026-10-04 — 0.6.9 root 배경과 헤더 안전 영역 비교
+- 사용자 추가 제안에 따라 html 배경 #b8d4f5, body 흰색, 헤더 내부 safe-area+8px 적용. sticky 및 theme-color 유지.
+- 현행 black-translucent 설정은 없으며 추가하지 않음. cover 제거 실험은 이번 변경에 포함하지 않음.
+- 417테스트, TypeScript, diff 검사 통과. 실제 iPad 색상·흐림 해소는 미확인.
