@@ -503,7 +503,7 @@ button.icon-button[hidden] {
 }
 .playback-ui .playback-title {
   max-width: none;
-  font-size: clamp(16px, 1.8vw, 21px);
+  font-size: 21px;
 }
 .playback-ui .playback-tempo {
   flex: none;
@@ -2500,3 +2500,13 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
   border-top:2px solid var(--drawer-edge);
   box-shadow:inset 0 -1px var(--drawer-edge);
 }
+
+/* Let Safari own the page-edge rubber band when dragging the title. */
+:root:has(.drawer-playback),
+:root:fullscreen:has(.drawer-playback) {overscroll-behavior-y:auto;}
+body.has-song:has(.drawer-playback),
+:root:fullscreen body.has-song:has(.drawer-playback) {
+  overflow-y:scroll;
+  overscroll-behavior-y:auto;
+}
+.has-song .drawer-playback header {touch-action:pan-y;}

@@ -2662,3 +2662,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 417개 테스트, TypeScript, diff 검사 통과.
 - Safari 계산 스타일로 제목 상단8px, 제목 아래1px, 재생바 위1px, 조작판 위2px/아래1px 확인. build:apps 및 앱 분리 검사 통과.
 - 13:51 KST Sites22 게시 succeeded: source099536c9ca525fb1473153e71d9b10a8191a8cdf, deployment appgdep_6ac1db5adc4c8191aee4ded7bf0a6cd6. 공개/player-only 유지.
+
+## 2026-10-04 — 0.6.5 제목 글자와 Safari 당김 동작
+- 실제 iPad 0.6.4에서 제목 흐림 재발을 사용자 캡처로 확인.
+- 제목 font-size의 viewport 축소 제거: 가로·세로21px 공통. 기존 공통 굵기 유지.
+- 재생 화면 body 세로 스크롤 및 root/body overscroll-y:auto 허용. 제목에서 Safari 기본 당김/복귀를 사용하도록 제한 해제. 상단 추가 여백 없음 유지.
+- 417테스트, TypeScript, diff 검사 통과. 실제 iPad 당김/복귀와 흐림은 배포 후 실기기 검증 필요.
