@@ -112,3 +112,8 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - 구역별 배경색을 화면 양끝까지 연결, 구역 바깥 여백 제거. 제목 안전 여백 유지 및 theme-color 일치.
 - 417테스트, TypeScript, Safari 레이아웃 검사, build:apps 통과.
 - source5588d2cf735b68ca01b26eb8d988ee3aa27deb3d, deployment appgdep_6ac1d97c5fb881918f544cf01e1ea0b4 succeeded. 실제 iPad 상태바 색상은 사용자 캡처 확인 필요.
+
+## 2026-10-04 13:51 KST — 0.6.4 / Sites 22
+- 구역 가로 구분선 복원, 제목 상단 추가 안전 여백 제거(기본8px 유지).
+- 417테스트·TypeScript·Safari 계산 스타일·build:apps 통과. 실제 iPad 흐림 비교는 미확인.
+- source099536c9ca525fb1473153e71d9b10a8191a8cdf, deployment appgdep_6ac1db5adc4c8191aee4ded7bf0a6cd6 succeeded.

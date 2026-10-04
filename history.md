@@ -2660,3 +2660,5 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 여백 없는 구역 배색을 유지하며 제목바 아래/재생바 위 얇은 선, 조작판 위 민트색 2px 선과 아래 1px 선 적용.
 - 사용자 요청으로 제목 상단 추가 안전 여백 제거. 기본 내부 패딩 8px만 유지. 실제 iPad 흐림 여부는 게시 후 비교 예정.
 - 417개 테스트, TypeScript, diff 검사 통과.
+- Safari 계산 스타일로 제목 상단8px, 제목 아래1px, 재생바 위1px, 조작판 위2px/아래1px 확인. build:apps 및 앱 분리 검사 통과.
+- 13:51 KST Sites22 게시 succeeded: source099536c9ca525fb1473153e71d9b10a8191a8cdf, deployment appgdep_6ac1db5adc4c8191aee4ded7bf0a6cd6. 공개/player-only 유지.
