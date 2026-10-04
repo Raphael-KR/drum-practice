@@ -2756,3 +2756,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 전체 테스트 418개 중 변경된 SVG 수 기대값 1건 실패 후 보정; 관련 help 테스트 6개 재실행 PASS. 나머지 전체 테스트 417개 PASS. build:apps PASS.
 - Safari MCP에서 portrait 표시/27항목/DOM 크기 확인. screenshot은 흰 화면만 반환하여 이미지 검수 불가. ego-browser 840×1240 세로와 1240×840 가로에서 화면 검수, 세로 텍스트 수평 잘림 없음 확인. 실제 iPad Safari 실기기 검증으로 간주하지 않는다.
 - 이미지 근거(로컬 비추적): tmp/legend-portrait-ego.png, tmp/legend-landscape-ego.png.
+
+## 2026-10-04 — player0.6.19: 가로 제목 아래 빌드 표시
+
+- 재생 화면 가로모드에서만 버전·빌드 가상 요소를 block으로 전환하고 왼쪽 여백 제거. 제목 아래 표시하며 기존 제목바 패딩/높이/버튼 크기 유지. 세로 및 목록 화면은 기존 inline 표시.
+- Safari MCP 1240×658에서 수정 전후 제목바 높이57px 동일, 제목 영역24→40px 확인. 세로에서는 inline 유지. build:apps 및 diff 검사 통과. CSS 배치만 변경하여 신규 기능 테스트는 추가하지 않음.

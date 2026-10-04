@@ -117,3 +117,11 @@ body:not(.has-song) #app .editor-home button {
   background:#b8d4f5;
   border-bottom:1px solid #cbd6e7;
 }
+
+/* Fit build metadata beneath the song title within the existing button-height bar. */
+@media (orientation:landscape) {
+  .has-song #app header h1[data-player-build]::after {
+    display:block;
+    margin-left:0;
+  }
+}
