@@ -29,7 +29,7 @@ export function loopFieldsHTML() {
   return "";
 }
 export function progressFieldHTML(id: string) {
-  return `<label class="progress-number" title="${t("workspace.message546")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="0" max="100" step="1" value="0" aria-label="${t("workspace.message547")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span aria-hidden="true">%</span></label>`;
+  return `<label class="progress-number" title="${t("workspace.message546")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="1" max="1" step="1" value="1" aria-label="${t("workspace.message547")}" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1"><span aria-hidden="true">/1</span></label>`;
 }
 export function playbackTransportRightHTML(ids: {
   progress: string;

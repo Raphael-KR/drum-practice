@@ -307,3 +307,30 @@ it('empty bookmark buttons invoke the existing current-measure toggle',()=>{
  expect(toggleCurrent).toHaveBeenCalledTimes(5);
  dispose();
 });
+
+it("rows progress follows the displayed crop's first beat and later beats", () => {
+  const s = song();
+  s.settings.view = "rows";
+  s.settings.uniformSpacing = false;
+  const m = s.measures[0];
+  m.beats = 4;
+  const original = s.regions.find(r => r.id === m.regionId)!;
+  original.beatXs = [.17, .38, .59, .8, 1];
+  const shown = { ...original, beatXs: [.04, .28, .52, .76, 1] };
+  document.body.innerHTML = scoreStageHTML();
+  const stage = document.getElementById("stage")!;
+  const ribbon = document.getElementById("ribbon")!;
+  ribbon.innerHTML = '<div data-index="0"><span class="measure-beat"></span></div>';
+  const h = {root:document.body, stage, ribbon, s, t:m.start, playing:false,
+    count:0, highlight:false, native:false, scrubbing:false, offsets:[0], widths:[100],
+    position:()=>0, rows:()=>{}, regionAt:()=>shown};
+  const cell = ribbon.firstElementChild as HTMLElement;
+  updateScoreFrame(h);
+  expect(parseFloat(cell.style.getPropertyValue("--played"))).toBeCloseTo(4);
+  h.t = m.start + (m.end - m.start) / 4;
+  updateScoreFrame(h);
+  expect(parseFloat(cell.style.getPropertyValue("--played"))).toBeCloseTo(28);
+  // Without an alternate engraving (e.g. PDF), source anchors still apply.
+  updateScoreFrame({...h, t:m.start, regionAt:()=>undefined});
+  expect(parseFloat(cell.style.getPropertyValue("--played"))).toBeCloseTo(17);
+});

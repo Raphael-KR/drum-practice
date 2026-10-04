@@ -59,6 +59,8 @@ export function installHelp(root: HTMLElement) {
       root,
     );
     const dialog = help;
+    const compactPlayback = !context && !!root.querySelector("#practice")?.getClientRects().length;
+    if (compactPlayback) dialog.classList.add("compact-playback-help");
     dialog.addEventListener("keydown", (e) => e.stopPropagation());
     const layout = document.createElement("div");
     layout.className = "help-content";
@@ -132,7 +134,7 @@ export function installHelp(root: HTMLElement) {
     let page = 0,
       perPage = items.length || 1;
     const paint = () => {
-      perPage = innerWidth < 640 || innerHeight < 560 ? 1 : items.length || 1;
+      perPage = !compactPlayback && (innerWidth < 640 || innerHeight < 560) ? 1 : items.length || 1;
       const pages = Math.max(1, Math.ceil(items.length / perPage));
       page = Math.min(page, pages - 1);
       cards.replaceChildren();
@@ -141,9 +143,13 @@ export function installHelp(root: HTMLElement) {
         const number = page * perPage + j + 1;
         const card = document.createElement("section"),
           title = document.createElement("h3"),
-          body = document.createElement("p");
+          body = document.createElement("ul");
         title.textContent = `${number}. ${t(item.title)}`;
-        body.textContent = t(item.body);
+        for (const line of t(item.body).split("\n")) {
+          const entry = document.createElement("li");
+          entry.textContent = line;
+          body.append(entry);
+        }
         card.append(title, body);
         cards.append(card);
         const el = (context || root).querySelector(item.target);

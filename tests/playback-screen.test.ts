@@ -155,8 +155,11 @@ for (const environment of ["web", "portable"] as const) {
       playbackPosition(song, p.position).label,
     );
     expect(input(ids.progress).getAttribute("aria-valuetext")).toMatch(
-      /% · .+ \/ /,
+      /\d+\/\d+ · .+ \/ /,
     );
+    expect(input(ids.progress).value).toBe("11");
+    expect(input(ids.progress).max).toBe(String(song.measures.length));
+    expect(input(ids.progress).parentElement!.querySelector('span')!.textContent).toBe(`/${song.measures.length}`);
     input(ids.rewind).value = "11";
     click("back");
     expect(fail).toHaveBeenCalledOnce();
@@ -289,4 +292,75 @@ it("fixed control board stays visible while shortcuts and repeat presets are use
   input(ids.rewind).dispatchEvent(new Event("input"));
   expect(input(ids.rewind).value).toBe("3");
   expect(root.querySelector("#loop-dialog")).toBeNull();
+});
+
+for (const environment of ["web", "portable"] as const) {
+  for (const radius of [1, 2, 3, 4]) {
+    it(`${environment}: play starts active radius ${radius} at its loop beginning`, async () => {
+      const {root, p, song, click} = mount(environment);
+      const middle = song.measures[20].start;
+      p.position = middle;
+      root.querySelector<HTMLButtonElement>(`[data-radius="${radius}"]`)!.click();
+      expect(p.position).toBe(middle);
+      const start = p.loop!.start;
+      click("play");
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(p.position).toBe(start);
+      expect(p.playing).toBe(true);
+      click("play");
+      expect(p.playing).toBe(false);
+      p.position = middle;
+      click("play");
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(p.position).toBe(start);
+    });
+  }
+  it(`${environment}: play without a quick repeat keeps its current position`, async () => {
+    const {p, song, click} = mount(environment);
+    p.position = song.measures[20].start + .2;
+    const position = p.position;
+    click("play");
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(p.position).toBe(position);
+  });
+}
+
+for (const environment of ["web", "portable"] as const) {
+  for (const lower of [false, true]) {
+    it(`${environment}: play preserves the selected ${lower ? 'lower' : 'upper'} row`, async () => {
+      const {root, p, song, screen, click} = mount(environment);
+      song.settings.view = 'rows';
+      p.position = song.measures[5].start;
+      screen.renderTrack();
+      screen.frame();
+      const stage = root.querySelector<HTMLElement>('#stage')!;
+      const cell = root.querySelector<HTMLElement>('[data-index="5"]')!;
+      stage.getBoundingClientRect = () => ({top:100,bottom:700,height:600}) as DOMRect;
+      cell.getBoundingClientRect = () => ({top:lower ? 430 : 130}) as DOMRect;
+      click('play');
+      await Promise.resolve();
+      await Promise.resolve();
+      screen.frame();
+      const indices=[...root.querySelectorAll<HTMLElement>('#ribbon [data-index]')].map(e=>Number(e.dataset.index));
+      expect(indices).toEqual(lower ? [8,9,10,11,4,5,6,7] : [4,5,6,7,8,9,10,11]);
+      // Crossing to the next row retains the existing alternating playback rule.
+      p.position = song.measures[8].start;
+      screen.frame();
+      const next=[...root.querySelectorAll<HTMLElement>('#ribbon [data-index]')].map(e=>Number(e.dataset.index));
+      expect(next).toEqual(lower ? [8,9,10,11,12,13,14,15] : [12,13,14,15,8,9,10,11]);
+    });
+  }
+}
+
+it('measure counter seeks to the selected measure start, including the last measure', () => {
+ const {p,song,screen,input,ids}=mount('web');
+ screen.frame();
+ for (const number of [4,song.measures.length,1]) {
+   input(ids.progress).value=String(number);
+   input(ids.progress).dispatchEvent(new Event('change'));
+   expect(p.position).toBe(song.measures[number-1].start);
+ }
 });

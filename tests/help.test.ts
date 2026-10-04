@@ -52,16 +52,17 @@ it("moves entry into the active modal and does not show playback shortcuts there
   expect(settings.open).toBe(true);
   expect(document.activeElement?.id).toBe("app-help-button");
 });
-it("paginates small screens and supports keyboard navigation", () => {
+it("keeps playback help on one page on small screens", () => {
   vi.stubGlobal("innerWidth", 390);
   const root = document.querySelector<HTMLElement>("#app")!;
   installHelp(root);
   root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
   const d = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
-  expect(d.querySelectorAll(".help-cards section")).toHaveLength(1);
-  expect(d.querySelector(".help-pages")!.textContent).toContain("1 / 3");
+  expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
+  expect(d.querySelector<HTMLElement>(".help-pages")!.hidden).toBe(true);
+  expect(d.querySelectorAll(".help-cards li")).toHaveLength(10);
   d.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
-  expect(d.querySelector(".help-pages")!.textContent).toContain("2 / 3");
+  expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
   d.close();
   vi.unstubAllGlobals();
 });

@@ -127,8 +127,8 @@ it("loads demo, exposes fixed range slots and applies the selected BPM", async (
   expect(document.querySelectorAll(".measure")).toHaveLength(110);
   await vi.waitFor(async () => expect((await allRecords()).some(r => r.song.id === "real-paradis")).toBe(true));
   expect(document.getElementById("marker-name")).toBeNull();
-  expect(document.querySelectorAll("#section-shortcuts button")).toHaveLength(12);
-  await vi.waitFor(() => expect(document.querySelectorAll("#loop-slots button")).toHaveLength(12));
+  expect(document.querySelectorAll("#section-shortcuts button")).toHaveLength(9);
+  await vi.waitFor(() => expect(document.querySelectorAll("#loop-slots button")).toHaveLength(9));
   expect(document.getElementById("loop-a")).toBeNull();
   set("rate", "89");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
@@ -495,7 +495,7 @@ it("separates tap playback, percent drag, marker activation and cancelled gestur
   fire(percent,'pointerdown',100); fire(percent,'pointermove',180); fire(percent,'pointerup',180);
   animationFrame(0);
   expect(Number(percent.value)).toBe(initial+10);
-  expect(Number((document.getElementById('seek') as HTMLInputElement).value)).toBeCloseTo((initial+10)*3);
+  expect(Number((document.getElementById('seek') as HTMLInputElement).value)).toBeCloseTo(JSON.parse(readFileSync("public/demo/song.json", "utf8")).measures[initial+9].start);
   fire(percent,'pointerdown',100); fire(percent,'pointermove',100,84); fire(percent,'pointercancel',100,84);
   animationFrame(0); expect(Number(percent.value)).toBe(initial+10);
   await new Promise(ok=>setTimeout(ok,510));

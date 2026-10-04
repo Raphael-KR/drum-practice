@@ -2156,12 +2156,12 @@ main {
   fill: #d91f2a;
 }
 
-/* Focus belongs to the complete percentage control, not only its numeric field. */
+/* Keyboard focus belongs to the whole measure control. */
 .playback-ui .progress-number input:focus,
 .playback-ui .progress-number input:focus-visible { outline:none; box-shadow:none; }
-.playback-ui .progress-number:focus-within {
-  outline:3px solid #2563eb;
-  outline-offset:3px;
+.playback-ui .progress-number:has(input:focus-visible) {
+  outline:2px solid #2563eb;
+  outline-offset:2px;
 }
 
 /* Keep native horizontal/vertical slider geometry; highlight without resizing. */
@@ -2369,10 +2369,10 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
   border-right-color: transparent;
 }
 
-/* Full-width notation determines the two-row height; reclaim outer vertical gaps. */
-.has-song .drawer-playback main:has(#practice.two-rows) {padding-top:0;padding-bottom:0;overflow-y:auto;}
-.drawer-playback #practice.two-rows {gap:2px;}
-.drawer-playback #practice.two-rows > .stage {
+/* Both views share the full-width two-row outer geometry. */
+.has-song .drawer-playback main:has(#practice:not(.score-review)) {padding-top:0;padding-bottom:0;overflow-y:auto;}
+.drawer-playback #practice:not(.score-review) {gap:2px;}
+.drawer-playback #practice:not(.score-review) > .stage {
   flex:0 0 var(--two-row-stage-height, 160px)!important;
   height:var(--two-row-stage-height, 160px)!important;
   min-height:var(--two-row-stage-height, 160px);
@@ -2476,7 +2476,7 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 }
 .has-song .drawer-playback main {padding:0;}
 .drawer-playback #practice,
-.drawer-playback #practice.two-rows {gap:0;}
+.drawer-playback #practice:not(.score-review) {gap:0;}
 .drawer-playback .playback-dock .transport {
   padding-left:max(8px, env(safe-area-inset-left, 0px));
   padding-right:max(8px, env(safe-area-inset-right, 0px));
@@ -2553,4 +2553,49 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 .drawer-playback .section-shortcuts span {text-align:center;}
 @media (orientation:portrait) {
   .drawer-playback .section-shortcuts button {align-items:center;}
+}
+
+/* Current / total measure count, including three-digit scores. */
+.drawer-playback .playback-dock .progress-number {
+  width:86px;min-width:86px;justify-content:center;align-items:center;gap:4px;
+  font-variant-numeric:tabular-nums;
+}
+.drawer-playback .playback-dock .progress-number input {
+  width:3ch;font-size:17px;font-weight:600;line-height:1;text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.drawer-playback .playback-dock .progress-number span {
+  font-size:15px;font-weight:500;line-height:1;white-space:nowrap;letter-spacing:.3px;
+}
+
+/* Remove one original row + its 4px gap; preserve the original button height. */
+.drawer-playback .section-shortcuts,
+.drawer-playback .loop-slots {grid-template-rows:repeat(3,minmax(0,1fr));}
+.drawer-playback .playback-drawer {height:135.5px;}
+@media (orientation:portrait), (max-width:800px) {
+  .drawer-playback .playback-drawer {height:218px;}
+}
+
+/* Segmented header view selector. */
+.playback-ui header .row-view-toggle {
+  display:inline-flex;align-self:center;flex:0 0 auto;
+  height:48px;border-radius:20px;background:#fff;
+}
+.playback-ui header .row-view-toggle > button {
+  width:auto;min-width:0;height:48px;margin:0;padding:0 12px;
+  border:1px solid #b9c2ce;border-radius:0;background:#fff;color:#647083;
+  font-size:14px;font-weight:600;line-height:1;white-space:nowrap;
+  box-shadow:none;
+}
+.playback-ui header .row-view-toggle > button:first-child {border-radius:20px 0 0 20px;}
+.playback-ui header .row-view-toggle > button:last-child {border-radius:0 20px 20px 0;margin-left:-1px;}
+.playback-ui header .row-view-toggle > button[aria-pressed=true] {
+  position:relative;z-index:1;background:#edf4ff;color:var(--accent);
+  border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);
+}
+.playback-ui header .row-view-toggle > button:focus-visible {outline:3px solid #d88a40;outline-offset:2px;z-index:2;}
+@media (orientation:portrait) {
+  .has-song .playback-ui header {grid-template-columns:auto auto auto minmax(0,1fr);}
+  .has-song .playback-ui header .row-view-toggle {grid-column:3;grid-row:2;align-self:center;}
+  .has-song .playback-ui header .actions {grid-column:4;}
 }

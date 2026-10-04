@@ -246,7 +246,9 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   let loopSlots: ReturnType<typeof mountLoopSlots> | undefined;
   function rowCellWidth() {
-    const s = h.song(), base = stage.clientWidth / 4;
+    const song = h.song();
+    const s: Song = {...song, settings: {...song.settings, view: "rows"}};
+    const base = stage.clientWidth / 4;
     if (!stage.clientHeight) return base;
     const assets = h.assets();
     const naturalHeight = Math.max(1, ...s.regions.map(region => {
@@ -258,7 +260,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const selectedHeight = s.settings.uniformSpacing && s.scoreFormat === "musicxml"
       ? Math.max(...s.measures.map((_, i) => {
           const asset = ribbonAsset(i);
-          return asset ? scoreLayout(s, asset.region, widthOf(s.measures[i]), stage.clientWidth, asset.staff)!.height : naturalHeight;
+          return asset ? scoreLayout(s, asset.region, base, stage.clientWidth, asset.staff)!.height : naturalHeight;
         })) : naturalHeight;
     const fittedHeight = Math.max(naturalHeight, selectedHeight) + 30;
     stage.style.setProperty("--two-row-stage-height", `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`);
@@ -303,6 +305,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       stage.style.removeProperty("height");
       h.compare?.render();
     } else {
+      // Both views share the two-row outer geometry; track rendering sets its own content height.
+      rowCellWidth();
       buildScoreTrack(stage, ribbon, s, offsets, widths, widthOf, measureHTML);
       layoutLyrics();
       if (!s.measures.length)
@@ -333,14 +337,24 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   async function toggle() {
     if (!available()) return;
     if (h.player().playing) pause();
-    else await play();
+    else {
+      const p = h.player();
+      if (radius !== undefined && p.loop) p.seek(p.loop.start);
+      await play();
+    }
   }
   function onState() {
     if (!h.ready()) return;
     const p = h.player();
     if (p.playing && !stage.classList.contains("is-playing")) {
       const index = locate(h.song(), p.current()).index;
-      rows.playbackRowOrigin = Math.floor(index / 4);
+      const stageRect = stage.getBoundingClientRect();
+      const cellRect = ribbon.querySelector<HTMLElement>(`[data-index="${index}"]`)?.getBoundingClientRect();
+      const startsOnLowerRow = h.song().settings.view === "rows" &&
+        stageRect.height > 0 && cellRect !== undefined &&
+        cellRect.top >= stageRect.top + stageRect.height / 2 &&
+        cellRect.top < stageRect.bottom;
+      rows.playbackRowOrigin = Math.floor(index / 4) - (startsOnLowerRow ? 1 : 0);
       rows.rowWindow = -1;
       stationary = undefined;
     }
@@ -488,10 +502,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   disposers.push(
     bindNumericDrag(input(ids.progress), {
       onStart: beginScrub,
-      onPreview: (v) => previewScrub((v * h.player().duration) / 100),
+      onPreview: (v) => previewScrub(h.song().measures[v - 1]?.start ?? 0),
       onCommit: (v) => {
         if (scrub) finishScrub();
-        else if (h.ready()) seek((v * h.player().duration) / 100);
+        else if (h.ready()) seek(h.song().measures[v - 1]?.start ?? 0);
       },
       onCancel: () => finishScrub(true),
     }),
@@ -538,13 +552,17 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       v = input(ids.progress),
       time = p.current();
     if (!scrub && document.activeElement !== v)
-      v.value = String(Math.round(clamp(time / (p.duration || 1), 0, 1) * 100));
+      v.value = String(locate(h.song(), time).index + 1);
+    const total = h.song().measures.length;
+    v.max = String(total);
+    v.setAttribute("aria-valuemax", String(total));
+    v.parentElement!.querySelector("span")!.textContent = `/${total}`;
     v.setAttribute("aria-valuenow", v.value);
     const clock = (n: number) =>
       `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
     v.setAttribute(
       "aria-valuetext",
-      `${v.value}% · ${clock(time)} / ${clock(p.duration)}`,
+      `${v.value}/${total} · ${clock(time)} / ${clock(p.duration)}`,
     );
   }
   function frame() {
@@ -576,7 +594,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       widths,
       position,
       rows: renderRows,
-      regionAt: i => s.settings.uniformSpacing ? ribbonAsset(i)?.region : undefined,
+      // Progress must use the same cropped engraving as the visible measure.
+      regionAt: i => ribbonAsset(i)?.region,
       compare: () => h.compare?.draw(time),
     });
     progress();
@@ -645,6 +664,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function syncDisplay() {
     syncSettingsChoices(root);
     const view = h.ready() ? h.song().settings.view : input("view").value;
+    root.querySelectorAll<HTMLButtonElement>("[data-row-view]").forEach(button => {
+      button.setAttribute("aria-pressed", String(button.dataset.rowView === view));
+      button.disabled = !h.ready() || h.busy();
+    });
     const select = get<HTMLSelectElement>("view");
     get("view-selected-text").textContent =
       select.selectedOptions[0]?.textContent || "";
@@ -736,6 +759,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     listen(input(id), "input", change);
     listen(input(id), "change", change);
   }
+  root.querySelectorAll<HTMLButtonElement>("[data-row-view]").forEach(button => {
+    listen(button, "click", () => {
+      if (!available()) return;
+      input("view").value = button.dataset.rowView!;
+      input("view").dispatchEvent(new Event("change"));
+    });
+  });
   for (const id of ["view", "zoom"])
     listen(input(id), "change", () =>
       run(() => {

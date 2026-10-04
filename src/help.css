@@ -393,3 +393,20 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(help-moda
   .help-legend > .legend-landscape {display:none;}
   .help-legend > .legend-portrait {display:block;}
 }
+
+.help-cards ul {margin:0;padding-left:18px;font-size:15px;line-height:1.5;word-break:keep-all;}
+.help-cards li + li {margin-top:4px;}
+#app-help-dialog.compact-playback-help .dialoghead {width:min(440px,calc(100% - 24px));right:12px;top:max(8px,env(safe-area-inset-top));padding:8px 14px;}
+#app-help-dialog.compact-playback-help .help-content {
+  width:min(440px,calc(100% - 24px));right:12px;
+  top:calc(max(8px,env(safe-area-inset-top)) + 68px);
+  bottom:max(8px,env(safe-area-inset-bottom));max-height:none;padding:14px;
+}
+.compact-playback-help .help-cards h3 {font-size:16px;margin-bottom:6px;}
+.compact-playback-help .help-cards section + section {margin-top:12px;padding-top:12px;}
+.compact-playback-help .help-shortcuts {font-size:13px;line-height:1.4;margin-top:12px;padding-top:10px;}
+@media (orientation:landscape) and (max-height:650px) {
+  #app-help-dialog.compact-playback-help .help-content {width:min(1000px,calc(100% - 24px));}
+  .compact-playback-help .help-cards {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+  .compact-playback-help .help-cards section + section {border-top:0;margin:0;padding:0;}
+}

@@ -55,7 +55,7 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
     if (!grid || !h.ready()) return;
     if (songId !== undefined && songId !== h.song().id) cancel();
     const slots = savedLoopSlots(h.song());
-    grid.innerHTML = slots.map((loop, i) => {
+    grid.innerHTML = slots.slice(0, 9).map((loop, i) => {
       if (menu === i) return `<div class="loop-slot-menu"><button data-replace="${i}">${t("ranges.replace")}</button><button data-delete="${i}">${t("ranges.delete")}</button><button data-dismiss aria-label="${t("ranges.close")}">×</button></div>`;
       const label = armed === i ? (drag ? rangeLabel(measureLoop(h.song(), drag.a, drag.b, "preview")) : t("ranges.drag")) : loop ? rangeLabel(loop) : t("ranges.empty");
       return `<button data-loop-slot="${i}" class="${armed === i ? "armed" : ""}" aria-pressed="${!!loop && h.player().loop?.id === loop.id}" aria-label="${esc(t("ranges.slot", {number:i + 1, label}))}${armed === i ? t("ranges.cancelHint") : ''}">${esc(label)}</button>`;

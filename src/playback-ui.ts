@@ -114,7 +114,7 @@ export function transportHTML(options: {
   return `<div class="transport">
     <div class="flex transport-left">
       ${playbackButton("home", "start", t("icons.message051"))}
-      <label><input id="${options.rewindId}" type="number" min="1" max="10" step="1" value="1" aria-label="${t("main.message118")}"></label>
+      <label><input id="${options.rewindId}" type="number" min="1" max="10" step="1" value="4" aria-label="${t("main.message118")}"></label>
       ${playbackButton(options.rewindButton, "rewind", t("icons.message053"))}
       ${options.showPosition === false ? "" : `<button id="${options.positionId}" title="${t("main.message120")}" aria-label="${t("main.message120")}"></button>`}
     </div>

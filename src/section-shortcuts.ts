@@ -21,6 +21,6 @@ export function readSectionShortcuts(xml: string): SectionShortcut[] {
     .map(([measureIndex, names]) => ({measureIndex, name: names.join(" · ")}));
 }
 export function sectionShortcutSlots(sections: SectionShortcut[], song: Song) {
-  const valid = sections.filter(section => !!song.measures[section.measureIndex]).slice(0, 12);
-  return Array.from({length: 12}, (_, index) => valid[index]);
+  const valid = sections.filter(section => !!song.measures[section.measureIndex]).slice(0, 9);
+  return Array.from({length: 9}, (_, index) => valid[index]);
 }

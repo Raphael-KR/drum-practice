@@ -172,3 +172,29 @@ it.each([8, 9, 12, 123])('keeps the last row below the preceding row for %i meas
  renderScoreRows(h,state,length-1);
  expect(stage.scrollTop).toBe((rows.length-2)*200);
 });
+
+it.each([
+ {index:5, top:0},
+ {index:13, top:2},
+ {index:8, top:2},
+ {index:23, top:4},
+])("pause restores chronological rows and keeps the active slot at $index", ({index,top}) => {
+ const stage=document.createElement('div'), ribbon=document.createElement('div');stage.append(ribbon);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({measures:Array.from({length:24},()=>({}))}) as Song,playing:true,scrubbing:false,resume:false,cellWidth:100,
+ measureHTML:(_:unknown,i:number)=>`<div data-index="${i}"></div>`,layoutLyrics:()=>{
+   [...ribbon.querySelectorAll('.browse-row')].forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+ }};
+ renderScoreRows(h,state,index);
+ h.playing=false;
+ renderScoreRows(h,state,index);
+ expect(stage.classList.contains('paused-score-scroll')).toBe(true);
+ const rowStarts=[...ribbon.querySelectorAll('.browse-row')].map(e=>Number(e.querySelector<HTMLElement>('[data-index]')!.dataset.index));
+ expect(rowStarts).toEqual([0,4,8,12,16,20]);
+ expect(stage.scrollTop).toBe(top*200);
+ renderScoreRows(h,state,index);
+ expect(stage.scrollTop).toBe(top*200);
+ stage.scrollTop=350;
+ renderScoreRows(h,state,index);
+ expect(stage.scrollTop).toBe(350);
+});

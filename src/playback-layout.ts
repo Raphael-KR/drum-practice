@@ -115,6 +115,11 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     state;
   try {
     if (!playing && !resume) {
+      // Restore chronological browsing, retaining the active row's screen slot.
+      const visible = rowWindow >= 0
+        ? [...ribbon.querySelectorAll<HTMLElement>('[data-index]')].map(e => Number(e.dataset.index))
+        : [];
+      const wasLower = visible.slice(4, 8).includes(index);
       if (rowWindow !== -2) {
         rowWindow = -2;
         pausedBrowseIndex = -1;
@@ -143,7 +148,10 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       }
       if (!scrubbing && pausedBrowseIndex !== index) {
         pausedBrowseIndex = index;
-        const topRow = Math.min(Math.floor(index / 4), Math.max(0, Math.ceil(song().measures.length / 4) - 2));
+        const topRow = Math.max(0, Math.min(
+          Math.floor(index / 4) - (wasLower ? 1 : 0),
+          Math.max(0, Math.ceil(song().measures.length / 4) - 2),
+        ));
         const row = ribbon.querySelector<HTMLElement>(
           `[data-index="${topRow * 4}"]`,
         );
