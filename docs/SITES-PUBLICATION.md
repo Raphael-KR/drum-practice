@@ -133,3 +133,8 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 ## 2026-10-04 14:28 KST — 0.6.8 / Sites 26
 - 동문회와 동일한 sticky top0 불투명 제목바 적용. 417테스트·TypeScript·Safari 스타일·build:apps 통과.
 - sourceb58db49c721361265e9c9b1376653bc9908f3dab, deployment appgdep_6ac1e3f5fbe881919729c91d43ad5d30 succeeded. 실제 iPad 상태바 색상은 미확인.
+
+## 2026-10-04 14:39 KST — 0.6.9 / Sites 27
+- html 파랑 배경 및 헤더 내부 safe-area 적용. body 흰색 유지.
+- 417테스트·TypeScript·Safari 스타일·build:apps 통과. 실제 iPad 상태바 배색과 흐림은 미확인.
+- source95d737441877f5b21d9dc76d0f8fa1faf695e3e3, deployment appgdep_6ac1e66d234c8191aa65836ecefacb34 succeeded.

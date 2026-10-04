@@ -2698,3 +2698,5 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자 추가 제안에 따라 html 배경 #b8d4f5, body 흰색, 헤더 내부 safe-area+8px 적용. sticky 및 theme-color 유지.
 - 현행 black-translucent 설정은 없으며 추가하지 않음. cover 제거 실험은 이번 변경에 포함하지 않음.
 - 417테스트, TypeScript, diff 검사 통과. 실제 iPad 색상·흐림 해소는 미확인.
+- Safari html/header rgb(184,212,245), body白색 및 기본8px 확인(데스크톱 safe-area0). build:apps 통과.
+- 14:39 KST Sites27 게시 succeeded: source95d737441877f5b21d9dc76d0f8fa1faf695e3e3, deployment appgdep_6ac1e66d234c8191aa65836ecefacb34.
