@@ -2712,3 +2712,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 제작앱 버전0.6.10 유지. 417테스트·TypeScript·diff 검사 통과.
 - 사용자 요청으로 제목 옆 inline 표시 확정. Safari에서 표시 유무 모두 제목바 높이63px 확인. build:apps 통과.
 - 빌드표시 v0.6.11 · build 66e993d6. 14:52 KST Sites29 게시 succeeded: sourced4ec5c978b833cc0762eda92f7ae49e8a4153bb8, deployment appgdep_6ac1e977f55881919670c59028cbbd9f.
+
+## 2026-10-04 — Safari production 헤더 배색 갱신 (player 0.6.12 / editor 0.6.11)
+- 로컬 production build에서도 흰 Safari 상단 재현. dev에서만 정상인 차이를 분리했다.
+- 악보 준비 완료100ms 후 sticky 헤더 스타일을 한 번 등록하여 Safari 배색 갱신. 종료 시 timer/style 정리. 레이아웃과 여백 유지.
+- A/B 및 실패 후보는 docs/IPAD-STATUS-BAR-DIAGNOSIS.md에 기록. 88파일 417테스트 통과. 최종 빌드/배포 검증은 아래 후속 기록 참조.

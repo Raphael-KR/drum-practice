@@ -54,6 +54,8 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     initial: { ...playbackInitial, ...options.initial },
   };
   let disposed = false;
+  let headerTintTimer: ReturnType<typeof setTimeout> | undefined;
+  let headerTintStyle: HTMLStyleElement | undefined;
   let pending = Promise.resolve();
   let positionTimer: ReturnType<typeof setTimeout> | undefined;
   root.classList.remove("player-library");
@@ -338,6 +340,14 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     status("");
     document.body.dataset.ready = "true";
     document.body.dataset.readyMs = String(performance.now());
+    // Refresh Safari's browser-chrome sampling after the library-to-player transition.
+    headerTintTimer = setTimeout(() => {
+      if (disposed) return;
+      headerTintStyle = document.createElement("style");
+      headerTintStyle.dataset.playbackHeaderTint = "true";
+      headerTintStyle.textContent = ".has-song .drawer-playback > header {position:sticky;top:0;background:#b8d4f5}";
+      document.head.append(headerTintStyle);
+    }, 100);
   } catch (e) {
     dispose();
     throw e;
@@ -346,6 +356,8 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     if (disposed) return;
     changed();
     disposed = true;
+    clearTimeout(headerTintTimer);
+    headerTintStyle?.remove();
     ready = false;
     window.removeEventListener("pagehide", pagehide);
     window.removeEventListener("pageshow", pageshow);
