@@ -1,3 +1,4 @@
+import { markedMeasureIndices } from "./marker-slots";
 import { readSectionShortcuts, sectionShortcutSlots } from "./section-shortcuts";
 import { t } from "./i18n";
 import { escapeHTML as esc } from "./html";
@@ -47,6 +48,7 @@ export function attachPracticeManagement(h: Options) {
   });
   function render() {
     const song = h.song(),
+      marked = markedMeasureIndices(song),
       active = h.player().loop;
     const activeLabel = get("active-loop");
     if (activeLabel)
@@ -55,7 +57,7 @@ export function attachPracticeManagement(h: Options) {
         : t("main.message270");
     get("section-shortcuts").innerHTML = sectionShortcutSlots(readSectionShortcuts(h.canonicalXML?.() ?? ""), song)
       .map((section, index) => section
-        ? `<button type="button" data-section-measure="${section.measureIndex}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
+        ? `<button type="button" class="${marked.has(section.measureIndex) ? "is-marked" : ""}" data-section-measure="${section.measureIndex}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
         : `<button type="button" disabled aria-label="${t("sections.empty", {number:index + 1})}">empty</button>`)
       .join("");
 

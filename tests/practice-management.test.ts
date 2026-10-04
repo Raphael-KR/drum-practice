@@ -88,3 +88,17 @@ it("disposes section navigation handlers", () => {
  const c = setup(); c.management.render(); c.management.dispose();
  c.click('[data-section-measure="0"]'); expect(c.playback.seek).not.toHaveBeenCalled();
 });
+
+it("marks only a bookmarked section destination and restores it on removal", () => {
+ const c=setup(); c.management.render();
+ const button=()=>c.root.querySelector('[data-section-measure="0"]')!;
+ expect(button().classList.contains('is-marked')).toBe(false);
+ markMeasure(c.song,c.song.measures[0].start,'section marker',undefined);
+ c.management.render();
+ expect(button().classList.contains('is-marked')).toBe(true);
+ expect(c.root.querySelectorAll('button.is-marked')).toHaveLength(1);
+ c.click('[data-section-measure="0"]');
+ expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start);
+ c.song.markers=[]; c.management.render();
+ expect(button().classList.contains('is-marked')).toBe(false);
+});

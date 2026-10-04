@@ -2611,3 +2611,12 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 .drawer-playback .playback-dock .progress-number:hover:has(input:not(:disabled)) {
   background:#fff;border-color:var(--line);
 }
+
+/* Section destinations mirror their existing bookmark colour. */
+.drawer-playback .section-shortcuts button.is-marked {
+  background:#f52d35;
+  border-color:#243044;
+  color:#fff;
+}
+.drawer-playback .section-shortcuts button.is-marked strong,
+.drawer-playback .section-shortcuts button.is-marked span {color:inherit;}
