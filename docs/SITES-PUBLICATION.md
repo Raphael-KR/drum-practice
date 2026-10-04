@@ -103,3 +103,7 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 
 ### 2026-10-04 13:07 KST —0.6.1 / Sites19 게시
 - 정본 커밋 d9225f0. 전체417테스트 및 build:apps 통과. Sites source fc56acc74fd0365ad81a899cd7870f1f1aa10a31, deployment appgdep_6ac1d101bbf88191b3bff0597c6816d5 succeeded. 기존 공개 주소/범위 유지. 제목 흐림의 실기기 해소 여부는 사용자 확인 필요.
+
+### 2026-10-04 13:17 KST —0.6.2 / Sites20 게시
+- 구역 배색 복원 커밋6681cae. 전체417테스트, TypeScript, build:apps 및 앱 경계 검사 통과.
+- Sites source8f5c994442336416a8c26802884c38ce58b40a03, deployment appgdep_6ac1d34ba5b08191aeb1a6c7dcf87c51 succeeded. 기존 공개 주소와 player-only 범위 유지.

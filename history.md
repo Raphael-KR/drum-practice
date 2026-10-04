@@ -2644,3 +2644,7 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 ### 2026-10-04 구역 배색 복원 —0.6.2
 - 사용자 실기기 캡처에서 제목 흐림 해소 확인. 상단 여백 유지.
 - 단색 통일 해석을 정정: 악보 흰색·재생바 기존 dock-surface 회색·조작판 기존 drawer-surface 연녹색 그라데이션 복원. 바깥 테두리/모서리/그림자는 없는 상태 유지.
+
+### 2026-10-04 13:17 KST —0.6.2 / Sites20 게시
+- 구역 배색 복원 커밋6681cae. 전체417테스트, TypeScript, build:apps 및 앱 경계 검사 통과.
+- Sites source8f5c994442336416a8c26802884c38ce58b40a03, deployment appgdep_6ac1d34ba5b08191aeb1a6c7dcf87c51 succeeded. 기존 공개 주소와 player-only 범위 유지.
