@@ -13,6 +13,8 @@ vi.mock("../src/practice-library", () => ({
 }));
 vi.mock("../src/browser-score", () => ({ prepareBrowserScore: vi.fn(async record => record) }));
 vi.mock("../src/song-scores", () => ({ songScores: () => [], useScore: vi.fn() }));
+vi.mock("../src/download-score", () => ({ downloadScore: vi.fn() }));
+import { downloadScore } from "../src/download-score";
 import { mountPlaybackRuntime } from "../src/playback-runtime";
 import { listPracticeRecords, listPracticeArchives, loadPracticeRecord } from "../src/practice-library";
 function deferred<T>() {
@@ -77,4 +79,30 @@ it("shows loading immediately, keeps it through mounting, and clears it on succe
   await vi.waitFor(() => expect(document.querySelector("#library-status")?.textContent).toBe("Load failed"));
   expect(document.querySelector(".score-loading")).toBeNull();
   expect(document.querySelector("#app")?.hasAttribute("aria-busy")).toBe(false);
+});
+
+it("shows download percentages on the bundled button and restores it after failure", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  vi.mocked(listPracticeRecords).mockResolvedValue([]);
+  await showLibrary();
+  let fail!: (reason: Error) => void;
+  vi.mocked(downloadScore).mockImplementationOnce((_url, progress) => {
+    progress(null);
+    return new Promise((_resolve, reject) => { fail = reject; });
+  });
+  const button = document.querySelector<HTMLButtonElement>(".practice-card button")!;
+  const original = button.textContent;
+  button.click();
+  expect(button.textContent).toBe("불러오는 중…");
+  const progress = vi.mocked(downloadScore).mock.calls.at(-1)![1];
+  progress(42);
+  expect(button.textContent).toBe("불러오는 중 42%");
+  expect(button.disabled).toBe(true);
+  window.dispatchEvent(new Event("focus"));
+  await Promise.resolve();
+  expect(document.body.contains(button)).toBe(true);
+  fail(new Error("offline"));
+  await vi.waitFor(() => expect(button.disabled).toBe(false));
+  expect(button.textContent).toBe(original);
+  expect(button.hasAttribute("aria-busy")).toBe(false);
 });

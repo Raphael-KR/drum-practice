@@ -1,3 +1,4 @@
+import { downloadScore } from "./download-score";
 import { beginLoadTiming, recordLoadTiming } from "./load-timing";
 import { icon } from "./icon-svg";
 import { installLandscapeKeyboardGuard } from "./landscape-keyboard";
@@ -178,8 +179,8 @@ function resolveConflict(): Promise<"replace" | "keep-existing"> {
     dialog.showModal();
   });
 }
-async function importFile(file: File) {
-  if (working) return;
+async function importFile(file: File, ownsLock = false) {
+  if (working && !ownsLock) return;
   working = true;
   const epoch = ++importEpoch;
   const input = document.querySelector<HTMLInputElement>("#package-file");
@@ -225,21 +226,25 @@ function bundledButton(score: (typeof bundledScores)[number], update = false) {
   );
   button.onclick = async () => {
     if (working || button.disabled) return;
+    working = true;
     button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    const label = button.textContent;
     try {
-      const response = await fetch(`${import.meta.env.BASE_URL}${score.file}`, {
-        cache: "no-cache",
+      const blob = await downloadScore(`${import.meta.env.BASE_URL}${score.file}`, percent => {
+        button.textContent = percent === null
+          ? t("library.downloading")
+          : t("library.downloadPercent", { percent });
       });
-      if (!response.ok) throw new Error(t("separation.bundledFailed"));
-      await importFile(
-        new File([await response.blob()], score.file, {
-          type: "application/zip",
-        }),
-      );
+      button.textContent = t("library.savingScore");
+      await importFile(new File([blob], score.file, { type: "application/zip" }), true);
     } catch (error) {
-      report(error);
+      report(new Error(t("separation.bundledFailed")));
     } finally {
+      working = false;
       button.disabled = false;
+      button.removeAttribute("aria-busy");
+      button.textContent = label;
     }
   };
   return button;
