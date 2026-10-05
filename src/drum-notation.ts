@@ -158,13 +158,16 @@ export function applyDrumDecorations(
                 .getSVGGElement()
                 .querySelector(".vf-stem path") as SVGGraphicsElement | null;
               const sb = stem?.getBBox();
+              // Beamed stems may be drawn outside the note's SVG group.
+              const vf = n.vfnote[0];
+              const stemTop = vf.getStemExtents().topY;
               const t = add("text");
               t.textContent = rule.sticking;
               t.setAttribute(
                 "x",
-                String(sb ? sb.x + sb.width / 2 : b.x + b.width / 2),
+                String(vf.getStemX()),
               );
-              t.setAttribute("y", String(Math.min(sb?.y ?? b.y, b.y) - 9));
+              t.setAttribute("y", String(Math.min(stemTop, sb?.y ?? b.y, b.y) - 9));
               t.setAttribute("text-anchor", "middle");
               t.setAttribute("font-family", "serif");
               t.setAttribute("font-size", "16");

@@ -44,8 +44,23 @@ let importEpoch = 0;
 let libraryEpoch = 0;
 function report(error: unknown) {
   const target = document.getElementById("library-status");
-  if (target)
+  if (target) {
+    target.classList.add("is-error");
+    target.setAttribute("role", "alert");
     target.textContent = error instanceof Error ? error.message : String(error);
+  }
+}
+function clearLibraryError() {
+  const target = document.getElementById("library-status");
+  if (target) {
+    target.textContent = "";
+    target.classList.remove("is-error");
+    target.setAttribute("role", "status");
+  }
+}
+function reportImportError(error: unknown, stage: string) {
+  const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  report(t("library.importError", { stage, detail }));
 }
 async function closePlayback() {
   if (!session) return;
@@ -158,7 +173,7 @@ function resolveConflict(): Promise<"replace" | "keep-existing"> {
     );
     const body = document.createElement("div");
     body.className = "tool-body";
-    body.innerHTML = `<p>${escapeHTML(t("separation.conflictBody"))}</p><div class="package-choice"><button id="keep-package">${escapeHTML(t("separation.keep"))}</button><button id="replace-package">${escapeHTML(t("separation.replace"))}</button></div>`;
+    body.innerHTML = `<p>${escapeHTML(t("separation.conflictBody"))}</p><div class="package-choice"><button id="keep-package" title="${escapeHTML(t("separation.keep"))}">${escapeHTML(t("separation.keep"))}</button><button id="replace-package" title="${escapeHTML(t("separation.replace"))}">${escapeHTML(t("separation.replace"))}</button></div>`;
     dialog.append(body);
     let choice: "replace" | "keep-existing" = "keep-existing";
     body
@@ -185,20 +200,19 @@ async function importFile(file: File, ownsLock = false) {
   const epoch = ++importEpoch;
   const input = document.querySelector<HTMLInputElement>("#package-file");
   if (input) input.disabled = true;
+  clearLibraryError();
+  let stage = t("library.stagePackage");
   try {
     const record = await readScorePackage(file);
+    stage = t("library.stageSave");
     let result = await importPracticeRecord(record);
     if (result.status === "conflict")
       result = await importPracticeRecord(record, await resolveConflict());
     if (epoch !== importEpoch) return;
+    stage = t("library.stageList");
     await showLibrary();
-    const status = document.getElementById("library-status");
-    if (status)
-      status.textContent = t(
-        result.status === "kept" ? "separation.kept" : "separation.saved",
-      );
   } catch (e) {
-    report(e);
+    reportImportError(e, stage);
   } finally {
     working = false;
     if (input) input.disabled = false;
@@ -224,12 +238,14 @@ function bundledButton(score: (typeof bundledScores)[number], update = false) {
   button.textContent = t(
     update ? "separation.updateBundled" : "separation.loadBundled",
   );
+  button.title = t(update ? "library.tipUpdate" : "library.tipDownload");
   button.onclick = async () => {
     if (working || button.disabled) return;
     working = true;
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
     const label = button.textContent;
+    clearLibraryError();
     try {
       const blob = await downloadScore(`${import.meta.env.BASE_URL}${score.file}`, percent => {
         button.textContent = percent === null
@@ -239,7 +255,7 @@ function bundledButton(score: (typeof bundledScores)[number], update = false) {
       button.textContent = t("library.savingScore");
       await importFile(new File([blob], score.file, { type: "application/zip" }), true);
     } catch (error) {
-      report(new Error(t("separation.bundledFailed")));
+      reportImportError(error, t("library.stageDownload"));
     } finally {
       working = false;
       button.disabled = false;
@@ -256,7 +272,7 @@ export async function showLibrary() {
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
-  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><a class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</div></header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><button id="import-package" class="primary">${escapeHTML(t("separation.add"))}</button><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`);
+  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</div></header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><div class="library-import"><button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("separation.add"))}</button><p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p></div><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`);
   showBuildLabel();
   root.querySelector("#library-refresh")!.addEventListener("click", () => location.reload());
   document
@@ -277,18 +293,16 @@ export async function showLibrary() {
   const list = document.getElementById("practice-records")!;
   const records = await listPracticeRecords();
   if (epoch !== libraryEpoch) return;
-  if (!records.length) {
-    list.textContent = t("separation.empty");
-  }
   for (const record of records) {
     const item = document.createElement("article");
     item.className = "practice-card";
-    item.innerHTML = `<div><h3>${escapeHTML(record.song.title)}</h3><p>${escapeHTML(record.song.artist || "")}</p></div><div class="practice-card-actions"><button class="primary" data-open>${escapeHTML(t("separation.open"))}</button></div>`;
+    item.innerHTML = `<div><h3>${escapeHTML(record.song.title)}</h3><p>${escapeHTML(record.song.artist || "")}</p></div><div class="practice-card-actions"><button class="primary" data-open title="${escapeHTML(t("library.tipOpen"))}">${escapeHTML(t("separation.open"))}</button></div>`;
     item.querySelector("[data-open]")!.addEventListener("click", () => {
       void openRecord(record.song.id);
     });
     const remove = document.createElement("button");
     remove.textContent = t("separation.remove");
+    remove.title = t("library.tipRemove");
     remove.onclick = async () => {
       if (working || !window.confirm(t("separation.removeConfirm"))) return;
       working = true;
@@ -312,10 +326,17 @@ export async function showLibrary() {
     if (archived.length) {
       const button = document.createElement("button");
       button.textContent = t("separation.restore");
+      button.title = t("library.tipRestore");
       button.onclick = () => {
         void restore(record.song.id).catch(report);
       };
       item.querySelector(".practice-card-actions")!.append(button);
+    }
+    if (bundled && "category" in bundled && bundled.category === "basic") {
+      const badge = document.createElement("p");
+      badge.className = "library-basic-label";
+      badge.textContent = t("library.basicExercise");
+      item.querySelector("div")!.append(badge);
     }
     list.append(item);
   }
@@ -326,7 +347,15 @@ export async function showLibrary() {
     const title = document.createElement("h3");
     title.textContent = score.title;
     const button = bundledButton(score);
-    item.append(title, button);
+    const heading = document.createElement("div");
+    heading.append(title);
+    if ("category" in score && score.category === "basic") {
+      const badge = document.createElement("p");
+      badge.className = "library-basic-label";
+      badge.textContent = t("library.basicExercise");
+      heading.append(badge);
+    }
+    item.append(heading, button);
     list.append(item);
   }
 
@@ -344,12 +373,16 @@ export async function showLibrary() {
     name.textContent = archive.record.song.title;
     const button = document.createElement("button");
     button.textContent = t("separation.restoreRemoved");
+    button.title = t("library.tipRestoreRemoved");
     button.onclick = () => {
       void restore(id).catch(report);
     };
     item.append(name, button);
     list.append(item);
   }
+  const empty = !list.childElementCount;
+  root.querySelector<HTMLElement>("#library-empty-hint")!.hidden = !empty;
+  if (empty) root.querySelector("#import-package")!.setAttribute("aria-describedby", "library-empty-hint");
 }
 void showLibrary().catch(report);
 

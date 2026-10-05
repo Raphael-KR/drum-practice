@@ -33,3 +33,6 @@ public/scores/
 /deployment/sites/
 /dependencies/osmd-hollow-fix/
 /local-archives/
+
+# Locally preserved GarageBand drum definitions, patches and audio samples.
+/local-libraries/

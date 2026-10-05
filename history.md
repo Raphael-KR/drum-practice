@@ -3086,3 +3086,125 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 ## 2026-10-06 — 재생 툴팁 릴리스
 - 사용자 커밋·push·발행 승인. player 0.6.30/editor 0.6.25, build 001979ac.
 - 공통 재생 버튼·설정·구간·마커 툴팁 누락 보완. 전체 458개 테스트 및 TypeScript 포함 분리 빌드·player 배포 경계 검사 통과.
+
+## 2026-10-06 — 내 악보 목록 제목·툴팁
+- 목록 화면 제목을 “드럼 연습실”에서 “드럼연습실”로 변경.
+- 가져오기·열기·삭제·다운로드·업데이트·이전/삭제 악보 복원·가져오기 충돌 선택에 툴팁 추가. 예약/로컬 제작기 링크에도 툴팁 제공. 기존 새로고침/도움말 툴팁 유지.
+- TypeScript/i18n/diff 검사 및 목록 집중 테스트 3개 통과. Safari 로컬 목록에서 제목과 버튼/링크 13개의 title 누락 0개 확인.
+- build d7e3fbd4. 버전 유지, 커밋·push·발행하지 않음.
+
+## 2026-10-06 — 목록이 완전히 비었을 때만 가져오기 안내
+- 기존 조건은 저장 악보 수만 검사해 기본 제공 악보 카드와 빈 목록 안내가 함께 표시됐다. 저장·기본 제공·복원 카드까지 구성한 뒤 실제 카드가 없을 때만 안내를 표시하도록 수정.
+- 기본 제공 있음/완전히 비어 있음/복원 카드 있음 회귀 포함 목록 테스트 4개, TypeScript, diff 검사 통과.
+- build edbdd4d1. 앞선 목록 제목·툴팁 변경 유지. 버전 유지, 미커밋·미발행.
+
+### 빈 목록 안내를 가져오기 버튼 아래로 이동
+- 승인 문구 “버튼을 눌러 악보를 추가하세요.”를 악보 가져오기 버튼 바로 아래 작은 보조 문구로 배치. 목록이 완전히 비었을 때만 표시하고 해당 버튼의 aria-describedby에 연결.
+- 목록 테스트 4개에서 표시 조건·문구·버튼 바로 다음 위치·접근성 연결 확인. TypeScript/i18n/diff 검사 통과.
+- build 895c928f. 버전 유지, 미커밋·미발행.
+
+### 2026-10-06 악보 불러오기 성공 문구 제거·오류 원인 표시
+- 불러오기/파일 가져오기 성공 후 ‘저장되었습니다’ 메시지를 제거했다. 실패 안내는 빨간색과 role=alert로 표시한다.
+- 다운로드, 파일 읽기·검증, 기기 저장, 목록 갱신 단계를 구분하고 오류 이름·메시지를 textContent로 표시한다. HTTP 상태를 보존하고 네트워크·120초 시간 초과·중단 오류를 구분한다. 브라우저가 제공하지 않는 세부 네트워크 원인은 추정하지 않는다.
+- 재시도 시 이전 오류를 지운다. 기존 목록 안내·툴팁 변경을 보존했다.
+- 검증: library/download 집중 테스트10개, TypeScript, i18n, git diff --check 통과. 성공 시 무문구, 다운로드/파일/저장 실패 원인 및 텍스트 안전 렌더링 확인. 실제 Safari 오류 화면 검증은 수행하지 않았다.
+- 빌드번호 갱신. 버전 상승·커밋·푸시·발행 없음.
+
+
+## 2026-10-06 — 악보제작자: 유튜브 참고 탐탐 무빙 신규 제작
+- 사용자 결정: PDF뿐 아니라 유튜브도 제작 입력으로 취급. 악보 출력은 MusicXML만, 인쇄 PDF는 만들지 않는다. 전체 프로세스에 새 입력 경로·확인 한계·독립 제작 기준 기록.
+- 초기 웹 조회 throttled를 사용자 승인 Safari MCP로 해결. 영상 설명·챕터·자동 스크립트·대표 재생 프레임 확인 후 제목 기반 source-01은 보존하고 source-02로 재구성. 한 손8분→양손16분→8분+16분둘→16분둘+8분, 새 탐 이동 경로와 절차적 합성 음원. 영상 녹음/외부 드럼 샘플 미포함.
+- 80BPM·4/4·16마디64사분음표·192타격R112/L80. 최종 MusicXML4.0 XSD·P1 음악적 서명·오류 주입4개 검출·동일 재생성·WAV 첫 박0.25초/전체49.05초/클리핑없음·ZIP CRC 및 전체 Song/XML/음원 왕복 통과. Safari 공통 SVG1쪽16regions/스티킹192개와 실제 WAV 디코딩, countoff OFF/ON×3배속 수치 시각 확인.
+- 공통 출력에서 일부 R/L이 빔 아래·줄기 옆에 놓이는 문제를 발견. 규칙·SVG/화면·원인 후보를 docs/TOM-MOVING-PRODUCTION.md에 기록. 앱 수정은 개발 소유자의 범위. 보관함에는 쓰지 않았고 앱 수록·저장/재열기·실제 청취/iPad는 대기.
+- 산출물: docs/experiments/tom-moving-20261006/final-02/tom-moving-final.musicxml 및 tom-moving.drumscore, source-02/tom-moving.wav/mp3. 최종 근거 final-verification-02.json. scripts/musicxml/tom_moving*.py/mjs로 생성·공통 패키지·검증 재현. 기존 다른 작업의 수정 보존, 앱 소스/버전·PDF/HTML 생성·commit/push/발행 없음.
+
+
+## 2026-10-06 — 악보 제작 스킬에 유튜브 제작 경로 등록
+- 사용자 요청에 따라 .agents/skills/produce-drum-score/SKILL.md 추가. 기존 제작 지식은 docs/SCORE-PRODUCTION-PROCESS.md에 있었고 별도 제작 스킬은 없었으므로, 정본 문서를 연결하는 프로젝트 스킬로 등록했다. 기존 find-timed-lyrics의 가창 타이밍 검색 범위는 유지했다.
+- PDF/음원/유튜브를 입력으로 판별하고 실제 영상 연주 채보와 영상 교육 개념을 참고한 독립 연습곡 제작을 구분했다. 승인된 Safari 본문·자동 스크립트·대표 재생 장면 확인, 자막 오인식·seek 후 이전 프레임 판정, 독립 이벤트/fixture·음원 재생성·첫 박·공통 표시/패키지 검수·개발 인계를 포함했다.
+- 현재 매핑·SVG·canonical·패키지·문제 해결 정본에 연결하며 별도 표기 규칙을 만들지 않았다. 악보 출력 MusicXML만, 인쇄 PDF/재생 HTML 생성 금지와 기존 자료 보존 결정을 유지했다. 탐탐 사례의16마디/80BPM·외부 샘플 없는 합성을 일반 조건으로 고정하지 않았다. 전체 프로세스 문서에 스킬 링크·정확한 채보 근거와 사례/일반 절차 구분을 보완했다.
+- 검증: skill-creator quick_validate.py 통과, 스킬의 로컬 정본 링크10개 존재 확인, git diff --check 통과. 번들 Python에 PyYAML이 없어 실행에 실패한 뒤 이미 설치된 /opt/homebrew/opt/python@3.14/bin/python3.14(PyYAML6.0.3)로 검증했다. 새 패키지 설치·앱 소스 수정·commit/push/발행 없음. 다른 개발 작업의 변경은 보존했다.
+
+### 2026-10-06 탐탐 무빙 연습 기본 연습곡 수록
+- 제작자 인계 final-02의 해시/ZIP 무결성 확인. 기본 연습곡 항목과 표시를 추가하고 public/scores/tom-moving.drumscore를 준비했다. 원본과 기존 사용자 악보·미커밋 변경 보존.
+- 빔 줄기가 음표 그룹 밖에 있어 R/L이 머리 가까이 배치되던 문제를 VexFlow 실제 줄기 좌표로 수정. 캐시 v21 및 회귀 테스트 추가. 새 공통 조판으로 패키지 갱신, 음원 바이트·마디 시간 보존.
+- Safari 불러오기/저장/재열기·R/L 위치 확인, 전체461테스트/분리 빌드/경계 검사 통과. 실제 재생 버튼 후 진행 시간이0초에 머물러 ON/OFF 동작 및 청취/iPad 검수는 미완료. 상세 docs/TOM-MOVING-PRODUCTION.md.
+- 빌드번호 갱신. 커밋·푸시·발행하지 않음.
+
+
+## 2026-10-06 — 탐탐 무빙 MIDI 추가
+- 사용자 요청에 따라 기존 최종 MusicXML의 P1에서 midi-01/tom-moving.mid를 별도 생성. scripts/musicxml/tom_moving_midi.py 추가, docs/TOM-MOVING-PRODUCTION.md에 경로·재현·WAV 시간 차이와 MIDI 음색 특성을 기록했다.
+- SMF1·2트랙·PPQ480·80BPM·4/4·16마디·192타격, GM채널10/탐50·47·43, A–D마커. MIDI는 악보 첫 박0초/끝48초이며 기존 WAV의0.25초 앞부분·잔향과 앱 firstBeat는 유지했다. R/L 표기는 MusicXML에 유지한다.
+- 별도 프로젝트 임시 venv의 mido1.3.3으로 읽어 전체 note-on/off 시각·음가·velocity와 기존 composition JSON 일치, 악기 개수48/84/60·마커·끝48초 및 동일 바이트 재생성 확인. 실제 DAW/음색 청취 미검증. MIDI생성 자체에는 외부 Python 의존성이 없다.
+- 기존 악보/음원/패키지·개발 소스 수정과 자료 보존. PDF/HTML 생성·commit/push/발행 없음.
+
+## 2026-10-06 — 설치된 GarageBand SoCal Kit로 탐탐 MP3 제작
+- 사용자 요청으로 설치된 SoCal 실제 탐 샘플을 사용한 별도 MP3/WAV를 제작했다. GarageBand10.4.14 내부 SoCal.patch의 EXS 참조·공유 Logic 폴더의 CAF·velocity76 zone 구간을 확인. scripts/musicxml/render_socal_toms.py 추가. 기존 MusicXML·GM MIDI·절차적 음원·앱 수록본 보존.
+- AVAudioUnitSampler 엔진 미연결 probe의 예외를 attach로 교정했지만, 두 연결 순서에서 EXS load -10868이 계속 발생했다. 원인은 미확정. 실패 근거를 보존하고 EXS 구간 직접 혼합으로 해결. 고음 탐50→내부48은 이번 음색 재생에만 적용하고 악보 매핑을 변경하지 않았다. 원본 zone gain/velocity·stereo, 끝20ms 감쇠, 전체피크-3dBFS 적용. GarageBand 전체 효과/bounce 재현으로 부르지 않는다.
+- garageband-02/tom-moving-socal.mp3:50.25초·192kbps·1,207,678bytes. XML P1의16마디/64박/192타격과 MIDI 이벤트 시각 일치, 첫 박0.25초·MP3디코딩50.25초·클리핑 없음, 별도 재생성WAV/MP3 바이트 일치. 수치 검사이며 실제 기기 청취는 미수행.
+- docs/TOM-MOVING-PRODUCTION.md에 입력/매핑·실패·해결·한계·검증·재현·다음 적용 기준 기록. 최초 절차적 합성과 새 샘플 음원의 범위를 구분하도록 문서를 정리했다. 미디어/실험근거는 Git 제외. GUI·앱 수정·인쇄PDF/HTML·commit/push/발행 없음.
+
+## 2026-10-06 — 탐탐 무빙 악보의 음원을 SoCal MP3로 교체
+- 사용자 요청으로 현재 public 기본 제공 패키지 및 기존 dist/player의 탐탐 자산을 SoCal MP3 내장본으로 교체. 이전 두 자산은 garageband-package-01에 보존. 새 최종 MusicXML과 패키지도 별도 저장했다.
+- 공통 패키지/정본 API로 MP3이름·MIME·음원SHA 연결을 갱신. P1/XML음표·보정SVG바이트·곡ID·16마디·BPM80·첫박0.25·마디시각·마커·설정·반복 보존. 새 패키지SHA0030b4c53d65b678981bb0272425694fd9353be9d03393fe1cfd8da36429e9b3.
+- XML4.0 XSD·패키지 왕복/CRC/새음원hash·countoff/배속/시작점18가지 수치 검사 및 집중36테스트 통과. guitar 동명 테스트의 기존fixture오류는 문서화된 제외 범위를 적용해 재검사; 해당 프로젝트 미변경.
+- Safari MCP Transport closed, Safari CLI 조회는 앱 미실행(-600). 승인된 ego-browser5173에서 새 MP3저장·해시·50.25초 디코딩·16마디/첫박 재조회 및 실제 재생화면 확인. 기기 청취와 수치/진행 상태는 구분. 상세 docs/TOM-MOVING-PRODUCTION.md 및 garageband-package-01 근거.
+- 빌드번호 갱신. 앱 로직/버전·전체빌드·PDF/독립HTML·commit/push/발행 없음. 다른 변경과 원본 보존.
+- 교체 후 ego 재로딩/재열기에서 MP3이름·크기·첫박·P1음표192개 확인. OFF·곡 처음의 진행0:01 확인. 일시정지 후 상태 변경 대기3초 timeout으로 ON/중간 위치의 실제 재생 비교는 미검증. 원인 미확정; 수치18case와 실제청취를 구분했다. countoff기존true 복구·목록 복귀·TaskSpace정상 종료. 상세 근거 browser-playback.json/player.png.
+
+## 2026-10-06 — 탐탐 이전 합성 음원·내장 구형 패키지 삭제
+- 사용자의 명시적 삭제 요청으로 이 곡의 이전 음원 보존 결정을 종료. source-01/source-02/reproduction-02의 WAV/MP3 6개 및 이전 WAV 내장 패키지/백업4개를 삭제했다. 새 백업 없이10개·59,364,417bytes 삭제.
+- 경로·해시·곡ID·음원 payload로 대상 확인 후 삭제. 현재 SoCal 음원/재생성본·새 패키지(public/dist 포함)·MusicXML·MIDI 해시 불변, 현재 ZIP CRC/내장 MP3 해시 확인. 목록·검증 docs/experiments/tom-moving-20261006/previous-audio-deletion.json.
+- docs/TOM-MOVING-PRODUCTION.md에 최신 결정·현재 산출물과 과거 삭제된 경로를 구분해 기록. 다른 곡/설치 라이브러리/개발 변경 보존. 소스/버전·commit/push/발행 없음.
+
+
+## 2026-10-06 — GarageBand 일반 드럼킷 소개 조사
+
+- Apple 웹 가이드와 설치된 GarageBand 10.4.14의 설명·기본 패치 메타데이터를 대조했다. 일반 Drum Kit 전체에 대한 요약을 `docs/GARAGEBAND-DRUM-KITS.md`, 원천 해시·연결 검증을 `docs/experiments/garageband-kits-20261006/intro-audit.json`에 기록했다.
+- 일부 `DrumKitName` 문자열과 실제 `DefaultPatchGB`의 불일치를 발견해 실제 패치 경로로 연결했다. Blue Ridge의 Rods와 Speakeasy의 Brushes 구분도 기록했다. 원천 앱 파일은 수정하지 않았다.
+- 소개 조사이며 청취 비교는 수행하지 않았다. 현재 SoCal 음원·악보·패키지는 변경하지 않았다.
+
+
+## 2026-10-06 — 악보 제작 시 GarageBand 드럼킷 선택 원칙 확정
+
+- 사용자 결정: 앞으로 악보용 새 드럼 음원을 제작할 때 `docs/GARAGEBAND-DRUM-KITS.md`를 참조해 곡·연습 목적에 맞는 라이브러리를 선택한다. SoCal을 고정 기본값으로 사용하지 않는다.
+- 선택 기준을 해당 문서에 기록하고 `docs/SCORE-PRODUCTION-PROCESS.md` 및 `.agents/skills/produce-drum-score/SKILL.md`에서 연결했다. 키트 설치·주법·샘플 매핑을 확인하고 선택 이유·출처·검증을 곡별 기록에 남긴다.
+- 실제 청취와 소개에 따른 판단을 구분한다. 기존 음원·악보는 교체하지 않았으며 MusicXML만 요청된 작업에 음원 제작을 추가하지 않는다.
+
+
+## 2026-10-06 — 팀장에게 악보 제작 상황 공유
+
+- 사용자 요청으로 에이전트관리팀장 작업 `019fe926-aa3e-7d01-a7cc-25105ef93a95`에 탐탐 악보 제작, SoCal 음원 교체·로컬 반영, 이전 음원 삭제, 드럼킷 선택 원칙 반영 상태를 `send_message_to_thread`로 전달했다. 도구가 오류 없이 해당 threadId를 반환했다.
+- 상황 보고만 전달했다. 악보 첨부·추가 작업·배포를 요청하지 않았으며 수신자의 읽음·응답은 확인하지 않았다.
+
+
+## 2026-10-06 — 웹앱 개발자에게 후속 상황 공유
+
+- 사용자 요청으로 드럼연습실 웹앱 개발 작업 `01a0afc9-ca21-7371-9390-06eb07c017e9`에 SoCal 음원 교체·현재 패키지 경로/해시·구형 음원 삭제·기존 검증과 미검증·드럼킷 선택 원칙을 전달했다. 현재 public/dist/최종 패키지 해시 일치를 다시 확인했고 메시지 도구가 오류 없이 대상 threadId를 반환했다.
+- 추가 개발·배포를 요청하지 않는 상황 공유다. 수신자의 읽음·응답은 확인하지 않았다.
+
+### 2026-10-06 SoCal MP3 최신 수록본 재빌드 확인
+- 사용자 요청에 따라 최신 탐탐 무빙 패키지 public/제작자 최종본 해시0030b4c53d65b678981bb0272425694fd9353be9d03393fe1cfd8da36429e9b3 및 ZIP CRC 확인. 내장 tom-moving-socal.mp3 1,207,678bytes,16마디80BPM/첫 박0.25초 확인. 구형 음원은 재생성하지 않았다.
+- 전체93파일461테스트와 build:apps(타입/i18n/제작기·재생기 경계) 통과. 재빌드된 dist/player 패키지가 public과 바이트 동일함을 확인.
+- 기존 변경 보존; 이번에는 소스 수정 없이 최신 음원을 포함해 로컬 빌드했다. 실제 청취/iPad 및 카운트오프 ON 실제 재생 검수는 미확인으로 유지. 커밋·푸시·발행 없음.
+
+
+## 2026-10-06 — GarageBand 앱 삭제 준비: 일반 드럼킷 라이브러리 프로젝트 보존
+
+- 사용자 요청으로 일반 키트 20개에 연결된 EXS 34개·실제 샘플 123개·앱 패치/메타데이터를 포함한 221파일(8,827,926,518bytes)을 `local-libraries/garageband-drum-kits/`에 APFS 독립 복제했다. 원본과 다른 inode·symlink/hardlink 없음, 전체 원본/복사본 SHA256 일치, EXS 참조 누락 0을 확인했다. Manifest에 출처·상대 경로·해시·참조 연결을 기록하고 local-libraries를 Git 제외했다. df 표시 여유 공간은 복사 전후 약27GiB로 유지됐으며 정확한 추가 물리 크기는 미측정이다.
+- `scripts/musicxml/render_socal_toms.py`를 복사본 입력/manifest 경로 연결·크기/해시 검증으로 변경했다. 앱/시스템 원본 파일 열기를 막고 모든 ffmpeg 샘플 입력이 프로젝트 복사본임을 확인한 재생성에서 기존 WAV/MP3와 SHA256까지 일치했다. 누락 항목·digest 불일치 거부도 통과했다. 초기 helper는 기본 Python의 numpy 미설치로 실패해 검증된 번들 Python으로 재실행했다.
+- 보존 범위·소스 경로 문자열과 실제 읽기 경로 구분·실행 조건을 `docs/GARAGEBAND-DRUM-KITS.md`, 현재 탐탐 재현 입력을 `docs/TOM-MOVING-PRODUCTION.md`에 갱신했다. 전체 키트의 모든 악기/주법을 재생 구현했다는 뜻은 아니다.
+- 근거: `docs/experiments/garageband-kits-20261006/library-preservation-audit.json`, `copy-only-render-verification.json`. 앱·설치 라이브러리 삭제, 현재 수록 악보/음원 교체, 다른 개발 변경·앱 버전 수정, commit/push/배포는 수행하지 않았다.
+
+
+## 2026-10-06 — 연습용 라이브러리를 SoCal·Portland 두 키트로 정리
+- 사용자 명시 요청에 따라 프로젝트 보존본의 SoCal·Portland와 실제 참조 의존성만 유지하고 나머지18개 키트 자료를 삭제했다. 작업 시작 시 GarageBand 앱과 `/Library/Application Support/Logic`은 이미 없었으며 이번 작업에서 시스템 원본이나 다른 악기·다른 위치의 라이브러리를 삭제하지 않았다.
+- 삭제 전221파일 크기·SHA256 대조 및 두 키트의 패치→EXS→CAF 연결 확인. 삭제185파일/7,999,364,416bytes(약8.00GB), 잔존36파일/828,562,102bytes(약0.83GB): 패치6파일·EXS8개·샘플18개·메타데이터4개. 공통 퍼커션은 필요한 의존성으로 유지했다. 미디어 백업은 만들지 않고 삭제 전manifest·해시 목록만 기록했다.
+- 삭제 후36파일 해시·참조 완전성 및185파일 부재 확인. 두 키트로 축소된manifest를 저장했다. SoCal 전용renderer로192타격·50.25초 WAV/MP3를 재생성해 현재 음원과 각각SHA256 일치. Portland는 해시·참조 검사이며 실제 렌더링·청취는 미검증이다. 삭제 전후 여유 공간 실측 약7.71GB 증가(관측 시점의 APFS/동시 작업 영향 포함).
+- 현재 보유 목록과20개 소개의 과거 참고 상태를 `docs/GARAGEBAND-DRUM-KITS.md`에 구분했다. 전체 제작 프로세스·탐탐 제작 문서·스킬의 선택 경로도 현재 프로젝트 보존본 기준으로 정리했다. 이후 새 드럼 음원 제작은 두 키트 중 선택한다. MusicXML만 요청된 작업에 음원 제작을 추가하지 않는다.
+- 근거: `docs/experiments/garageband-kits-20261006/two-kit-pruning-audit.json`, `two-kit-render-verification.json`, `before-two-kit-manifest.json`. local-libraries와 실험자료의Git 제외 확인 및diff 공백 검사 통과. 기존 음원·악보·패키지·다른 개발 변경 보존, 앱 소스/빌드번호/버전 수정·commit/push/발행 없음.
+
+### 2026-10-06 릴리스 준비 — player0.6.31/editor0.6.26
+- 사용자 커밋·푸시·발행 요청. 목록 제목/툴팁/빈 목록 안내, 성공 문구 제거·상세 오류 표시, 탐탐 무빙 기본 연습곡과 SoCal MP3, 공통 R/L 줄기 위치 보정을 함께 반영.
+- 공통 표시 수정으로 양 앱 patch 상승. 전체461테스트(직전 동일 기능 소스 검사) 및 버전 갱신 후 build:apps/경계 검사/diff 검사 통과.
+- 실제 청취/iPad·카운트오프 ON 실제 재생 비교는 미검증으로 유지. 발행은 dist/player만 사용.

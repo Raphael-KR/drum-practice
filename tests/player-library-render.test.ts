@@ -14,9 +14,10 @@ vi.mock("../src/practice-library", () => ({
 vi.mock("../src/browser-score", () => ({ prepareBrowserScore: vi.fn(async record => record) }));
 vi.mock("../src/song-scores", () => ({ songScores: () => [], useScore: vi.fn() }));
 vi.mock("../src/download-score", () => ({ downloadScore: vi.fn() }));
+import { readScorePackage } from "../src/score-package";
 import { downloadScore } from "../src/download-score";
 import { mountPlaybackRuntime } from "../src/playback-runtime";
-import { listPracticeRecords, listPracticeArchives, loadPracticeRecord } from "../src/practice-library";
+import { listPracticeRecords, listPracticeArchives, loadPracticeRecord, importPracticeRecord } from "../src/practice-library";
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>(r => { resolve = r; });
@@ -104,5 +105,66 @@ it("shows download percentages on the bundled button and restores it after failu
   fail(new Error("offline"));
   await vi.waitFor(() => expect(button.disabled).toBe(false));
   expect(button.textContent).toBe(original);
+  const error = document.querySelector("#library-status")!;
+  expect(error.textContent).toContain("다운로드");
+  expect(error.textContent).toContain("Error: offline");
+  expect(error.classList.contains("is-error")).toBe(true);
+  expect(error.getAttribute("role")).toBe("alert");
   expect(button.hasAttribute("aria-busy")).toBe(false);
+});
+
+it("shows the empty hint only when no saved, bundled or restorable cards exist", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  const { default: bundled } = await import("../src/bundled-scores.json");
+  vi.mocked(listPracticeRecords).mockResolvedValue([]);
+  vi.mocked(listPracticeArchives).mockResolvedValue([]);
+  await showLibrary();
+  const hint = () => document.querySelector<HTMLElement>("#library-empty-hint")!;
+  expect(hint().hidden).toBe(true);
+  const saved = bundled.splice(0);
+  try {
+    await showLibrary();
+    expect(hint().hidden).toBe(false);
+    expect(hint().textContent).toBe("버튼을 눌러 악보를 추가하세요.");
+    expect(hint().previousElementSibling?.id).toBe("import-package");
+    expect(document.querySelector("#import-package")!.getAttribute("aria-describedby")).toBe(hint().id);
+    vi.mocked(listPracticeArchives).mockResolvedValue([{ id: "archive", record: { song: { id: "restorable", title: "Old score" } } }] as any);
+    await showLibrary();
+    expect(hint().hidden).toBe(true);
+    expect(document.querySelectorAll(".practice-card")).toHaveLength(1);
+  } finally {
+    bundled.push(...saved);
+    vi.mocked(listPracticeArchives).mockResolvedValue([]);
+  }
+});
+
+
+it("clears previous errors on retry, reports package/storage causes and stays silent on success", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  vi.mocked(listPracticeRecords).mockResolvedValue([]);
+  await showLibrary();
+  vi.mocked(downloadScore).mockResolvedValue(new Blob(["score"]));
+  const button = document.querySelector<HTMLButtonElement>(".practice-card button")!;
+  vi.mocked(readScorePackage).mockRejectedValueOnce(new Error("<invalid package>"));
+  button.click();
+  await vi.waitFor(() => expect(button.disabled).toBe(false));
+  const status = () => document.querySelector("#library-status")!;
+  expect(status().textContent).toContain("악보 파일 읽기·검증");
+  expect(status().textContent).toContain("<invalid package>");
+  expect(status().children).toHaveLength(0);
+
+  vi.mocked(readScorePackage).mockResolvedValue({ song: { id: "test" } } as any);
+  vi.mocked(importPracticeRecord).mockRejectedValueOnce(new DOMException("Storage full", "QuotaExceededError"));
+  button.click();
+  expect(status().textContent).toBe("");
+  await vi.waitFor(() => expect(button.disabled).toBe(false));
+  expect(status().textContent).toContain("기기에 저장");
+  expect(status().textContent).toContain("QuotaExceededError: Storage full");
+
+  vi.mocked(importPracticeRecord).mockResolvedValueOnce({ status: "added" } as any);
+  button.click();
+  await vi.waitFor(() => expect(button.disabled).toBe(false));
+  expect(status().textContent).toBe("");
+  expect(status().classList.contains("is-error")).toBe(false);
+  expect(document.body.textContent).not.toContain("저장되었습니다");
 });

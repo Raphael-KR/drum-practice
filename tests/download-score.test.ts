@@ -31,9 +31,9 @@ it("keeps unknown totals indeterminate and rejects errors for retry", async () =
   await expect(result).rejects.toThrow("503");
   expect(progress).not.toHaveBeenCalledWith(100);
 });
-it.each(["onerror", "ontimeout", "onabort"])("rejects %s", async event => {
+it.each([["onerror", "NetworkError"], ["ontimeout", "TimeoutError"], ["onabort", "AbortError"]])("rejects %s with its cause", async (event, cause) => {
   vi.stubGlobal("XMLHttpRequest", FakeXHR);
   const result = downloadScore("/score", vi.fn());
   request[event]();
-  await expect(result).rejects.toThrow();
+  await expect(result).rejects.toThrow(cause);
 });

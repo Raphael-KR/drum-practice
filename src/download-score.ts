@@ -17,7 +17,9 @@ export function downloadScore(url: string, progress: (percent: number | null) =>
       progress(100);
       resolve(request.response);
     };
-    request.onerror = request.ontimeout = request.onabort = () => reject(new Error("Score download failed"));
+    request.onerror = () => reject(new Error("NetworkError: Connection or server access failed"));
+    request.ontimeout = () => reject(new Error("TimeoutError: Download exceeded 120 seconds"));
+    request.onabort = () => reject(new Error("AbortError: Download aborted"));
     request.send();
   });
 }
