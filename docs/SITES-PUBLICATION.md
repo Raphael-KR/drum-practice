@@ -238,3 +238,8 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - build 688631c6, source 72957b86781305bd9bb89fc4a400e71eac9e6a1b.
 - deployment appgdep_6ac28c54e8608191afd223f6fc619a79 succeeded. 공개/player-only 유지.
 - 정본 cf1d6a2 main push 완료. 악보 선택 화면 새로고침·드럼치는공방 예약 링크 추가. 446개 테스트와 분리 빌드 통과. 운영 HTTP 직접 검증은 403으로 제한됨. Sites의 succeeded 결과로 발행 확인. Safari 운영 화면에서 새로고침·예약 버튼 노출 확인.
+
+## 2026-10-06 00:03 KST — Sites46 / player0.6.28
+- build 77cf94bc, source 00fe94e0e103283b71396b58dc70b89b07036830.
+- deployment appgdep_6ac3bc2a63a88191900b4147553b3f52 succeeded. 공개/player-only 유지.
+- 정본 db62ca6 main push 완료. 악보 목록 중복 방지·로딩 안내·단계별 시간 측정 포함. 450개 테스트 및 버전 갱신 분리 빌드 통과.
