@@ -272,7 +272,7 @@ export async function showLibrary() {
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
-  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</div></header><main class="library-main"><div class="library-heading"><h2>${escapeHTML(t("separation.library"))}</h2><div class="library-import"><button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("separation.add"))}</button><p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p></div><input type="file" id="package-file" accept=".drumscore,application/zip" hidden></div><p id="library-status" role="status"></p><div id="practice-records" class="practice-records"></div></main>`);
+  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</div></header><main class="library-main"><input type="file" id="package-file" accept=".drumscore,application/zip" hidden><p id="library-status" role="status"></p><div id="practice-records" class="library-sections"><section class="library-section" aria-labelledby="basic-library-title"><div class="library-heading"><h2 id="basic-library-title">${escapeHTML(t("library.basicExercise"))}</h2></div><div id="basic-practice-records" class="practice-records"></div></section><section class="library-section" aria-labelledby="personal-library-title"><div class="library-heading"><h2 id="personal-library-title">${escapeHTML(t("separation.library"))}</h2><div class="library-import"><button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("separation.add"))}</button><p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p></div></div><div id="personal-practice-records" class="practice-records"></div></section></div></main>`);
   showBuildLabel();
   root.querySelector("#library-refresh")!.addEventListener("click", () => location.reload());
   document
@@ -290,7 +290,10 @@ export async function showLibrary() {
     });
   installHelp(root);
   // Keep this render tied to its own container across asynchronous reads.
-  const list = document.getElementById("practice-records")!;
+  const basicList = document.getElementById("basic-practice-records")!;
+  const personalList = document.getElementById("personal-practice-records")!;
+  const basicIds = new Set(bundledScores.filter((s) => "category" in s && s.category === "basic").map((s) => s.id));
+  const listFor = (id: string) => basicIds.has(id) ? basicList : personalList;
   const records = await listPracticeRecords();
   if (epoch !== libraryEpoch) return;
   for (const record of records) {
@@ -332,13 +335,7 @@ export async function showLibrary() {
       };
       item.querySelector(".practice-card-actions")!.append(button);
     }
-    if (bundled && "category" in bundled && bundled.category === "basic") {
-      const badge = document.createElement("p");
-      badge.className = "library-basic-label";
-      badge.textContent = t("library.basicExercise");
-      item.querySelector("div")!.append(badge);
-    }
-    list.append(item);
+    listFor(record.song.id).append(item);
   }
   const live = new Set(records.map((r) => r.song.id));
   for (const score of bundledScores.filter((s) => !live.has(s.id))) {
@@ -349,14 +346,8 @@ export async function showLibrary() {
     const button = bundledButton(score);
     const heading = document.createElement("div");
     heading.append(title);
-    if ("category" in score && score.category === "basic") {
-      const badge = document.createElement("p");
-      badge.className = "library-basic-label";
-      badge.textContent = t("library.basicExercise");
-      heading.append(badge);
-    }
     item.append(heading, button);
-    list.append(item);
+    listFor(score.id).append(item);
   }
 
   const archives = await listPracticeArchives();
@@ -378,9 +369,9 @@ export async function showLibrary() {
       void restore(id).catch(report);
     };
     item.append(name, button);
-    list.append(item);
+    listFor(id).append(item);
   }
-  const empty = !list.childElementCount;
+  const empty = !personalList.childElementCount;
   root.querySelector<HTMLElement>("#library-empty-hint")!.hidden = !empty;
   if (empty) root.querySelector("#import-package")!.setAttribute("aria-describedby", "library-empty-hint");
 }

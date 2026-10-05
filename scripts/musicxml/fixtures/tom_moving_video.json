@@ -1,0 +1,25 @@
+{
+  "video": "https://www.youtube.com/watch?v=ZUTH2p9C-YM",
+  "scope": "Basic demonstrated exercises at 00:47–03:50; excludes spoken gaps and later improvisation/cookie performance. Practice repetitions and steady 80 BPM are editorial choices.",
+  "reviewDate": "2026-10-06",
+  "route": ["S", "M", "H", "F"],
+  "evidence": {
+    "R8": {"times": [52.74,53.15,53.57,53.98,54.37,54.77,55.15,55.54], "instruments": "SSMMHHFF", "hands": "RRRRRRRR", "durationUnits": [2,2,2,2,2,2,2,2]},
+    "L8": {"times": [68.72,69.09,69.47,69.84,70.22,70.59,70.96,71.33], "instruments": "SSMMHHFF", "hands": "LLLLLLLL", "durationUnits": [2,2,2,2,2,2,2,2]},
+    "RL16": {"times": [96.32,96.51,96.69,96.87,97.07,97.24,97.4,97.58,97.76,97.94,98.13,98.31,98.47,98.64,98.82,98.99], "instruments": "SSSSMMMMHHHHFFFF", "hands": "RLRLRLRLRLRLRLRL", "durationUnits": [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]},
+    "RRL": {"times": [144.22,144.57,144.75,144.93,145.28,145.47,145.62,145.97,146.15,146.33,146.67,146.84], "instruments": "SSSMMMHHHFFF", "hands": "RRLRRLRRLRRL", "durationUnits": [2,1,1,2,1,1,2,1,1,2,1,1]},
+    "RLR": {"times": [173.16,173.32,173.49,173.82,173.99,174.16,174.52,174.69,174.85,175.18,175.34,175.51], "instruments": "SSSMMMHHHFFF", "hands": "RLRRLRRLRRLR", "durationUnits": [1,1,2,1,1,2,1,1,2,1,1,2]}
+  },
+  "foot": {"instructionSeconds": [187.96,190.04], "meaning": "Right foot each quarter beat, added to the same three exercises", "demoSectionsSeconds": [[191,204],[204,216],[220,230]], "gmNote": 36},
+  "sections": [
+    {"name":"A · 한 손 8분", "patterns":["R8","L8","R8","L8"],"kick":false},
+    {"name":"B · 오른손→양손 16분", "patterns":["R8","RL16","R8","RL16"],"kick":false},
+    {"name":"C · 오른손→8분+16분 둘", "patterns":["R8","RRL","R8","RRL"],"kick":false},
+    {"name":"D · 오른손→16분 둘+8분", "patterns":["R8","RLR","R8","RLR"],"kick":false},
+    {"name":"B+ · 16분·오른발", "patterns":["R8","RL16","R8","RL16"],"kick":true},
+    {"name":"C+ · 앞을 길게·오른발", "patterns":["R8","RRL","R8","RRL"],"kick":true},
+    {"name":"D+ · 뒤를 길게·오른발", "patterns":["R8","RLR","R8","RLR"],"kick":true}
+  ],
+  "expected": {"measures":28,"quarters":112,"handHits":288,"kickHits":48,"totalHits":336,"R":208,"L":80,"instrumentHits":{"S":72,"M":72,"H":72,"F":72,"K":48}},
+  "evidenceLimit": "Times are approximate acoustic attack/frame anchors, not singer/drummer microtiming transcription. Drum identity and hands reviewed in consecutive local frames; audio energy/spectrum corroborates each group. Auto captions verify instructions, not strike labels."
+}

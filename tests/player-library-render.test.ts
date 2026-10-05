@@ -168,3 +168,45 @@ it("clears previous errors on retry, reports package/storage causes and stays si
   expect(status().classList.contains("is-error")).toBe(false);
   expect(document.body.textContent).not.toContain("저장되었습니다");
 });
+
+it("keeps basic exercises in their own section before and after import, including restore actions", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  const { default: bundled } = await import("../src/bundled-scores.json");
+  const basic = bundled.find(s => "category" in s && s.category === "basic")!;
+  vi.mocked(listPracticeRecords).mockResolvedValue([]);
+  vi.mocked(listPracticeArchives).mockResolvedValue([]);
+  await showLibrary();
+  expect([...document.querySelectorAll(".library-section h2")].map(h => h.textContent)).toEqual(["기본 연습곡", "내 악보 목록"]);
+  const basicList = () => document.querySelector("#basic-practice-records")!;
+  const personalList = () => document.querySelector("#personal-practice-records")!;
+  expect(basicList().querySelector("h3")?.textContent).toBe(basic.title);
+  expect(personalList().textContent).not.toContain(basic.title);
+  expect(document.querySelector("#import-package")!.closest("section")?.getAttribute("aria-labelledby")).toBe("personal-library-title");
+
+  const basicRecord = { song: { id: basic.id, title: "Saved basic", artist: "Teacher" } } as any;
+  const personalRecord = { song: { id: "my-own-score", title: "My own score" } } as any;
+  vi.mocked(listPracticeRecords).mockResolvedValue([basicRecord, personalRecord]);
+  vi.mocked(listPracticeArchives).mockImplementation(async id => id === basic.id ? [{ id: "previous", record: basicRecord }] as any : []);
+  await showLibrary();
+  expect(basicList().querySelectorAll(".practice-card")).toHaveLength(1);
+  expect(basicList().textContent).toContain("Saved basic");
+  expect(basicList().textContent).toContain("이전 악보 복원");
+  expect(basicList().querySelector("[data-open]")).not.toBeNull();
+  expect(personalList().textContent).toContain("My own score");
+  expect(personalList().textContent).not.toContain("Saved basic");
+
+  const savedCatalog = [...bundled];
+  try {
+    bundled.splice(0, bundled.length, basic);
+    vi.mocked(listPracticeRecords).mockResolvedValue([basicRecord]);
+    vi.mocked(listPracticeArchives).mockResolvedValue([]);
+    await showLibrary();
+    expect(document.querySelector<HTMLElement>("#library-empty-hint")!.hidden).toBe(false);
+    expect(basicList().querySelectorAll(".practice-card")).toHaveLength(1);
+    expect(personalList().children).toHaveLength(0);
+  } finally {
+    bundled.splice(0, bundled.length, ...savedCatalog);
+    vi.mocked(listPracticeRecords).mockResolvedValue([]);
+    vi.mocked(listPracticeArchives).mockResolvedValue([]);
+  }
+});

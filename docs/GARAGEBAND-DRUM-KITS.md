@@ -25,7 +25,7 @@
 - 삭제 직전 전체 221파일의 해시를 대조했으며 삭제 후 남은 36파일의 크기·SHA256 및 두 키트의 EXS→샘플 참조 완전성을 다시 확인했다. 현재 manifest는 두 키트와 필요한 참조만 포함한다.
 - 작업 시작 시 `/Library/Application Support/Logic`은 이미 없었다. GarageBand 앱도 없으며, 이번 작업에서 시스템 원본을 삭제하지 않았다. 다른 악기·다른 위치의 라이브러리는 정리 대상에 포함하지 않았다.
 - 삭제 전후 파일시스템 여유 공간은 실측 약 7.71GB 증가했다. 이는 해당 시점의 관측값이며 파일 논리 크기·APFS 공유 블록·스냅샷·동시 작업의 영향을 구별한다.
-- 정리 후 프로젝트 복사본만으로 기존 192타격·50.25초 SoCal 연습곡 WAV/MP3를 재생성했고 현재 음원과 SHA256까지 일치했다. Portland는 파일 해시·참조 완전성을 검증했으며 실제 음원 렌더링·청취는 아직 검증하지 않았다.
+- 정리 후 프로젝트 복사본만으로 기존 192타격·50.25초 SoCal 연습곡 WAV/MP3를 재생성했고 현재 음원과 SHA256까지 일치했다. 후속 원본 교정 작업에서 Portland의 스네어·세 탐·킥336타격을86.25초 음원으로 렌더했고 WAV/MP3 재생성 바이트·실제 Safari 디코딩/재생 전진을 확인했다. 주관적 청취는 미검증이다. 정확한 산출물·매핑·범위는 [교정 제작 기록](TOM-MOVING-PRODUCTION.md#현재-결과--원본-기본-연습-교정--portland-음원-2026-10-06)을 따른다.
 - 근거: `docs/experiments/garageband-kits-20261006/two-kit-pruning-audit.json`, `two-kit-render-verification.json`, `before-two-kit-manifest.json`.
 - `/local-libraries/`는 Git 제외 상태로 유지한다. 샘플을 public·배포 자산에 자동으로 추가하지 않는다.
 

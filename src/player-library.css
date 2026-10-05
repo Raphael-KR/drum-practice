@@ -170,3 +170,6 @@ body:not(.has-song) #app .editor-home button {
   color: #b42318;
   white-space: pre-wrap;
 }
+
+.library-sections { display: grid; gap: 32px; }
+.library-section > .library-heading { margin-bottom: 16px; }

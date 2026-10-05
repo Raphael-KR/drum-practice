@@ -1,8 +1,116 @@
 # 탐탐 무빙 연습 제작
 
+## 현재 결과 — 원본 기본 연습 교정 + Portland 음원 (2026-10-06)
+
+사용자 최신 요청은 원본 영상에 맞게 악보를 교정한 뒤 **교정 이벤트의 음원**을 Portland로 만드는 것이다. 아래 과거 독립 작곡·SoCal 제작 기록은 보존 이력이며 현재 수록본이 아니다.
+
+- 목표: 스네어 누락·임의 경로를 고치고 원본 기본 연습의 음가·손·이동 및 오른발 박을 반영한 MusicXML과 Portland MP3를 제작한다.
+- 범위: 영상00:47–03:50의 기본 연습, 제작 스크립트/fixture, 새 음원·MIDI·패키지, 로컬 기본 제공 악보 및 실제 Safari 검수.
+- 완료 조건: 원본 타격 근거→교정 기대값→MusicXML 재읽기→동일 이벤트 Portland 렌더→공통 조판·패키지/보관함 재열기 일치.
+- 제외:04:00 이후 자유 즉흥과06:11 쿠키 연주 전곡 채보, 원본 영상 녹음의 결과물 재사용, 인쇄 PDF·독립 HTML, commit/push/공개 배포.
+- 검증: 아래 원본 연속 프레임·음향 근거, MusicXML4.0 XSD·336이벤트·오류 주입, 재생성 바이트, 실제 SVG·패키지·Safari 저장/재생 검사. 주관적 청취·실물 iPad는 별도 미검증이다.
+
+### 원본 대조와 교정 내용
+
+원본 [탁선생의 탐무빙 기초 레슨](https://www.youtube.com/watch?v=ZUTH2p9C-YM), ID ZUTH2p9C-YM, 412.621초. Safari27.0.1에서 실제53.6초 프레임을 확인했다. 이번 교정에는 공개 영상 스트림·한국어 자동 자막을 로컬 분석용으로 확보하고 `source-review-03`에 원본/해시/로그를 보존했다. 영상과 녹음은 완성 악보·Portland 음원·패키지에 넣지 않았다.
+
+**판독 결과: 스네어(S) → 중간 탐(M, Tom2) → 높은 탐(H, Tom1) → 플로어(F).** 한 악기에서 한 박의 리듬을 친 다음 이동한다. 화면 왼쪽의 큰 랙 탐은 M이고, 오른쪽의 작은 랙 탐은 H다. 큰 랙/작은 랙을 카메라 좌우만으로 바꾸지 않는다. 원본의 오른손·왼손 한 손 연습 모두 같은 경로다. 종전 HMFM/FMHM/MFHM/HFMF 임의 경로를 제거했다.
+
+| 패턴 | 음가/손 | 대표 한 마디의 원본 공격 앵커(초) | 교정 반영 |
+|---|---|---|---|
+| R8 | 8분 둘, RR |52.74–55.54|SSMMHHFF|
+| L8 | 8분 둘, LL |68.72–71.33|SSMMHHFF|
+| 양손16분 |16분 넷, RLRL|96.32–98.99|SSSSMMMMHHHHFFFF|
+| 앞을 길게 |8분+16분 둘, RRL|144.22–146.84|SSSMMMHHHFFF|
+| 뒤를 길게 |16분 둘+8분, RLR|173.16–175.51|SSSMMMHHHFFF|
+| 오른발 추가 |위 세 리듬+4분 킥|187.96–190.04 설명,191–230 시연|매 박 GM36 킥·아래 줄기 voice2|
+
+공격 앵커는 음원에서 찾은 근사 시각이다. 연속 프레임에서 악기/손을 대조했다(`one-hand-sheet.png`, `both-sheet.png`, `mixed-sheet.png`, `foot-sheet.png`). 52.74–55.54의 반복되는 음원 스펙트럼과 타격 간격으로 두 타 후 이동을 교차 확인했다. 자동 자막의 팔부분/밟음표 오인식은 화면·음가 그림·챕터와 대조하여8분으로 읽었다. 121초 설명과 실제 시연대로 오른손8분 한 바퀴 다음에 왼손을 삽입한다. 제목이나 자막만으로 타격을 확정하지 않았다.
+
+대표 원본 기대값은 `scripts/musicxml/fixtures/tom_moving_video.json`이다. 실제 영상의 미세한 템포 변동·말하는 공백·시연 반복 횟수 전체를 그대로 재생하는 파일은 아니다. **기본 연습 패턴을 옮기고, 각 준비/적용 두 마디를 두 번 반복한28마디·일정80BPM**으로 정리했다. 80BPM·반복 길이·4마디씩 줄 구분은 연습용 편집 선택이며 영상의 문자 그대로인 전체 채보로 부르지 않는다. 즉흥 시연의 임의 이동을 기본 경로로 덮어쓰지 않는다.
+
+### 현재 구성과 산출물
+
+| 구간 | 마디 | 구성 |
+|---|---|---|
+|A|1–4|R8→L8, 두 번|
+|B|5–8|R8→RLRL16분, 두 번|
+|C|9–12|R8→RRL 혼합, 두 번|
+|D|13–16|R8→RLR 혼합, 두 번|
+|B+|17–20|B+오른발4분|
+|C+|21–24|C+오른발4분|
+|D+|25–28|D+오른발4분|
+
+28마디·112사분음표·84초 음악 길이. 손288타격(R208/L80), S/M/H/F 각72개, 킥48개, 총336개. 승인 표기 S=C5/GM38, M=D5/GM47, H=E5/GM50, F=A4/GM43, K=F4/GM36. 손은 각 음표 위 R/L, 킥은 별도 voice2·아래 줄기이며 손 문자를 붙이지 않는다.
+
+- 정본 MusicXML: `docs/experiments/tom-moving-20261006/corrected-package-01/tom-moving-final.musicxml`, SHA256 `7eb59bd1f2fef3dd7a526ef5dbe70190653a51ca148b314a2e1d90b879ae9788`.
+- Portland MP3: `docs/experiments/tom-moving-20261006/portland-01/tom-moving-portland.mp3`, SHA256 `b4c2e8de8a4ce808d53dadeaf8386c348bbee6d747cec5a3265ef5f330e69f3d`, 2,071,605bytes, stereo44.1kHz/192kbps·86.25초.
+- 재생 패키지: `docs/experiments/tom-moving-20261006/corrected-package-01/tom-moving.drumscore`, SHA256 `1eb7214b7e637ece8a0a97772ede30a28ca145df261742482f386b8c419b9c2e`. 같은 바이트를 로컬 `public/scores/tom-moving.drumscore`에 반영했다.
+- 원본 교정 XML·MIDI·구성/이벤트표: `corrected-01/`. MIDI는 첫 음표0초, PPQ480/SMF0, GM 채널10·336타격; 음원과 겹칠 때 MIDI 첫 박을0.25초에 놓는다.
+- 이전 SoCal 패키지: `corrected-package-01/previous-socal-tom-moving.drumscore`에 별도 보존했고 과거 source/SoCal 파일을 삭제하지 않았다.
+
+마디 구조가16→28로 바뀌므로 song ID를 `tom-moving-video-v2`로 바꿨다. 기존 `tom-moving-original-v1` 연습 기록을 새 마디에 잘못 이식하지 않는다. 기존 배포 dist/player는 갱신하지 않았다. 앱 버전0.6.31은 유지하고, 로컬 목록 변경에 따른 소스 빌드번호는 `cd680bd033cf`로 갱신했다.
+
+### Portland 선택과 재현
+
+사용자 지정 키트이며 [키트 선택 정본](GARAGEBAND-DRUM-KITS.md)을 확인했다. GarageBand 앱이나 `/Library/.../Logic` 원본을 읽지 않고 프로젝트 보존본의 Portland patch/EXS/CAF만 해시 검증해 사용했다. GM36/38/47/43은 같은 EXS key, 고음 탐 GM50만 EXS key48로 연결한다. 악보/MIDI의 승인 GM 번호는 유지한다. velocity76의 각 악기에 유일한 zone을 확인했다. 그룹은 Bd1/Sn2/TomMidHi/TomHi/TomLo이고 샘플은 Portland Kit Kick/Snare/Toms_consolidated.caf다.
+
+EXS의 정확한 시작/끝 프레임·zone gain을 사용한 stereo one-shot 믹스다. 끝20ms fade, velocity/127, 전체 peak -3dBFS. GarageBand 프로젝트의 EQ/컴프레서/공간 효과까지 복제한 bounce는 아니다. 원본 유튜브 음향이 아니라 이 **교정 이벤트**에서 새로 렌더한 Portland 녹음 샘플이다.
+
+최종 재읽기/오디오/패키지 검사는 `tom_moving_corrected_verify.py --root docs/experiments/tom-moving-20261006`로 재실행하며 `corrected-final-verification.json`에 기록한다. 재현은 기존 폴더를 덮어쓰지 않고 새 출력 폴더로 실행한다.
+
+```sh
+/Users/raphael/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/musicxml/tom_moving_corrected.py --out docs/experiments/tom-moving-20261006/corrected-new
+/Users/raphael/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/musicxml/render_portland_exercise.py --events docs/experiments/tom-moving-20261006/corrected-new/midi-events.json --out docs/experiments/tom-moving-20261006/portland-new
+```
+
+브라우저 패키지 helper는 이번 검증 입력/port5190에 한정된 `tom_moving_corrected_package.mjs`다. 실제 localhost5173 공통 renderer/package API를 사용한다. 재현할 때 입력 폴더와 새 evidence 수신 폴더/port를 함께 지정한다. 구형 `tom_moving.py`·`tom_moving_package.mjs`는 과거 독립 구성용이며 교정본 생성에 쓰지 않는다.
+
+### 검증과 해결 기록
+
+- 원본/교정 의미: 위 다섯 대표 마디의 악기·손·음가·시작 fixture를 XML 재읽기와 비교. 전체28마디의 킥 성부·박 합계·오선 위치·336타격 및 MusicXML4.0 XSD 통과. 음가/악기/손/좌표/backup5개 오류 주입 모두 검출.
+- 재생성: `corrected-reproduction-01`의 XML·MIDI·이벤트/구성 JSON, `portland-reproduction-01`의 WAV/MP3가 각각 바이트와 해시까지 일치. renderer는 XML에서 재읽은 공격 목록과 events가 다르면 거부하며 옛192타격을 새 음색만으로 바꾸지 않는다.
+- 음원: WAV/MP3 모두 decoded86.25초. WAV0.25초 이전 비영 샘플0, 첫0.001 이상 공격0.250068초. peak WAV0.707946/MP30.687901, clipping 없음. 음원에 카운트오프를 굽지 않았다. EXS/CAF source 해시와 zone/이벤트 근거는 `portland-01/render-audit.json`.
+- 공통 앱 경로: 1전체SVG·28regions·R208/L80, 7시스템의 실제 Safari 화면에서 줄기/빔 위 손 표시와 아래 킥 성부 확인, 경고0. 전체 Song/XML/audio 왕복·ZIP CRC·canonical XSD 통과. `prepareBrowserScore`→package 재읽기/audio검증에서도28마디·336타격·손/성부·시간표 유지.
+- 첫 박:0.25초, 카운트오프 OFF/ON×0.75/1/1.25배×음원0/첫 마디/중간 마디18경우 수치 검사 통과. 실제 청취의 박 일치는 수치 검사와 구별한다.
+- 실제 Safari 연습실: 기본 악보 불러오기→저장→열기에서28마디/80BPM/Portland 내장 해시와7구간 바로가기 확인. 페이지 재로딩 후 저장된 악보·동일 음원 해시를 재조회하고 다시 열었다. ON 준비 표시 후 진행률0:02까지 실제 재생 전진 확인. OFF 첫 마디0:03, OFF/ON17마디0:50까지 각각 재생 진행을 확인하고 ON·첫 마디·일시정지 상태로 복원했다. 주관적 음질·청취·실물 iPad는 검증하지 않았다.
+- TypeScript noEmit 통과. 관련 Vitest7파일64테스트 통과(`--exclude 'guitar-practice/**'`와 대상6경로). 첫 명령에서 제외 옵션을 빠뜨려 별도 guitar fixture경로 실패20건을 수집했다. 다른 프로젝트는 변경하지 않고 범위를 바로잡아 재실행했다.
+
+**막힘 해결:** 이전 Safari browsing context가 없어졌을 때 목록이 빈 것을 확인하고 원본 URL을 다시 열었다. 자막 패널 loading/빈 fetch를 완전한 스크립트로 간주하지 않고 공개 ASR VTT를 로컬로 확보했다. 정지 프레임만으로 반복 수를 정하지 않고 분석용 음원 공격 시각과 연속 영상 프레임을 연결했다. 브라우저 작업을 fire-and-forget import로 시작했을 때 result/progress가 없던 시도는 성공으로 처리하지 않았고, awaited import/build로 산출물을 실제 수신·재읽어 검증했다. 다음 영상에서도 실제 시각·프레임/음향 근거→기대값→XML/음원을 분리해 기록한다.
+
+Apple 로컬 STT/AFM은 검토했으나 이번에는 완전한 한국어 자막을 확보했고 타격 의미는 모델의 언어 출력으로 확정할 수 없어 새 실험을 넣지 않았다. 새 Apple 실측/발견이 없어 팀장에게 반복 보고하지 않았다.
+
+**교정 전 2026-10-06 원본 재검토 기록:** 당시 수록본은 영상의 실제 기본 연습을 충실하게 옮긴 악보가 아니다. 스네어를 빠뜨리고 세 탐의 이동 경로를 임의로 작곡했다. 아래 192타격·해시·규격 검사는 해당 임의 구성의 내부 일치 검사이며 영상 일치 검사가 아니다. 이번 재검토에서는 차이와 교정 기준을 기록했으며 MusicXML·음원·수록 패키지 수정 완료로 처리하지 않는다.
+
+## 2026-10-06 원본 재검토와 확인된 차이
+
+- 목표: 사용자 지적에 따라 원본 유튜브를 다시 확인하고 현재 수록 MusicXML과의 차이를 확인한다.
+- 범위: 승인된 Safari MCP의 동일 영상, 제작 코드·기록, 현재 public 수록 패키지의 MusicXML.
+- 완료 조건: 실제 원본 근거와 현재 파일의 차이를 대응시켜 기록한다.
+- 제외: 이번 재검토를 근거로 확인하지 않은 타격 순서를 새로 확정하거나, 음원·패키지를 자동 교체하거나, 앱 개발·발행을 수행하지 않는다.
+- 검증: seek 완료·실제 시각·화면을 확인한 원본 프레임, 화면 자막·리듬 삽입 그림, 현재 MusicXML 악기·음표 집계 및 기존 코드 대조.
+
+원본: [탁선생의 탐무빙 기초 레슨](https://www.youtube.com/watch?v=ZUTH2p9C-YM). 00:47–01:19의 한 손 연습, 01:20–02:06의 왼손 추가 설명·시연, 02:07 이후 두 혼합 리듬과 03:01 이후 오른발 박 추가 설명을 Safari에서 다시 확인했다. 전체 연주를 음향으로 듣고 모든 타격을 전사한 검토는 아니다.
+
+| 원본에서 확인한 내용 | 현재 악보와의 차이 | 근거 |
+|---|---|---|
+| 스네어와 세 탐을 오가는 한 손 이동 시연 | 현재 P1에는 탐1 48개·탐2 84개·플로어 탐60개뿐이며 스네어가 없다. 스네어를 제외한다는 사용자 확정 근거 없이 제작자가 세 탐으로 축소했다. | reference-review-02의 52.8초·53.25초·54.75초·55.25초 및 왼손68.5–71.3초 프레임, 현재 패키지 XML |
+| 오른손의 동일한 8분 박을 유지하고 사이에 왼손을 추가하며 오른손 이동을 따라가는 설명 | 음가 종류와 오른손 박 간격은 반영했지만, 이동을 HMFM/FMHM/MFHM/HFMF 네 경로로 임의 변경했다. 원본의 이동을 검증한 결과가 아니다. | 92초·121초·139초 설명 프레임, tom_moving.py composition() |
+| 양손16분, 8분 하나+16분 둘, 16분 둘+8분 리듬과 뒤쪽의 오른발 박 추가 연습 | 앞의 리듬 종류는 있으나 손·악기 이동의 원본 대응은 별도 검증이 필요하다. 발 연습은 이전 제작자가 제외한 범위이며 영상 전체 연습을 포함한 결과가 아니다. | 151초·165초 리듬 그림, 191초 오른발 설명 |
+
+**원인:** 교육 개념을 읽은 뒤 사용자의 영상 기반 악보 요청을 독립 작곡 모드로 처리했다. 대표 프레임 확인을 실제 타격 순서의 판독·독립 fixture로 연결하지 않았다. 생성 이벤트와 XML의 내부 일치·반복 생성·해시 일치가 원본 충실도를 보증한다고 해석하면 안 된다.
+
+**다음 교정 기준:** 먼저 스네어를 포함한 각 기본 연습의 실제 타격 수·음가·이동 순서·R/L을 연속 프레임 및 필요한 음향 근거로 판독해 원본 기대값을 만든다. 대표 정지 화면의 손 위치만으로 타격 순간·반복 횟수를 확정하지 않는다. 독립 작곡과 영상 패턴 정리는 별도 요청 모드로 구별하며, 사용자가 원본 기반 제작을 요구하면 임의 작곡으로 바꾸지 않는다. 발 연습의 포함 여부와 연습용 템포·반복 길이는 원본 재현 내용과 구별한다. XML이 바뀌면 음원·MIDI·패키지도 같은 교정 이벤트에서 검증한다.
+
+근거: `docs/experiments/tom-moving-20261006/reference-review-02/source-comparison.json`과 같은 폴더의 원본 화면. 현재 수록본 SHA256 `0030b4c53d65b678981bb0272425694fd9353be9d03393fe1cfd8da36429e9b3`을 재확인했다. 스크립트 패널은 loading 상태였고 관찰한 한국어 자막 URL의 fetch는 HTTP200/빈 본문이므로 전체 스크립트 재조회 성공으로 보고하지 않는다. 버퍼링 중인129초 화면은 자막 설명만 참조하며 타격 근거로 쓰지 않는다. requested89초→실제61.03초였던 화면 및 seeking=true인188초 화면은 타격 근거에서 제외했다.
+
+## 아래 기록의 범위
+
+아래는 기존 임의 구성의 제작·검증 이력이다. 원본 충실도에 관한 현재 판정은 위 재검토 결과를 따른다.
+
 2026-10-06. 새로 작곡한 앱 전용 기본 연습곡. 최초 source-02 음원은 절차적 합성이고, 이후 사용자 요청으로 MIDI와 설치된 GarageBand SoCal Kit 샘플을 사용한 MP3를 별도로 만들었다. 영상 채보·영상 음원 추출 작업이 아니다.
 
-**현재 산출물:** SoCal MP3가 연결된 `garageband-package-01/tom-moving-final.musicxml`과 `tom-moving.drumscore`를 사용한다. 같은 패키지가 public 및 기존 dist/player에 반영되어 있다. 사용자 최신 요청으로 이전 절차적 WAV/MP3와 이를 담은 구형 패키지·백업은 삭제했다. 아래 이전 음원 보존·해시·검증·재현 경로는 당시의 기록이며 현재 파일 존재를 뜻하지 않는다. MusicXML·MIDI·구성표·검증 기록은 유지한다.
+**교정 이전 산출물(보존):** SoCal MP3가 연결된 `garageband-package-01/tom-moving-final.musicxml`과 `tom-moving.drumscore`를 사용한다. 같은 패키지가 public 및 기존 dist/player에 반영되어 있다. 사용자 최신 요청으로 이전 절차적 WAV/MP3와 이를 담은 구형 패키지·백업은 삭제했다. 아래 이전 음원 보존·해시·검증·재현 경로는 당시의 기록이며 현재 파일 존재를 뜻하지 않는다. MusicXML·MIDI·구성표·검증 기록은 유지한다.
 
 **현재 음원 재현 입력:** GarageBand 일반 키트 라이브러리를 프로젝트 `local-libraries/garageband-drum-kits/`에 해시 검증하여 복사한 뒤, 사용자 결정으로 SoCal·Portland 두 키트만 남겼다. 현재 `render_socal_toms.py`는 이 복사본만 사용한다. 앱·시스템 원본이 없고 나머지 키트를 삭제한 상태에서도 재생성 WAV/MP3 해시가 기존 결과와 일치했다. 보존 범위·실행 조건·한계는 [라이브러리 보존 기록](GARAGEBAND-DRUM-KITS.md#프로젝트에-보존한-라이브러리--2026-10-06)을 따른다. 아래 설치 경로는 최초 제작의 출처 기록이다.
 
