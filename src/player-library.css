@@ -144,3 +144,20 @@ body:not(.has-song) #app .editor-home button {
 }
 .library-header-actions .library-booking:hover {background:#edf4ff;border-color:#4075cf;}
 .library-header-actions .library-booking:focus-visible {outline:3px solid #4075cf;outline-offset:2px;}
+
+.score-loading {
+  position:fixed;inset:0;z-index:10000;display:grid;place-items:center;
+  background:rgb(30 48 74 / 22%);cursor:wait;
+}
+.score-loading-card {
+  display:flex;align-items:center;gap:14px;max-width:calc(100vw - 48px);
+  box-sizing:border-box;padding:22px 28px;border:1px solid #d5deeb;
+  border-radius:18px;background:#fff;color:#25354e;font-size:18px;
+  box-shadow:0 8px 32px rgb(30 48 74 / 18%);
+}
+.score-loading-spinner {
+  flex:none;width:24px;height:24px;border:3px solid #dce7f8;
+  border-top-color:#4075cf;border-radius:50%;animation:score-loading-spin .8s linear infinite;
+}
+@keyframes score-loading-spin {to {transform:rotate(360deg);}}
+@media (prefers-reduced-motion:reduce) {.score-loading-spinner {animation:none;}}

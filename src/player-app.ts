@@ -1,3 +1,4 @@
+import { beginLoadTiming, recordLoadTiming } from "./load-timing";
 import { icon } from "./icon-svg";
 import { installLandscapeKeyboardGuard } from "./landscape-keyboard";
 import { renderKeepingTopHeader } from "./top-edge-header";
@@ -39,6 +40,7 @@ function showBuildLabel() {
 }
 let working = false;
 let importEpoch = 0;
+let libraryEpoch = 0;
 function report(error: unknown) {
   const target = document.getElementById("library-status");
   if (target)
@@ -63,18 +65,47 @@ function preferences(): PlaybackInitial {
 }
 async function openRecord(id: string) {
   if (working) return;
+  ++libraryEpoch;
   working = true;
+  const timing = beginLoadTiming(buildInfo.source);
+  let loadSucceeded = false;
+  let measured: ReturnType<typeof timing.finish> | undefined;
+  const loading = document.createElement("div");
+  loading.className = "score-loading";
+  loading.setAttribute("role", "status");
+  loading.innerHTML = `<div class="score-loading-card"><span class="score-loading-spinner" aria-hidden="true"></span><span class="score-loading-message"></span></div>`;
+  const message = loading.querySelector<HTMLElement>(".score-loading-message")!;
+  message.textContent = t("library.loadingRead");
+  document.body.append(loading);
+  const wasInert = root.inert;
+  root.inert = true;
+  root.setAttribute("aria-busy", "true");
   try {
+    // Let the loading indicator paint before score parsing/rendering starts.
+    await new Promise<void>(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+    timing.stage("read");
     let record = await loadPracticeRecord(id);
+    timing.stage("opening");
     if (!record) throw Error(t("separation.missing"));
     await closePlayback();
+    timing.stage("conversion");
+    message.textContent = t("library.loadingConvert");
     const { prepareBrowserScore } = await import('./browser-score');
-    record = await prepareBrowserScore(record, message => {
+    record = await prepareBrowserScore(record, detail => {
       const status = document.getElementById('library-status');
-      if (status) status.textContent = message;
+      if (status) status.textContent = detail;
+    }, phase => {
+      timing.stage(phase);
+      message.textContent = t(phase === "rendering" ? "library.loadingRender" : "library.loadingConvert");
     });
+    timing.stage("screen");
+    message.textContent = t("library.loadingScreen");
     const variants = songScores(record);
     session = await mountPlaybackRuntime({
+      onLoading: phase => {
+        timing.stage(phase);
+        message.textContent = t(phase === "audio" ? "library.loadingAudio" : "library.loadingScreen");
+      },
       canonicalXML: record.canonicalXML,
       root,
       song: structuredClone(record.song),
@@ -98,8 +129,10 @@ async function openRecord(id: string) {
         void showLibrary().catch(report);
       },
     });
+    loadSucceeded = document.body.dataset.ready === "true";
     showBuildLabel();
   } catch (e) {
+    measured = timing.finish("error");
     try {
       await showLibrary();
     } catch (closeError) {
@@ -107,6 +140,10 @@ async function openRecord(id: string) {
     }
     report(e);
   } finally {
+    recordLoadTiming(measured ?? timing.finish(loadSucceeded ? "success" : "error"));
+    loading.remove();
+    root.inert = wasInert;
+    root.removeAttribute("aria-busy");
     working = false;
   }
 }
@@ -208,7 +245,9 @@ function bundledButton(score: (typeof bundledScores)[number], update = false) {
   return button;
 }
 export async function showLibrary() {
+  const epoch = ++libraryEpoch;
   await closePlayback();
+  if (epoch !== libraryEpoch) return;
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
@@ -229,8 +268,10 @@ export async function showLibrary() {
       if (file) void importFile(file);
     });
   installHelp(root);
-  const records = await listPracticeRecords();
+  // Keep this render tied to its own container across asynchronous reads.
   const list = document.getElementById("practice-records")!;
+  const records = await listPracticeRecords();
+  if (epoch !== libraryEpoch) return;
   if (!records.length) {
     list.textContent = t("separation.empty");
   }
@@ -262,6 +303,7 @@ export async function showLibrary() {
         .querySelector(".practice-card-actions")!
         .append(bundledButton(bundled, true));
     const archived = await listPracticeArchives(record.song.id);
+    if (epoch !== libraryEpoch) return;
     if (archived.length) {
       const button = document.createElement("button");
       button.textContent = t("separation.restore");
@@ -284,6 +326,7 @@ export async function showLibrary() {
   }
 
   const archives = await listPracticeArchives();
+  if (epoch !== libraryEpoch) return;
   const removed = archives.filter((a) => !live.has(a.record.song.id));
   const seen = new Set<string>();
   for (const archive of removed) {

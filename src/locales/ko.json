@@ -892,6 +892,11 @@
   "playback.view.group": "악보 보기",
   "playback.view.single": "1줄 보기",
   "playback.view.double": "2줄 보기",
+  "library.loadingRead": "악보 읽는 중…",
+  "library.loadingConvert": "악보 변환 중…",
+  "library.loadingRender": "악보 그리는 중…",
+  "library.loadingScreen": "화면 준비 중…",
+  "library.loadingAudio": "음원 준비 중…",
   "library.refresh": "새로고침",
   "library.booking": "드럼치는공방 예약"
 }

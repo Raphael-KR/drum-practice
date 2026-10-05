@@ -43,6 +43,7 @@ export interface PlaybackRuntimeOptions {
   licenses?: string;
   changed?: (song: Song, initial: PlaybackInitial) => void | Promise<void>;
   onLibrary?: () => void;
+  onLoading?: (phase: "screen" | "audio") => void;
 }
 /** Blob-based playback host shared by the library app and self-contained HTML. */
 export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
@@ -327,9 +328,12 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     }
   };
   try {
+    options.onLoading?.("screen");
     useAssets(await preparePages());
     formatControls();
+    options.onLoading?.("audio");
     await player.load(data.audio, s);
+    options.onLoading?.("screen");
     if (s.measures[0].start >= player.duration)
       throw Error(i18nText("portable-player.message469"));
     ready = true;

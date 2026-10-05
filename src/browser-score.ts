@@ -6,9 +6,11 @@ import { songScores } from "./song-scores";
 export async function prepareBrowserScore(
   record: RecordData,
   progress: (s: string) => void = () => {},
+  onPhase: (phase: "conversion" | "rendering") => void = () => {},
 ) {
   const xml = songScores(record).find((score) => score.format === "musicxml");
   if (!xml) return record;
+  onPhase("conversion");
   const { renderMusicXML, readMusicXML } = await import("./musicxml");
   const source = record.canonicalXML
     ? new Blob([record.canonicalXML], {
@@ -17,6 +19,7 @@ export async function prepareBrowserScore(
     : xml.source;
   const canonicalXML = normalizeDrumScore(await readMusicXML(source));
   record = {...record, canonicalXML};
+  onPhase("rendering");
   const rendered = await renderMusicXML(new Blob([canonicalXML], {type:"application/vnd.recordare.musicxml+xml"}), progress, xml.partId);
   if (
     rendered.parsed.measures.length !== record.song.measures.length ||
