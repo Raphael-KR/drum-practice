@@ -255,3 +255,13 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - deployment appgdep_6ac3c5c2117c8191b6e85bc1921512ed succeeded. 공개/player-only 유지.
 - 정본 ac7721d main push 완료. 재생 화면 및 관련 창 툴팁 보완. 전체 458개 테스트 및 분리 빌드 통과.
 - Safari 공개 URL에서 v0.6.30/build 001979ac 확인.
+
+## 2026-10-06 05:25 KST — player0.6.31
+- 소스 main: da838eb, origin/main push 완료. editor0.6.26(공통 R/L 표시 수정), player0.6.31, build a75928bc0fc8.
+- 목록 제목·툴팁·빈 목록 안내·불러오기 오류 표시 및 탐탐 무빙 기본 연습곡(SoCal MP3) 반영. 전체461테스트, 분리 빌드/경계 검사 통과.
+- Sites version49: appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_cb1805a405e48191bf790eab53af727d
+- mirror SHA: eccd8e6470cda273520c945fb0f095e7342af506
+- deployment: appgdep_6ac407b2aa7c8191a4ee2504e2103f98, succeeded, 2026-10-05T20:25:39.610224+00:00.
+- URL: https://drum-practice-studio.dgkma.chatgpt.site
+- 공개 범위 유지, dist/player만 발행. 포함된 tom-moving.drumscore SHA256: 0030b4c53d65b678981bb0272425694fd9353be9d03393fe1cfd8da36429e9b3.
+- 검증은 native Sites 성공 응답과 로컬 빌드/패키지 일치 기준. 실물 iPad·음질 청취·카운트오프 ON 실제 비교 미검증은 유지.
