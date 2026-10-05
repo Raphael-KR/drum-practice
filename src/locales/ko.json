@@ -729,6 +729,7 @@
   "separation.appTitle": "드럼연습실",
   "separation.editorTitle": "악보제작기",
   "separation.add": "악보 가져오기",
+  "library.screenName": "악보 선택",
   "separation.library": "내 악보 목록",
   "separation.empty": "버튼을 눌러 악보를 추가하세요.",
   "separation.openEditor": "악보제작기 열기",

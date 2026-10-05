@@ -44,7 +44,7 @@ export function helpItems(context?: HTMLElement): HelpItem[] {
   return [
     item(
       ".library-main, #home",
-      "help.library",
+      document.querySelector(".library-main") ? "library.screenName" : "help.library",
       document.querySelector(".library-main")
         ? "help.libraryBody"
         : "help.authoringHomeBody",

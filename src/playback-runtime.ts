@@ -169,7 +169,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     holder.innerHTML = playbackButton(
       "runtime-library",
       "library",
-      i18nText("icons.message054"),
+      i18nText("library.screenName"),
     );
     const button = holder.firstElementChild as HTMLButtonElement;
     button.onclick = () => {
