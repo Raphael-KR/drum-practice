@@ -58,8 +58,8 @@ export function attachPracticeManagement(h: Options) {
     const sections = readSectionShortcuts(h.canonicalXML?.() ?? "").filter(section => !!song.measures[section.measureIndex]);
     get("section-shortcuts").innerHTML = sectionShortcutSlots(sections, song)
       .map((section, index) => section
-        ? `<button type="button" class="${marked.has(section.measureIndex) ? "is-marked" : ""}" data-section-measure="${section.measureIndex}" data-section-end="${sections[index + 1]?.measureIndex ?? song.measures.length}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
-        : `<button type="button" disabled aria-label="${t("sections.empty", {number:index + 1})}">empty</button>`)
+        ? `<button type="button" class="${marked.has(section.measureIndex) ? "is-marked" : ""}" data-section-measure="${section.measureIndex}" data-section-end="${sections[index + 1]?.measureIndex ?? song.measures.length}" title="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
+        : `<button type="button" disabled title="${t("sections.empty", {number:index + 1})}" aria-label="${t("sections.empty", {number:index + 1})}">empty</button>`)
       .join("");
     syncCurrentSection(h.root, locate(song, h.player().current()).index);
 

@@ -8,7 +8,7 @@ export function markerSlotsHTML(s: Song, attribute: string, byIndex = false) {
     .map((m, i) => {
       const label = m ? (locate(s, m.time).measure?.label ?? "") : "";
       return m
-        ? `<button type="button" ${attribute}="${escape(byIndex ? String(i) : m.id)}" aria-label="${escape(t("main.message272", { value2: label }))}"><span>${escape(label)}</span>${markerButtonBackground}</button>`
+        ? `<button type="button" ${attribute}="${escape(byIndex ? String(i) : m.id)}" title="${escape(t("tooltip.marker", {label}))}" aria-label="${escape(t("main.message272", { value2: label }))}"><span>${escape(label)}</span>${markerButtonBackground}</button>`
         : `<button type="button" class="empty-marker-slot" aria-label="${escape(t("marker.current.add"))}" title="${escape(t("marker.current.add"))}">${markerIcon}</button>`;
     })
     .join("");

@@ -334,3 +334,11 @@ it("rows progress follows the displayed crop's first beat and later beats", () =
   updateScoreFrame({...h, t:m.start, regionAt:()=>undefined});
   expect(parseFloat(cell.style.getPropertyValue("--played"))).toBeCloseTo(17);
 });
+it("retains tooltips when marker slots are regenerated", () => {
+  const s = song();
+  s.markers = [{ id: "test", name: "marker", time: s.measures[0].start }];
+  const root = document.createElement("div");
+  root.innerHTML = markerSlotsHTML(s, "data-marker");
+  expect([...root.querySelectorAll("button")].every(b => !!b.title)).toBe(true);
+  expect(root.querySelector("[data-marker]")!.getAttribute("title")).toContain("마커 삭제");
+});

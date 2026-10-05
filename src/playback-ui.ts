@@ -9,7 +9,7 @@ export interface RepeatControls {
 /** Same visible content; only event-routing identifiers belong to each host. */
 export function repeatControlsHTML(ids: RepeatControls) {
   return `<div class="repeat-presets">${[1, 2, 3, 4]
-    .map(radius => `<button type="button" ${ids.radiusAttribute}="${radius}" aria-pressed="false">${t("workspace.message550", {radius})}</button>`).join("")}</div>`;
+    .map(radius => `<button type="button" title="${t("tooltip.repeat", {radius})}" ${ids.radiusAttribute}="${radius}" aria-pressed="false">${t("workspace.message550", {radius})}</button>`).join("")}</div>`;
 }
 
 export interface PlaybackBindings {
@@ -114,7 +114,7 @@ export function transportHTML(options: {
   return `<div class="transport">
     <div class="flex transport-left">
       ${playbackButton("home", "start", t("icons.message051"))}
-      <label><input id="${options.rewindId}" type="number" min="1" max="10" step="1" value="4" aria-label="${t("main.message118")}"></label>
+      <label title="${t("workspace.message542")}"><input id="${options.rewindId}" type="number" min="1" max="10" step="1" value="4" aria-label="${t("main.message118")}"></label>
       ${playbackButton(options.rewindButton, "rewind", t("icons.message053"))}
       ${options.showPosition === false ? "" : `<button id="${options.positionId}" title="${t("main.message120")}" aria-label="${t("main.message120")}"></button>`}
     </div>

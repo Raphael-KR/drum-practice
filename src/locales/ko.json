@@ -900,6 +900,14 @@
   "library.downloading": "불러오는 중…",
   "library.downloadPercent": "불러오는 중 {percent}%",
   "library.savingScore": "악보 저장 중…",
+  "tooltip.marker": "{label}마디로 이동 · 현재 마디이면 마커 삭제",
+  "tooltip.viewSingle": "악보를 한 줄로 이어 보기",
+  "tooltip.viewDouble": "악보를 두 줄로 고정 보기",
+  "tooltip.repeat": "현재 마디 앞뒤 {radius}마디 반복 · 다시 누르면 해제",
+  "tooltip.tempo": "연습 속도를 {bpm} BPM으로 설정",
+  "tooltip.rangeAdd": "반복 구간 추가 · 누른 뒤 악보에서 구간을 드래그",
+  "tooltip.rangeUse": "{label}마디 반복 · 다시 누르면 해제 · 길게 누르면 편집",
+  "tooltip.rangeCancel": "구간 선택 취소",
   "library.refresh": "새로고침",
   "library.booking": "드럼치는공방 예약"
 }

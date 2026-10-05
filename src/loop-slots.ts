@@ -56,9 +56,9 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
     if (songId !== undefined && songId !== h.song().id) cancel();
     const slots = savedLoopSlots(h.song());
     grid.innerHTML = slots.slice(0, 9).map((loop, i) => {
-      if (menu === i) return `<div class="loop-slot-menu"><button data-replace="${i}">${t("ranges.replace")}</button><button data-delete="${i}">${t("ranges.delete")}</button><button data-dismiss aria-label="${t("ranges.close")}">×</button></div>`;
+      if (menu === i) return `<div class="loop-slot-menu"><button title="${t("ranges.replace")}" data-replace="${i}">${t("ranges.replace")}</button><button title="${t("ranges.delete")}" data-delete="${i}">${t("ranges.delete")}</button><button data-dismiss title="${t("ranges.close")}" aria-label="${t("ranges.close")}">×</button></div>`;
       const label = armed === i ? (drag ? rangeLabel(measureLoop(h.song(), drag.a, drag.b, "preview")) : t("ranges.drag")) : loop ? rangeLabel(loop) : t("ranges.empty");
-      return `<button data-loop-slot="${i}" class="${armed === i ? "armed" : ""}" aria-pressed="${!!loop && h.player().loop?.id === loop.id}" aria-label="${esc(t("ranges.slot", {number:i + 1, label}))}${armed === i ? t("ranges.cancelHint") : ''}">${esc(label)}</button>`;
+      return `<button data-loop-slot="${i}" class="${armed === i ? "armed" : ""}" aria-pressed="${!!loop && h.player().loop?.id === loop.id}" title="${esc(armed === i ? t("tooltip.rangeCancel") : loop ? t("tooltip.rangeUse", {label}) : t("tooltip.rangeAdd"))}" aria-label="${esc(t("ranges.slot", {number:i + 1, label}))}${armed === i ? t("ranges.cancelHint") : ''}">${esc(label)}</button>`;
     }).join("");
     paint();
   }

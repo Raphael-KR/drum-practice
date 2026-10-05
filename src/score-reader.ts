@@ -43,6 +43,7 @@ export function installScoreReader(options: Options) {
     const b = document.createElement("button");
     b.id = id;
     b.type = "button";
+    b.title = label;
     const badge = document.createElement("span");
     badge.className = "score-reader-action-icon";
     badge.innerHTML = id === "runtime-full-svg" ? icon("library")

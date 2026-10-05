@@ -60,3 +60,12 @@ it('extends an existing eight-slot save without moving holes and persists slot t
  expect(slots).toHaveLength(12); expect(slots[0]).toBeUndefined();
  expect(slots[1]?.id).toBe('first'); expect(slots[11]?.id).toBe('twelfth');
 });
+it('keeps action tooltips through empty, selecting, saved and edit states',()=>{
+ const c=setup();
+ const title=()=>c.root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.title;
+ expect(title()).toContain('드래그');c.click(0);expect(title()).toContain('취소');
+ c.pointer('pointerdown',20);c.pointer('pointerup',20);expect(title()).toContain('길게');
+ c.root.querySelector('[data-loop-slot="0"]')!.dispatchEvent(new Event('contextmenu',{bubbles:true,cancelable:true}));
+ expect([...c.root.querySelectorAll<HTMLButtonElement>('button')].every(b=>!!b.title)).toBe(true);
+ c.control.dispose();
+});

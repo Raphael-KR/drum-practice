@@ -82,14 +82,15 @@ export function installHelp(root: HTMLElement) {
       count = document.createElement("span");
     prev.textContent = "←";
     next.textContent = "→";
-    prev.ariaLabel = t("help.previous");
-    next.ariaLabel = t("help.next");
+    prev.ariaLabel = prev.title = t("help.previous");
+    next.ariaLabel = next.title = t("help.next");
     nav.append(prev, count, next);
     layout.append(cards, shortcuts, nav);
     const legendButton = document.createElement("button");
     legendButton.type = "button";
     legendButton.className = "help-legend-button";
     legendButton.textContent = t("help.legend.button");
+    legendButton.title = t("help.legend.title");
     legendButton.setAttribute("aria-haspopup", "dialog");
     const header = dialog.querySelector(".dialoghead")!;
     header.insertBefore(legendButton, header.querySelector("button"));

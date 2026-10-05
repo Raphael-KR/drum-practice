@@ -706,7 +706,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
         [0.5, 0.6, 0.7, 0.8, 0.9, 0.95].map((f) => Math.round(original * f)),
       ),
     ]
-      .map((bpm) => `<button data-tempo="${bpm}">${bpm} BPM</button>`)
+      .map((bpm) => `<button title="${t("tooltip.tempo", {bpm})}" data-tempo="${bpm}">${bpm} BPM</button>`)
       .join("");
     get("tempo-reset").dataset.tempo = String(original);
     get("tempo-reset").textContent = t("main.message251", { original: `\n${original}` });
