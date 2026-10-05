@@ -249,3 +249,9 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - deployment appgdep_6ac3bea618f48191bd8489a6eab381bd succeeded. 공개/player-only 유지.
 - 정본 e81d977 main push 완료. 기본 제공 악보 다운로드 진행률 표시. 전체 456개 테스트 및 분리 빌드 통과.
 - Safari 일반 URL 첫 탐색은 이전 빌드 캐시 표시. release 쿼리로 새 탐색 후 v0.6.29/build b13e624d 확인. 실제 진행률·저장 동작은 발행 전 로컬 Safari 검증.
+
+## 2026-10-06 00:44 KST — Sites48 / player0.6.30
+- build 001979ac, source b934a8971fe5db9062d273fb99fc441012e34a13.
+- deployment appgdep_6ac3c5c2117c8191b6e85bc1921512ed succeeded. 공개/player-only 유지.
+- 정본 ac7721d main push 완료. 재생 화면 및 관련 창 툴팁 보완. 전체 458개 테스트 및 분리 빌드 통과.
+- Safari 공개 URL에서 v0.6.30/build 001979ac 확인.
