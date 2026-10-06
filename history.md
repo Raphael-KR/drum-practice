@@ -3239,9 +3239,58 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자 커밋·푸시·발행 요청. 기본 연습곡/내 악보 목록 분리와 교정된 탐탐 무빙28마디·Portland MP3를 반영. player만0.6.32로 상승, editor0.6.26 유지. build79ad2ba18640.
 - 전체93파일462테스트, build:apps 타입/i18n/앱 경계 검사, diff 검사 통과. 교정 검증 스크립트 재실행으로 XML XSD·336타격·MIDI·음원86.25초·재현성·패키지 CRC/내용 일치 통과. public/dist 패키지 SHA256 1eb7214b7e637ece8a0a97772ede30a28ca145df261742482f386b8c419b9c2e 일치.
 - 발행 범위 dist/player. 실제 iPad 및 주관적 음질 청취는 이번 릴리스 검증에 포함하지 않았다.
+## 2026-10-06 탐탐 무빙 가수 표기 정정
+
+- 사용자 요청: 악보 가수 칸의 ‘탁선생의 쿵치타치’를 삭제한다. 세션 연주자·강사·영상 채널을 가수로 넣지 않는 기준을 MUSICXML-CANONICAL.md와 SCORE-PRODUCTION-PROCESS.md에 기록했다.
+- 현재 패키지와 canonical MusicXML의 artist를 비우고 재제작 helper의 고정 가수 값도 제거했다. source 생성기의 강사명 작곡 크레딧도 제거했다. 참고 출처와 직전 파일은 보존했다.
+- 공통 저장/읽기/패키지 API 왕복, 나머지 Song 필드·모든 XML 파트·SVG/음원 바이트·구조/시간표 불변, MusicXML4.0 XSD·28마디336타격 fixture·ZIP CRC·diff 검사 통과. 새 패키지 SHA256 082c7e854d62a4ad265096fb3fd199269e559dffaf122e8c8fe12d6ecb46e220, 로컬 public 동일.
+- 현재 파일/근거는 docs/TOM-MOVING-PRODUCTION.md의 ‘현재 곡 정보’ 참조. 앱 기능·저장된 개인 보관함·음원 재제작·commit/push/발행은 이번 범위에 포함하지 않았다.
+
+## 2026-10-06 Real Paradis 아티스트 표기 정정
+
+- 사용자 요청에 따라 Real Paradis with のだめオーケストラ → Real Paradis로 가수 표기 정정. 현재 canonical MusicXML/패키지·로컬 public 수록본 및 재생성 song-metadata.json에 반영했다.
+- 직전 패키지와 과거 변환 기록은 보존. 공통 XML/패키지 API 왕복, MusicXML4.0 XSD/ZIP CRC 및110마디·모든 XML 파트/가사·다른 Song 필드·음원/페이지·대체 PDF 바이트 불변 확인.
+- 최신 산출물과 해시는 docs/MUSICXML-CONVERSION.md의 현재 아티스트 표기 참조. 개인 보관함/앱 기능/commit/push/발행 변경 없음.
 
 ## 2026-10-06 악보 선택 화면 명칭
 - 사용자 승인에 따라 재생 앱의 돌아가기 버튼 툴팁/접근성 이름과 해당 화면 도움말 제목·main 영역 이름을 ‘악보 선택’으로 변경. 상단 ‘드럼연습실’, 위쪽 ‘기본 연습곡’, 아래쪽 ‘내 악보 목록’ 유지. 제작기의 목록 명칭은 보존.
 - TypeScript/i18n 및 목록·도움말 관련12테스트, diff 검사 통과. build dbfc62f62640 갱신, 앱 버전 유지. 커밋·푸시·발행 없음.
 
 - 후속 커밋 요청: player0.6.33으로 patch 상승, 빌드번호 갱신. 버전 변경 후 TypeScript/i18n/diff 검사 통과. 푸시·발행은 요청 범위에 없음.
+
+## 2026-10-06 구버전 기본 연습곡 분류 수정
+- 탐탐 무빙의 이전 tom-moving-original-v1 ID가 최신 기본곡 ID 집합에 없어 개인 목록으로 분류되던 문제를 수정. 기본곡 카탈로그 legacyIds를 명시하고 저장곡·복원 카드 모두 기본 섹션에 배치한다.
+- 저장 데이터·기록은 변경하거나 합치지 않는다. 최신/이전 버전이 모두 저장되어 있으면 기본 섹션에서 각각 관리하며, 제목이 같더라도 관련 없는 개인 ID는 개인 목록으로 유지한다.
+- 목록7테스트(구버전 저장·복원 및 동명 개인곡 회귀 포함), TypeScript/i18n/diff 검사 통과. 빌드번호 갱신, 버전 유지. 커밋·푸시·발행 없음.
+
+## 2026-10-06 탐탐 무빙 두 버전 제목·드럼킷 표기
+
+- 웹앱 개발 채팅의 실제 사용자 최신 요청을 확인하고16마디/SoCal·28마디/Portland판 제목과 artist를 구분했다. 이번 두 곡에만 빈 가수 규칙의 예외 적용. scripts/musicxml/tom-moving-versions.json과 canonical/제작 문서 및28마디 source/package 생성기를 연결했다.
+- 최종 패키지16마디 SHA256 04e52e08dcb8ac0568da0fac9108fac3b15747bf923be6982aa25ae8f2033dfe,28마디 SHA256 1c5041cbd01f043826d727ce378a9a9b5746c3dba11b7b6f6c76b91d43e03c65. 폴더 version-labels-01/16-socal 및28-portland; 로컬 public는28마디와 바이트 동일.
+- 공통 XML/패키지 API 왕복, XSD/CRC,192/336타격 fixture, 기존 ID/시간표/모든 XML 파트/음원 불변 검증. 기존 SVG와 최신 조판의 비제목 차이를 발견해 공통 renderer 제목 노드만 기존 SVG에 적용하고 그 외 C14N 정확 일치 확인. 기존 MIDI·개인 연습 기록은 건드리지 않았다. 해결/재현 근거는 docs/TOM-MOVING-PRODUCTION.md 최신 절 참조.
+- 다른 dirty 변경 보존. 앱 코드/IndexedDB/버전/commit/push/발행 변경 없음. 작업용 artifact receiver4개 종료; 종료됐던 Vite는 직접 실행으로 복구.
+
+## 2026-10-06 탐탐 두 버전 제목·드럼킷 반영
+- 제작자가 인계한16마디/SoCal 및28마디/Portland 패키지의 SHA256·ZIP CRC·ID/제목/artist/마디 수를 직접 확인. 카탈로그 제목을 구분하고16마디판도 별도 public 파일로 연결해 기존 ID의 악보 업데이트를 제공한다. 둘 다 기본 연습곡으로 분류한다.
+- IndexedDB는 자동 변경하지 않는다. 저장된 악보는 각 카드의 악보 업데이트로 새 제목·가수 표기를 반영한다. 목록7테스트 및 TypeScript/diff 검사 통과, 빌드번호 갱신. 커밋·푸시·발행 없음.
+
+## 2026-10-06 탐탐 무빙16마디 손풀기 검토
+
+- 최신16마디/SoCal 패키지의 XML·80BPM/48초·R112/L80 및 리듬/이동을 재읽고 공식 드럼 교육 자료와 대조. 기본 손풀기에는 양손 반전·편한 시작 속도·가까운 이동부터 단계적으로 진행하는 개선안을 제시했다. 제안과 확인 사실은 docs/TOM-MOVING-PRODUCTION.md 마지막 검토 절에 구분해 기록.
+- 검토만 수행. 악보/음원/패키지/앱/개인 연습 기록 및commit/push/발행 변경 없음.
+
+## 2026-10-06 — 악보제작: 시작전 손플기 독립96마디 작곡
+
+- 사용자 요청: 기존 탐탐 무빙16마디를 한 번 연주하는 손 준비 곡으로 전면 개작, 제목 `시작전 손플기`. 배속/반복 운용 제안은 범위에서 제외. 앱 개발은 별도 담당.
+- [작곡 명세와 제작 기록](docs/PREPLAY-WARMUP-PRODUCTION.md): 4/4·80BPM·96마디·384박·4분48초. 스네어 한 손/교대 → 더블/패러디들 → 인접 탐 → 짧은16분 밀도 → 혼합리듬 → 가벼운 마무리. 모든 단계와 악기별 R/L 동일, 총R440/L440.
+- MusicXML4XSD·작곡 fixture·MIDI880note-on 재읽기·오류 주입6종 통과. SoCal 보존 샘플의 동일 시간표로290.25초 MP3 생성, 재생성 WAV/MP3 바이트 일치. 새 곡 ID `preplay-hand-warmup-v1`, artist비움.
+- 공통 앱 API로6쪽SVG·XML·음원·전체Song 패키지 왕복, ZIP CRC/내장 원본/검수 SVG 캐시 바이트 일치. 실제 ego-browser6쪽 검수. 파일0초/첫 박/49마디 × 카운트OFF/ON × 3배속의18가지 scheduling 검사 통과. 실제 청취·개인별 신체 효과·iPad 검증은 미확인.
+- 해결 기록: 긴 설명/RL 겹침을 XML rehearsal 표제로 해결, 동일 제목 이중 표기를 선택적 movement-title 중복 제거로 해결, 검수 source렌더와 canonical캐시 혼용을 finalRender 통일로 해결. Safari 컨텍스트 소실 후 ego로 전환했으며 원인 미확정·실행15초 timeout 후 실제 저장 완료를 별도 확인. 각 근거는 위 문서에 기록.
+- 최종 자료: `docs/experiments/preplay-warmup-20261006/final-01/`의 MusicXML/MIDI/SoCalMP3/drumscore/verification.json. 기존16/28마디 자료와 public28마디 해시 유지 확인. source/fixture/renderer/package/receiver만 추가했으며 앱 코드·목록은 변경하지 않음. 자동 commit/push/배포/PDF/HTML 생성 없음.
+- 최종 경로·해시·검증과16마디 대체/28마디 유지 대상을 `드럼연습실 웹앱 개발` 작업01a0afc9-ca21-7371-9390-06eb07c017e9에 전달 성공. 앱 수록 완료는 별도 미확인.
+
+## 2026-10-06 시작전 손플기 기본 연습곡 수록 및0.6.34 릴리스
+- 목표/범위: 제작자 완성96마디 패키지를 기본 연습곡 첫 번째로 수록하고 커밋·푸시·Sites 발행. 기존28마디 유지,16마디 신규 제공을 대체한다.
+- 완료 기준: 저장 여부와 무관하게 카탈로그 순서 고정, 현재 패키지·dist 바이트 일치, 앱 검사와 발행 성공. 기존16마디 파일과 저장/복원 기록은 보존하고 새96마디 ID에 이전 연습기록을 이식하지 않는다.
+- 전체93파일464테스트 및 분리 빌드/타입/i18n/앱 경계/diff 검사 통과. 기존 화면 명칭 테스트의 기대값을 ‘악보 선택’으로 갱신했다. player0.6.34/editor0.6.26, build991259aac3e8.
+- 수록 패키지 SHA256 e070249500dc0fb42c559919045b5d116b884e2ae16d7ee3e8f42c344d2c8c97·ZIP CRC·96마디/ID 확인, public/dist 일치. Safari 로컬 목록 첫 번째‘시작전 손플기’, 두 번째28마디 표시 확인. 실물 iPad·주관적 청취는 미검증.

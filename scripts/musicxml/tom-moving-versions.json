@@ -1,0 +1,21 @@
+{
+  "authority": "User decision in drum-practice web development chat, 2026-10-06",
+  "versions": [
+    {
+      "id": "tom-moving-original-v1",
+      "title": "탐탐 무빙 연습 (16마디)",
+      "artist": "SoCal 드럼킷",
+      "measures": 16,
+      "input": "docs/experiments/tom-moving-20261006/garageband-package-01/tom-moving.drumscore",
+      "output": "16-socal"
+    },
+    {
+      "id": "tom-moving-video-v2",
+      "title": "탐탐 무빙 연습 (28마디)",
+      "artist": "Portland 드럼킷",
+      "measures": 28,
+      "input": "public/scores/tom-moving.drumscore",
+      "output": "28-portland"
+    }
+  ]
+}

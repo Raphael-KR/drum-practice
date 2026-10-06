@@ -1,5 +1,13 @@
 # Real Paradis PDF → MusicXML
 
+## 현재 아티스트 표기 (2026-10-06)
+
+사용자 결정에 따라 `Real Paradis with のだめオーケストラ`를 **Real Paradis**로 정정했다. 재생성 정본 `scripts/musicxml/song-metadata.json`에도 반영했다. 아래2026-09-19 메타정보와 과거 변환 해시는 당시 기록으로 보존한다.
+
+- 현재 MusicXML: `docs/experiments/real-paradis-metadata-20261006/artist-clean-01/real-paradis-final.musicxml`, SHA256 `6dc2f4f01a05cef046139525c91e6c635f31e5186bd70ce66a1e2c0701bd049b`.
+- 현재 패키지: 같은 폴더의 `real-paradis.drumscore`, SHA256 `8d715b426c350879a67e25666e82773a107718b6f17a16f6e61fc2d1cb0df1ef`. 로컬 `public/scores/real-paradis.drumscore`와 바이트가 같다. 직전 패키지는 같은 폴더의 `previous-real-paradis.drumscore`에 보존했다.
+- 공통 canonical/패키지 API 왕복과 MusicXML4.0 XSD·ZIP CRC 통과.110마디·모든 XML 파트(음표/가사 포함)·나머지 Song 필드·시간표/구조 ID·음원/SVG 및 대체 PDF 원본/페이지 바이트를 보존했다. 근거 `metadata-audit.json`, `xml-verification.json`. 앱 코드·저장된 개인 보관함·배포본은 이번 작업의 수정 대상이 아니다.
+
 새 곡의 접수부터 실제 앱 검수·인계까지는 [악보 제작 프로세스](SCORE-PRODUCTION-PROCESS.md)에서 시작한다. 아래 기록은 해당 원본과 당시 제작 도구의 재현 근거다.
 
 > 이 문서는 2026-09-19 변환 실험의 재현 기록이다. 새 변환은 [변환 선택 기준](MUSICXML-CONVERSION-POLICY.md)과 최신 `docs/SCORE-MUSICXML-OSMD-MAPPING.md`, `docs/SVG-SCORE-RULES.md`를 먼저 따른다. 아래 전용 코드의 역사적 후보 매핑·Verovio 표시 보정은 현재 웹앱의 승인 규칙을 대체하지 않는다. 기존 산출물을 재현하는 도구이며 앱에 자동 적용하지 않는다.

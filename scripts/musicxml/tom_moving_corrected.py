@@ -13,8 +13,10 @@ BPM,FIRST,SR,TAIL=80,.25,44100,2
 
 def write_score(fixture):
     root=E.Element('score-partwise',version='4.0')
-    add(add(root,'work'),'work-title','탐탐 무빙 연습')
-    ident=add(root,'identification');add(ident,'creator','탁선생의 기초 레슨 패턴 / 연습용 정리',type='composer')
+    meta=next(v for v in json.loads(Path(__file__).with_name('tom-moving-versions.json').read_text())['versions'] if v['id']=='tom-moving-video-v2')
+    add(add(root,'work'),'work-title',meta['title'])
+    ident=add(root,'identification');add(ident,'creator','영상 기본 패턴 · 연습용 정리',type='composer')
+    add(ident,'creator',meta['artist'],type='artist')
     add(ident,'rights','Basic lesson patterns reviewed from https://www.youtube.com/watch?v=ZUTH2p9C-YM; steady practice tempo/repetitions arranged for Drum Practice. Audio: preserved Portland Kit recordings, offline EXS sample render.')
     add(add(ident,'encoding'),'software','Drum Practice reviewed video exercise generator')
     sc=add(add(root,'defaults'),'scaling');add(sc,'millimeters',7);add(sc,'tenths',40)

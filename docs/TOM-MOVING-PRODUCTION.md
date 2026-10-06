@@ -1,5 +1,38 @@
 # 탐탐 무빙 연습 제작
 
+## 현재 곡 정보 — 두 버전 제목·드럼킷 표기 (2026-10-06 후속 결정)
+
+사용자가 웹앱 개발 채팅에서 두 제목을 구분하고 가수 칸에는 드럼킷 이름을 넣기로 결정했다. 그 채팅의 실제 사용자 메시지와 전달 내용을 확인했다. 이번 두 곡은 앞선 빈 가수 결정보다 이 최신 결정을 적용하며 다른 곡의 실제 가수 기준은 유지한다. 재제작 메타데이터 정본은 `scripts/musicxml/tom-moving-versions.json`이다.
+
+- 목표: 두 연습곡의 제목·드럼킷 정보를 구분한다.
+- 범위: 두 canonical MusicXML·패키지·재제작 메타데이터와 제작 기록.
+- 완료 조건: 아래 제목/artist가 XML·Song·SVG 제목에 일치하고 기존 ID·타격·음원·시간표는 보존된다.
+- 제외: 앱 코드·IndexedDB·연습 기록 변경, 음원/MIDI 재제작, commit/push/발행.
+- 검증: 공통 canonical/package API 왕복·MusicXML4.0 XSD·독립 fixture·CRC·원본/수정본 비교.
+
+| 현재 제목 | artist | 기존 song ID | 최신 파일 폴더 |
+|---|---|---|---|
+| 탐탐 무빙 연습 (16마디) | SoCal 드럼킷 | `tom-moving-original-v1` | `docs/experiments/tom-moving-20261006/version-labels-01/16-socal/` |
+| 탐탐 무빙 연습 (28마디) | Portland 드럼킷 | `tom-moving-video-v2` | `docs/experiments/tom-moving-20261006/version-labels-01/28-portland/` |
+
+두 폴더의 최종 파일은 각각 `tom-moving-final.musicxml`, `tom-moving.drumscore`다.16마디판 패키지 SHA256은 `04e52e08dcb8ac0568da0fac9108fac3b15747bf923be6982aa25ae8f2033dfe`, XML은 `07a52bf71c803bcbb58dbaba761f4fdaf336de0f899dc2452f74f618d71b9985`다.28마디판 패키지 SHA256은 `1c5041cbd01f043826d727ce378a9a9b5746c3dba11b7b6f6c76b91d43e03c65`, XML은 `823eee8d9819614d430b72f719df5b7e2bd8a6e8e94f6e97023974a3aa834146`다. 로컬 `public/scores/tom-moving.drumscore`는28마디판과 바이트가 같다.16마디판은 위 로컬 패키지를 기존 ID의 업데이트 입력으로 사용할 수 있다.
+
+공통 `writeCanonical/readCanonical/createScorePackage/readScorePackage`로 제목·원제·artist만 변경했다. 모든 XML 파트·나머지 Song 필드·192/336타격·마디 ID·영역·타이밍·MP3 바이트는 보존했다. SoCal MP3 해시는 `e5aedf61f5723decba9c68aa835f319ee95be19ac29d4ef4db1fb69bc046ef8e`, Portland는 `b4c2e8de8a4ce808d53dadeaf8386c348bbee6d747cec5a3265ef5f330e69f3d`로 불변이다. MIDI 파일은 수정하지 않았다. 새 MusicXML 제목은 실제 공통 renderer와 Safari27.0.1로 확인했고, 그 renderer의 제목 노드를 기존 SVG에 반영해 제목 이외 SVG 구조·타격 잉크를 정확히 보존했다. 이전 헤더 개수도 유지했다.
+
+근거: 각 폴더의 `metadata-audit.json`, `final-verification.json`; `rendered/package-audit.json`은 공통 렌더 단계 근거이며 최종 패키지 해시는 위 최종 검사 기준이다. 변경 전 패키지는 각 폴더의 `previous-tom-moving.drumscore`에 보존했다.28마디 source/package 생성기도 메타데이터 정본을 읽도록 연결했다.16마디 구형 합성 음원 생성기/helper는 폐기된 음원 제작 이력이며 재실행하지 않는다.16마디 metadata 업데이트는 보존된 SoCal 패키지에서 수행했다.
+
+**해결 기록:** 현재 renderer로 전체 페이지를 재생성하면 과거 동봉 SVG의 자동 ID와 줄기 끝0.25px까지 달라지는 것을 비교 검사로 발견했다. 이번 요청은 메타정보 변경이므로 전체 SVG를 교체하지 않고, 공통 renderer의 제목 노드만 기존 SVG에 적용했다. 제목 노드를 제외한 SVG C14N이 정확히 같은지 다시 검사해 통과했다. Safari browsing context가 없어져 후속 호출이 실패했을 때는 이미 수신한 공통 렌더 결과를 CLI로 재읽어 사용했으며 GUI 완료로 보고하지 않았다. 다음 메타정보 수정도 악보 데이터와 표시 제목 변경을 구분한다. 작업용 receiver5192–5195는 종료했다. 앱/보관함·청취·iPad 새 검수 및 발행은 이번 결과가 아니다.
+
+## 가수 표기 정정 이력 — 후속 결정 이전 (2026-10-06)
+
+사용자 결정: ‘탁선생의 쿵치타치’는 참고 영상 채널이며 가수가 아니다. 세션 연주자·강사·채널명을 가수 칸에 넣지 않는다. 이 연습악보의 `artist`는 빈 값으로 정정했다. 출처는 아래 영상 대조 기록에 보존한다.
+
+- 현재 MusicXML: `docs/experiments/tom-moving-20261006/artist-clean-01/tom-moving-final.musicxml`, SHA256 `cdb9152f1d6ef09a1095049e0026773d797fceccb00b8f039c32c5d882f79b78`.
+- 현재 패키지: 같은 폴더의 `tom-moving.drumscore`, SHA256 `082c7e854d62a4ad265096fb3fd199269e559dffaf122e8c8fe12d6ecb46e220`. 로컬 `public/scores/tom-moving.drumscore`도 같은 바이트로 갱신했다.
+- 원인: 패키지 제작 helper가 영상 채널명을 `Song.artist`에 입력했고 정본 XML에도 artist creator로 저장됐다. helper의 가수 값을 비우고 원본 XML 생성기의 강사명도 작곡 크레딧으로 사용하지 않도록 수정했다.
+- 검증: 실제 공통 `writeCanonical/readCanonical/createScorePackage/readScorePackage` 왕복, 가수 빈 값·XML 채널명 제거, 나머지 Song 필드·전체 XML 파트·SVG·Portland 음원 바이트·구조 ID/시간표 불변 확인. MusicXML4.0 XSD와 독립 영상 fixture의28마디/336타격 및 ZIP CRC 통과. 근거 `artist-clean-01/metadata-audit.json`, `xml-verification.json`.
+- 직전 패키지는 `artist-clean-01/previous-tom-moving.drumscore`에 보존했다. 아래 `corrected-package-01` 해시와 검증 기록은 가수 정정 전 제작본에 대한 기록이다. 기존 종합 검증 스크립트는 그 제작본 경로를 검사하므로 현재 패키지의 근거는 위 정정 검사로 구분한다. 음원 재제작·앱 코드/보관함 변경·커밋·푸시·발행은 수행하지 않았다.
+
 ## 현재 결과 — 원본 기본 연습 교정 + Portland 음원 (2026-10-06)
 
 사용자 최신 요청은 원본 영상에 맞게 악보를 교정한 뒤 **교정 이벤트의 음원**을 Portland로 만드는 것이다. 아래 과거 독립 작곡·SoCal 제작 기록은 보존 이력이며 현재 수록본이 아니다.
@@ -267,3 +300,29 @@ SoCal EXS에는 키50 zone이 없고 고음 탐 zone은 키48이다. 위 연결�
 - 현재 SoCal WAV/MP3 및 재생성본, 새 최종·public·dist 패키지, 모든 기존 MusicXML·MIDI의 해시 불변을 확인했다. 세 현재 패키지의 CRC 및 내장 SoCal MP3 해시를 다시 확인했다.
 - 과거 합성 음원 생성기·검증기·패키징 helper는 제작 이력으로 유지한다. 그 helper가 요구하는 구형 음원/패키지는 이제 존재하지 않으므로 과거 전체 검사 명령을 현재 완료 검사로 사용하지 않는다. 구형 음원을 자동 재생성하거나 보존 정책으로 되살리지 않는다.
 - 다른 곡 음원·악보, 설치된 GarageBand 라이브러리, 앱 소스/버전, 다른 개발 변경은 건드리지 않았다. commit/push/발행 없음.
+
+
+## 2026-10-06 16마디판 손풀기 적합성 검토 — 개선 제안, 미적용
+
+- 목표:16마디/SoCal판이 손풀기용으로 적절한지 검토한다.
+- 범위: 최신 로컬 패키지의 실제 XML·리듬·손·이동과 드럼 교육 자료 대조.
+- 완료 조건: 확인된 구성과 손풀기 목적의 장점/한계·개선안을 구별해 제시한다.
+- 제외: 악보/음원/패키지·앱·연습 기록 수정, commit/push/발행.
+- 검증: package SHA256 `04e52e08dcb8ac0568da0fac9108fac3b15747bf923be6982aa25ae8f2033dfe`의 manifest 및 P1 실제 재읽기.80BPM·음악48초·16마디192타격·R112/L80·강약/악센트/쉼표 명시0 확인.
+
+**판단:** 익숙해진 뒤 탐 이동 손풀기로 사용할 수 있다. 처음 몸을 푸는 기본 루틴으로는 양손 균형과 난이도 순서를 개선하는 편이 좋다. 이는 악보 구조에 근거한 교육적 판단이며 실제 사용자의 연주 자세나 숙련도를 평가한 결과는 아니다.
+
+현재1–4마디는 R 한 마디/L 한 마디의8분음표,5–8은 RLRL16분,9–12는8분+16분 둘(RRL),13–16은16분 둘+8분(RLR)이다. 각 구간에서 HMFM/FMHM/MFHM/HFMF 네 경로가 반복된다(H=높은 탐,M=중간 탐,F=플로어). 세 번째·네 번째 경로의 F→H/H→F는 두 탐을 건너뛰는 이동이다. 초반부터 리듬·손·이동을 동시에 바꾸며,5마디에서는 타격 밀도가 한 박2개에서4개로 늘어난다.9–16마디는 두 리듬 모두 오른손이 박당2번·왼손1번이므로 전곡 R112/L80이 된다. 잘못된 리듬이라는 뜻은 아니지만 대칭 손풀기 목표에는 왼손 시작형이 부족하다.
+
+**우선 개선 제안(사용자 미승인·미적용):**
+1. 동일 악보를 한 번은 표기대로, 다음은 R/L을 모두 바꿔 연주해 양손을 각192타로 맞춘다. 새 악보에는 두 손 시작형을 명확히 적는다.
+2. 처음에는 편하게 고른 소리로 칠 수 있는 속도를 선택한다.60BPM(기존80BPM 음원의0.75배)을 시작 예시로 삼고, 익숙하면70/80BPM로 올린다. 이 수치는 편집 제안이며 모든 사람에게 맞는 고정 기준은 아니다.
+3. 한 드럼에서 리바운드·음량을 확인한 뒤 HMFM/FMHM의 가까운 이동, 마지막에 MFHM/HFMF의 큰 이동을 배치한다. 이동 폭과 리듬 난이도를 같은 순간에 함께 올리지 않는다.
+4. 소리 크기·스틱 높이를 고르게 유지하고 속도보다 힘을 빼고 같은 소리를 내는 것을 목표로 안내한다. 손풀기판에는 강한 악센트나 발 패턴을 필수로 추가하지 않는다.
+5. 한 회는48초이므로 편한 속도로 몇 회 반복하되 R/L 반전 회차를 짝지어 구성한다.80BPM 네 회는 음악3분12초다. 반복 시간은 곡 구조 계산이며 워밍업 충분성을 보장하는 기준은 아니다.
+
+근거: [Vic Firth가 공개한 Mark Wessels의 A Fresh Approach to the Drumset, Lesson1–2](https://ae.vicfirth.com/wp-content/uploads/FA-Drumset-Lessons-1-2.pdf), 문서3–5쪽(인쇄16–18쪽). 리바운드/이완, 양손의 고른 소리, 느린 속도로 개별 패턴을 반복하는 기준을 참고했다.60→70→80 예시와 이 악보에 대한 이동 순서/반전 권고는 위 기준을 현재192타격 구성에 적용한 제작자의 제안이다. 원본 교재의 연습 악보를 복제한 제안이 아니다.
+
+### 2026-10-06 16마디판의 후속 독립 작곡
+
+사용자는 손풀기 적합성 검토의 개선 방향을 수용하되 배속/반복 운용 제안은 악보제작자 범위에서 제외했다. 기존16마디와 달라도 되는 새 한 번 연주용 곡을 요청하여 **시작전 손플기**96마디·80BPM·4분48초로 전면 작곡했다. 새 ID `preplay-hand-warmup-v1`, SoCal 음원, 양손 각440타격이다. [새 제작 정본](PREPLAY-WARMUP-PRODUCTION.md)을 따른다. 앞의16마디 검토와16/28마디 제목·키트 메타자료는 당시 결과이며 보존한다.28마디 영상 기본 연습은 이번 개작 대상이 아니다. 앱에서 기존16마디 대체/목록 수록은 개발 담당자에게 인계한다.

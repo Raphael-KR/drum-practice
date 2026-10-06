@@ -15,12 +15,13 @@ export async function build(){
   const source=new Blob([await(await fetch(ROOT+'tom-moving-source.musicxml')).arrayBuffer()],{type:'application/vnd.recordare.musicxml+xml'});
   const audio=new Blob([await(await fetch(BASE+'docs/experiments/tom-moving-20261006/portland-01/tom-moving-portland.mp3')).arrayBuffer()],{type:'audio/mpeg'});
   const fixture=await(await fetch(BASE+'scripts/musicxml/fixtures/tom_moving_video.json')).json();
+  const metadata=(await(await fetch(BASE+'scripts/musicxml/tom-moving-versions.json')).json()).versions.find(v=>v.id==='tom-moving-video-v2');
   const generation=await(await fetch(ROOT+'generation-audit.json')).json();
   const audioAudit=await(await fetch(BASE+'docs/experiments/tom-moving-20261006/portland-01/render-audit.json')).json();
   if(generation.status!=='PASS'||await sha(audio)!==audioAudit.mp3SHA256)throw Error('Input validation/hash mismatch');
   const render=await renderMusicXML(source,s=>window.tomMovingProgress=s,'P1');
   if(render.regions.length!==28)throw Error('Expected 28 regions');
-  const song={version:1,id:'tom-moving-video-v2',title:'탐탐 무빙 연습',originalTitle:'탐탐 무빙 연습',artist:'탁선생의 쿵치타치',composer:'영상 기본 패턴 · 연습용 정리',bpm:80,firstBeat:.25,
+  const song={version:1,id:metadata.id,title:metadata.title,originalTitle:metadata.title,artist:metadata.artist,composer:'영상 기본 패턴 · 연습용 정리',bpm:80,firstBeat:.25,
     measures:render.regions.map((r,i)=>({id:'tom-moving-v2-m'+(i+1),regionId:r.id,label:String(i+1),beats:4,denominator:4,start:.25+i*3,end:.25+(i+1)*3})),
     regions:render.regions,lyrics:[],markers:fixture.sections.map((section,i)=>({id:'tom-section-'+i,name:section.name,time:.25+i*12})),
     loops:[],settings:defaults(),audioName:'tom-moving-portland.mp3',pdfName:'tom-moving-final.musicxml',scoreFormat:'musicxml',scorePartId:'P1',pageCount:render.pages.length};

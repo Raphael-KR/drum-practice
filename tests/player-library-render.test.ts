@@ -188,7 +188,7 @@ it("keeps basic exercises in their own section before and after import, includin
   vi.mocked(listPracticeRecords).mockResolvedValue([basicRecord, personalRecord]);
   vi.mocked(listPracticeArchives).mockImplementation(async id => id === basic.id ? [{ id: "previous", record: basicRecord }] as any : []);
   await showLibrary();
-  expect(basicList().querySelectorAll(".practice-card")).toHaveLength(1);
+  expect(basicList().querySelectorAll(".practice-card")).toHaveLength(bundled.filter(s => "category" in s && s.category === "basic").length);
   expect(basicList().textContent).toContain("Saved basic");
   expect(basicList().textContent).toContain("이전 악보 복원");
   expect(basicList().querySelector("[data-open]")).not.toBeNull();
@@ -209,4 +209,37 @@ it("keeps basic exercises in their own section before and after import, includin
     vi.mocked(listPracticeRecords).mockResolvedValue([]);
     vi.mocked(listPracticeArchives).mockResolvedValue([]);
   }
+});
+
+it("classifies legacy basic editions and their archives by ID without moving unrelated same-title scores", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  const { default: bundled } = await import("../src/bundled-scores.json");
+  const basic = bundled.find(s => s.id === "tom-moving-video-v2")!;
+  const legacy = { song: { id: "tom-moving-original-v1", title: basic.title } } as any;
+  const unrelated = { song: { id: "personal-tom-study", title: basic.title } } as any;
+  vi.mocked(listPracticeRecords).mockResolvedValue([legacy, unrelated]);
+  vi.mocked(listPracticeArchives).mockResolvedValue([]);
+  await showLibrary();
+  expect(document.querySelector("#basic-practice-records")!.querySelectorAll(".practice-card")).toHaveLength(bundled.filter(s => "category" in s && s.category === "basic").length + 1);
+  expect(document.querySelector("#personal-practice-records")!.querySelectorAll("[data-open]")).toHaveLength(1);
+
+  vi.mocked(listPracticeRecords).mockResolvedValue([]);
+  vi.mocked(listPracticeArchives).mockResolvedValue([{ id: "legacy-backup", record: legacy }] as any);
+  await showLibrary();
+  expect(document.querySelector("#basic-practice-records")!.textContent).toContain("삭제한 악보 복원");
+  expect(document.querySelector("#personal-practice-records")!.textContent).not.toContain(basic.title);
+});
+
+it("keeps the warmup first with saved scores and archives and offers no old 16-bar download", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  const record = (id: string, title: string) => ({ song: { id, title } }) as any;
+  vi.mocked(listPracticeRecords).mockResolvedValue([record("tom-moving-video-v2", "Tom"), record("preplay-hand-warmup-v1", "시작전 손플기")]);
+  vi.mocked(listPracticeArchives).mockResolvedValue([]);
+  await showLibrary();
+  const ids = () => [...document.querySelectorAll<HTMLElement>("#basic-practice-records .practice-card")].map(c => c.dataset.scoreId);
+  expect(ids()).toEqual(["preplay-hand-warmup-v1", "tom-moving-video-v2"]);
+  vi.mocked(listPracticeRecords).mockResolvedValue([record("tom-moving-video-v2", "Tom")]);
+  await showLibrary();
+  expect(ids()).toEqual(["preplay-hand-warmup-v1", "tom-moving-video-v2"]);
+  expect(document.querySelector("#basic-practice-records")!.textContent).not.toContain("(16마디)");
 });

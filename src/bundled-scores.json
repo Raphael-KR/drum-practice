@@ -1,5 +1,11 @@
 [
   {
+    "id": "preplay-hand-warmup-v1",
+    "title": "시작전 손플기",
+    "file": "scores/preplay-warmup.drumscore",
+    "category": "basic"
+  },
+  {
     "id": "real-paradis",
     "title": "바람과 언덕의 발라드",
     "file": "scores/real-paradis.drumscore"
@@ -11,8 +17,11 @@
   },
   {
     "id": "tom-moving-video-v2",
-    "title": "탐탐 무빙 연습",
+    "title": "탐탐 무빙 연습 (28마디)",
     "file": "scores/tom-moving.drumscore",
-    "category": "basic"
+    "category": "basic",
+    "legacyIds": [
+      "tom-moving-original-v1"
+    ]
   }
 ]

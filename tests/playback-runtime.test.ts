@@ -76,7 +76,7 @@ it("mounts either adapter, persists position/preferences and disposes once befor
   const runtime = await mountPlaybackRuntime({ ...o, changed, onLibrary });
   expect(
     o.root.querySelector("#runtime-library")?.getAttribute("aria-label"),
-  ).toBe("내 악보 목록");
+  ).toBe("악보 선택");
   const ids = [...o.root.querySelectorAll("[id]")].map((element) => element.id);
   expect(new Set(ids).size).toBe(ids.length);
   expect(o.root.querySelector("#section-shortcuts")).not.toBeNull();

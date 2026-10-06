@@ -1,0 +1,1588 @@
+{
+  "title": "시작전 손플기",
+  "id": "preplay-hand-warmup-v1",
+  "bpm": 80,
+  "sections": [
+    {
+      "label": "A. 부드럽게 · 고르게 · 자연스러운 반동"
+    },
+    {
+      "label": "B. 손 순서 정리"
+    },
+    {
+      "label": "C. 가까운 탐 이동"
+    },
+    {
+      "label": "D. 짧은 밀도 확장"
+    },
+    {
+      "label": "E. 혼합 리듬 연결"
+    },
+    {
+      "label": "F. 가볍게 정리"
+    }
+  ],
+  "bars": [
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RRRRRRRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LLLLLLLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RRRRRRRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LLLLLLLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RRRRRRRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LLLLLLLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RRRRRRRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LLLLLLLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "A",
+      "instruments": "SSSSSSSS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "RRLLRRLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "LLRRLLRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "RRLLRRLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "LLRRLLRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "RLRRLRLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "LRLLRLRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "RLRRLRLL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSS",
+      "hands": "LRLLRLRR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "RLRLRLRLRL",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "LRLRLRLRLR",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "RLRLRLRLRL",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "LRLRLRLRLR",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "RLRLRLRLRL",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "LRLRLRLRLR",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "RLRLRLRLRL",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "B",
+      "instruments": "SSSSSSSSSS",
+      "hands": "LRLRLRLRLR",
+      "units": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SSHHHHSS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SSHHHHSS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SSHHHHSS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SSHHHHSS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "HHMMMMHH",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "HHMMMMHH",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "HHMMMMHH",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "HHMMMMHH",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "C",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "SSSSHHHHMMHH",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "SSSSHHHHMMHH",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "SSSSHHHHMMHH",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "SSSSHHHHMMHH",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "HHHHMMMMFFMM",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "HHHHMMMMFFMM",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "HHHHMMMMFFMM",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "HHHHMMMMFFMM",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "FFFFMMMMHHMM",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "FFFFMMMMHHMM",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "FFFFMMMMHHMM",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "FFFFMMMMHHMM",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "MMMMHHHHSSHH",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "MMMMHHHHSSHH",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "MMMMHHHHSSHH",
+      "hands": "RLRLRLRLRLRL",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "D",
+      "instruments": "MMMMHHHHSSHH",
+      "hands": "LRLRLRLRLRLR",
+      "units": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "RRLRRLRRLRRL",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "LLRLLRLLRLLR",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "RRLRRLRRLRRL",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "LLRLLRLLRLLR",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "RRLRRLRRLRRL",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "LLRLLRLLRLLR",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "RRLRRLRRLRRL",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "HHHMMMFFFMMM",
+      "hands": "LLRLLRLLRLLR",
+      "units": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "RLRRLRRLRRLR",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "LRLLRLLRLLRL",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "RLRRLRRLRRLR",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "LRLLRLLRLLRL",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "RLRRLRRLRRLR",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "LRLLRLLRLLRL",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "RLRRLRRLRRLR",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "E",
+      "instruments": "FFFMMMHHHMMM",
+      "hands": "LRLLRLLRLLRL",
+      "units": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "RLRLRLRL",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SHMFFMHS",
+      "hands": "LRLRLRLR",
+      "units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "RLRL",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "LRLR",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "RLRL",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "LRLR",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "RLRL",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "LRLR",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "RLRL",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "section": "F",
+      "instruments": "SSSS",
+      "hands": "LRLR",
+      "units": [
+        4,
+        4,
+        4,
+        4
+      ]
+    }
+  ],
+  "expected": {
+    "hits": 880,
+    "rightByInstrument": {
+      "S": 188,
+      "H": 92,
+      "M": 108,
+      "F": 52
+    }
+  }
+}

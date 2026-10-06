@@ -292,8 +292,15 @@ export async function showLibrary() {
   // Keep this render tied to its own container across asynchronous reads.
   const basicList = document.getElementById("basic-practice-records")!;
   const personalList = document.getElementById("personal-practice-records")!;
-  const basicIds = new Set(bundledScores.filter((s) => "category" in s && s.category === "basic").map((s) => s.id));
+  // Earlier score editions retain separate records, but belong to the same section.
+  const basicIds = new Set(bundledScores
+    .filter((s) => "category" in s && s.category === "basic")
+    .flatMap((s) => [s.id, ...("legacyIds" in s ? s.legacyIds ?? [] : [])]));
   const listFor = (id: string) => basicIds.has(id) ? basicList : personalList;
+  const appendCard = (id: string, card: HTMLElement) => {
+    card.dataset.scoreId = id;
+    listFor(id).append(card);
+  };
   const records = await listPracticeRecords();
   if (epoch !== libraryEpoch) return;
   for (const record of records) {
@@ -335,7 +342,7 @@ export async function showLibrary() {
       };
       item.querySelector(".practice-card-actions")!.append(button);
     }
-    listFor(record.song.id).append(item);
+    appendCard(record.song.id, item);
   }
   const live = new Set(records.map((r) => r.song.id));
   for (const score of bundledScores.filter((s) => !live.has(s.id))) {
@@ -347,7 +354,7 @@ export async function showLibrary() {
     const heading = document.createElement("div");
     heading.append(title);
     item.append(heading, button);
-    listFor(score.id).append(item);
+    appendCard(score.id, item);
   }
 
   const archives = await listPracticeArchives();
@@ -369,8 +376,13 @@ export async function showLibrary() {
       void restore(id).catch(report);
     };
     item.append(name, button);
-    listFor(id).append(item);
+    appendCard(id, item);
   }
+  // Catalog order is stable even when stored records are read in a different order.
+  const order = new Map(bundledScores.map((score, index) => [score.id, index]));
+  const cards = Array.from(basicList.children) as HTMLElement[];
+  cards.sort((a, b) => (order.get(a.dataset.scoreId!) ?? Infinity) - (order.get(b.dataset.scoreId!) ?? Infinity));
+  basicList.append(...cards);
   const empty = !personalList.childElementCount;
   root.querySelector<HTMLElement>("#library-empty-hint")!.hidden = !empty;
   if (empty) root.querySelector("#import-package")!.setAttribute("aria-describedby", "library-empty-hint");
