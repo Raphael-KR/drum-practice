@@ -145,3 +145,17 @@ it("closes the headerless legend by clicking the illustration or empty space", (
     ).toBe(true);
   }
 });
+it("explains library favorites, title order and local storage", () => {
+  const root = document.querySelector<HTMLElement>("#app")!;
+  root.innerHTML = '<header><div class="actions"></div></header><main class="library-main"></main>';
+  vi.stubGlobal("innerWidth", 1024);
+  vi.stubGlobal("innerHeight", 900);
+  installHelp(root);
+  root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
+  const dialog = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
+  expect(dialog.querySelectorAll(".help-cards section")).toHaveLength(3);
+  for (const text of ["즐겨찾기", "맨 위", "제목 표시 순서", "자동 공유되지 않음", "되돌림 화살표"])
+    expect(dialog.textContent).toContain(text);
+  dialog.close();
+  vi.unstubAllGlobals();
+});

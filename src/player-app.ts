@@ -1,6 +1,9 @@
+import { titleOrderFieldsHTML } from "./playback-forms";
+import { readTitleOrder, saveTitleOrder, type TitleOrder } from "./song-title";
 import { downloadScore } from "./download-score";
 import { beginLoadTiming, recordLoadTiming } from "./load-timing";
 import { icon } from "./icon-svg";
+import { setIconButton } from "./icon-button";
 import { installLandscapeKeyboardGuard } from "./landscape-keyboard";
 import { renderKeepingTopHeader } from "./top-edge-header";
 import "./help.css";
@@ -238,13 +241,14 @@ function bundledButton(score: (typeof bundledScores)[number], update = false) {
   button.textContent = t(
     update ? "separation.updateBundled" : "separation.loadBundled",
   );
+  if (update) setIconButton(button, icon("reload"), t("separation.updateBundled"));
   button.title = t(update ? "library.tipUpdate" : "library.tipDownload");
   button.onclick = async () => {
     if (working || button.disabled) return;
     working = true;
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
-    const label = button.textContent;
+    const label = button.innerHTML;
     clearLibraryError();
     try {
       const blob = await downloadScore(`${import.meta.env.BASE_URL}${score.file}`, percent => {
@@ -260,7 +264,7 @@ function bundledButton(score: (typeof bundledScores)[number], update = false) {
       working = false;
       button.disabled = false;
       button.removeAttribute("aria-busy");
-      button.textContent = label;
+      button.innerHTML = label;
     }
   };
   return button;
@@ -272,9 +276,35 @@ export async function showLibrary() {
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
-  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}</div></header><main class="library-main" aria-label="${escapeHTML(t("library.screenName"))}"><input type="file" id="package-file" accept=".drumscore,application/zip" hidden><p id="library-status" role="status"></p><div id="practice-records" class="library-sections"><section class="library-section" aria-labelledby="basic-library-title"><div class="library-heading"><h2 id="basic-library-title">${escapeHTML(t("library.basicExercise"))}</h2></div><div id="basic-practice-records" class="practice-records"></div></section><section class="library-section" aria-labelledby="personal-library-title"><div class="library-heading"><h2 id="personal-library-title">${escapeHTML(t("separation.library"))}</h2><div class="library-import"><button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("separation.add"))}</button><p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p></div></div><div id="personal-practice-records" class="practice-records"></div></section></div></main>`);
+  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><div class="library-import"><button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("separation.add"))}</button><p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p></div><a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a class="library-booking" title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}<div class="actions library-common-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><button id="library-settings" class="icon-button" type="button" title="${escapeHTML(t("icons.message059"))}" aria-label="${escapeHTML(t("icons.message059"))}">${icon("settings")}</button></div></div></header><main class="library-main" aria-label="${escapeHTML(t("library.screenName"))}"><input type="file" id="package-file" accept=".drumscore,application/zip" hidden><p id="library-status" role="status"></p><div id="practice-records" class="library-sections"><div id="favorite-practice-records" class="practice-records" hidden></div><section class="library-section" aria-labelledby="basic-library-title"><div class="library-heading"><h2 id="basic-library-title">${escapeHTML(t("library.basicExercise"))}</h2></div><div id="basic-practice-records" class="practice-records"></div></section><section class="library-section" aria-labelledby="personal-library-title"><div class="library-heading"><h2 id="personal-library-title">${escapeHTML(t("separation.library"))}</h2></div><div id="personal-practice-records" class="practice-records"></div></section></div></main>`);
   showBuildLabel();
   root.querySelector("#library-refresh")!.addEventListener("click", () => location.reload());
+  root.querySelector<HTMLButtonElement>("#library-settings")!.onclick = () => {
+    if (root.querySelector("#settings-dialog")) return;
+    const opener = root.querySelector<HTMLButtonElement>("#library-settings")!;
+    const dialog = createDialog("settings-dialog", t("icons.message059"), "tool-dialog library-settings-dialog", root);
+    const panel = document.createElement("section");
+    panel.className = "tool-body settings-panel";
+    panel.dataset.settingsPanel = "screen";
+    panel.innerHTML = `<h3>${t("settings.screenTitle")}</h3>${titleOrderFieldsHTML()}<p class="library-settings-status" role="status"></p>`;
+    dialog.append(panel);
+    const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>("[data-title-order]"));
+    const sync = () => buttons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.titleOrder === readTitleOrder())));
+    sync();
+    buttons.forEach(button => button.onclick = () => {
+      try {
+        saveTitleOrder(button.dataset.titleOrder as TitleOrder);
+        sync();
+        root.querySelectorAll(".practice-card-title").forEach(heading => {
+          const title = heading.querySelector("h3"), artist = heading.querySelector("p");
+          if (title && artist) heading.prepend(readTitleOrder() === "artist-first" ? artist : title);
+        });
+        panel.querySelector(".library-settings-status")!.textContent = "";
+      } catch (error) { panel.querySelector(".library-settings-status")!.textContent = String(error); }
+    });
+    dialog.addEventListener("close", () => { dialog.remove(); opener.focus({ preventScroll: true }); }, { once:true });
+    dialog.showModal();
+  };
   document
     .querySelector("#import-package")!
     .addEventListener("click", () =>
@@ -292,13 +322,54 @@ export async function showLibrary() {
   // Keep this render tied to its own container across asynchronous reads.
   const basicList = document.getElementById("basic-practice-records")!;
   const personalList = document.getElementById("personal-practice-records")!;
+  const favoriteList = document.getElementById("favorite-practice-records")!;
   // Earlier score editions retain separate records, but belong to the same section.
   const basicIds = new Set(bundledScores
     .filter((s) => "category" in s && s.category === "basic")
     .flatMap((s) => [s.id, ...("legacyIds" in s ? s.legacyIds ?? [] : [])]));
   const listFor = (id: string) => basicIds.has(id) ? basicList : personalList;
+  let favorites = new Set<string>();
+  try {
+    const stored: unknown = JSON.parse(localStorage.getItem("drum-practice:favorite-scores") || "[]");
+    if (Array.isArray(stored)) favorites = new Set(stored.filter((id): id is string => typeof id === "string"));
+  } catch { /* Invalid or unavailable preferences leave the score list usable. */ }
+  const sortFavorites = () => {
+    const cards = [favoriteList, basicList, personalList].flatMap(list => Array.from(list.children)) as HTMLElement[];
+    cards.sort((a, b) => Number(a.dataset.libraryOrder) - Number(b.dataset.libraryOrder));
+    for (const card of cards) {
+      const id = card.dataset.scoreId!;
+      (favorites.has(id) ? favoriteList : listFor(id)).append(card);
+    }
+    favoriteList.hidden = !favoriteList.childElementCount;
+    basicList.closest<HTMLElement>("section")!.hidden = !basicList.childElementCount;
+    personalList.closest<HTMLElement>("section")!.hidden = !personalList.childElementCount;
+  };
   const appendCard = (id: string, card: HTMLElement) => {
     card.dataset.scoreId = id;
+    const heading = card.querySelector(".practice-card-title");
+    const artist = heading?.querySelector("p");
+    if (artist && readTitleOrder() === "artist-first") heading!.prepend(artist);
+    card.querySelectorAll<HTMLElement>("h3, p").forEach(text => { text.title = text.textContent || ""; });
+    const favorite = document.createElement("button");
+    favorite.type = "button";
+    favorite.className = "library-favorite";
+    const refreshFavorite = () => {
+      setIconButton(favorite, icon("star"), t(favorites.has(id) ? "library.removeFavorite" : "library.addFavorite"));
+      favorite.setAttribute("aria-pressed", String(favorites.has(id)));
+    };
+    refreshFavorite();
+    favorite.onclick = () => {
+      const next = new Set(favorites);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      try {
+        localStorage.setItem("drum-practice:favorite-scores", JSON.stringify([...next]));
+        favorites = next;
+        refreshFavorite();
+        sortFavorites();
+        favorite.focus({ preventScroll: true });
+      } catch (error) { report(error); }
+    };
+    card.prepend(favorite);
     listFor(id).append(card);
   };
   const records = await listPracticeRecords();
@@ -306,7 +377,7 @@ export async function showLibrary() {
   for (const record of records) {
     const item = document.createElement("article");
     item.className = "practice-card";
-    item.innerHTML = `<div><h3>${escapeHTML(record.song.title)}</h3><p>${escapeHTML(record.song.artist || "")}</p></div><div class="practice-card-actions"><button class="primary" data-open title="${escapeHTML(t("library.tipOpen"))}">${escapeHTML(t("separation.open"))}</button></div>`;
+    item.innerHTML = `<div class="practice-card-title"><h3>${escapeHTML(record.song.title)}</h3><p>${escapeHTML(record.song.artist || "")}</p></div><div class="practice-card-actions"><button class="primary" data-open title="${escapeHTML(t("library.tipOpen"))}">${escapeHTML(t("separation.open"))}</button></div>`;
     item.querySelector("[data-open]")!.addEventListener("click", () => {
       void openRecord(record.song.id);
     });
@@ -335,7 +406,7 @@ export async function showLibrary() {
     if (epoch !== libraryEpoch) return;
     if (archived.length) {
       const button = document.createElement("button");
-      button.textContent = t("separation.restore");
+      setIconButton(button, icon("rewind"), t("separation.restore"));
       button.title = t("library.tipRestore");
       button.onclick = () => {
         void restore(record.song.id).catch(report);
@@ -352,6 +423,7 @@ export async function showLibrary() {
     title.textContent = score.title;
     const button = bundledButton(score);
     const heading = document.createElement("div");
+    heading.className = "practice-card-title";
     heading.append(title);
     item.append(heading, button);
     appendCard(score.id, item);
@@ -375,7 +447,12 @@ export async function showLibrary() {
     button.onclick = () => {
       void restore(id).catch(report);
     };
-    item.append(name, button);
+    const heading = document.createElement("div");
+    heading.className = "practice-card-title";
+    const artist = document.createElement("p");
+    artist.textContent = archive.record.song.artist || "";
+    heading.append(name, artist);
+    item.append(heading, button);
     appendCard(id, item);
   }
   // Catalog order is stable even when stored records are read in a different order.
@@ -383,7 +460,12 @@ export async function showLibrary() {
   const cards = Array.from(basicList.children) as HTMLElement[];
   cards.sort((a, b) => (order.get(a.dataset.scoreId!) ?? Infinity) - (order.get(b.dataset.scoreId!) ?? Infinity));
   basicList.append(...cards);
+  let libraryOrder = 0;
+  for (const list of [basicList, personalList]) {
+    Array.from(list.children).forEach(card => { (card as HTMLElement).dataset.libraryOrder = String(libraryOrder++); });
+  }
   const empty = !personalList.childElementCount;
+  sortFavorites();
   root.querySelector<HTMLElement>("#library-empty-hint")!.hidden = !empty;
   if (empty) root.querySelector("#import-package")!.setAttribute("aria-describedby", "library-empty-hint");
 }

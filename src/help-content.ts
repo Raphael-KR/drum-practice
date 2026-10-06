@@ -41,6 +41,11 @@ export function helpItems(context?: HTMLElement): HelpItem[] {
       item(".transport", "help.transport", "help.transportBody"),
       item("#playback-drawer", "help.repeat", "help.repeatBody"),
     ];
+  if (document.querySelector(".library-main")) return [
+    item(".library-main", "library.screenName", "help.libraryBody"),
+    item(".library-main", "help.favorites", "help.favoritesBody"),
+    item(".library-main", "help.libraryManage", "help.libraryManageBody"),
+  ];
   return [
     item(
       ".library-main, #home",

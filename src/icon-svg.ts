@@ -2,6 +2,7 @@ import { markerShape } from "./marker-icon";
 // Original SVG drawings using familiar Apple-style action metaphors.
 // Embedded paths work offline and do not depend on an installed symbol font.
 const paths: Record<string, string> = {
+  star: '<path d="m12 3 2.8 5.7 6.3.9-4.6 4.4 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.2"/>',
   check: '<path d="m4 12 5 5L20 6"/>',
   close: '<path d="m6 6 12 12M18 6 6 18"/>',

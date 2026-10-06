@@ -1,3 +1,4 @@
+import { formatSongTitle } from "./song-title";
 import { t as i18nText } from "./i18n";
 import { type Song } from "./model";
 import { nearestQuarterBeat, gridLabel } from "./lyric-grid";
@@ -7,8 +8,8 @@ export function playbackPosition(song: Song, time: number) {
   const point = nearestQuarterBeat(song, time);
   const label = gridLabel(point.measure, point.tick);
   const text = i18nText("playback-position.message433", {
-    value1: song.artist ? song.artist + " - " : "",
-    value2: song.title,
+    value1: formatSongTitle(song),
+    value2: "",
     label: label,
     value4: point.measure.beats,
     value5: point.measure.denominator,

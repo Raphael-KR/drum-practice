@@ -58,13 +58,17 @@ export function playbackPreferenceFieldsHTML(
     '<p id="playback-settings-status" class="subtle" role="status"></p>'
   );
 }
+export function titleOrderFieldsHTML() {
+  return `<div class="settings-choice-row"><div class="settings-choice-buttons segmented-control" role="group" aria-label="${t("settings.titleOrder")}"><button type="button" data-title-order="title-first" title="${t("settings.titleFirst")}">${t("settings.titleFirst")}</button><button type="button" data-title-order="artist-first" title="${t("settings.artistFirst")}">${t("settings.artistFirst")}</button></div><p class="subtle">${t("settings.titleOrder")}</p></div>`;
+}
 export function screenSettingsHTML(
   ids: { pdf: string; highlight: string; fullscreen: string },
   compare = false,
 ) {
   return (
-    `<div class="settings-choice-row"><div class="settings-choice-buttons" role="group" aria-label="${t("main.message108")}">${["ribbon", "rows", ...(compare ? ["compare"] : [])].map((value, i) => `<button type="button" data-setting-control="view" data-setting-value="${value}" title="${t((["main.message109", "main.message110", "main.message111"] as const)[i])}">${t((["main.message109", "main.message110", "main.message111"] as const)[i])}</button>`).join("")}</div><p id="view-description" class="subtle"></p><span id="view-selected-text" hidden></span><select id="view" hidden><option value="ribbon">${t("main.message109")}</option><option value="rows">${t("main.message110")}</option>${compare ? `<option value="compare">${t("main.message111")}</option>` : ""}</select></div>` +
-    `<div id="pdf-view-row" class="settings-choice-row"><div class="settings-choice-buttons" role="group" aria-label="${t("settings.scoreFormat")}"><button type="button" data-setting-control="${ids.pdf}" data-setting-value="true" title="${t("settings.pdfOriginal")}">${t("settings.pdfOriginal")}</button><button type="button" data-setting-control="${ids.pdf}" data-setting-value="false" title="${t("settings.musicxml")}">${t("settings.musicxml")}</button></div><p id="pdf-view-status" class="subtle">${t("main.message227")}</p><input id="${ids.pdf}" type="checkbox" hidden disabled></div>` +
+    `<div class="settings-choice-row"><div class="settings-choice-buttons segmented-control" role="group" aria-label="${t("main.message108")}">${["ribbon", "rows", ...(compare ? ["compare"] : [])].map((value, i) => `<button type="button" data-setting-control="view" data-setting-value="${value}" title="${t((["main.message109", "main.message110", "main.message111"] as const)[i])}">${t((["main.message109", "main.message110", "main.message111"] as const)[i])}</button>`).join("")}</div><p id="view-description" class="subtle"></p><span id="view-selected-text" hidden></span><select id="view" hidden><option value="ribbon">${t("main.message109")}</option><option value="rows">${t("main.message110")}</option>${compare ? `<option value="compare">${t("main.message111")}</option>` : ""}</select></div>` +
+    `<div id="pdf-view-row" class="settings-choice-row"><div class="settings-choice-buttons segmented-control" role="group" aria-label="${t("settings.scoreFormat")}"><button type="button" data-setting-control="${ids.pdf}" data-setting-value="true" title="${t("settings.pdfOriginal")}">${t("settings.pdfOriginal")}</button><button type="button" data-setting-control="${ids.pdf}" data-setting-value="false" title="${t("settings.musicxml")}">${t("settings.musicxml")}</button></div><p id="pdf-view-status" class="subtle">${t("main.message227")}</p><input id="${ids.pdf}" type="checkbox" hidden disabled></div>` +
+    titleOrderFieldsHTML() +
     zoomFieldHTML() +
     settingsSwitch("uniform-spacing", t("settings.uniformSpacing"), t("settings.uniformSpacingDescription")) +
     settingsSwitch(ids.highlight, t("portable-player.message439"), t("main.message255"), true, { descriptionId: "note-highlight-description" }) +
@@ -96,7 +100,8 @@ export function settingsPanel(
   section.dataset.settingsPanel = category;
   const title = componentName(`settings.${category}`);
   section.setAttribute("aria-label", title);
-  root.querySelector(".settings-detail")!.append(section);
+  const detail = root.querySelector(".settings-detail")!;
+  detail.insertBefore(section, category === "info" ? null : detail.querySelector('[data-settings-panel="info"]'));
   const button = document.createElement("button");
   button.id = buttonId;
   button.className = "icon-button";
@@ -114,7 +119,8 @@ export function settingsPanel(
     title,
   );
   button.onclick = () => select(category);
-  root.querySelector(".settings-nav")!.append(button);
+  const nav = root.querySelector(".settings-nav")!;
+  nav.insertBefore(button, category === "info" ? null : nav.querySelector('[data-settings-category="info"]'));
   return section;
 }
 export function selectPlaybackSettings(
@@ -201,5 +207,9 @@ export function syncSettingsChoices(root: ParentNode) {
       control.dispatchEvent(new Event("change", { bubbles: true }));
       syncSettingsChoices(root);
     };
+  });
+  root.querySelectorAll<HTMLElement>(".settings-choice-row").forEach(row => {
+    const choices = row.querySelectorAll<HTMLButtonElement>("[data-setting-control]");
+    if (choices.length) row.hidden = [...choices].filter(button => !button.disabled).length < 2;
   });
 }

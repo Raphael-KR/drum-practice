@@ -188,7 +188,7 @@ it("opens practice BPM from the heading and resets through the explicit original
 it("keeps direct tool access and previews the actual measure while scrubbing", async () => {
   for(const id of ["replace-score-button","export-musicxml"]) expect((document.getElementById(id) as HTMLButtonElement).disabled).toBe(false);
   expect(document.getElementById("song-title")!.textContent).toContain(
-    "Real Paradis -",
+    "바람과 언덕의 발라드 - Real Paradis",
   );
   expect(document.getElementById("original-tempo-value")!.textContent).toBe("= 94");
   expect(document.querySelector(".practice-dock")).toBeNull();

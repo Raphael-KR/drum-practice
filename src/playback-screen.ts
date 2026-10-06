@@ -1,3 +1,4 @@
+import { formatSongTitle, readTitleOrder, saveTitleOrder, type TitleOrder } from "./song-title";
 import { syncCurrentSection } from "./section-shortcuts";
 import { gridPhase } from "./ribbon-timeline";
 import { mountLoopSlots } from "./loop-slots";
@@ -620,9 +621,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     if (!h.ready()) return;
     const s = h.song(),
       bpm = Number((s.bpm * s.settings.rate).toFixed(2));
-    get(ids.title).textContent = [s.artist, s.title]
-      .filter(Boolean)
-      .join(" - ");
+    get(ids.title).textContent = formatSongTitle(s);
     const tempo = get<HTMLButtonElement>(ids.tempo);
     tempo.hidden = tempo.disabled = false;
     tempo.innerHTML = `${tempoNote}<span id="original-tempo-value">= ${bpm}</span>`;
@@ -885,6 +884,18 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       },
     }),
   );
+  const titleButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-title-order]"));
+  const syncTitleOrder = () => titleButtons.forEach(button => {
+    const selected = button.dataset.titleOrder === readTitleOrder();
+    button.classList.toggle("primary", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  syncTitleOrder();
+  titleButtons.forEach(button => listen(button, "click", () => run(() => {
+    saveTitleOrder(button.dataset.titleOrder as TitleOrder);
+    syncTitleOrder();
+    sync();
+  })));
   const prefs = h.preferences;
   input(prefs.restartId).checked = prefs.read().restartMeasure;
   input(prefs.countoffId).checked = prefs.read().countOff;

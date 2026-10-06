@@ -1,3 +1,4 @@
+import { formatSongTitle } from "./song-title";
 import { markerPath, markerFill, markerStroke } from "./marker-icon";
 import { t as i18nText } from "./i18n";
 import { markedMeasureIndices } from "./marker-slots";
@@ -144,7 +145,7 @@ export class ScoreReview {
       c.fillStyle = "#233047";
       c.font = "bold 16px system-ui";
       c.fillText(
-        `${this.song.artist ? this.song.artist + " - " : ""}${this.song.title}`,
+        formatSongTitle(this.song),
         12,
         23,
         w - 24,

@@ -113,7 +113,7 @@ body:not(.has-song) #app .editor-home button {
   position:sticky; top:0; z-index:40;
   max-width:none;
   margin-inline:calc(50% - 50vw);
-  padding:16px max(16px, calc(50vw - 50%));
+  padding:16px;
   background:#b8d4f5;
   border-bottom:1px solid #cbd6e7;
 }
@@ -131,14 +131,15 @@ body:not(.has-song) #app .editor-home button {
   }
 }
 
-.library-header-actions {display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.library-header-actions {display:flex;align-items:center;justify-content:flex-end;margin-left:auto;gap:10px;flex-wrap:wrap;}
+.library-header .library-common-actions {align-items:center;flex-wrap:nowrap;gap:8px;margin-left:0;}
 .library-header-actions #library-refresh {
   display:inline-flex;align-items:center;justify-content:center;
-  width:44px;height:44px;padding:10px;border-radius:12px;
+  width:var(--playback-control-size,48px);height:var(--playback-control-size,48px);padding:10px;border-radius:12px;
 }
 .library-header-actions .library-booking {
   display:inline-flex;align-items:center;justify-content:center;
-  min-height:44px;padding:0 16px;box-sizing:border-box;
+  min-height:var(--playback-control-size,48px);padding:0 16px;box-sizing:border-box;
   border:1px solid #c2d3e9;border-radius:12px;background:#fff;
   color:#285a9e;text-decoration:none;font-size:15px;font-weight:600;
 }
@@ -173,3 +174,60 @@ body:not(.has-song) #app .editor-home button {
 
 .library-sections { display: grid; gap: 32px; }
 .library-section > .library-heading { margin-bottom: 16px; }
+
+.practice-card .icon-button[aria-busy="true"] { width: auto; min-width: 44px; padding-inline: 12px; }
+
+/* Compact, continuously scrolling score selection; editor cards stay unchanged. */
+.player-library { max-width:none; padding-inline:16px; }
+.player-library .library-main { padding:20px 0; }
+.player-library .library-header { gap:12px; }
+.player-library .library-header h1 { font-size:24px; }
+.player-library .library-header-actions { gap:8px; }
+.player-library .library-import { position:relative; }
+.player-library #import-package { min-height:48px; padding:0 14px; font-size:15px; }
+.player-library .library-empty-hint { max-width:240px; font-size:12px; }
+.player-library .library-sections { gap:24px; }
+.player-library .library-heading { margin-bottom:10px; }
+.player-library .library-heading h2 { font-size:18px; }
+.player-library .practice-records { gap:6px; }
+.player-library .practice-card {
+  padding:6px 12px; gap:16px; border-radius:10px; min-width:0;
+}
+.player-library .practice-card-title {
+  display:flex; align-items:baseline; gap:12px; min-width:0; flex:1;
+}
+.player-library .practice-card h3 {
+  margin:0; font-size:16px; line-height:1.4; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.player-library .practice-card p {
+  font-size:14px; line-height:1.4; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.player-library .practice-card p:empty { display:none; }
+.player-library .practice-card-actions { gap:6px; flex:none; }
+.player-library .practice-card button { min-height:44px; padding:6px 12px; font-size:15px; }
+.player-library .practice-card .icon-button { width:44px; min-width:44px; min-height:44px; padding:8px; }
+@media (max-width:600px) {
+  .player-library .practice-card { flex-direction:column; align-items:stretch; gap:6px; padding:8px 10px; }
+  .player-library .practice-card-actions { justify-content:flex-end; }
+  .player-library .practice-card-title { flex:auto; }
+  .player-library .practice-card > button { align-self:flex-end; }
+}
+
+.player-library .practice-card { display:grid; grid-template-columns:44px minmax(0,1fr) auto; gap:10px; }
+.player-library .library-favorite { color:#697b93; border-color:transparent; background:transparent; }
+.player-library .library-favorite:hover { background:#fff5d6; color:#926000; }
+.player-library .library-favorite[aria-pressed="true"] { color:#946200; background:#fff4cc; }
+.player-library .library-favorite[aria-pressed="true"] svg { fill:#ffd45c; }
+@media (max-width:600px) {
+  .player-library .practice-card { grid-template-columns:44px minmax(0,1fr); gap:6px; }
+  .player-library .practice-card > .practice-card-actions,
+  .player-library .practice-card > button:not(.library-favorite) { grid-column:2; justify-self:end; }
+}
+.player-library #favorite-practice-records[hidden],
+.player-library .library-section[hidden] { display:none; }
+.library-settings-dialog { width:720px; max-width:calc(100vw - 32px); }
+.library-settings-dialog .settings-panel { margin-top:12px; }
+.library-settings-status { color:#b42318; }
+.library-settings-status:empty { display:none; }
