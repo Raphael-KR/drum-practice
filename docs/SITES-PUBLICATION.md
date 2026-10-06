@@ -284,3 +284,13 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - mirror SHA 078f0dcd917b6d36141a25a94da661f27bf795b3
 - deployment appgdep_6ac483af74788191962141b31becce40, succeeded, 2026-10-06T05:14:44.965226+00:00.
 - URL https://drum-practice-studio.dgkma.chatgpt.site. 기존 공개 범위 유지, dist/player만 발행, native 성공 응답 확인.
+
+## 2026-10-06 21:45 KST — player0.6.35
+- 소스 main75b3fdf push 완료. player0.6.35/editor0.6.27, build289d5147163a.
+- 촘촘한 악보 목록·제목 없는 최상단 즐겨찾기·공통 제목 순서 설정·목록 설정·공통 분할 선택 UI·도움말 현행화 포함.
+- 전체94파일470테스트 및 분리 빌드/타입/i18n/앱 경계 검사 통과. 제작자 진행 중인 문서·생성기 변경은 보존하고 앱 커밋에서 제외.
+- Sites version52: appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_f20ed3aebd308191964415b59e6a5fe2
+- mirror SHA faa533f3c7e8144e818444de022f7254db9290fe
+- deployment appgdep_6ac4ed3eab0c8191a6aba8289ea88ed8, succeeded, 2026-10-06T12:45:09.867806+00:00.
+- URL https://drum-practice-studio.dgkma.chatgpt.site. 공개 범위 유지, dist/player만 발행. native 성공 응답으로 발행 확인.
+- 시작전 손플기 SoCal 메타정보 정정 패키지 public/dist SHA256 8994b17b75385fd0fc46ebf954506ef352297c05b51f5581160fa260a59e0c04 일치.
