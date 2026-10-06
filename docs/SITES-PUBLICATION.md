@@ -275,3 +275,12 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - URL: https://drum-practice-studio.dgkma.chatgpt.site
 - 기존 공개 범위 유지, dist/player만 발행. tom-moving.drumscore SHA256 1eb7214b7e637ece8a0a97772ede30a28ca145df261742482f386b8c419b9c2e, public/dist 일치.
 - native 성공 응답으로 발행 확인. 실물 iPad·주관적 음질 청취는 이번 검사 범위 밖.
+
+## 2026-10-06 14:14 KST — player0.6.34
+- main a1e1c52 push 완료(선행0.6.33 명칭 변경 포함). player0.6.34/editor0.6.26, build991259aac3e8.
+- 시작전 손플기96마디를 기본 연습곡 첫 번째로 수록.28마디 탐탐 유지,16마디 신규 제공 대체·기존 기록 보존. 악보 메타데이터 최신본 포함.
+- 전체464테스트·분리 빌드/타입/i18n/경계 검사 통과. 패키지 public/dist SHA256 e070249500dc0fb42c559919045b5d116b884e2ae16d7ee3e8f42c344d2c8c97 일치. Safari 로컬 첫 순서/불러오기·저장·96마디 열기·재생 버튼 일시정지 상태 전환 및 정지 확인. 실제 시간 진행/청취/iPad 검증은 별도 미확인.
+- Sites version51: appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_6ff4f211e36c81918e0e9b7e469ec67c
+- mirror SHA 078f0dcd917b6d36141a25a94da661f27bf795b3
+- deployment appgdep_6ac483af74788191962141b31becce40, succeeded, 2026-10-06T05:14:44.965226+00:00.
+- URL https://drum-practice-studio.dgkma.chatgpt.site. 기존 공개 범위 유지, dist/player만 발행, native 성공 응답 확인.
