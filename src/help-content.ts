@@ -37,7 +37,9 @@ export function helpItems(context?: HTMLElement): HelpItem[] {
   }
   if (document.querySelector("#practice")?.getClientRects().length)
     return [
-      item("#stage", "help.score", "help.scoreBody"),
+      document.querySelector(".audio-practice")
+        ? item("#stage", "audioPractice.timeline", "audioPractice.help")
+        : item("#stage", "help.score", "help.scoreBody"),
       item(".transport", "help.transport", "help.transportBody"),
       item("#playback-drawer", "help.repeat", "help.repeatBody"),
     ];

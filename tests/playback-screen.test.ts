@@ -22,6 +22,7 @@ import {
   playbackBrandHTML,
   metronomeControlHTML,
 } from "../src/playback-forms";
+import { audioMeasures } from "../src/audio-practice";
 import { playbackPosition } from "../src/playback-position";
 const disposers: (() => void)[] = [];
 beforeEach(() => {
@@ -518,4 +519,17 @@ for(const environment of ['web','portable'] as const) it(`${environment}: double
     for(const type of ['pointerdown','pointerup']){const e=new MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:100,clientY:100});Object.assign(e,{pointerId:1,pointerType:'mouse',isPrimary:true});stage.dispatchEvent(e);}
     vi.advanceTimersByTime(300);expect(p.play).not.toHaveBeenCalled();
   } finally {vi.useRealTimers();}
+});
+
+it("audio uses common waveform navigation, rows and playback frame without score assets", () => {
+  const {screen,song,p,root,fail}=mount("portable");
+  Object.assign(song,{bpm:120,firstBeat:.2,pageCount:0,pdfName:"",regions:[],scoreFormat:undefined,audioPractice:{duration:12,beats:4,denominator:4,peaks:[.2,.6,1]},measures:audioMeasures(12,120,.2,4,4)});
+  screen.renderTrack();screen.sync();
+  expect(root.querySelectorAll('.audio-measure').length).toBe(6);
+  expect(root.querySelector('#stage')?.getAttribute('aria-label')).toBe('음원 파형과 마디');
+  p.position=3.2;screen.frame();
+  song.settings.view='rows';screen.renderTrack();screen.frame();
+  expect(root.querySelectorAll('.audio-measure').length).toBeGreaterThan(0);
+  expect(root.querySelector('.audio-measure .crop img')).toBeNull();
+  expect(fail).not.toHaveBeenCalled();
 });

@@ -1,3 +1,4 @@
+import { audioMeasureHTML } from "./audio-practice-view";
 import { createPlaybackWakeLock } from "./playback-wake-lock";
 import { readRecordingTempo } from "./recording-tempo";
 import { formatSongTitle, readTitleOrder, saveTitleOrder, type TitleOrder } from "./song-title";
@@ -202,6 +203,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       const timeline = h.assets().ribbon!.get(index)!;
       return ribbonPosition(width, beat, s.measures[index].beats, timeline.phase);
     }
+    if (s.audioPractice) return width * beat / s.measures[index].beats;
     return measurePosition(s, index, beat, width, widthOf);
   }
   function ribbonAsset(index: number) {
@@ -210,6 +212,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     return selectPlaybackEngraving(asset, h.song().settings.uniformSpacing);
   }
   function widthOf(m: Song["measures"][number]) {
+    if (h.song().audioPractice) return Math.max(120, stage.clientWidth / 4 * h.song().settings.zoom);
     const s = h.song(),
       a = h.assets(),
       timeline = s.scoreFormat === "musicxml" ? a.ribbon?.get(s.measures.indexOf(m)) : undefined,
@@ -229,6 +232,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
   }
   function measureHTML(m: Song["measures"][number], i: number, width: number) {
+    if (h.song().audioPractice) return audioMeasureHTML(h.song(), m, i, width);
     const s = h.song(),
       a = h.assets(),
       timeline = ribbonAsset(s.measures.indexOf(m)),
@@ -268,7 +272,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const base = stage.clientWidth / 4;
     if (!stage.clientHeight) return base;
     const assets = h.assets();
-    const naturalHeight = Math.max(1, ...s.regions.map(region => {
+    const naturalHeight = Math.max(s.audioPractice ? 100 : 1, ...s.regions.map(region => {
       const staff = assets.staffs.get(region.id);
       return staff ? scoreLayout(s, displayRegion(s, region), base, stage.clientWidth, staff)?.height || 100 : 100;
     }));
@@ -314,6 +318,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     stage.scrollLeft = stage.scrollTop = 0;
     const s = h.song(),
       compare = s.settings.view === "compare";
+    stage.setAttribute("aria-label", s.audioPractice ? t("audioPractice.timeline") : componentName("score"));
     get("practice").classList.toggle("two-rows", s.settings.view !== "ribbon");
     get("practice").classList.toggle("score-review", compare);
     get("practice").classList.toggle("uniform-spacing", !!s.settings.uniformSpacing && s.scoreFormat === "musicxml");

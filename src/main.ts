@@ -1032,7 +1032,7 @@ for (const b of document.querySelectorAll<HTMLElement>("[data-close]"))
     b.onclick = () => $<HTMLDialogElement>(b.dataset.close!).close();
 async function openLibrary() {
   if (record) await persist();
-  library = await allRecords();
+  library = (await allRecords()).filter(r => !r.song.audioPractice);
   $("library-list").innerHTML = library.length
     ? library
         .map(
@@ -1176,7 +1176,7 @@ action("new-button", openNew);
 action("welcome-new", openNew);
 async function refreshRecentScore() {
   if (isPortable) return;
-  const records = await allRecords();
+  const records = (await allRecords()).filter(r => !r.song.audioPractice);
   const recent = chooseRecent(records);
   $("editor-home-list").innerHTML = records.length
     ? records.map((r, i) => `<article class="editor-home-card practice-card"><div><h3>${esc(r.song.title)}</h3><p class="subtle">${esc(r.song.artist || "")}</p></div><button class="primary" data-editor-open="${i}">${i18nText("editorHome.edit")}</button></article>`).join("")
@@ -1197,7 +1197,7 @@ async function refreshRecentScore() {
 }
 action("demo-button", async () => {
   status(i18nText("main.message290"));
-  const existing = chooseRecent(await allRecords());
+  const existing = chooseRecent((await allRecords()).filter(r => !r.song.audioPractice));
   if (existing) {
     await activate(existing);
     return;

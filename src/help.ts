@@ -87,6 +87,7 @@ export function installHelp(root: HTMLElement) {
     nav.append(prev, count, next);
     layout.append(cards, shortcuts, nav);
     const legendButton = document.createElement("button");
+    legendButton.hidden = root.classList.contains("audio-practice");
     legendButton.type = "button";
     legendButton.className = "help-legend-button";
     legendButton.textContent = t("help.legend.button");

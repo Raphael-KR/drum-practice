@@ -34,6 +34,7 @@ export function activeScore(record: RecordData): ScoreVariant {
   };
 }
 export function songScores(record: RecordData): ScoreVariant[] {
+  if (record.song.audioPractice) return [];
   const active = activeScore(record);
   return [
     active,

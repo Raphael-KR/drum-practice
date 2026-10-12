@@ -1,3 +1,5 @@
+import { PRACTICE_FILE_ACCEPT, practiceFileKind, readAudioPractice } from "./audio-practice";
+import { setupAudioPractice } from "./audio-practice-setup";
 import { RETIRED_SCORE_ID } from "./score-database";
 import { titleOrderFieldsHTML } from "./playback-forms";
 import { recordingTempoUpgrade } from "./recording-tempo";
@@ -14,6 +16,7 @@ import "./playback-base.css";
 import "./playback-ui.css";
 import "./portable-player.css";
 import "./player-library.css";
+import "./audio-practice.css";
 import { t } from "./i18n";
 import appVersions from "./app-versions.json";
 import buildInfo from "./build-info.generated.json";
@@ -26,6 +29,7 @@ import {
   removePracticeRecord,
   loadPracticeRecord,
   savePracticeState,
+  savePracticeRecord,
   savePracticeCanonicalMetadata,
   importPracticeRecord,
 } from "./practice-library";
@@ -204,17 +208,30 @@ async function importFile(file: File, ownsLock = false) {
   clearLibraryError();
   let stage = t("library.stagePackage");
   try {
-    const record = await readScorePackage(file);
+    const kind = practiceFileKind(file);
+    let record: RecordData;
+    if (kind === "audio") {
+      stage = t("audioPractice.loading");
+      const button = root.querySelector<HTMLButtonElement>("#import-package");
+      if (button) { button.disabled = true; button.textContent = stage; }
+      const loaded = await readAudioPractice(file);
+      const confirmed = await setupAudioPractice(loaded);
+      if (!confirmed) return;
+      record = confirmed;
+    } else record = await readScorePackage(file);
     stage = t("library.stageSave");
     await importPracticeRecord(record);
     if (epoch !== importEpoch) return;
     stage = t("library.stageList");
     await showLibrary();
+    if (kind === "audio") { working = false; await openRecord(record.song.id); }
   } catch (e) {
     reportImportError(e, stage);
   } finally {
     working = false;
     if (input) input.disabled = false;
+    const button = root.querySelector<HTMLButtonElement>("#import-package");
+    if (button) { button.disabled = false; button.textContent = t("audioPractice.import"); }
   }
 }
 function bundledButton(score: (typeof bundledScores)[number]) {
@@ -254,7 +271,7 @@ export async function showLibrary() {
   document.body.classList.remove("has-song");
   delete document.body.dataset.ready;
   root.className = "player-library";
-  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><div class="library-import"><button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("separation.add"))}</button><p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p></div><a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a class="library-booking" title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}<div class="actions library-common-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><button id="library-settings" class="icon-button" type="button" title="${escapeHTML(t("icons.message059"))}" aria-label="${escapeHTML(t("icons.message059"))}">${icon("settings")}</button></div></div></header><main class="library-main" aria-label="${escapeHTML(t("library.screenName"))}"><input type="file" id="package-file" accept=".drumscore,application/zip" hidden><p id="library-status" role="status"></p><div id="practice-records" class="library-sections"><div id="favorite-practice-records" class="practice-records" hidden></div><section class="library-section" aria-labelledby="basic-library-title"><div class="library-heading"><h2 id="basic-library-title">${escapeHTML(t("library.basicExercise"))}</h2></div><div id="basic-practice-records" class="practice-records"></div></section><section class="library-section" aria-labelledby="personal-library-title"><div class="library-heading"><h2 id="personal-library-title">${escapeHTML(t("separation.library"))}</h2></div><div id="personal-practice-records" class="practice-records"></div></section></div></main>`);
+  renderKeepingTopHeader(root, `<header class="library-header"><h1>${escapeHTML(t("separation.appTitle"))}</h1><div class="library-header-actions"><div class="library-import"><button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("separation.add"))}</button><p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p></div><a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="https://m.booking.naver.com/booking/6/bizes/1512990?theme=place&amp;entry=pll&amp;lang=ko&amp;area=pll" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>${import.meta.env.DEV ? `<a class="library-booking" title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>` : ""}<div class="actions library-common-actions"><button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button><button id="library-settings" class="icon-button" type="button" title="${escapeHTML(t("icons.message059"))}" aria-label="${escapeHTML(t("icons.message059"))}">${icon("settings")}</button></div></div></header><main class="library-main" aria-label="${escapeHTML(t("library.screenName"))}"><input type="file" id="package-file" accept="${PRACTICE_FILE_ACCEPT}" hidden><p id="library-status" role="status"></p><div id="practice-records" class="library-sections"><div id="favorite-practice-records" class="practice-records" hidden></div><section class="library-section" aria-labelledby="basic-library-title"><div class="library-heading"><h2 id="basic-library-title">${escapeHTML(t("library.basicExercise"))}</h2></div><div id="basic-practice-records" class="practice-records"></div></section><section class="library-section" aria-labelledby="personal-library-title"><div class="library-heading"><h2 id="personal-library-title">${escapeHTML(t("separation.library"))}</h2></div><div id="personal-practice-records" class="practice-records"></div></section></div></main>`);
   showBuildLabel();
   root.querySelector("#library-refresh")!.addEventListener("click", () => location.reload());
   root.querySelector<HTMLButtonElement>("#library-settings")!.onclick = () => {
@@ -378,6 +395,24 @@ export async function showLibrary() {
       }
     };
     item.querySelector(".practice-card-actions")!.append(remove);
+    if (record.song.audioPractice) {
+      item.classList.add("audio-practice-card");
+      const setup = document.createElement("button");
+      setup.textContent = setup.title = t("audioPractice.setup");
+      setup.onclick = async () => {
+        if (working) return;
+        working = true;
+        try {
+          const current = await loadPracticeRecord(record.song.id);
+          if (!current) throw Error(t("separation.missing"));
+          const updated = await setupAudioPractice(current);
+          if (updated) { await savePracticeRecord(updated); await showLibrary(); }
+        } catch (error) { report(error); } finally { working = false; }
+      };
+      item.querySelector(".practice-card-actions")!.append(setup);
+      const badge = document.createElement("span"); badge.className = "audio-type"; badge.textContent = t("audioPractice.label");
+      item.querySelector(".practice-card-title")!.append(badge);
+    }
     appendCard(record.song.id, item);
   }
   const live = new Set(records.map((r) => r.song.id));

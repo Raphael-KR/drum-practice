@@ -145,29 +145,29 @@ export function updateScoreFrame(h: {
     h.highlight,
     notePulseBeats(m.beats, m.end - m.start, s.settings.rate),
   );
-  const region = h.regionAt?.(index) ?? displayRegion(
+  const region = s.audioPractice ? undefined : h.regionAt?.(index) ?? displayRegion(
     s,
     s.regions.find((r) => r.id === m.regionId)!,
   );
   const next = s.measures[index + 1];
   const nextRegion =
-    next &&
+    !s.audioPractice && next ?
     (h.regionAt?.(index + 1) ?? displayRegion(
       s,
       s.regions.find((r) => r.id === next.regionId)!,
-    ));
+    )) : undefined;
   // Cross printed bar margins continuously, but never bridge two screen rows.
   const currentCell = ribbon.querySelector<HTMLElement>(`[data-index="${index}"]`);
   const nextCell = ribbon.querySelector<HTMLElement>(`[data-index="${index + 1}"]`);
   const sameRow = s.settings.uniformSpacing && s.settings.view === "rows"
     ? !!nextCell && currentCell?.closest(".browse-row") === nextCell.closest(".browse-row")
     : index % 4 !== 3;
-  const nextStart = next && sameRow
+  const nextStart = !s.audioPractice && next && sameRow
     ? 1 + xAtBeat(nextRegion!, next, 0) * (s.settings.uniformSpacing && currentCell && nextCell ? nextCell.offsetWidth / currentCell.offsetWidth : 1)
     : 1;
-  const playedThrough = index + (s.settings.uniformSpacing
+  const playedThrough = index + (s.audioPractice ? beat / m.beats : s.settings.uniformSpacing
     ? gridPhase(beat * 4 / m.denominator, m.beats * 4 / m.denominator)
-    : continuousX(region, m, beat, 1, nextStart));
+    : continuousX(region!, m, beat, 1, nextStart));
   const savedRanges = savedLoopSlots(s).slice(0, LOOP_SLOT_COUNT).filter((range): range is Loop => !!range);
   ribbon.querySelectorAll<HTMLElement>("[data-index]").forEach((e) => {
     const measureIndex = Number(e.dataset.index);

@@ -66,6 +66,8 @@ export interface MeasureLyric {
   placement: "measure-center";
 }
 export interface Song {
+  /** Local audio practice has timing but no score pages or regions. */
+  audioPractice?: { duration: number; beats: number; denominator: number; peaks: number[] };
   version: 1;
   id: string;
   title: string;
@@ -234,7 +236,7 @@ export function validateSong(x: unknown): asserts x is Song {
     !finite(s.firstBeat) ||
     s.firstBeat < 0 ||
     !Number.isInteger(s.pageCount) ||
-    s.pageCount < 1 ||
+    s.pageCount < (s.audioPractice ? 0 : 1) ||
     s.pageCount > 500 ||
     typeof s.audioName !== "string" ||
     typeof s.pdfName !== "string" ||
@@ -252,6 +254,19 @@ export function validateSong(x: unknown): asserts x is Song {
   ] as const)
     if (!Array.isArray(s[k]) || s[k].length > 100000)
       throw Error(i18nText("model.message382"));
+  if (s.audioPractice !== undefined) {
+    const a = s.audioPractice;
+    if (!a || !finite(a.duration) || a.duration <= 0 || s.firstBeat >= a.duration ||
+        !Number.isInteger(a.beats) || a.beats < 1 || a.beats > 16 || ![2,4,8,16].includes(a.denominator) ||
+        !Array.isArray(a.peaks) || a.peaks.length > 4096 || a.peaks.some(p => !finite(p) || p < 0 || p > 1) ||
+        s.pageCount !== 0 || s.regions.length !== 0 || s.pdfName !== "" || s.scoreFormat !== undefined ||
+        !s.measures.length || s.measures.length > 10000 ||
+        s.measures.some((m, i) => !m || m.beats !== a.beats || m.denominator !== a.denominator ||
+          Math.abs(m.start - (s.firstBeat + i * a.beats * 60 / s.bpm * 4 / a.denominator)) > 1e-6 ||
+          Math.abs(m.end - (s.firstBeat + (i + 1) * a.beats * 60 / s.bpm * 4 / a.denominator)) > 1e-6) ||
+        s.measures.at(-1)!.start >= a.duration || s.measures.at(-1)!.end < a.duration - 1e-6)
+      throw Error(i18nText("audioPractice.invalidTiming"));
+  }
   const ids = new Set<string>();
   for (const r of s.regions) {
     if (
@@ -297,7 +312,7 @@ export function validateSong(x: unknown): asserts x is Song {
     if (
       !m ||
       typeof m.id !== "string" ||
-      !ids.has(m.regionId) ||
+      (s.audioPractice ? m.regionId !== "" : !ids.has(m.regionId)) ||
       mids.has(m.id) ||
       typeof m.label !== "string" ||
       !Number.isInteger(m.beats) ||

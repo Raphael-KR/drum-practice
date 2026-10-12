@@ -83,6 +83,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     pageRatios: number[] = [];
   const song = () => s;
   document.body.classList.add("has-song");
+  root.classList.toggle("audio-practice", !!s.audioPractice);
   renderKeepingTopHeader(root,
     `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML()}</section><p id="status" role="status">${i18nText("portable-player.message453")}</p></main>`);
   let management: ReturnType<typeof attachPracticeManagement> | undefined;
@@ -129,7 +130,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   const fail = (e: unknown) => {
     status(e instanceof Error ? e.message : String(e));
   };
-  const scoreReader = installScoreReader({
+  const scoreReader = s.audioPractice ? {dispose() {}} : installScoreReader({
     root,
     controls: addSettings("score", "reader-settings", "open-reader-settings"),
     song: s,
@@ -372,7 +373,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     ))
       dialog.close();
     renderKeepingTopHeader(root, "");
-    root.classList.remove("playback-ui");
+    root.classList.remove("playback-ui", "audio-practice");
     document.body.classList.remove("has-song");
     delete document.body.dataset.ready;
     delete document.body.dataset.readyMs;
