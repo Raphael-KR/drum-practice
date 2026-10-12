@@ -3705,3 +3705,14 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 기능 커밋176aba355f316df9b1a6ffa17e5ddc3022e12130을GitHub main에푸시했다. player0.6.39/build7ccd880447db를 기존 공개 Sites에발행했다.
 - dist/player17파일과 발행사본 일치, index=player.html, 제작기 제외 확인. Sites 소스872a4ee4c2c28090795d61fe1cf0e918164727ad, 저장버전56(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_2e65cf989fd8819190c57809176c66c5), 배포appgdep_6acd50b2d4d88191bf6db68c6a9f4507 succeeded.
 - 공개 URL HTTP200 및 공개 player-CmGSkVxf.js와 로컬 빌드 바이트 일치 확인(SHA256 88dd1556552d191c2cb9af411fff31320bcedaeb55106a5a7b6f3ee71b865faa). 실제 iPhone Safari 검증 한계는 유지한다.
+
+## 2026-10-13 — 드럼연습실 버전 분류 정정
+- 음원만으로 연습하는 새 기능을0.6.38로 발행하고 후속 수정을0.6.39로 발행한 것은 minor/patch 판단 오류였다. 사용자 결정에 따라 새 기능은0.7.0, 이후 가져오기 분리·아이폰 배치 수정은0.7.1에 해당하는 것으로 정정한다.
+- 현재 player 버전을0.7.1로 수정하고 AGENTS.md에 새 사용자 기능=minor, 기존 기능 수정·개선=patch 기준과 선택 이유 기록 의무를 추가했다. editor0.6.30 유지. 과거 실제 발행 기록·Git 이력은 그대로 보존한다.
+- 버전 JSON 재조회 및 로컬 개발 서버 응답의0.7.1을 확인한다. 기능 코드 변경 없음. 이번 정정은 아직 커밋·푸시·재발행하지 않았다.
+
+## 2026-10-13 — 0.7.1 정정 발행 준비
+- 목표·범위: 사용자 승인에 따라 버전 정정과 버전 선택 지침을 커밋·푸시하고 기존 공개 Sites에 player0.7.1을 발행한다.
+- 완료 조건: GitHub main 반영, Sites succeeded, 공개 빌드와 로컬0.7.1 일치.
+- 제외: 기능 변경·추가 버전 상승·제작기 공개·과거 발행 이력 재작성.
+- 검증: 타입/i18n/양쪽 앱 분리 빌드·앱 경계 검사 통과. 버전 메타정보만 바뀌어 앞선 기능 검증을 유지하고 공개 HTTP/자산 대조를 수행한다.
