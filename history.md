@@ -3716,3 +3716,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 완료 조건: GitHub main 반영, Sites succeeded, 공개 빌드와 로컬0.7.1 일치.
 - 제외: 기능 변경·추가 버전 상승·제작기 공개·과거 발행 이력 재작성.
 - 검증: 타입/i18n/양쪽 앱 분리 빌드·앱 경계 검사 통과. 버전 메타정보만 바뀌어 앞선 기능 검증을 유지하고 공개 HTTP/자산 대조를 수행한다.
+
+## 2026-10-13 — 드럼연습실0.7.1 정정 발행 완료
+- 버전 정정 커밋74afc47을GitHub main에푸시하고 player0.7.1/build ac1f5b592484를 발행했다. 추가 patch 상승 없이 사용자 확정 버전을 사용했다.
+- Sites 소스fcfdf43f26303e1ec4be942f32360bc00ab7714b, 저장버전57(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_626f7714a1808191a56f5386e630f8d4), 배포appgdep_6acd5148c01c8191985e1e04da5af801 succeeded.
+- 공개 HTTP200, 진입점 및 JS 바이트와 로컬player빌드 일치, 공개JS의0.7.1/build ac1f5b592484 확인. 기능 코드 변경은 없으며 기존 실제iPhone Safari 검증 한계는 유지한다.
