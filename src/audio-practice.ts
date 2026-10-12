@@ -3,7 +3,7 @@ import { estimateTempo } from "./analysis";
 import { t } from "./i18n";
 import type { RecordData } from "./storage";
 
-export const PRACTICE_FILE_ACCEPT = ".drumscore,.zip,application/zip,audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac";
+export const AUDIO_FILE_ACCEPT = "audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac,.aif,.aiff,.webm";
 export function practiceFileKind(file: Pick<File, "name" | "type">): "score" | "audio" {
   if (/\.(drumscore|zip)$/i.test(file.name)) return "score";
   if (/\.(mp3|m4a|wav|aac|ogg|flac|aif|aiff|webm)$/i.test(file.name) || file.type.startsWith("audio/")) return "audio";

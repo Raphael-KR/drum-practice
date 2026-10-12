@@ -232,7 +232,7 @@ body:not(.has-song) #app .editor-home button {
 .library-settings-status { color:#b42318; }
 .library-settings-status:empty { display:none; }
 
-/* Phone library: import above, booking beside the shared controls below. */
+/* Phone library: booking + shared controls, then local editor + audio import. */
 @media (max-width:480px) and (orientation:portrait) {
   .player-library .library-header-actions {
     display:grid;
@@ -241,13 +241,13 @@ body:not(.has-song) #app .editor-home button {
     margin-left:0;
   }
   .player-library .library-import {
-    grid-column:1 / -1;
-    grid-row:1;
+    grid-column:2;
+    grid-row:2;
     justify-self:end;
   }
   .player-library .library-header-actions > .library-booking {
     grid-column:1;
-    grid-row:2;
+    grid-row:1;
     justify-self:start;
     min-width:0;
     max-width:100%;
@@ -256,12 +256,12 @@ body:not(.has-song) #app .editor-home button {
   }
   .player-library .library-common-actions {
     grid-column:2;
-    grid-row:2;
+    grid-row:1;
     justify-self:end;
   }
-  .player-library .library-header-actions > .library-booking + .library-booking {
-    grid-column:1 / -1;
-    grid-row:3;
-    justify-self:end;
+  .player-library .library-header-actions > .library-editor {
+    grid-column:1;
+    grid-row:2;
+    justify-self:start;
   }
 }

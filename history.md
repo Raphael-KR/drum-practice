@@ -3690,3 +3690,13 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 기능 커밋9f18100b3bb8f475a0ce7d4fdb613c7785230048을GitHub main에푸시했다. editor0.6.30은 로컬 전용이며 player0.6.38/build a8f7a01de3c5만 기존public Sites에발행했다.
 - dist/player17파일과 발행사본 바이트 일치, 루트index=player.html 확인. Sites 소스d3a31b979ec652db51e7e7319ccacdd0795899b4, 저장버전55(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_a47eda3704108191a7b0fb42e8857414), 배포appgdep_6acd4dfd8d8c8191bb46fc5259df42ed succeeded.
 - 공개 URL HTTP200, player 진입점 및 공개JS의 로컬빌드 바이트/소스번호 일치 확인. 브라우저 기능 검증은 발행 전 로컬MP3 검사 기준이며 실제iPhone/iPad Safari 검증 한계는 유지한다.
+
+## 2026-10-13 — 음원 전용 파일 선택과 아이폰 목록 상단 정렬
+- 사용자 확정: 기존 서버 `.drumscore` 악보·음원 묶음은 유지한다. 목록의 악보 불러오기는 서버 다운로드, 상단 [음원 불러오기]는 기기의 MP3 등 지원 음원만 받는다. 파일 선택에서 패키지 파일은 오류로 안내하며 기존 서버 패키지 import 경로는 유지했다.
+- 아이폰 세로: 제목 아래 첫 줄은 예약(좌)/새로고침·설정·도움말(우), 둘째 줄은 로컬 제작기(좌)/음원 불러오기(우). 제작기 링크의 DEV 조건을 유지했다. 도움말·툴팁·빈 목록 안내도 음원 기준으로 수정했다. 결정 문서: docs/plans/AUDIO-PRACTICE.md, docs/UX-PRINCIPLES.md.
+- 검증: 타입 검사, i18n 검사, 음원 집중 6개 테스트, player 빌드 및 앱 경계 검사 통과. ego-browser에서 320/393/430px 두 줄 배치·가로 넘침 없음, 744px 기존 flex 배치 확인. `.drumscore`를 파일 선택에 전달하면 빨간 오류로 거부됨을 확인. 로컬 WAV를 선택하면 박자 맞추기 창에 정상 진입. 새 저장 데이터는 만들지 않았다.
+- 한계: 앞선 Safari MCP Transport closed로 로컬 Chromium 크기 모사를 사용했으며 실제 iPhone/iPad Safari 검증은 아니다. build 1f4d6018 갱신, 앱 버전 유지. 커밋·푸시·발행 미수행.
+
+## 2026-10-13 — 음원 전용 가져오기0.6.39 발행 준비
+- 사용자 커밋·푸시·발행 승인에 따라 player만0.6.39로 올렸다. editor0.6.30 유지.
+- 버전 반영 타입/i18n/editor·player 분리 빌드와 앱 경계 검사 통과. 앞선 집중6개 테스트와320/393/430/744px 배치 검증을 근거로 기존 Sites의 player 정적 빌드를 발행한다. 실제 iPhone Safari 검증 한계는 유지한다.
