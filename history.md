@@ -3700,3 +3700,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 ## 2026-10-13 — 음원 전용 가져오기0.6.39 발행 준비
 - 사용자 커밋·푸시·발행 승인에 따라 player만0.6.39로 올렸다. editor0.6.30 유지.
 - 버전 반영 타입/i18n/editor·player 분리 빌드와 앱 경계 검사 통과. 앞선 집중6개 테스트와320/393/430/744px 배치 검증을 근거로 기존 Sites의 player 정적 빌드를 발행한다. 실제 iPhone Safari 검증 한계는 유지한다.
+
+## 2026-10-13 — 드럼연습실0.6.39 발행 완료
+- 기능 커밋176aba355f316df9b1a6ffa17e5ddc3022e12130을GitHub main에푸시했다. player0.6.39/build7ccd880447db를 기존 공개 Sites에발행했다.
+- dist/player17파일과 발행사본 일치, index=player.html, 제작기 제외 확인. Sites 소스872a4ee4c2c28090795d61fe1cf0e918164727ad, 저장버전56(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_2e65cf989fd8819190c57809176c66c5), 배포appgdep_6acd50b2d4d88191bf6db68c6a9f4507 succeeded.
+- 공개 URL HTTP200 및 공개 player-CmGSkVxf.js와 로컬 빌드 바이트 일치 확인(SHA256 88dd1556552d191c2cb9af411fff31320bcedaeb55106a5a7b6f3ee71b865faa). 실제 iPhone Safari 검증 한계는 유지한다.
