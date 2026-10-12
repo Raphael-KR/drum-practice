@@ -3662,3 +3662,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 독립 HTML의 기존 localStorage/IndexedDB 금지 검사는 유지했다. 공통 선호 인터페이스를 웹앱에는 기존 localStorage로, 독립 파일 빌드에는 문서 수명 메모리로 연결하여 저장 경계 실패를 해결했다. 곡별 생성 HTML은 만들지 않았다.
 - 최종101파일542테스트, editor/player분리빌드·타입/i18n/경계, check:playback의 소유권/공통조합/독립HTML 검사가 모두 통과했다(.tmp/release-0637-final-tests.log, .tmp/release-0637-build.log, .tmp/release-0637-architecture.log). 첫 전체 검사1건은 새 화면 유지 도움말 행 수10→11 기대값 차이로 수정 후 통과했다. 실제 기기·Safari 추가 검수 한계는 이전 이력대로 유지한다.
 - 발행은 기존public Sites의dist/player만 사용한다. 무관한 .tmp/tmp/output/범례이미지는 보존하고 커밋에서 제외한다. 발행 결과는 후속 기록한다.
+
+## 2026-10-13 — 드럼연습실0.6.37 발행 완료
+- 기능 커밋800e8010340a695a813dc484f748bdd60c2b1f0e를GitHub main에푸시했다. 제작기0.6.29는 로컬 전용을 유지한다. 드럼연습실0.6.37/b36cb40f1c3a만 기존public Sites 프로젝트appgprj_6ab0790baa048191aaee49f58c1ffe7b에발행했다.
+- canonical dist/player와발행미러18파일의SHA256일치를확인했다. 공식helper로Site소스c1fce8b8311b73efc3de7e8c6898f0e7f62fee5e를푸시하고아카이브를생성했다. 저장버전54(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_bc9b40c8b3ac8191bd93e151d4df6afc),배포appgdep_6acd46db0a748191971bcc5f472e9007는succeeded였다.
+- 운영URL https://drum-practice-studio.dgkma.chatgpt.site . 공식읽기인증을hidden stdin으로사용해rootHTTP200·현재playerJS/CSS참조·배포JS/CSS의정본해시일치를확인했다. 운영HTML원문전체해시는로컬index.html과달랐으므로HTML원문동일을주장하지않는다. 최초HTML전체해시검사는실패했으며이어현재자산참조와실제두자산해시를별도로검증했다. 인증값은파일/로그/커밋에보관하지않았다.
+- 무관한미추적 .tmp/tmp/output/범례이미지는그대로보존했다. 실제기기추가UI/터치·화면유지확인은미검증이다.
