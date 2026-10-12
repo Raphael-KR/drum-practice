@@ -3749,3 +3749,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 전체106파일562테스트, 집중 캐시8개, 타입/i18n/editor·player 빌드/앱 경계 통과. 공개용 Worker 빌드 및 player34파일 바이트 동일 검사 통과.
 - 배포할 Worker를 workerd/Miniflare D1에서 실행해 miss404 → PUT200 → 재조회 동일, raw audio415, 루트 player HTML 바이트 일치, editor404 확인. 시험 설정에서 assets router의 has_user_worker가 빠져 첫 smoke500이 났고 이를 올바르게 설정한 뒤 통과했다(제품 코드 변경 없음). 근거: .tmp/public-cache-full.log, .tmp/sites-cache-build.log, .tmp/sites-cache-runtime.log.
 - 정적 자산 설정 근거: https://developers.cloudflare.com/workers/vite-plugin/reference/static-assets/ 및 Sites skill의 storage/troubleshooting 계약. 실제 공개 API 및 Git/publish 결과는 후속 기록한다.
+
+## 2026-10-13 — 드럼연습실0.7.2 공개 서버 저장소 연결 완료
+- 기능 커밋66f694fa7b6cb73bb59d776a05ef6ffee3c2fb81을GitHub main에푸시했다. player0.7.2/build b55c783faf01을 기존 public Sites에발행했다. editor0.6.30은 로컬 전용으로 유지했다.
+- Sites 소스3eabb51944c585ccaff96093f957aac539cb34d3, 저장버전58(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_ececf54c55288191adfd676a324dd789), 배포appgdep_6acd56ea425481918fc832220dd6ffc5 succeeded. 공개 주소 https://drum-practice-studio.dgkma.chatgpt.site 유지.
+- 실제 Sites DB overview에서 DB 바인딩과 audio_analysis 테이블을 확인했다. 직접 생성한16초120BPM/첫박0.2초 WAV는 기기에만 두고 실제 SHA-256·분석값201byte만 보내 GET404→PUT200→GET200 동일 결과 확인. 재요청에서도 동일 데이터 보존. 개인 필드 추가400, raw audio415, 다른Origin403, 제작기404 확인. 공용DB에는 이 합성 검증 파일의 분석 레코드1개가 남는다. 원본/실제 사용자 음원 업로드0byte.
+- 공개 HTML에는 Cloudflare의 challenge script가 추가돼 전체바이트 비교는 불일치했다. 앱 진입점(head와app mount) 일치 및 실제 player JS SHA-256이 로컬과 일치함을 별도로 확인했다. 제품을 수정하거나 배포를 반복하지 않았다. .tmp/public-cache-smoke-final.log에최종 PASS 기록.
+- 전체562개 및 집중8개 테스트, workerd/D1 실행과 공개API smoke 통과. 실제 iPhone/iPad Safari 네이티브 파일 선택/음질·장시간 박자 정확도는 이번 발행의 미검증 범위다.
