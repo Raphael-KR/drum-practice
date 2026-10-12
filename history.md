@@ -3601,3 +3601,64 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - Sites소스4493e259ae3b208e8b0f8c767ce198ad9b19d4d0푸시,저장버전53(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_c5728dd8e29c81919885072a25ccadd9),배포appgdep_6acd316767f88191b19ec71844868ec0가succeeded로종료했다.
 - 운영URL https://drum-practice-studio.dgkma.chatgpt.site . 일반CLI요청은HTTP403이었고Sites가제공한공식읽기인증을stdin으로사용해운영rootHTTP200과playerJS/CSS배포해시일치를확인했다. 인증값은파일/로그/커밋에저장하지않았다.
 - 미추적실험·범례이미지/output/tmp자료는그대로보존했다. 실제iPad직접터치검증은각변경이력의한계를유지한다.
+
+
+## 2026-10-13 — 아이폰 세로 전용 재생 배치
+- 사용자 승인에 따라 폭480px 이하 세로 재생 화면의 상단을 제목 / 조작5버튼 / 템포·메트로놈·줄보기의 세 줄로 정리했다. 긴 제목은 줄임 표시하고 빌드 정보는 설정 정보에 유지한다.
+- 하단은 처음·재생/정지·되감기와 섹션 바로가기를 유지한다. 마커/마디이동/반복/구간 UI는 숨기며 저장 데이터는 변경하지 않는다. 바로가기는 전체 너비3×3 배치다.
+- 드럼연습실의 iPhone UA에서 가로 화면은 세로 사용 안내를 표시한다. 화면 전환으로 교체되는 app 밖에 안내를 유지하고 HMR 정리 시 제거한다. iPad/Mac UA는 대상에서 제외했다.
+- 계획 docs/plans/IPHONE-PORTRAIT.md와 UX 정본 갱신. Safari iframe의 실제 WebKit 엔진에서393×852/320×568/440×956의 상단145px·조작5버튼/하단재생버튼 화면 내 배치와 숨김을 확인했다(.tmp/iphone-phone-final.json). iPad mini 크기744×1133/1133×744에서 공유 CSS 변경 전후11개 주요 요소의 사각형/표시가 일치했다(.tmp/iphone-tablet-before.json, .tmp/iphone-layout-final.json). iPhone UA 모사852×393에서 가로 안내 표시/앱 숨김 확인. 실제 iPhone/iPad 시뮬레이터 타건·터치는 이번에 검증하지 않았다.
+- 전체99파일520테스트와 추가 기기 판별/정리3테스트, editor/player 분리 빌드·타입/i18n/배포경계·diff 검사 통과. 빌드번호만 갱신하고 앱 버전/커밋/푸시/발행은 하지 않았다. Safari의 첫 반복 검사에서 I/O 실패 및 제한시간 초과가 있었으며 빌드 종료 후 세 화면으로 범위를 나눈 재검사는 통과했다.
+
+
+## 2026-10-13 — 모든 OS의 재생 중 화면 유지
+- 사용자 요청에 따라 공통 재생 화면에 Screen Wake Lock을 연결했다. iPhone/iPad/macOS/Windows 등의 UA를 구분하지 않는다. 카운트오프 포함 실제 playing 상태에서 요청하고, 정지/종료/재생 화면 해제 시 반환한다.
+- 문서가 숨겨지면 반환하며 다시 보일 때 재생 중이면 재요청한다. pending 요청 중 정지·해제한 경우 늦은 응답도 즉시 반환한다. 빠른 정지/재시작에서는 한 요청만 유지한다. OS 반환은 즉시 반복 요청하지 않으며 미지원·거부는 재생 오류로 전달하지 않는다.
+- 계획 docs/plans/PLAYBACK-WAKE-LOCK.md, UX 정본과 재생바 도움말, 소스 빌드번호를 갱신했다. 별도 설정/OS 필터·알림 차단·버전 상승·커밋·푸시·발행은 추가하지 않았다.
+- 화면 유지 집중7테스트·TypeScript 통과. 전체101파일530테스트 중528통과/템포UI2실패였으며 해당 UI와 화면 유지의 후속32테스트는 통과했다. editor/player 분리 빌드·i18n·앱 배포 경계 검사와diff 검사 통과.
+- 별도 check:playback는 Missing central owner call: repeatPoint로 실패했다. HEAD의 공통 화면에도 repeatPoint 호출이 없어 이번 화면 유지 변경 이전의 검사 불일치다. 추가 기존검사 check-common-components는 playback-forms.ts의 independently assembled playback UI로, check-playback-build는 combined: localStorage로 실패했다. 이번 작업에서 기준이나 기존 코드를 변경해 우회하지 않았다.
+- 실제 Safari API 확인은 미완료: Safari MCP list_tabs는 Transport closed, 승인 범위 내 native CLI 검사는 Safari 응용 프로그램이 실행 중이 아님(-600)으로 두 차례 실패했다. 실기기/브라우저의 잠금 허용 및 OS 절전 정책에 따른 실제 화면 유지 여부는 미검증이다(.tmp/wake-focused.log, .tmp/wake-tests.log, .tmp/wake-ui-recheck.log, .tmp/wake-build.log).
+
+
+## 2026-10-13 — 정지 중 선택 마디 원클릭/원터치 재생
+- 사용자 요청에 따라 공통 악보의 단일 탭 완료 시 현재 선택 마디와 일치하면 그 마디 처음부터 재생한다. 다른 마디의 단일 탭은 기존 선택 동작을 유지한다. 키보드로 선택한 마디에도 적용한다.
+- 기존260ms 단일/이중 탭 구분을 유지해 선택 마디 더블클릭도 구간 시작/끝으로 처리한다. 구간 슬롯의 선택 모드와 Enter/더블클릭 끝 마디 대기는 재생 트리거에서 제외한다. 빈 악보 배경·8px이상 이동·스크롤·포인터 취소는 재생하지 않는다.
+- 변경: score-gestures의 pausedTap 처리와 playback-actions의 마디 판정, playback-screen의 선택 재생, loop-slots의 구간 대기 조회. 계획 docs/plans/SELECTED-MEASURE-PLAY.md와 UX·도움말 갱신.
+- 검증: 공통 web/portable × 한줄/두줄 × mouse/touch 실제 DOM 통합 테스트, 키보드 선택 후 탭·구간 대기·선택 마디 더블클릭·빈 배경·스크롤/취소 회귀를 포함한125테스트 및TypeScript/editor/player분리빌드·i18n/배포경계/diff 검사 통과(.tmp/selected-play-final-tests.log, .tmp/selected-play-build.log).
+- Safari MCP는Transport closed였다. native CLI에서Safari27.0.1버전은 읽혔지만 새 문서 생성은 응용 프로그램이 실행 중이 아님(-600)으로 실패했다. Safari실행 동작/실제기기터치는 미검증이며 .tmp/selected-play-safari.js의 음원 mock 검사도 실행되지 않았다. 빌드번호만 갱신, 앱 버전 상승·커밋·푸시·발행 없음.
+
+## 2026-10-13 — 아이폰 재생 화면 두 번째 줄 우측 정렬
+- 요청한 폭480px 이하 세로 헤더의 조작 버튼 줄만 justify-self:end로 변경했다. 제목/세 번째 줄·버튼 크기/간격·iPad mini 규칙은 유지한다.
+- 기존 아이폰 계획과 UX 정본, 소스 빌드번호 갱신. editor/player 분리 빌드·타입/i18n/앱경계·diff 검사 통과(.tmp/iphone-right-align-build.log). 이번 변경의 실제 브라우저 화면 검증은 미실행이다. 앱 버전/커밋/푸시/발행 없음.
+
+## 2026-10-13 — 아이폰 재생 버튼 중앙 정렬·북마크5개 아래 배치
+- 폭480px 이하 세로 재생바의 재생 버튼 자체가 화면 중앙에 오도록 좌우 동일 트랙/중앙60px 그리드를 적용했다. 처음은 왼쪽, 되감기 버튼/숫자는 오른쪽에 둔다.
+- 기존 dock-navigation을 두 번째 줄 중앙에 표시해 북마크5개를 재생 버튼 아래에 배치했다. 현재/총마디만 숨긴다. 구간·앞뒤 반복 숨김과 섹션 바로가기, iPad mini 기존 규칙은 유지한다.
+- 아이폰 계획·UX·소스빌드번호 갱신. editor/player분리빌드·타입/i18n/배포경계·diff검사 통과(.tmp/iphone-marker-row-build.log). 폭320/393/440/480px 그리드 계산상 재생 중심 일치/되감기 및 북마크5개 공간 확보를 확인했다. 실제 브라우저 배치·터치검증은 미실행이다. 커밋·푸시·발행·앱버전상승 없음.
+
+## 2026-10-13 — 원곡 버튼 악보 BPM 표시
+- 연습 BPM의 원곡 버튼을 ‘원곡’ + ‘악보 BPM’의 두 줄로 표시한다(예: 원곡 / 80 BPM). 실제 측정 BPM은 원곡 버튼에 표시하지 않는다.
+- 버튼 동작의 rate(song.bpm,true) → setRate(1)은 유지했다. 측정136.232 BPM/악보136 BPM 사례에서 ‘136 BPM’ 표시와 원곡1배속, 수동136 BPM 조절은136/136.232배속임을 기존 통합 검사로 확인했다.
+- 공통 재생59테스트와editor/player분리빌드·타입/i18n/배포경계·diff 검사 통과(.tmp/original-bpm-tests.log, .tmp/original-bpm-build.log). UX·소스빌드번호 갱신. 실제기기 화면은 미검증, 앱버전/커밋/푸시/발행 없음.
+
+## 2026-10-13 — iPad mini 세로 재생바 그룹 두 줄 정렬
+- 기존 dock-play/dock-navigation/dock-repeat 그룹과 DOM·동작을 유지한다. 폭720~850px 세로에서 첫 줄 재생 그룹(재생 버튼 자체 중앙), 둘째 줄 좌측 마커/마디이동 그룹과 우측 마디반복 그룹으로 배치했다. 아이폰·가로 배치에는 적용하지 않는다.
+- 계획 docs/plans/PLAYBACK-DRAWER.md와 UX 정본·소스 빌드번호 갱신. 744px 공간 계산에서 재생 중심372px, 둘째 줄 각360px 트랙에 마커348px/반복310px이 들어감을 확인했다. 이는 CSS 공간 계산이며 실제 Safari/iPad 화면 증거를 대신하지 않는다.
+- editor/player 분리 빌드·타입/i18n/배포경계·diff 검사 통과(.tmp/ipad-dock-two-rows-build.log). 이번 변경의 실제 화면/터치 검증은 미실행이며 앱버전/커밋/푸시/발행 없음.
+
+## 2026-10-13 — 현재/전체 마디판 중앙 슬래시·간격
+- progress 숫자판을 현재 숫자·중앙 `/`·전체 숫자의 세 칸으로 나눴다. 좌우 숫자 영역은 동일 너비이며 현재 숫자는 우측, 전체 숫자는 좌측 정렬하고 양옆4px 간격을 둔다. 0으로 채우지 않고 1~3자리 모두 구분자가 중앙에 유지되도록 한다.
+- 숫자판 너비94px과 공통 숫자 스타일을 사용하며 전체판 드래그/키보드 조절을 유지한다. 아이폰의 숫자판 숨김 규칙 뒤로 CSS를 덮지 않았다. iPad mini 세로 둘째줄은 마커 그룹을 max-content로 확보하고 반복 그룹을 남은 영역 우측에 유지해 새 숫자판 크기를 수용한다.
+- 공통 화면59테스트 및editor/player분리빌드·타입/i18n/배포경계·diff 검사 통과(.tmp/progress-separator-final-tests.log, .tmp/progress-separator-build.log). 첫 검사2건은 aria-valuetext의 새 공백과 과거 정규식 차이였으며 새 표시 계약으로 기대값을 수정해 재검사했다. UX·소스빌드번호 갱신. 실제 화면/터치검증 미실행, 앱버전/커밋/푸시/발행 없음.
+
+## 2026-10-13 — 아이폰 세로 설정 볼륨 한 줄 한 채널
+- 폭480px 이하 세로 설정의 볼륨 영역을1열2행으로 변경했다. 첫 줄 음악/둘째줄 메트로놈이며 채널명·슬라이더·퍼센트 열을 동일하게 정렬한다. 기존 음량 조절/저장과iPad·가로 배치는 유지한다.
+- UX·소스빌드번호 갱신. editor/player분리빌드·타입/i18n/배포경계·diff 검사 통과(.tmp/iphone-volume-two-rows-build.log). 실제 화면 검증 미실행, 앱버전/커밋/푸시/발행 없음.
+
+## 2026-10-13 — 누적 모바일·재생 변경 릴리스 검증
+- 사용자 커밋·푸시·발행 요청에 따라 악보제작기0.6.29/드럼연습실0.6.37, 빌드b36cb40f1c3a로 올렸다. 범위: 아이폰 상단/재생바/북마크/볼륨·iPad mini 세로 그룹 두 줄, 화면 유지, 선택 마디 원클릭 재생, 원곡 악보BPM/1배속, 중앙 마디 구분자.
+- 사용자가 거부한 아이폰 가로 안내 화면과 관련 신규 모듈·검사는 제거했다. Safari OS 회전 잠금은 지원되지 않아 구현하지 않았다. 기존 휴대폰 세로 최적화는 유지한다.
+- 공통 구조 검사는 삭제된 repeatPoint/fillRepeatFields/markMeasure를 필수 호출에서 퇴역/재도입 금지로 바꾸고 현재의 mountLoopSlots/toggleMeasureMarker/createPlaybackWakeLock 소유권을 요구한다. 호스트 소유권 금지는 유지한다. 공통 폼 검사는 settingsFrameHTML 내부 soundFieldsHTML 조합만 허용하며 호스트·다른 함수의 복제는 계속 거부한다. 정상 및4개 부정 주입 검사 통과.
+- 독립 HTML의 기존 localStorage/IndexedDB 금지 검사는 유지했다. 공통 선호 인터페이스를 웹앱에는 기존 localStorage로, 독립 파일 빌드에는 문서 수명 메모리로 연결하여 저장 경계 실패를 해결했다. 곡별 생성 HTML은 만들지 않았다.
+- 최종101파일542테스트, editor/player분리빌드·타입/i18n/경계, check:playback의 소유권/공통조합/독립HTML 검사가 모두 통과했다(.tmp/release-0637-final-tests.log, .tmp/release-0637-build.log, .tmp/release-0637-architecture.log). 첫 전체 검사1건은 새 화면 유지 도움말 행 수10→11 기대값 차이로 수정 후 통과했다. 실제 기기·Safari 추가 검수 한계는 이전 이력대로 유지한다.
+- 발행은 기존public Sites의dist/player만 사용한다. 무관한 .tmp/tmp/output/범례이미지는 보존하고 커밋에서 제외한다. 발행 결과는 후속 기록한다.

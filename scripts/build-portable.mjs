@@ -43,6 +43,13 @@ for (const kind of ["combined"]) {
     plugins: [{
       name: "playback-ui-catalog",
       setup(bundler) {
+        // Standalone files must not read or modify browser app preferences.
+        bundler.onLoad({filter: /[\\/]preference-storage\.ts$/}, () => ({
+          contents: `const values = new Map();
+            export const readPreference = key => values.get(key) ?? null;
+            export const writePreference = (key, value) => { values.set(key, value); };`,
+          loader: "js",
+        }));
         bundler.onLoad({filter: /locales[\\/]ko\.json$/}, async ({path}) => {
           const messages = JSON.parse(await readFile(path, "utf8"));
           const selected = Object.fromEntries(Object.entries(messages).filter(([key]) => runtimeMessageKeys?.has(key)));

@@ -49,10 +49,15 @@ for (const file of files) {
           "playbackPreferenceFieldsHTML",
         ].includes(name)
       )
-        assert(
-          file === "src/playback-shell.ts",
-          `${file}: independently assembled playback UI`,
-        );
+        {
+          // settingsFrameHTML is the shared form composite, not a host copy.
+          let owner = n.parent;
+          while (owner && !ts.isFunctionDeclaration(owner)) owner = owner.parent;
+          const sharedSoundComposite = file === "src/playback-forms.ts" &&
+            name === "soundFieldsHTML" && owner?.name?.text === "settingsFrameHTML";
+          assert(file === "src/playback-shell.ts" || sharedSoundComposite,
+            `${file}: independently assembled playback UI`);
+        }
     }
     // Compare function token structure, ignoring local identifier spelling. Candidates require human review.
     if (

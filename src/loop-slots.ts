@@ -219,6 +219,7 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
   }) as EventListener, true);
   listen(document, "visibilitychange", (() => { if (document.hidden && (touch || touchStart !== undefined)) { cancel(); render(); } }) as EventListener);
   return {render, cancel, endpoint, refreshKeyboardPreview() { if (keyboardStart !== undefined || touchStart !== undefined) paint(); }, get selecting() { return armed !== undefined; },
+    get awaitingEndpoint() { return armed !== undefined || keyboardStart !== undefined || touchStart !== undefined; },
     focus() { grid.querySelector<HTMLElement>("button")?.focus(); },
     dispose() {clearPress(); cancel(); cleanups.forEach(f => f());},
   };

@@ -261,4 +261,17 @@ describe("score playback gestures", () => {
     vi.runAllTimers();
     expect(callbacks.play).not.toHaveBeenCalled();
   });
+  it.each(["mouse", "touch"])("never calls selected-bar play after %s scrolling or cancellation", pointerType => {
+    const pausedTap = vi.fn(() => true);
+    controller.dispose();
+    controller = attachScoreGestures(surface, { ...callbacks, pausedTap });
+    pointer("pointerdown", 120, 50, 1, surface, pointerType);
+    pointer("pointermove", 120, 100, 1, surface, pointerType);
+    pointer("pointerup", 120, 100, 1, surface, pointerType);
+    pointer("pointerdown", 120, 50, 1, surface, pointerType);
+    pointer("pointercancel", 120, 50, 1, surface, pointerType);
+    vi.runAllTimers();
+    expect(pausedTap).not.toHaveBeenCalled();
+  });
+
 });

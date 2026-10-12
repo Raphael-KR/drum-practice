@@ -1,3 +1,4 @@
+import { createPlaybackWakeLock } from "./playback-wake-lock";
 import { readRecordingTempo } from "./recording-tempo";
 import { formatSongTitle, readTitleOrder, saveTitleOrder, type TitleOrder } from "./song-title";
 import { syncCurrentSection } from "./section-shortcuts";
@@ -127,7 +128,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const input = (id: string) => get<HTMLInputElement>(id);
   const stage = get("stage"),
     ribbon = get("ribbon");
-  const disposers: (() => void)[] = [drawer.dispose];
+  const wakeLock = createPlaybackWakeLock();
+  const disposers: (() => void)[] = [drawer.dispose, wakeLock.dispose];
   const listen = (target: EventTarget, type: string, fn: EventListener) => {
     target.addEventListener(type, fn);
     disposers.push(() => target.removeEventListener(type, fn));
@@ -360,6 +362,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     }
   }
   function onState() {
+    wakeLock.setPlaying(h.ready() && h.player().playing);
     if (!h.ready()) return;
     const p = h.player();
     if (p.playing) selectedIndex = undefined;
@@ -445,6 +448,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     },
     resume: () => play(false),
     pausedDoubleTap: index => { selectMeasure(index); loopSlots?.endpoint(index); frame(); },
+    pausedTap: index => {
+      if (!available() || h.player().playing || index !== selectionIndex() || loopSlots?.awaitingEndpoint) return false;
+      selectMeasure(index);
+      run(() => play());
+      return true;
+    },
     pause,
     seek,
     selected: (index, time) => {
@@ -575,13 +584,13 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const total = h.song().measures.length;
     v.max = String(total);
     v.setAttribute("aria-valuemax", String(total));
-    v.parentElement!.querySelector("span")!.textContent = `/${total}`;
+    v.parentElement!.querySelector(".progress-total")!.textContent = String(total);
     v.setAttribute("aria-valuenow", v.value);
     const clock = (n: number) =>
       `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
     v.setAttribute(
       "aria-valuetext",
-      `${v.value}/${total} · ${clock(time)} / ${clock(p.duration)}`,
+      `${v.value} / ${total} · ${clock(time)} / ${clock(p.duration)}`,
     );
   }
   function frame() {
@@ -737,7 +746,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       .map((bpm) => `<button title="${t("tooltip.tempo", {bpm})}" data-tempo="${bpm}">${bpm} BPM</button>`)
       .join("");
     get("tempo-reset").dataset.tempo = String(original);
-    get("tempo-reset").textContent = t("tempo.original");
+    get("tempo-reset").innerHTML = `<span>${t("tempo.original")}</span><span class="tempo-original-bpm">${h.song().bpm} BPM</span>`;
     sync();
     open("tempo");
   }

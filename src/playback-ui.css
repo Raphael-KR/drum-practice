@@ -2541,18 +2541,21 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   .drawer-playback .section-shortcuts button {align-items:center;}
 }
 
-/* Current / total measure count, including three-digit scores. */
+/* Equal number columns keep the slash centered for one to three digits. */
 .drawer-playback .playback-dock .progress-number {
-  width:86px;min-width:86px;justify-content:center;align-items:center;gap:4px;
-  font-variant-numeric:tabular-nums;
+  display:grid;grid-template-columns:minmax(0,1fr) 1ch minmax(0,1fr);
+  width:94px;min-width:94px;align-items:center;gap:4px;
+  font-size:17px;font-variant-numeric:tabular-nums;
 }
 .drawer-playback .playback-dock .progress-number input {
-  width:3ch;font-size:17px;font-weight:600;line-height:1;text-align:right;
+  width:100%;min-width:0;font-size:17px;font-weight:600;line-height:1;text-align:right;
   font-variant-numeric:tabular-nums;
 }
 .drawer-playback .playback-dock .progress-number span {
-  font-size:15px;font-weight:500;line-height:1;white-space:nowrap;letter-spacing:.3px;
+  font-size:17px;font-weight:500;line-height:1;white-space:nowrap;letter-spacing:0;
 }
+.drawer-playback .playback-dock .progress-separator {text-align:center;}
+.drawer-playback .playback-dock .progress-total {text-align:left;}
 
 /* Remove one original row + its 4px gap; preserve the original button height. */
 .drawer-playback .section-shortcuts,
@@ -2721,4 +2724,95 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   background: white;
   border-color: var(--line);
   color: var(--text);
+}
+
+/* Phone portrait is separate from the tablet layout. */
+@media (max-width:480px) and (orientation:portrait) {
+  .has-song .playback-ui header {
+    grid-template-columns:auto auto minmax(0,1fr);
+    gap:6px;
+    padding-inline:max(8px, env(safe-area-inset-left, 0px));
+  }
+  .has-song .playback-ui header .brand h1 {
+    grid-column:1 / -1; grid-row:1;
+    font-size:18px; line-height:26px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .has-song #app.playback-ui header h1[data-player-build]::after {display:none;}
+  .has-song .playback-ui header .actions {
+    grid-column:1 / -1; grid-row:2;
+    justify-self:end; display:flex; flex-wrap:nowrap;
+    gap:6px; width:auto;
+  }
+  .has-song .playback-ui header .brand > button {grid-column:1;grid-row:3;}
+  .has-song .playback-ui header .metronome-toggle {grid-column:2;grid-row:3;}
+  .has-song .playback-ui header .row-view-toggle {
+    grid-column:3;grid-row:3;width:100%;min-width:0;
+  }
+  .has-song .playback-ui header .row-view-toggle > button {
+    min-width:0;flex:1;padding-inline:6px;font-size:14px;
+  }
+  .has-song .playback-ui header .brand > button {padding-inline:8px;font-size:22px;}
+  .drawer-playback .dock-repeat,
+  .drawer-playback [data-drawer-panel=loop],
+  .drawer-playback .dock-navigation .progress-number {display:none;}
+  .drawer-playback .playback-dock .transport {
+    display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    gap:8px;padding-block:8px;
+  }
+  .drawer-playback .dock-play {
+    grid-column:1 / -1;grid-row:1;width:100%;margin-right:0;
+    display:grid;grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);gap:8px;
+  }
+  .drawer-playback .dock-play #home {
+    display:inline-flex;grid-column:1;justify-self:end;position:static;
+  }
+  .drawer-playback .dock-play #play {grid-column:2;}
+  .drawer-playback .dock-rewind {grid-column:3;justify-self:start;position:static;}
+  .drawer-playback .dock-navigation {
+    display:flex;grid-column:1 / -1;grid-row:2;justify-content:center;
+  }
+  .drawer-playback .playback-drawer {
+    height:150px;grid-template-columns:minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr);padding-inline:8px;
+  }
+  .drawer-playback [data-drawer-panel=marker] {
+    grid-column:1;grid-row:1;margin:0;padding:0;
+  }
+  .drawer-playback .section-shortcuts button {
+    padding:3px 8px;gap:2px;
+  }
+  .drawer-playback .section-shortcuts strong {font-size:13px;}
+  .drawer-playback .section-shortcuts span {font-size:11px;}
+}
+
+#tempo-reset {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+#tempo-reset .tempo-original-bpm {font-size:14px;font-weight:500;white-space:nowrap;}
+
+/* iPad mini portrait: preserve the three dock groups in two rows. */
+@media (min-width:720px) and (max-width:850px) and (orientation:portrait) {
+  .drawer-playback .playback-dock .transport {
+    grid-template-columns:max-content minmax(0,1fr);
+    gap:10px 8px;
+  }
+  .drawer-playback .dock-play {
+    grid-column:1 / -1;grid-row:1;width:100%;margin-right:0;
+    display:grid;grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);gap:8px;
+  }
+  .drawer-playback .dock-play #home {grid-column:1;justify-self:end;position:static;}
+  .drawer-playback .dock-play #play {grid-column:2;}
+  .drawer-playback .dock-rewind {grid-column:3;justify-self:start;position:static;}
+  .drawer-playback .dock-navigation {grid-column:1;grid-row:2;justify-content:flex-start;}
+  .drawer-playback .dock-repeat {grid-column:2;grid-row:2;justify-content:flex-end;flex-wrap:nowrap;}
+  .drawer-playback .playback-dock .repeat-presets {flex-wrap:nowrap;}
+}
+
+/* Each phone volume channel owns a full horizontal slider row. */
+@media (max-width:480px) and (orientation:portrait) {
+  #settings-dialog .playback-sound-fields {
+    grid-template-columns:minmax(0,1fr);gap:8px;
+  }
+  #settings-dialog .volume-channel {
+    grid-template-columns:5em minmax(0,1fr) 3.5em;
+  }
 }

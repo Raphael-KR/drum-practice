@@ -1,3 +1,4 @@
+import { readPreference, writePreference } from "./preference-storage";
 import { setIconButton } from "./icon-button";
 import { t as i18nText } from "./i18n";
 import { uiText } from "./ui-standard";
@@ -5,14 +6,14 @@ import { icon } from "./icons";
 const KEY = "drum-practice.auto-fullscreen";
 export function autoFullscreenEnabled() {
   try {
-    return localStorage.getItem(KEY) === "true";
+    return readPreference(KEY) === "true";
   } catch {
     return false;
   }
 }
 export function saveAutoFullscreen(enabled: boolean) {
   try {
-    localStorage.setItem(KEY, String(enabled));
+    writePreference(KEY, String(enabled));
   } catch {
     /* Private/file origins may reject persistence. */
   }

@@ -61,7 +61,8 @@ it("keeps playback help on one page on small screens", () => {
   const d = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
   expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
   expect(d.querySelector<HTMLElement>(".help-pages")!.hidden).toBe(true);
-  expect(d.querySelectorAll(".help-cards li")).toHaveLength(10);
+  expect(d.querySelectorAll(".help-cards li")).toHaveLength(11);
+  expect(d.textContent).toContain("화면 꺼짐 방지");
   d.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
   expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
   d.close();

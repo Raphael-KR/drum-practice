@@ -157,11 +157,12 @@ for (const environment of ["web", "portable"] as const) {
       playbackPosition(song, p.position).label,
     );
     expect(input(ids.progress).getAttribute("aria-valuetext")).toMatch(
-      /\d+\/\d+ · .+ \/ /,
+      /\d+ \/ \d+ · .+ \/ /,
     );
     expect(input(ids.progress).value).toBe("11");
     expect(input(ids.progress).max).toBe(String(song.measures.length));
-    expect(input(ids.progress).parentElement!.querySelector('span')!.textContent).toBe(`/${song.measures.length}`);
+    expect(input(ids.progress).parentElement!.querySelector('.progress-separator')!.textContent).toBe('/');
+    expect(input(ids.progress).parentElement!.querySelector('.progress-total')!.textContent).toBe(String(song.measures.length));
     input(ids.rewind).value = "11";
     click("back");
     expect(fail).toHaveBeenCalledOnce();
@@ -381,7 +382,8 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   await screen.rate(100);
   expect(song.settings.rate).toBeCloseTo(100 / 136.232);
   expect(document.getElementById(ids.tempoInput)!.getAttribute("aria-valuenow")).toBe("100");
-  expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡");
+  expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡136 BPM");
+  expect(document.querySelector("#tempo-reset .tempo-original-bpm")!.textContent).toBe("136 BPM");
   click("tempo-reset");
   await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(1));
   expect(song.bpm).toBe(136);
@@ -478,4 +480,42 @@ for(const environment of ['web','portable'] as const)it(`${environment}: paused 
  double(9);vi.advanceTimersByTime(300);expect(song.loops.at(-1)).toMatchObject({start:song.measures[5].start,end:song.measures[9].end});expect(p.play).not.toHaveBeenCalled();expect(p.position).toBe(0);
  double(12);document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'}));document.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',cancelable:true}));expect(song.loops.at(-1)).toMatchObject({start:song.measures[12].start,end:song.measures[13].end});
  double(15);document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));expect(song.loops).toHaveLength(2);vi.useRealTimers();
+});
+
+for (const environment of ['web','portable'] as const) for (const pointerType of ['mouse','touch']) for (const view of ['ribbon','rows'] as const)
+it(`${environment}/${view}: one ${pointerType} tap plays the selected measure, different measures only select`, async () => {
+  vi.useFakeTimers();
+  try {
+    const {root,p,song,screen}=mount(environment);song.settings.view=view;screen.renderTrack();
+    const tap=(index:number)=>{for(const type of ['pointerdown','pointerup']){const e=new MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:100,clientY:100});Object.assign(e,{pointerId:1,pointerType,isPrimary:true});root.querySelector(`[data-index="${index}"]`)!.dispatchEvent(e);}};
+    tap(3);await vi.advanceTimersByTimeAsync(300);expect(p.play).not.toHaveBeenCalled();
+    tap(3);await vi.advanceTimersByTimeAsync(300);expect(p.play).toHaveBeenCalledTimes(1);expect(p.position).toBe(song.measures[3].start);
+    p.pause();document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+    const paused=p.position;expect(paused).toBe(song.measures[3].start);
+    tap(4);await vi.advanceTimersByTimeAsync(300);expect(p.play).toHaveBeenCalledTimes(2);expect(p.position).toBe(song.measures[4].start);
+  } finally { vi.useRealTimers(); }
+});
+for(const environment of ['web','portable'] as const) it(`${environment}: selected taps during Enter range entry cannot start playback`, async()=>{
+  vi.useFakeTimers();
+  try {
+    const {root,p,screen}=mount(environment);screen.renderTrack();
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
+    for(const type of ['pointerdown','pointerup']){const e=new MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:100,clientY:100});Object.assign(e,{pointerId:1,pointerType:'mouse',isPrimary:true});root.querySelector('[data-index="1"]')!.dispatchEvent(e);}
+    await vi.advanceTimersByTimeAsync(300);expect(p.play).not.toHaveBeenCalled();
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  } finally { vi.useRealTimers(); }
+});
+
+for(const environment of ['web','portable'] as const) it(`${environment}: double clicking the already selected measure registers a range, never plays`,()=>{
+  vi.useFakeTimers();
+  try {
+    const {root,p,song}=mount(environment);song.loops=[];song.repeatSlots=[];
+    for(let i=0;i<2;i++)for(const type of ['pointerdown','pointerup']){const e=new MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:100,clientY:100});Object.assign(e,{pointerId:1,pointerType:'mouse',isPrimary:true});root.querySelector('[data-index="0"]')!.dispatchEvent(e);}
+    vi.advanceTimersByTime(300);expect(p.play).not.toHaveBeenCalled();expect(root.querySelector('#loop-slots')!.textContent).toContain('1~?');
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    const stage=root.querySelector('#stage')!;
+    for(const type of ['pointerdown','pointerup']){const e=new MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:100,clientY:100});Object.assign(e,{pointerId:1,pointerType:'mouse',isPrimary:true});stage.dispatchEvent(e);}
+    vi.advanceTimersByTime(300);expect(p.play).not.toHaveBeenCalled();
+  } finally {vi.useRealTimers();}
 });

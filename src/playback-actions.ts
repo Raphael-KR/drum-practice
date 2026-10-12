@@ -197,6 +197,7 @@ export function attachPlaybackGestures(
     seek: (t: number) => void;
     selected: (index: number, time: number) => void;
     pausedDoubleTap?: (index: number) => void;
+    pausedTap?: (index: number) => boolean;
     fail: (e: unknown) => void;
     target?: (e: PointerEvent) => number;
     start: () => void;
@@ -204,6 +205,7 @@ export function attachPlaybackGestures(
     finish: (cancel: boolean) => void;
   },
 ) {
+  let tappedMeasure = false;
   return attachScoreGestures<number>(stage, {
     isPlaying: () => h.ready() && h.player().playing,
     horizontalEnabled: () => h.ready() && h.song().settings.view !== "rows",
@@ -214,12 +216,14 @@ export function attachPlaybackGestures(
       const measure = (e.target as Element).closest<HTMLElement>(
         "[data-index]",
       );
+      tappedMeasure = !!measure;
       return measure
         ? Number(measure.dataset.index)
         : (h.target?.(e) ?? locate(h.song(), h.player().current()).index);
     },
     prepareAudio: h.prepare,
     pausedDoubleTap: h.pausedDoubleTap,
+    pausedTap: index => tappedMeasure && (h.pausedTap?.(index) ?? false),
     pause: h.pause,
     seek: (index, resume) => {
       if (!h.ready()) return;

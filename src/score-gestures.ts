@@ -13,6 +13,8 @@ export interface ScoreGestureCallbacks<T> {
   /** Resume/unlock AudioContext while pointer-down still has user activation. */
   prepareAudio?(): void;
   pausedDoubleTap?(target: T): void;
+  /** Return true when a paused single tap was handled (e.g. selected-bar play). */
+  pausedTap?(target: T): boolean;
   pause(): void;
   seek(target: T, resumePlaying: boolean): void;
   scrubStart(wasPlaying: boolean): void;
@@ -184,7 +186,7 @@ export function attachScoreGestures<T>(
       if (pending?.timer !== timer) return;
       const tap = pending;
       pending = undefined;
-      if (!tap.wasPlaying) callbacks.seek(tap.target, false);
+      if (!tap.wasPlaying && !callbacks.pausedTap?.(tap.target)) callbacks.seek(tap.target, false);
     }, TAP_DELAY);
     pending = {
       x: finished.x,
