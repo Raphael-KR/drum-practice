@@ -294,3 +294,9 @@ Sites 버전2 발행 성공(2026-09-21 09:29 KST). 발행 소스 커밋은 `5966
 - deployment appgdep_6ac4ed3eab0c8191a6aba8289ea88ed8, succeeded, 2026-10-06T12:45:09.867806+00:00.
 - URL https://drum-practice-studio.dgkma.chatgpt.site. 공개 범위 유지, dist/player만 발행. native 성공 응답으로 발행 확인.
 - 시작전 손플기 SoCal 메타정보 정정 패키지 public/dist SHA256 8994b17b75385fd0fc46ebf954506ef352297c05b51f5581160fa260a59e0c04 일치.
+
+## 2026-10-13 06:15 KST — player0.6.38 / 음원 전용 연습
+- 정본 main9f18100 push 완료. editor0.6.30 로컬 전용 유지, player0.6.38/build a8f7a01de3c5만 공개.
+- Sites 버전55, 소스d3a31b979ec652db51e7e7319ccacdd0795899b4, 배포appgdep_6acd4dfd8d8c8191bb46fc5259df42ed succeeded.
+- 통합 악보·음원 가져오기, 로컬 음원 보관·박자 맞추기·파형 연습과 아이폰 목록 상단 배치 포함. 전체549테스트 및 분리빌드/경계검사 통과.
+- 기존 공개 범위 유지. 원본MP3 테스트 파일은 Git/발행 대상에서 제외했다. dist/player17파일 미러 일치 및 공개HTTP200/player JS 바이트·빌드번호 일치 확인. 실물iPhone/iPad 검증은 미수행.

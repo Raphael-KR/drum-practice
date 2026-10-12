@@ -3685,3 +3685,8 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 사용자 요청에 따라 음원 연습/통합 가져오기와 선행 아이폰 목록 상단 배치를 발행한다. 공통 재생·모델 및 제작기 목록 필터 변경으로 editor0.6.30/player0.6.38로 올렸으며 제작기는 로컬 전용을 유지한다.
 - 기존 구현 검증: 전체102파일549테스트, 실제MP3 브라우저 검증. 버전 반영 분리 빌드·타입·i18n·앱경계 및 공통재생 검사 결과를 확인한다. 미추적 .tmp/tmp/output/범례 이미지는 보존하고 커밋에서 제외한다.
 - 발행 대상: 기존public Sites 프로젝트의 dist/player. 배포 결과는 후속 기록한다.
+
+## 2026-10-13 — 드럼연습실0.6.38 발행 완료
+- 기능 커밋9f18100b3bb8f475a0ce7d4fdb613c7785230048을GitHub main에푸시했다. editor0.6.30은 로컬 전용이며 player0.6.38/build a8f7a01de3c5만 기존public Sites에발행했다.
+- dist/player17파일과 발행사본 바이트 일치, 루트index=player.html 확인. Sites 소스d3a31b979ec652db51e7e7319ccacdd0795899b4, 저장버전55(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_a47eda3704108191a7b0fb42e8857414), 배포appgdep_6acd4dfd8d8c8191bb46fc5259df42ed succeeded.
+- 공개 URL HTTP200, player 진입점 및 공개JS의 로컬빌드 바이트/소스번호 일치 확인. 브라우저 기능 검증은 발행 전 로컬MP3 검사 기준이며 실제iPhone/iPad Safari 검증 한계는 유지한다.
