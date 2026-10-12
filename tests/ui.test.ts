@@ -387,7 +387,7 @@ it("keeps icon controls accessible and updates play and metronome states", async
 it("offers tempo presets and previews single-BPM dragging until release", async () => {
   click("original-tempo");
   expect(document.getElementById("tempo-dialog")!.hasAttribute("open")).toBe(true);
-  expect(document.querySelectorAll("#tempo-options button")).toHaveLength(6);
+  expect(document.querySelectorAll("#tempo-options button")).toHaveLength(9);
   expect(document.querySelectorAll('#tempo-dialog [data-tempo="94"]')).toHaveLength(1);
   expect(document.getElementById("tempo-reset")).not.toBeNull();
   (document.querySelector('[data-tempo="75"]') as HTMLButtonElement).click();
@@ -436,7 +436,7 @@ it("keeps centred repeat anchored when changing radius and uses inclusive end ba
   click('home');
   expect(document.querySelector('[data-loop-radius="1"]')!.textContent).toBe('24~26');
 });
-it("selects a measure on single tap and plays that measure on double tap", async () => {
+it("selects a measure on single tap and starts range registration on paused double tap", async () => {
   const view = document.getElementById('view') as HTMLSelectElement;
   const oldView = view.value;
   view.value='rows'; view.dispatchEvent(new Event('change'));
@@ -464,9 +464,9 @@ it("selects a measure on single tap and plays that measure on double tap", async
   await new Promise(ok=>setTimeout(ok,300));
   animationFrame(0);
   expect(Number((document.getElementById('seek') as HTMLInputElement).value)).toBeCloseTo(song.measures[6].start);
-  expect(document.getElementById('play')!.getAttribute('aria-label')).toBe('일시정지');
-  expect([...stage.querySelectorAll<HTMLElement>('[data-index]')].slice(0,4).map(el=>Number(el.dataset.index))).toEqual([4,5,6,7]);
-  click('play'); animationFrame(0);
+  expect(document.getElementById('play')!.getAttribute('aria-label')).toBe('재생');
+  expect(document.querySelector('#loop-slots')!.textContent).toContain('7~?');
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));
   // Starting with the dedicated play button must also put an odd row on top.
   click('play'); animationFrame(0);
   expect([...stage.querySelectorAll<HTMLElement>('[data-index]')].slice(0,4).map(el=>Number(el.dataset.index))).toEqual([4,5,6,7]);

@@ -17,11 +17,8 @@
   },
   {
     "id": "tom-moving-video-v2",
-    "title": "탐탐 무빙 연습 (28마디)",
+    "title": "탐탐 무빙 연습",
     "file": "scores/tom-moving.drumscore",
-    "category": "basic",
-    "legacyIds": [
-      "tom-moving-original-v1"
-    ]
+    "category": "basic"
   }
 ]

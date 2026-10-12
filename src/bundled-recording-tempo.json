@@ -1,0 +1,11 @@
+{
+  "loveholic-003e2b2a": {
+    "version": 1,
+    "scoreBpm": 136,
+    "bpmEstimate": 136.232,
+    "firstBeatEstimateSeconds": 0.193,
+    "audioSHA256": "ed2c7052c12e64f0a67cf3927dcd249c50493b27a19b60ab9597d8df1b08309b",
+    "method": "score-onset / three-band log spectral-flux correlation; estimate only",
+    "status": "signal-estimate; not listening-confirmed"
+  }
+}

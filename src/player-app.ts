@@ -1,4 +1,6 @@
+import { RETIRED_SCORE_ID } from "./score-database";
 import { titleOrderFieldsHTML } from "./playback-forms";
+import { recordingTempoUpgrade } from "./recording-tempo";
 import { readTitleOrder, saveTitleOrder, type TitleOrder } from "./song-title";
 import { downloadScore } from "./download-score";
 import { beginLoadTiming, recordLoadTiming } from "./load-timing";
@@ -24,9 +26,8 @@ import {
   removePracticeRecord,
   loadPracticeRecord,
   savePracticeState,
+  savePracticeCanonicalMetadata,
   importPracticeRecord,
-  listPracticeArchives,
-  restorePracticeArchive,
 } from "./practice-library";
 import { mountPlaybackRuntime } from "./playback-runtime";
 import { playbackInitial, type PlaybackInitial } from "./playback-export";
@@ -103,9 +104,37 @@ async function openRecord(id: string) {
     // Let the loading indicator paint before score parsing/rendering starts.
     await new Promise<void>(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
     timing.stage("read");
-    let record = await loadPracticeRecord(id);
+    const basic = bundledScores.find(score => score.id === id && "category" in score && score.category === "basic");
+    let record;
+    if (basic) {
+      const blob = await downloadScore(`${import.meta.env.BASE_URL}${basic.file}`, percent => {
+        message.textContent = percent === null ? t("library.downloading") : t("library.downloadPercent", { percent });
+      });
+      record = await readScorePackage(blob);
+      if (record.song.id !== id) throw Error("Basic score ID mismatch");
+      const current = await loadPracticeRecord(id);
+      let unchanged = !!current && current.canonicalXML === record.canonicalXML &&
+        current.song.title === record.song.title && current.song.artist === record.song.artist;
+      if (unchanged && current) {
+        const oldAssets = [current.pdf, current.audio, ...current.pages];
+        const newAssets = [record.pdf, record.audio, ...record.pages];
+        unchanged = oldAssets.length === newAssets.length && (await Promise.all(oldAssets.map(async (asset, index) => {
+          const next = newAssets[index];
+          if (asset.size !== next.size || asset.type !== next.type) return false;
+          const [a, b] = await Promise.all([asset.arrayBuffer(), next.arrayBuffer()]);
+          const bytes = new Uint8Array(b);
+          return new Uint8Array(a).every((byte, i) => byte === bytes[i]);
+        }))).every(Boolean);
+      }
+      if (unchanged && current) record = current;
+      else await importPracticeRecord(record);
+    } else record = await loadPracticeRecord(id);
     timing.stage("opening");
     if (!record) throw Error(t("separation.missing"));
+    const upgradedXML = await recordingTempoUpgrade(record);
+    if (upgradedXML && await savePracticeCanonicalMetadata(id, record.canonicalXML!, upgradedXML)) {
+      record.canonicalXML = upgradedXML;
+    }
     await closePlayback();
     timing.stage("conversion");
     message.textContent = t("library.loadingConvert");
@@ -166,37 +195,6 @@ async function openRecord(id: string) {
     working = false;
   }
 }
-function resolveConflict(): Promise<"replace" | "keep-existing"> {
-  return new Promise((resolve) => {
-    const dialog = createDialog(
-      "package-conflict",
-      t("separation.conflictTitle"),
-      "tool-dialog",
-      root,
-    );
-    const body = document.createElement("div");
-    body.className = "tool-body";
-    body.innerHTML = `<p>${escapeHTML(t("separation.conflictBody"))}</p><div class="package-choice"><button id="keep-package" title="${escapeHTML(t("separation.keep"))}">${escapeHTML(t("separation.keep"))}</button><button id="replace-package" title="${escapeHTML(t("separation.replace"))}">${escapeHTML(t("separation.replace"))}</button></div>`;
-    dialog.append(body);
-    let choice: "replace" | "keep-existing" = "keep-existing";
-    body
-      .querySelector("#keep-package")!
-      .addEventListener("click", () => dialog.close());
-    body.querySelector("#replace-package")!.addEventListener("click", () => {
-      choice = "replace";
-      dialog.close();
-    });
-    dialog.addEventListener(
-      "close",
-      () => {
-        dialog.remove();
-        resolve(choice);
-      },
-      { once: true },
-    );
-    dialog.showModal();
-  });
-}
 async function importFile(file: File, ownsLock = false) {
   if (working && !ownsLock) return;
   working = true;
@@ -208,9 +206,7 @@ async function importFile(file: File, ownsLock = false) {
   try {
     const record = await readScorePackage(file);
     stage = t("library.stageSave");
-    let result = await importPracticeRecord(record);
-    if (result.status === "conflict")
-      result = await importPracticeRecord(record, await resolveConflict());
+    await importPracticeRecord(record);
     if (epoch !== importEpoch) return;
     stage = t("library.stageList");
     await showLibrary();
@@ -221,28 +217,10 @@ async function importFile(file: File, ownsLock = false) {
     if (input) input.disabled = false;
   }
 }
-async function restore(id: string) {
-  if (working) return;
-  const archives = await listPracticeArchives(id);
-  if (!archives.length) return;
-  if (!window.confirm(t("separation.restoreConfirm"))) return;
-  working = true;
-  try {
-    await restorePracticeArchive(archives[0].id);
-    await showLibrary();
-  } catch (e) {
-    report(e);
-  } finally {
-    working = false;
-  }
-}
-function bundledButton(score: (typeof bundledScores)[number], update = false) {
+function bundledButton(score: (typeof bundledScores)[number]) {
   const button = document.createElement("button");
-  button.textContent = t(
-    update ? "separation.updateBundled" : "separation.loadBundled",
-  );
-  if (update) setIconButton(button, icon("reload"), t("separation.updateBundled"));
-  button.title = t(update ? "library.tipUpdate" : "library.tipDownload");
+  button.textContent = t("separation.loadBundled");
+  button.title = t("library.tipDownload");
   button.onclick = async () => {
     if (working || button.disabled) return;
     working = true;
@@ -323,15 +301,18 @@ export async function showLibrary() {
   const basicList = document.getElementById("basic-practice-records")!;
   const personalList = document.getElementById("personal-practice-records")!;
   const favoriteList = document.getElementById("favorite-practice-records")!;
-  // Earlier score editions retain separate records, but belong to the same section.
+  // Classify only current bundled basic exercises.
   const basicIds = new Set(bundledScores
     .filter((s) => "category" in s && s.category === "basic")
-    .flatMap((s) => [s.id, ...("legacyIds" in s ? s.legacyIds ?? [] : [])]));
+    .map((s) => s.id));
   const listFor = (id: string) => basicIds.has(id) ? basicList : personalList;
   let favorites = new Set<string>();
   try {
     const stored: unknown = JSON.parse(localStorage.getItem("drum-practice:favorite-scores") || "[]");
-    if (Array.isArray(stored)) favorites = new Set(stored.filter((id): id is string => typeof id === "string"));
+    if (Array.isArray(stored)) {
+      favorites = new Set(stored.filter((id): id is string => typeof id === "string" && id !== RETIRED_SCORE_ID));
+      if (stored.includes(RETIRED_SCORE_ID)) localStorage.setItem("drum-practice:favorite-scores", JSON.stringify([...favorites]));
+    }
   } catch { /* Invalid or unavailable preferences leave the score list usable. */ }
   const sortFavorites = () => {
     const cards = [favoriteList, basicList, personalList].flatMap(list => Array.from(list.children)) as HTMLElement[];
@@ -372,7 +353,7 @@ export async function showLibrary() {
     card.prepend(favorite);
     listFor(id).append(card);
   };
-  const records = await listPracticeRecords();
+  const records = (await listPracticeRecords()).filter(record => record.song.id !== RETIRED_SCORE_ID);
   if (epoch !== libraryEpoch) return;
   for (const record of records) {
     const item = document.createElement("article");
@@ -397,22 +378,6 @@ export async function showLibrary() {
       }
     };
     item.querySelector(".practice-card-actions")!.append(remove);
-    const bundled = bundledScores.find((s) => s.id === record.song.id);
-    if (bundled)
-      item
-        .querySelector(".practice-card-actions")!
-        .append(bundledButton(bundled, true));
-    const archived = await listPracticeArchives(record.song.id);
-    if (epoch !== libraryEpoch) return;
-    if (archived.length) {
-      const button = document.createElement("button");
-      setIconButton(button, icon("rewind"), t("separation.restore"));
-      button.title = t("library.tipRestore");
-      button.onclick = () => {
-        void restore(record.song.id).catch(report);
-      };
-      item.querySelector(".practice-card-actions")!.append(button);
-    }
     appendCard(record.song.id, item);
   }
   const live = new Set(records.map((r) => r.song.id));
@@ -429,32 +394,6 @@ export async function showLibrary() {
     appendCard(score.id, item);
   }
 
-  const archives = await listPracticeArchives();
-  if (epoch !== libraryEpoch) return;
-  const removed = archives.filter((a) => !live.has(a.record.song.id));
-  const seen = new Set<string>();
-  for (const archive of removed) {
-    const id = archive.record.song.id;
-    if (seen.has(id)) continue;
-    seen.add(id);
-    const item = document.createElement("article");
-    item.className = "practice-card";
-    const name = document.createElement("h3");
-    name.textContent = archive.record.song.title;
-    const button = document.createElement("button");
-    button.textContent = t("separation.restoreRemoved");
-    button.title = t("library.tipRestoreRemoved");
-    button.onclick = () => {
-      void restore(id).catch(report);
-    };
-    const heading = document.createElement("div");
-    heading.className = "practice-card-title";
-    const artist = document.createElement("p");
-    artist.textContent = archive.record.song.artist || "";
-    heading.append(name, artist);
-    item.append(heading, button);
-    appendCard(id, item);
-  }
   // Catalog order is stable even when stored records are read in a different order.
   const order = new Map(bundledScores.map((score, index) => [score.id, index]));
   const cards = Array.from(basicList.children) as HTMLElement[];

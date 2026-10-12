@@ -11,6 +11,7 @@ import {
   scoreStageHTML,
 } from "../src/playback-ui";
 import {
+  appInfoHTML,
   playbackTransportRightHTML,
   repeatBarHTML,
   tempoFieldsHTML,
@@ -43,7 +44,7 @@ afterEach(() => {
     .forEach((fn) => fn());
   vi.unstubAllGlobals();
 });
-function mount(environment: "web" | "portable", alignPDF = false) {
+function mount(environment: "web" | "portable", alignPDF = false, canonicalXML?: string) {
   const ids = {
     ...(environment === "web" ? webPlaybackBindings : portablePlaybackBindings),
     rewindButton: "back",
@@ -53,7 +54,7 @@ function mount(environment: "web" | "portable", alignPDF = false) {
   };
   const root = document.createElement("div");
   document.body.replaceChildren(root);
-  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: playbackTransportRightHTML({ progress: ids.progress, mark: ids.mark, sound: ids.sound }) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog">${loopFieldsHTML()}<div id="loop-slots"></div></dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}`;
+  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: playbackTransportRightHTML({ progress: ids.progress, mark: ids.mark, sound: ids.sound }) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog">${loopFieldsHTML()}<div id="loop-slots"></div></dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}${appInfoHTML("test", { source: "test", builtAt: "2026-10-13T00:00:00Z" })}`;
   const stage = root.querySelector<HTMLElement>("#stage")!;
   Object.defineProperty(stage, "clientWidth", {
     value: 800,
@@ -100,6 +101,7 @@ function mount(environment: "web" | "portable", alignPDF = false) {
     root,
     environment,
     ids,
+    canonicalXML: () => canonicalXML,
     song: () => song,
     player: () => p as unknown as Player,
     ready: () => true,
@@ -183,7 +185,7 @@ for (const environment of ["web", "portable"] as const) {
   it(`${environment}: tempo uses shared presets, bounds, invalid-input recovery, sound and preferences`, async () => {
     const { screen, p, song, ids, input, click, prefs } = mount(environment);
     click(ids.tempo);
-    expect(document.querySelectorAll("[data-tempo]").length).toBeGreaterThan(3);
+    expect(document.querySelectorAll("#tempo-options [data-tempo]")).toHaveLength(9);
     await screen.rate(10000);
     expect(song.settings.rate).toBe(1.2);
     await expect(screen.rate(NaN)).rejects.toThrow();
@@ -363,4 +365,117 @@ it('measure counter seeks to the selected measure start, including the last meas
    input(ids.progress).dispatchEvent(new Event('change'));
    expect(p.position).toBe(song.measures[number-1].start);
  }
+});
+
+it("shows recording estimates in app info and resets audio to exactly 1 after manual practice rate", async () => {
+  const metadata = { version: 1, scoreBpm: 136, bpmEstimate: 136.232, firstBeatEstimateSeconds: .193, audioSHA256: "a".repeat(64), method: "signal", status: "estimate" };
+  const xml = `<score-partwise><identification><miscellaneous><miscellaneous-field name="drum-practice:recording-tempo:v1">${JSON.stringify(metadata)}</miscellaneous-field></miscellaneous></identification></score-partwise>`;
+  const { screen, p, song, click, ids } = mount("portable", false, xml);
+  song.bpm = 136;
+  click(ids.tempo);
+  expect(document.getElementById("recording-tempo-info")!.textContent).toContain("136.232");
+  expect(document.getElementById("recording-tempo-info")!.textContent).toContain("악보 136 BPM");
+  expect(document.getElementById("recording-tempo-info")!.closest(".app-info")).not.toBeNull();
+  expect(document.querySelector("#tempo-dialog p")).toBeNull();
+  expect(document.querySelector("#tempo-dialog .tempo-number")!.getAttribute("title")).toContain("오른쪽·위로");
+  await screen.rate(100);
+  expect(song.settings.rate).toBeCloseTo(100 / 136.232);
+  expect(document.getElementById(ids.tempoInput)!.getAttribute("aria-valuenow")).toBe("100");
+  expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡");
+  click("tempo-reset");
+  await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(1));
+  expect(song.bpm).toBe(136);
+  expect(song.settings.rate).toBe(1);
+  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
+  expect(document.getElementById(ids.tempo)!.textContent).toContain("136");
+  expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("true");
+  await screen.rate(136);
+  expect(p.setRate).toHaveBeenLastCalledWith(136 / 136.232);
+  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
+  expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("false");
+});
+for (const environment of ['web','portable'] as const) it(`${environment}: vertical arrows select the same column in adjacent rows without jumping at missing cells`, () => {
+ const {song,p,screen,ids}=mount(environment);song.settings.view='rows';screen.renderTrack();
+ const selected=()=>Number((document.getElementById(ids.progress) as HTMLInputElement).value)-1;
+ const key=(key:string)=>{const e=new KeyboardEvent('keydown',{key,cancelable:true});document.dispatchEvent(e);screen.frame();return e;};
+ p.position=song.measures[1].start+.1;
+ expect(key('ArrowDown').defaultPrevented).toBe(true);expect(selected()).toBe(5);
+ key('ArrowDown');expect(selected()).toBe(9);
+ key('ArrowUp');expect(selected()).toBe(5);
+ key('ArrowUp');expect(selected()).toBe(1);
+ key('ArrowUp');expect(selected()).toBe(1);
+ key('ArrowRight');expect(selected()).toBe(2);
+ key('ArrowDown');expect(selected()).toBe(6);
+ // The fixture has 110 measures: the final row has only columns 1 and 2.
+ screen.seek(song.measures[106].start);key('ArrowDown');expect(selected()).toBe(106);
+ screen.seek(song.measures[109].start);key('ArrowDown');expect(selected()).toBe(109);
+ screen.seek(song.measures[105].start);key('ArrowDown');expect(selected()).toBe(109);
+ song.settings.view='ribbon';expect(key('ArrowUp').defaultPrevented).toBe(false);expect(selected()).toBe(109);
+});
+for (const environment of ['web','portable'] as const) it(`${environment}: Enter registers a range while arrow keys continue navigating between endpoints`,()=>{
+ const {p,song,screen,root,ids}=mount(environment);
+ const selected=()=>Number((document.getElementById(ids.progress) as HTMLInputElement).value)-1;song.settings.view='rows';screen.renderTrack();
+ const key=(key:string)=>{document.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));screen.frame();};
+ p.position=song.measures[1].start;key('Enter');expect(root.querySelector('.loop-slots')?.textContent ?? root.querySelector('#loop-slots')!.textContent).toContain('2~?');
+ key('ArrowDown');expect(selected()).toBe(5);key('ArrowRight');expect(selected()).toBe(6);
+ key('Enter');expect(song.loops.at(-1)).toMatchObject({start:song.measures[1].start,end:song.measures[6].end});
+ expect(root.querySelector('#loop-slots')!.textContent).toContain('2~7');
+});
+for(const environment of ['web','portable'] as const)it(`${environment}: Latin M and Korean physical M both toggle the current measure marker`,()=>{
+ const {p,song,screen}=mount(environment);song.markers=[];song.markerSlots=[];p.position=song.measures[4].start+.1;
+ const key=(key:string,isComposing=false)=>{document.dispatchEvent(new KeyboardEvent('keydown',{key,code:'KeyM',isComposing,cancelable:true}));screen.frame();};
+ key('m');expect(song.markers).toHaveLength(1);expect(song.markers[0].time).toBe(song.measures[4].start);
+ key('M');expect(song.markers).toHaveLength(0);
+ key('ㅡ');expect(song.markers).toHaveLength(1);
+ key('Process',true);expect(song.markers).toHaveLength(0);
+});
+
+for(const environment of ['web','portable'] as const)for(const view of ['ribbon','rows'] as const)it(`${environment} ${view}: selection leaves paused playback and shading fixed, then Play starts selected bar`,async()=>{
+ const {p,song,screen,root,ids}=mount(environment);song.settings.view=view;screen.renderTrack();
+ const paused=song.measures[4].start+.3;screen.seek(paused);screen.frame();
+ const shade=()=>Array.from(root.querySelectorAll<HTMLElement>('.measure')).map(e=>e.style.getPropertyValue('--played'));
+ const before=shade();const playhead=root.querySelector<HTMLElement>('#stage')!.style.getPropertyValue('--playhead-x');
+ document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',cancelable:true}));screen.frame();
+ expect(p.position).toBe(paused);expect(shade()).toEqual(before);
+ expect(root.querySelector<HTMLElement>('#stage')!.style.getPropertyValue('--playhead-x')).toBe(playhead);
+ expect(Number((document.getElementById(ids.progress) as HTMLInputElement).value)).toBe(6);
+ document.dispatchEvent(new KeyboardEvent('keydown',{key:'M',code:'KeyM',cancelable:true}));
+ expect(song.markers.at(-1)?.time).toBe(song.measures[5].start);expect(p.position).toBe(paused);
+ await screen.toggle();expect(p.playing).toBe(true);expect(p.position).toBe(song.measures[5].start);
+});
+
+for(const environment of ['web','portable'] as const)for(const view of ['rows','ribbon'] as const)it(`${environment} ${view}: saved ranges remain marked without active repeat and disappear after deletion`,()=>{
+ const {p,song,screen,root}=mount(environment);song.settings.view=view;
+ song.loops=[{id:'saved-range',name:'2~4',start:song.measures[1].start,end:song.measures[3].end}];song.repeatSlots=['saved-range'];p.loop=undefined;
+ screen.renderTrack();screen.frame();
+ const marked=()=>Array.from(root.querySelectorAll<HTMLElement>('.has-saved-loop')).map(e=>Number(e.dataset.index));
+ expect(marked()).toEqual([1,2,3]);expect(root.querySelector('.in-loop')).toBeNull();
+ document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',cancelable:true}));screen.frame();expect(marked()).toEqual([1,2,3]);
+ song.loops=[];song.repeatSlots=[];screen.frame();expect(marked()).toEqual([]);
+});
+for(const environment of ['web','portable'] as const)it(`${environment}: range buttons jump from keyboard selection and delete at the selected start measure`,()=>{
+ const {p,song,screen,root,ids}=mount(environment);
+ song.loops=[{id:'range',name:'6~8',start:song.measures[5].start,end:song.measures[7].end}];song.repeatSlots=['range'];screen.renderLists();
+ const key=(key:string)=>{document.dispatchEvent(new KeyboardEvent('keydown',{key,cancelable:true}));screen.frame();};
+ key('ArrowRight');root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();screen.frame();
+ expect(p.position).toBe(song.measures[5].start);expect(Number((document.getElementById(ids.progress) as HTMLInputElement).value)).toBe(6);expect(song.loops).toHaveLength(1);
+ screen.seek(song.measures[4].start);key('ArrowRight');expect(p.position).toBe(song.measures[4].start);
+ root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();screen.frame();expect(song.loops).toHaveLength(0);expect(p.loop).toBeUndefined();
+});
+
+for(const environment of ['web','portable'] as const)it(`${environment}: entering range selection preserves the browsed two-row viewport and score DOM`,()=>{
+ const {song,screen,root,p}=mount(environment);song.settings.view='rows';screen.renderTrack();screen.frame();
+ const stage=root.querySelector<HTMLElement>('#stage')!,first=root.querySelector('.measure');stage.scrollTop=728;
+ root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();screen.frame();
+ expect(stage.scrollTop).toBe(728);expect(root.querySelector('.measure')).toBe(first);expect(stage.classList.contains('range-selection-mode')).toBe(true);expect(p.position).toBe(0);
+ document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));screen.frame();expect(stage.scrollTop).toBe(728);
+});
+
+for(const environment of ['web','portable'] as const)it(`${environment}: paused double clicks register inclusive endpoints without seeking or playing`,()=>{
+ vi.useFakeTimers();const {song,screen,root,p}=mount(environment);screen.renderTrack();screen.frame();
+ const double=(index:number)=>{for(let i=0;i<2;i++)for(const type of ['pointerdown','pointerup']){const e=new MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:100,clientY:100});Object.assign(e,{pointerId:1,pointerType:'mouse',isPrimary:true});root.querySelector(`[data-index="${index}"]`)!.dispatchEvent(e);}};
+ double(5);expect(song.loops).toHaveLength(0);expect(root.querySelector('#loop-slots')!.textContent).toContain('6~?');expect(p.position).toBe(0);
+ double(9);vi.advanceTimersByTime(300);expect(song.loops.at(-1)).toMatchObject({start:song.measures[5].start,end:song.measures[9].end});expect(p.play).not.toHaveBeenCalled();expect(p.position).toBe(0);
+ double(12);document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'}));document.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',cancelable:true}));expect(song.loops.at(-1)).toMatchObject({start:song.measures[12].start,end:song.measures[13].end});
+ double(15);document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));expect(song.loops).toHaveLength(2);vi.useRealTimers();
 });

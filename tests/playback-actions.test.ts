@@ -215,3 +215,68 @@ it.each([false, true])('preserves four slots before an incomplete final row (uni
  renderScoreRows(h,state,116);
  expect(stage.scrollTop).toBe(28*200);
 });
+it("handles vertical arrows only in rows and leaves numeric editing and dialogs alone", () => {
+  document.body.innerHTML = '<input><dialog></dialog>';
+  let rows = true;
+  const rowStep = vi.fn(), step = vi.fn();
+  const dispose = installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark:vi.fn(),step,rows:()=>rows,rowStep});
+  const down = new KeyboardEvent('keydown',{key:'ArrowDown',cancelable:true});document.dispatchEvent(down);
+  expect(down.defaultPrevented).toBe(true);expect(rowStep).toHaveBeenLastCalledWith(1);
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',repeat:true}));
+  expect(rowStep).toHaveBeenLastCalledWith(-1);
+  const calls = rowStep.mock.calls.length;
+  document.querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
+  document.querySelector('dialog')!.setAttribute('open','');
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown'}));
+  expect(rowStep).toHaveBeenCalledTimes(calls);
+  document.querySelector('dialog')!.removeAttribute('open');rows=false;
+  const ribbon = new KeyboardEvent('keydown',{key:'ArrowDown',cancelable:true});document.dispatchEvent(ribbon);
+  expect(ribbon.defaultPrevented).toBe(false);expect(rowStep).toHaveBeenCalledTimes(calls);
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'}));expect(step).toHaveBeenLastCalledWith(1);
+  dispose();
+});
+it.each([
+ {key:'m',code:'KeyM'},
+ {key:'M',code:'KeyM',shiftKey:true},
+ {key:'ㅡ',code:'KeyM'},
+ {key:'Process',code:'KeyM',isComposing:true},
+ {key:'ㅡ',code:''},
+])('M marker shortcut accepts Latin and Korean input: $key/$code',event=>{
+ document.body.innerHTML='';const mark=vi.fn();
+ const dispose=installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark,step:vi.fn()});
+ const e=new KeyboardEvent('keydown',{...event,cancelable:true});document.dispatchEvent(e);
+ expect(mark).toHaveBeenCalledOnce();expect(e.defaultPrevented).toBe(true);
+ document.dispatchEvent(new KeyboardEvent('keydown',{...event,repeat:true}));expect(mark).toHaveBeenCalledOnce();
+ dispose();
+});
+it('leaves M typing in editable fields and open dialogs unchanged',()=>{
+ document.body.innerHTML='<input><textarea></textarea><div contenteditable="true"></div><dialog></dialog>';
+ const mark=vi.fn();const dispose=installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark,step:vi.fn()});
+ for(const target of document.querySelectorAll('input,textarea,[contenteditable]')){
+  const e=new KeyboardEvent('keydown',{key:'ㅡ',code:'KeyM',isComposing:true,bubbles:true,cancelable:true});target.dispatchEvent(e);expect(e.defaultPrevented).toBe(false);
+ }
+ document.querySelector('dialog')!.setAttribute('open','');document.dispatchEvent(new KeyboardEvent('keydown',{key:'M',code:'KeyM'}));expect(mark).not.toHaveBeenCalled();dispose();
+});
+it('does not turn modified browser shortcuts into marker toggles',()=>{
+ document.body.innerHTML='';const mark=vi.fn();const dispose=installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark,step:vi.fn()});
+ for(const modifier of ['ctrlKey','altKey','metaKey']){const e=new KeyboardEvent('keydown',{key:'m',code:'KeyM',[modifier]:true,cancelable:true});document.dispatchEvent(e);expect(e.defaultPrevented).toBe(false);}
+ expect(mark).not.toHaveBeenCalled();dispose();
+});
+it('keeps the paused two-row viewport fixed when selection moves between its visible rows',()=>{
+ const stage=document.createElement('div'),ribbon=document.createElement('div');stage.append(ribbon);
+ Object.defineProperty(stage,'clientWidth',{value:800});
+ stage.getBoundingClientRect=()=>({top:0,bottom:400,height:400} as DOMRect);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({measures:Array.from({length:24},()=>({}))}) as Song,playing:false,scrubbing:false,resume:false,
+ measureHTML:(_:unknown,i:number)=>`<div data-index="${i}"></div>`,layoutLyrics:()=>{
+  [...ribbon.querySelectorAll<HTMLElement>('.browse-row')].forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+  [...ribbon.querySelectorAll<HTMLElement>('[data-index]')].forEach(el=>el.getBoundingClientRect=()=>{const top=28+Math.floor(Number(el.dataset.index)/4)*200-stage.scrollTop;return {top,bottom:top+172,height:172} as DOMRect;});
+ }};
+ renderScoreRows(h,state,1);expect(stage.scrollTop).toBe(0);
+ renderScoreRows(h,state,5);expect(stage.scrollTop).toBe(0);
+ renderScoreRows(h,state,1);expect(stage.scrollTop).toBe(0);
+ renderScoreRows(h,state,9);expect(stage.scrollTop).toBe(200);
+ renderScoreRows(h,state,13);expect(stage.scrollTop).toBe(400);
+ renderScoreRows(h,state,9);expect(stage.scrollTop).toBe(400);
+ renderScoreRows(h,state,5);expect(stage.scrollTop).toBe(200);
+});

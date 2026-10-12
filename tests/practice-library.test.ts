@@ -4,10 +4,9 @@ import { defaults, type Song } from "../src/model";
 import type { RecordData } from "../src/storage";
 import {
   importPracticeRecord,
-  listPracticeArchives,
-  restorePracticeArchive,
   loadPracticeRecord,
   savePracticeRecord,
+  savePracticeCanonicalMetadata,
   savePracticeState,
   listPracticeRecords,
   removePracticeRecord,
@@ -58,7 +57,7 @@ function record(): RecordData {
 }
 async function raw(store: string): Promise<any[]> {
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
-    const r = indexedDB.open("drum-practice", 2);
+    const r = indexedDB.open("drum-practice");
     r.onsuccess = () => resolve(r.result);
     r.onerror = () => reject(r.error);
   });
@@ -89,54 +88,16 @@ describe("independent playback library", () => {
     await removePracticeRecord(input.song.id);
     expect(await loadPracticeRecord(input.song.id)).toBeUndefined();
   });
-  it("updates content while remapping local position markers loops by measure fraction", async () => {
-    const old = record();
-    old.song.settings.position = 3.5;
-    old.song.settings.rate = 0.8;
-    old.song.markers = [{ id: "a", name: "Local", time: 2 }];
-    old.song.loops = [{ id: "l", name: "Loop", start: 2, end: 4 }];
+  it("directly replaces the same ID including changed structure and uses incoming practice state", async () => {
+    const old = record(); old.song.settings.rate = .8;
     await savePracticeRecord(old);
-    const incoming = record();
-    incoming.song.id = old.song.id;
-    incoming.song.title = "Revision";
-    incoming.song.firstBeat = 2;
-    incoming.song.measures[0].start = 2;
-    incoming.song.measures[0].end = 6;
-    incoming.song.measures[1].start = 6;
-    incoming.song.measures[1].end = 10;
-    const before = structuredClone(incoming.song);
-    const result = await importPracticeRecord(incoming);
-    expect(result.status).toBe("updated");
-    expect(result.record.song.title).toBe("Revision");
-    expect(result.record.song.settings.position).toBe(7);
-    expect(result.record.song.settings.rate).toBe(0.8);
-    expect(result.record.song.markers[0].time).toBe(4);
-    expect(result.record.song.loops[0]).toMatchObject({ start: 4, end: 8 });
-    expect(incoming.song).toEqual(before);
-    expect(old.song.settings.position).toBe(3.5);
-  });
-  it("does not overwrite changed structure until explicit replace and archives all old media", async () => {
-    const old = record();
-    await savePracticeRecord(old);
-    const next = {
-      ...old,
-      song: structuredClone(old.song),
-      audio: new Blob(["new"]),
-    };
-    next.song.measures[1].id = "different";
-    expect((await importPracticeRecord(next)).status).toBe("conflict");
-    expect((await loadPracticeRecord(old.song.id))!.song).toEqual(old.song);
-    expect((await importPracticeRecord(next, "keep-existing")).status).toBe(
-      "kept",
-    );
-    expect((await importPracticeRecord(next, "replace")).status).toBe(
-      "updated",
-    );
-    const archive = (await raw("archives")).find(
-      (a) => a.record.song.id === old.song.id,
-    );
-    expect(archive.record.song).toEqual(old.song);
-    expect(new TextDecoder().decode(archive.record.audio.bytes)).toBe("audio");
+    const next = record(); next.song.id = old.song.id;
+    next.song.measures[1].id = "changed";
+    next.audio = new Blob(["new audio"]);
+    expect((await importPracticeRecord(next)).status).toBe("replaced");
+    const loaded = (await loadPracticeRecord(old.song.id))!;
+    expect(loaded.song).toEqual(next.song);
+    expect(await loaded.audio.text()).toBe("new audio");
   });
   it("preserves saved state when media read fails and continues subsequent writes", async () => {
     const old = record();
@@ -154,7 +115,7 @@ describe("independent playback library", () => {
     await savePracticeRecord({ ...old, song: { ...old.song, title: "next" } });
     expect((await loadPracticeRecord(old.song.id))!.song.title).toBe("next");
   });
-  it("atomically rolls back archive and replacement if the replacement write fails", async () => {
+  it("atomically preserves the current record if the replacement write fails", async () => {
     const old = record();
     await savePracticeRecord(old);
     const next = { ...old, song: structuredClone(old.song) };
@@ -167,13 +128,10 @@ describe("independent playback library", () => {
       if (this.name === "songs") throw Error("quota failure");
       return original.apply(this, args);
     });
-    await expect(importPracticeRecord(next, "replace")).rejects.toThrow(
+    await expect(importPracticeRecord(next)).rejects.toThrow(
       "quota failure",
     );
     expect((await loadPracticeRecord(old.song.id))!.song).toEqual(old.song);
-    expect(
-      (await raw("archives")).some((a) => a.record.song.id === old.song.id),
-    ).toBe(false);
   });
   it("snapshots save inputs and serializes rapid writes in invocation order", async () => {
     const old = record();
@@ -186,27 +144,12 @@ describe("independent playback library", () => {
   });
 });
 
-it("restores archived versions and retains the version replaced by restoration", async () => {
-  const old = record();
-  await savePracticeRecord(old);
-  const next = { ...old, song: structuredClone(old.song) };
-  next.song.measures[0].beats = 3;
-  await importPracticeRecord(next, "replace");
-  const [archive] = await listPracticeArchives(old.song.id);
-  const restored = await restorePracticeArchive(archive.id);
-  expect(restored.song).toEqual(old.song);
-  expect((await loadPracticeRecord(old.song.id))!.song).toEqual(old.song);
-  expect((await listPracticeArchives(old.song.id))[0].record.song).toEqual(
-    next.song,
-  );
-  await removePracticeRecord(old.song.id);
-  expect(await loadPracticeRecord(old.song.id)).toBeUndefined();
-  const [removed] = await listPracticeArchives(old.song.id);
-  await restorePracticeArchive(removed.id);
-  expect((await loadPracticeRecord(old.song.id))!.song).toEqual(old.song);
-  await expect(restorePracticeArchive("999999")).rejects.toThrow(
-    "Practice archive not found",
-  );
+it("permanently deletes a score without a recovery store", async () => {
+  const input = record(); await savePracticeRecord(input);
+  await removePracticeRecord(input.song.id);
+  expect(await loadPracticeRecord(input.song.id)).toBeUndefined();
+  const db = await new Promise<IDBDatabase>(resolve => { const r=indexedDB.open("drum-practice");r.onsuccess=()=>resolve(r.result); });
+  expect(db.objectStoreNames.contains("archives")).toBe(false); db.close();
 });
 
 it("saves frequent state and score switches without reading any Blob bytes", async () => {
@@ -269,4 +212,18 @@ it("rejects unavailable variants and structural changes without changing saved s
     "structure changed",
   );
   expect((await loadPracticeRecord(state.id))!.song).toEqual(input.song);
+});
+
+it("adds canonical metadata without replacing practice state and refuses a stale XML update", async () => {
+  const r = record(); r.canonicalXML = "original";
+  await savePracticeRecord(r);
+  const state = structuredClone(r.song); state.settings.rate = .75;
+  await savePracticeState(r.song.id, state);
+  expect(await savePracticeCanonicalMetadata(r.song.id, "original", "upgraded")).toBe(true);
+  const loaded = await loadPracticeRecord(r.song.id);
+  expect(loaded!.canonicalXML).toBe("upgraded");
+  expect(loaded!.song.settings.rate).toBe(.75);
+  expect(loaded!.song.measures).toEqual(r.song.measures);
+  expect(await savePracticeCanonicalMetadata(r.song.id, "original", "stale")).toBe(false);
+  expect((await loadPracticeRecord(r.song.id))!.canonicalXML).toBe("upgraded");
 });

@@ -1,8 +1,10 @@
-import { openScoreDatabase } from "./score-database";
+import { openScoreDatabase, RETIRED_SCORE_ID } from "./score-database";
+import { t } from "./i18n";
 import { validateSong, type Song } from "./model";
 import type { RecordData } from "./storage";
 import { scoreStructureSignature } from "./score-package";
 import { useScore } from "./song-scores";
+import { practiceMetadataUpgrade } from "./practice-metadata-upgrade";
 
 type Media = { bytes: ArrayBuffer; type: string };
 type Stored = Omit<RecordData, "pdf" | "audio" | "pages" | "otherScores"> & {
@@ -16,7 +18,7 @@ type Stored = Omit<RecordData, "pdf" | "audio" | "pages" | "otherScores"> & {
   > & { source: Media; pages: Media[] })[];
 };
 export type PracticeImportResult = {
-  status: "added" | "updated" | "conflict" | "kept";
+  status: "added" | "replaced";
   record: RecordData;
 };
 let writes = Promise.resolve();
@@ -44,6 +46,7 @@ function snapshot(record: RecordData): RecordData {
   };
 }
 async function encode(record: RecordData): Promise<Stored> {
+  if (record.song.id === RETIRED_SCORE_ID) throw new Error(t("library.retiredScore"));
   validateSong(record.song);
   const media = async (blob: Blob): Promise<Media> => ({
     bytes: await blob.arrayBuffer(),
@@ -95,13 +98,35 @@ async function read<T>(
   }
 }
 export async function listPracticeRecords(): Promise<RecordData[]> {
-  return (await read<Stored[]>((store) => store.getAll())).map(decode);
+  const records = (await read<Stored[]>((store) => store.getAll())).map(decode);
+  for (let i = 0; i < records.length; i++) records[i] = await upgradePracticeMetadata(records[i]);
+  return records;
+}
+async function upgradePracticeMetadata(record: RecordData): Promise<RecordData> {
+  const next = await practiceMetadataUpgrade(record);
+  if (!next) return record;
+  return queued(async () => {
+    let updated: RecordData = record;
+    await change(tx => {
+      const store = tx.objectStore("songs"), request = store.get(record.song.id);
+      request.onsuccess = () => {
+        const stored = request.result as Stored | undefined;
+        if (!stored || stored.canonicalXML !== record.canonicalXML ||
+          stored.song.title !== record.song.title || stored.song.artist !== record.song.artist) return;
+        const song = { ...stored.song, title:next.song.title, originalTitle:next.song.originalTitle, artist:next.song.artist };
+        const revised = { ...stored, song, canonicalXML:next.canonicalXML };
+        store.put(revised);
+        updated = decode(revised);
+      };
+    });
+    return updated;
+  });
 }
 export async function loadPracticeRecord(
   id: string,
 ): Promise<RecordData | undefined> {
   const record = await read<Stored | undefined>((store) => store.get(id));
-  return record ? decode(record) : undefined;
+  return record ? upgradePracticeMetadata(decode(record)) : undefined;
 }
 async function change(
   work: (transaction: IDBTransaction) => void,
@@ -109,7 +134,7 @@ async function change(
   const db = await open();
   try {
     await new Promise<void>((resolve, reject) => {
-      const transaction = db.transaction(["songs", "archives"], "readwrite");
+      const transaction = db.transaction("songs", "readwrite");
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () =>
@@ -137,201 +162,46 @@ export function savePracticeRecord(record: RecordData): Promise<void> {
     });
   });
 }
-export function removePracticeRecord(id: string): Promise<void> {
+/** Metadata-only upgrade; never overwrite a concurrent edit or practice state. */
+export function savePracticeCanonicalMetadata(id: string, previous: string, next: string): Promise<boolean> {
   return queued(async () => {
-    let failure: unknown;
-    await change((tx) => {
-      const songs = tx.objectStore("songs");
-      const request = songs.get(id);
+    let saved = false;
+    await change(tx => {
+      const store = tx.objectStore("songs");
+      const request = store.get(id);
       request.onsuccess = () => {
-        try {
-          if (request.result)
-            tx.objectStore("archives").add({
-              archivedAt: Date.now(),
-              record: request.result,
-            });
-          songs.delete(id);
-        } catch (error) {
-          failure = error;
-          tx.abort();
-        }
+        const stored = request.result as Stored | undefined;
+        if (!stored || stored.canonicalXML !== previous) return;
+        store.put({ ...stored, canonicalXML: next });
+        saved = true;
       };
-    }).catch((error) => {
-      throw failure ?? error;
     });
+    return saved;
   });
 }
-/** Musical position survives timing revisions, including lead-in, gaps and trailing audio. */
-function remap(time: number, old: Song, next: Song): number {
-  if (!old.measures.length) return time;
-  for (let index = 0; index < old.measures.length; index++) {
-    const previous = old.measures[index],
-      updated = next.measures[index];
-    if (time < previous.start) {
-      const oldStart = index ? old.measures[index - 1].end : 0;
-      const newStart = index ? next.measures[index - 1].end : 0;
-      return (
-        newStart +
-        ((time - oldStart) / (previous.start - oldStart)) *
-          (updated.start - newStart)
-      );
-    }
-    if (time <= previous.end)
-      return (
-        updated.start +
-        ((time - previous.start) / (previous.end - previous.start)) *
-          (updated.end - updated.start)
-      );
-  }
-  return next.measures.at(-1)!.end + time - old.measures.at(-1)!.end;
+export function removePracticeRecord(id: string): Promise<void> {
+  return queued(() => change(tx => { tx.objectStore("songs").delete(id); }));
 }
-export function importPracticeRecord(
-  incoming: RecordData,
-  policy?: "replace" | "keep-existing",
-): Promise<PracticeImportResult> {
+/** Reimport is a direct replacement. No backup or practice-state restoration. */
+export function importPracticeRecord(incoming: RecordData): Promise<PracticeImportResult> {
   const copy = snapshot(incoming);
   return queued(async () => {
     const stored = await encode(copy);
-    let result: PracticeImportResult | undefined;
+    let existed = false;
     let failure: unknown;
-    await change((tx) => {
+    await change(tx => {
       const songs = tx.objectStore("songs");
       const request = songs.get(stored.song.id);
       request.onsuccess = () => {
-        try {
-          const old = request.result as Stored | undefined;
-          if (!old) {
-            songs.put(stored);
-            result = { status: "added", record: decode(stored) };
-            return;
-          }
-          if (policy === "keep-existing") {
-            result = { status: "kept", record: decode(old) };
-            return;
-          }
-          if (
-            scoreStructureSignature(old.song) !==
-            scoreStructureSignature(stored.song)
-          ) {
-            if (policy !== "replace") {
-              result = { status: "conflict", record: decode(old) };
-              return;
-            }
-
-          } else {
-            stored.song.settings = {
-              ...old.song.settings,
-              position: remap(
-                old.song.settings.position,
-                old.song,
-                stored.song,
-              ),
-            };
-            stored.song.markers = old.song.markers.map((marker) => ({
-              ...marker,
-              time: remap(marker.time, old.song, stored.song),
-            }));
-            stored.song.repeatSlots = old.song.repeatSlots?.slice();
-            stored.song.markerSlots = old.song.markerSlots?.slice();
-            stored.song.loops = old.song.loops.map((loop) => ({
-              ...loop,
-              start: remap(loop.start, old.song, stored.song),
-              end: remap(loop.end, old.song, stored.song),
-            }));
-            validateSong(stored.song);
-          }
-          // A shared record may include an authoring draft even with identical bars.
-          tx.objectStore("archives").add({ archivedAt: Date.now(), record: old });
-          songs.put(stored);
-          result = { status: "updated", record: decode(stored) };
-        } catch (error) {
-          failure = error;
-          tx.abort();
-        }
+        existed = !!request.result;
+        try { songs.put(stored); } catch (error) { failure = error; tx.abort(); }
       };
-    }).catch((error) => {
-      throw failure ?? error;
-    });
-    return result!;
+    }).catch(error => { throw failure ?? error; });
+    if (failure) throw failure;
+    return { status: existed ? "replaced" : "added", record: decode(stored) };
   });
 }
 
-export interface PracticeArchive {
-  id: string;
-  record: RecordData;
-  archivedAt: number;
-}
-export async function listPracticeArchives(
-  id?: string,
-): Promise<PracticeArchive[]> {
-  const db = await open();
-  try {
-    return await new Promise<PracticeArchive[]>((resolve, reject) => {
-      const request = db
-        .transaction("archives")
-        .objectStore("archives")
-        .openCursor();
-      const result: PracticeArchive[] = [];
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        const cursor = request.result;
-        if (!cursor) {
-          resolve(result.reverse());
-          return;
-        }
-        if (id === undefined || cursor.value.record.song.id === id)
-          result.push({
-            id: String(cursor.primaryKey),
-            archivedAt: cursor.value.archivedAt,
-            record: decode(cursor.value.record),
-          });
-        cursor.continue();
-      };
-    });
-  } finally {
-    db.close();
-  }
-}
-export function restorePracticeArchive(archiveId: string): Promise<RecordData> {
-  return queued(async () => {
-    let restored: RecordData | undefined;
-    let failure: unknown;
-    await change((tx) => {
-      const archives = tx.objectStore("archives");
-      const request = archives.get(Number(archiveId));
-      request.onsuccess = () => {
-        try {
-          if (!request.result) throw new Error("Practice archive not found");
-          const previous = request.result.record as Stored;
-          const songs = tx.objectStore("songs");
-          const current = songs.get(previous.song.id);
-          current.onsuccess = () => {
-            try {
-              if (current.result)
-                archives.add({
-                  archivedAt: Date.now(),
-                  record: current.result,
-                });
-              songs.put(previous);
-              restored = decode(previous);
-            } catch (error) {
-              failure = error;
-              tx.abort();
-            }
-          };
-        } catch (error) {
-          failure = error;
-          tx.abort();
-        }
-      };
-    }).catch((error) => {
-      throw failure ?? error;
-    });
-    return restored!;
-  });
-}
-
-/** Frequent playback saves retain owned media bytes and only update practice state. */
 export function savePracticeState(id: string, song: Song): Promise<void> {
   const state = structuredClone(song);
   return queued(async () => {

@@ -1,3 +1,4 @@
+import { savedLoopSlots, LOOP_SLOT_COUNT } from "./loop-slots";
 import { gridPhase } from "./ribbon-timeline";
 import {
   clamp,
@@ -88,6 +89,7 @@ export function updateScoreFrame(h: {
   ribbon: HTMLElement;
   s: Song;
   t: number;
+  selectedIndex?: number;
   playing: boolean;
   count: number;
   loop?: Loop;
@@ -104,6 +106,7 @@ export function updateScoreFrame(h: {
 }) {
   const { s, t, stage, ribbon, count, loop } = h;
   const { index, measure: m, beat } = locate(s, t);
+  const selected = h.selectedIndex ?? index;
   if (!m) return h.native;
   updatePlayhead(h.root, m, beat, count, s.settings.view === "ribbon");
   let native = h.native;
@@ -111,16 +114,20 @@ export function updateScoreFrame(h: {
   else if (s.settings.view === "rows") {
     native = false;
     stage.classList.remove("paused-ribbon-scroll");
-    h.rows(index);
+    h.rows(selected);
   } else {
     const x = h.offsets[index] + h.position(index, beat, h.widths[index]);
+    const navigationX = h.selectedIndex === undefined ? x
+      : h.offsets[selected] + h.position(selected, 0, h.widths[selected]);
+    const navigationTime = h.selectedIndex === undefined ? t : s.measures[selected].start;
+    stage.style.setProperty("--playhead-x", `${x}px`);
     if (!h.playing) {
       if (!native) {
         native = true;
         stage.classList.add("paused-ribbon-scroll");
         ribbon.style.transform = "none";
-        stage.scrollLeft = x;
-      } else if (!h.scrubbing && h.stationary !== t) stage.scrollLeft = x;
+        stage.scrollLeft = navigationX;
+      } else if (!h.scrubbing && h.stationary !== navigationTime) stage.scrollLeft = navigationX;
       stage.style.setProperty("--scroll-x", `${stage.scrollLeft}px`);
     } else {
       native = false;
@@ -161,19 +168,19 @@ export function updateScoreFrame(h: {
   const playedThrough = index + (s.settings.uniformSpacing
     ? gridPhase(beat * 4 / m.denominator, m.beats * 4 / m.denominator)
     : continuousX(region, m, beat, 1, nextStart));
+  const savedRanges = savedLoopSlots(s).slice(0, LOOP_SLOT_COUNT).filter((range): range is Loop => !!range);
   ribbon.querySelectorAll<HTMLElement>("[data-index]").forEach((e) => {
     const measureIndex = Number(e.dataset.index);
-    const active = measureIndex === index;
-    if (s.settings.view === "rows") {
-      const progress = clamp(playedThrough - measureIndex, 0, 1);
-      e.style.setProperty("--played", `${progress * 100}%`);
-      e.classList.toggle(
-        "progress-edge",
-        playedThrough >= measureIndex && playedThrough < measureIndex + 1,
-      );
-    }
+    const active = measureIndex === selected;
+    const progress = s.settings.view === "ribbon"
+      ? clamp((h.offsets[index] + h.position(index, beat, h.widths[index]) - h.offsets[measureIndex]) / h.widths[measureIndex], 0, 1)
+      : clamp(playedThrough - measureIndex, 0, 1);
+    e.style.setProperty("--played", `${progress * 100}%`);
+    e.classList.toggle("progress-edge", s.settings.view === "rows" &&
+      playedThrough >= measureIndex && playedThrough < measureIndex + 1);
     const barLoop = loop,
       bar = s.measures[measureIndex];
+    e.classList.toggle("has-saved-loop", savedRanges.some(range => bar.end > range.start && bar.start < range.end));
     e.classList.toggle(
       "in-loop",
       !!barLoop && bar.end > barLoop.start && bar.start < barLoop.end,
@@ -189,7 +196,7 @@ export function updateScoreFrame(h: {
     e.classList.toggle("active", active);
     if (active) {
       e.querySelector(".measure-beat")!.textContent =
-        `${count ? i18nText("main.message246") : ""}${count || Math.min(m.beats, Math.floor(beat) + 1)}`;
+        `${count && selected === index ? i18nText("main.message246") : ""}${selected !== index ? 1 : count || Math.min(m.beats, Math.floor(beat) + 1)}`;
     }
   });
   return native;

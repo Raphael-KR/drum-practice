@@ -1,5 +1,15 @@
 # 시작전 손플기 — 독립 손 준비 연습곡
 
+## 현재 결과 — 가수란 정정 (2026-10-06)
+
+사용자의 직접 정정에 따라 **artist=SoCal 드럼킷**. 최신 파일은 `docs/experiments/preplay-warmup-20261006/final-02/`이며 final-01은 초판으로 보존한다. MusicXML의 `identification/creator type="artist"`, 패키지 Song.artist 및 내장 canonicalXML/source를 일치시켰다.
+
+- MusicXML SHA256: `dbfade6bd24f3f11b21ff29b2a1c0d29c41b20b17087afbbf9d2c145bdd8634d`
+- 패키지 SHA256: `8994b17b75385fd0fc46ebf954506ef352297c05b51f5581160fa260a59e0c04`
+- 명세 fixture·XML 생성기·패키지 helper에도 같은 artist를 반영해 재제작 때 빈칸으로 돌아가지 않도록 했다.
+- 규격·96마디/880음표 대조·ZIP CRC·메타정보 재읽기 통과. artist 이외 Song 전체, 드럼 파트, MIDI·MP3·6쪽 SVG 캐시·시간표는 초판과 동일하다. 근거 `final-02/verification.json`. 메타정보만 바꾸므로 음원·SVG를 불필요하게 다시 만들지 않았다.
+- 이미 초판을 앱에 수록한 개발 담당자에게 새 파일 교체와 기존 저장 자료의 해당 artist 정정을 인계한다. 이 제작 작업은 앱 소스·public·dist·DB를 직접 바꾸지 않는다.
+
 사용자 결정: 2026-10-06. 제목은 요청한 **시작전 손플기** 그대로 사용한다.
 
 - 목표: 기존 탐탐 무빙 16마디판을 대체할, 한 번의 연주로 연결되는 새 손 준비 곡을 작곡한다.
@@ -27,7 +37,7 @@
 
 키트는 현재 보존된 **SoCal**을 선택한다. [키트 소개/선택 정본](GARAGEBAND-DRUM-KITS.md)에 따른 자연스러운 범용 키트이며, 이번 곡의 고른 스네어/탐 타격 확인과 기존 16마디판의 음색 연속성에 맞춘 선택이다. Portland와 청취 우열 비교를 했다는 뜻은 아니다.
 
-S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음원 adapter에서만 쓰고 MusicXML/MIDI의 GM50은 유지한다. 가수·세션·강사 이름은 넣지 않으며 이번 신규 독립 연습곡의 artist는 비워 둔다. 키트는 음원명/설명에 기록한다. 기존 16/28마디 artist 예외를 새 곡으로 확대하지 않는다.
+S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음원 adapter에서만 쓰고 MusicXML/MIDI의 GM50은 유지한다. 가수·세션·강사 이름은 넣지 않는다. 최신 사용자 정정(2026-10-06)에 따라 이 곡의 artist는 **SoCal 드럼킷**으로 기록한다. 이후 모든 드럼 연습 악보의 공통 규칙으로 확정된 드럼킷 표기를 적용하며, 일반 곡의 실제 가수 원칙은 유지한다.
 
 부드럽게·고르게라는 지시와 R/L은 표준 MusicXML direction/words, 악기는 승인 범례를 사용한다. 원음원 없는 독립 연습곡이므로 가사나 가상 보컬 파트가 필요하지 않다. 렌더러는 앱 공통 API를 이용한다.
 
@@ -39,7 +49,7 @@ S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음
 
 작곡·MusicXML/MIDI·SoCal 음원·패키지 생성과 검증 완료. 앱 목록 수록은 개발 담당자에게 인계했다. 구체적인 검증 범위와 미확인 항목은 아래 결과를 따른다.
 
-## 최종 제작 결과 — 2026-10-06
+## 초판 제작 결과 — 2026-10-06 (final-01, artist 정정 전)
 
 완성 파일 위치: `/Users/raphael/Playground/drum-practice/docs/experiments/preplay-warmup-20261006/final-01/`.
 
@@ -50,7 +60,7 @@ S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음
 | preplay-warmup-socal.mp3 | SoCal, 44.1kHz stereo·192kbps | 62403ce46ffbe9c532485f04c983623419615305064e52f00d643bb1fddcc1eb |
 | preplay-warmup.drumscore | XML·음원·6쪽 SVG·시간표 | e070249500dc0fb42c559919045b5d116b884e2ae16d7ee3e8f42c344d2c8c97 |
 
-새 ID `preplay-hand-warmup-v1`. 음악 구간4분48초, 파일 길이290.25초(첫 박0.25초 + 음악288초 + 후미2초). MP3 6,967,990바이트, 패키지7,520,656바이트. 외부 반복 설정 없이1–96마디를 차례대로 연주한다. 새 artist는 비어 있고 composer는 독립 제작 표시 `Drum Practice`다.
+새 ID `preplay-hand-warmup-v1`. 음악 구간4분48초, 파일 길이290.25초(첫 박0.25초 + 음악288초 + 후미2초). MP3 6,967,990바이트, 패키지7,520,656바이트. 외부 반복 설정 없이1–96마디를 차례대로 연주한다. 이 초판의 artist는 비어 있었고 composer는 독립 제작 표시 `Drum Practice`다. 이후 사용자 정정으로 artist를 SoCal 드럼킷으로 바꾼 final-02가 최신본이다.
 
 검증:
 
@@ -81,3 +91,7 @@ S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음
 ## 개발 인계
 
 2026-10-06 기존 사용자 위임 범위에 따라 `드럼연습실 웹앱 개발` 작업 `01a0afc9-ca21-7371-9390-06eb07c017e9`에 최종 경로·해시·검증·수록 경계와 기존16마디 대체/28마디 유지 대상을 전달했다. 메시지 전송 성공을 확인했으며 앱 수록 완료를 확인한 것은 아니다.
+
+## 2026-10-13 이전16마디 자료 삭제
+
+사용자는 이전16마디 탐탐 무빙의 원본/백업을 전부 삭제하도록 지시했다. 위 초판 제작 시점의16마디 보존 설명은 종료됐다. 이 문서의96마디 시작전 손플기 및 SoCal 음원/검증 자료는 유지한다. 공유 XML 작성 함수는 xml_helpers.py로 옮겨16마디 생성기 삭제에 따른 의존을 제거했다. 현재 제작 기준/자료는 변함없다.

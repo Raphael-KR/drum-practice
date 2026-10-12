@@ -115,6 +115,8 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     state;
   try {
     if (!playing && !resume) {
+      const stableBrowse = rowWindow === -2 &&
+        (h.cellWidth ?? stage.clientWidth / 4) === renderedBrowseWidth;
       // Restore chronological browsing, retaining the active row's screen slot.
       const visible = rowWindow >= 0
         ? [...ribbon.querySelectorAll<HTMLElement>('[data-index], .empty-measure')].map(e => Number(e.dataset.index))
@@ -148,8 +150,18 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       }
       if (!scrubbing && pausedBrowseIndex !== index) {
         pausedBrowseIndex = index;
+        // A keyboard move between the two visible rows changes selection only.
+        // Real geometry also respects manual scrolling; newly built/resized rows
+        // still follow the selected measure using the existing alignment below.
+        const selected = ribbon.querySelector<HTMLElement>(`[data-index="${index}"]`);
+        const cellBounds = selected?.getBoundingClientRect();
+        const stageBounds = stage.getBoundingClientRect();
+        if (stableBrowse && cellBounds && cellBounds.height > 0 && stageBounds.height > 0 &&
+          cellBounds.top >= stageBounds.top - 1 && cellBounds.bottom <= stageBounds.bottom + 1) return;
+        const keepLower = wasLower || (stableBrowse && !!cellBounds &&
+          stageBounds.height > 0 && cellBounds.bottom > stageBounds.bottom + 1);
         const topRow = Math.max(0, Math.min(
-          Math.floor(index / 4) - (wasLower ? 1 : 0),
+          Math.floor(index / 4) - (keepLower ? 1 : 0),
           Math.max(0, Math.ceil(song().measures.length / 4) - 2),
         ));
         const row = ribbon.querySelector<HTMLElement>(

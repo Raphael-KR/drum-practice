@@ -59,7 +59,7 @@
   top: 25px;
   bottom: 25px;
   width: 2px;
-  background: #d6783a;
+  background: #e53935;
   pointer-events: none;
   box-shadow: 0 0 0 1px #ffffff80;
 }
@@ -70,7 +70,7 @@
   left: -5px;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 9px solid #d6783a;
+  border-top: 9px solid #e53935;
 }
 .transport {
   background: white;
@@ -331,7 +331,7 @@
   padding: 8px 12px;
   font-size: 18px;
 }
-.two-rows .measure::after {
+.measure::after {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
@@ -348,7 +348,7 @@
   bottom: 0;
   left: var(--played, 0%);
   width: 2px;
-  background: var(--accent);
+  background: #e53935;
   pointer-events: none;
   z-index: 2;
 }
@@ -856,13 +856,13 @@ button.icon-button[hidden] {
   }
 }
 .playback-ui .measure.in-loop {
-  border-bottom: 3px solid #abc2ec;
+  border-bottom: 3px solid var(--range-accent);
 }
 .playback-ui .measure.loop-start {
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--range-accent);
 }
 .playback-ui .measure.loop-end {
-  border-right: 3px solid var(--accent);
+  border-right: 3px solid var(--range-accent);
 }
 .playback-ui [data-numeric-dragging="true"] {
   background: var(--accent-soft);
@@ -1008,7 +1008,7 @@ button.icon-button[hidden] {
   transform: none !important;
 }
 .paused-ribbon-scroll .playhead {
-  left: calc(33.333% + var(--scroll-x, 0px));
+  left: calc(33.333% + var(--playhead-x, 0px));
 }
 .two-rows .paused-score-scroll .ribbon {
   display: block;
@@ -1361,7 +1361,7 @@ dialog {
   line-height: 20px;
 }
 .paused-ribbon-scroll #playhead-status {
-  left: calc(33.333% + var(--scroll-x, 0px));
+  left: calc(33.333% + var(--playhead-x, 0px));
 }
 dialog {
   width: min(1150px, 96vw);
@@ -2072,25 +2072,25 @@ main {
   box-shadow: inset 0 3px var(--marker-accent);
 }
 .stage:not(.is-playing) .measure.active > .measure-state-layer {
-  background: rgba(63, 115, 210, .15);
+  background: transparent;
   box-shadow: inset 0 0 0 2px #4075cf;
 }
 .stage:not(.is-playing) .measure.active.is-marked > .measure-state-layer {
-  background: rgba(245, 158, 11, .23);
-  box-shadow: inset 0 0 0 2px #4075cf, inset 0 5px #d97706;
+  background: rgba(245, 45, 53, .23);
+  box-shadow: inset 0 0 0 2px #4075cf, inset 0 5px var(--marker-accent);
 }
 @media (hover: hover) {
   .stage:not(.is-playing) .measure:hover > .measure-state-layer {
     background: rgba(63, 115, 210, .09);
   }
   .stage:not(.is-playing) .measure.active:hover > .measure-state-layer {
-    background: rgba(63, 115, 210, .22);
+    background: transparent;
   }
   .stage:not(.is-playing) .measure.is-marked:hover > .measure-state-layer {
-    background: rgba(245, 158, 11, .25);
+    background: rgba(245, 45, 53, .25);
   }
   .stage:not(.is-playing) .measure.active.is-marked:hover > .measure-state-layer {
-    background: rgba(245, 158, 11, .30);
+    background: rgba(245, 45, 53, .30);
   }
 }
 
@@ -2119,7 +2119,7 @@ main {
  #settings-dialog .volume-channel input[type="range"] { grid-column:2; grid-row:1; writing-mode:horizontal-tb; direction:ltr; width:100%; min-height:28px; height:28px; }
 }
 
-:root { --marker-soft: rgba(245, 158, 11, .14); --marker-accent: #d97706; }
+:root { --marker-soft: rgba(245, 45, 53, .14); --marker-accent: #d91f2a; --range-soft: #f8c16a66; --range-accent: #d88932; --range-text: #874609; }
 .marker-slots .empty-marker-slot .score-marker-icon path { fill: none; }
 .marker-slots button:not(.empty-marker-slot),
 .marker-slots button:not(.empty-marker-slot):hover:not(:disabled) {
@@ -2373,13 +2373,13 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 .drawer-playback [data-drawer-panel=loop] > .tool-body > div {height:100%;min-height:0;}
 .drawer-playback .loop-slots {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:4px;height:100%;width:100%;}
 .drawer-playback .loop-slots > button {height:100%;min-height:0;padding:0 8px;font-size:16px;font-variant-numeric:tabular-nums;}
-.drawer-playback .loop-slots > button[aria-pressed=true] {background:var(--accent);color:white;}
-.drawer-playback .loop-slots > button.armed {background:#fff0d8;border-color:#d88932;color:#874609;}
+.drawer-playback .loop-slots > button[aria-pressed=true] {background:var(--range-accent);color:white;}
+.drawer-playback .loop-slots > button.armed {background:var(--range-soft);border-color:var(--range-accent);color:var(--range-text);}
 .drawer-playback .loop-slot-menu {display:flex;gap:4px;min-width:0;min-height:0;}
 .drawer-playback .loop-slot-menu button {flex:1;min-width:0;min-height:0;height:100%;padding:0 4px;font-size:13px;}
 .drawer-playback .loop-slot-menu button:last-child {flex:0 0 28px;}
-.stage.range-selection-mode {touch-action:none!important;scroll-snap-type:none!important;cursor:crosshair;user-select:none;-webkit-user-select:none;}
-.stage .measure.range-selecting {background:#f8c16a66!important;box-shadow:inset 0 0 0 2px #d88932!important;}
+.stage.range-selection-mode {touch-action:pan-x pan-y!important;scroll-snap-type:none!important;user-select:none;-webkit-user-select:none;}
+.stage .measure.range-selecting {background:var(--range-soft)!important;box-shadow:inset 0 0 0 2px var(--range-accent)!important;}
 
 
 /* Center the complete ribbon row (including its label) in the available stage. */
@@ -2695,3 +2695,30 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 .settings-group > .segmented-control { margin-top:10px; }
 @media (prefers-reduced-motion:reduce) { .segmented-control > button { transition:none; } }
 .settings-choice-row[hidden] { display:none; }
+
+/* Saved practice ranges remain visible even when repeat playback is off. */
+.stage .measure.has-saved-loop:not(.is-marked) > .measure-state-layer,
+.stage:not(.is-playing) .measure.has-saved-loop.active:not(.is-marked) > .measure-state-layer {
+  background: var(--range-soft);
+}
+.stage .measure.has-saved-loop { border-bottom: 3px solid var(--range-accent); }
+
+/* One orange palette for practice ranges, separate from red markers. */
+.loop-slots > button, .loop-slot-menu button {
+  border-color: var(--range-accent);
+  color: var(--range-text);
+}
+.loop-slots > button.saved-range { background: linear-gradient(#fff8ec, #ffe5bd); }
+.loop-slots > button:hover:not(:disabled), .loop-slot-menu button:hover:not(:disabled) {
+  background: var(--range-soft); border-color: var(--range-accent); color: var(--range-text);
+}
+.loop-slots > button[aria-pressed="true"], .loop-slots > button[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--range-accent); color: white;
+}
+.stage .measure.range-selecting > .measure-state-layer { background: var(--range-soft)!important; }
+.loop-slots > button:not(.saved-range):not(.armed),
+.loop-slots > button:not(.saved-range):not(.armed):hover:not(:disabled) {
+  background: white;
+  border-color: var(--line);
+  color: var(--text);
+}

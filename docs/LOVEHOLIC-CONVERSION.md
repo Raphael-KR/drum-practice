@@ -2,6 +2,24 @@
 
 새 곡의 전체 순서는 [악보 제작 프로세스](SCORE-PRODUCTION-PROCESS.md)를 따른다. 아래는 단계별 제작 이력이며 초기 산출물과 후속 수정본을 구별한다. 초기 ‘G5 원 안 ×=Open Hi-Hat’ 분류는 후속 사용자 확인에서 해당 Y89개를 Crash로 교정했다. 현재 실행에는 [매핑 정본의 최종 재확인](SCORE-MUSICXML-OSMD-MAPPING.md#2026-10-03-최종-재확인-모든-곡에-확정-범례-적용)을 적용한다. 성부·화음·기둥의 원본 구성은 유지한다.
 
+## 현재 원곡 속도 정보 — 사용자 결정 2026-10-13
+
+- 목표: 악보에 인쇄된136 BPM을 유지하고 원곡 음원 측정값을 별도로 저장·표시한다. ‘원곡’ 선택은 음원의 배속1.0이다.
+- 범위: 새 MusicXML·drumscore의 별도 측정 메타정보와 재제작 helper, 앱 개발자 인계.
+- 완료 조건: 악보/Song.bpm=136, 원곡 추정값136.232·첫 박0.193을 재읽기로 확인하고 기존 음원·악보 의미·마디/가사 시각을 보존.
+- 제외: 앱 코드/DB·public/dist 변경, 재분석·재인코딩·PDF/HTML 생성·커밋/배포. 기존 파일과 중간 시도 보존.
+- 검증: XSD·ZIP CRC·전후 데이터 대조·실제 공통 canonical/package API 저장/재읽기. 화면 표시와 원곡 버튼의 실제 동작은 개발 담당자 검증 범위.
+
+최신 제작 파일: `/Users/raphael/Playground/drum-practice/docs/experiments/loveholic-tempo-20261013/final-03/`.
+
+- `Loveholic-final.musicxml`: SHA256 `af81c955e5056a9c0445ceec7733da067bb238695a0b24f86c1a0850c04fb481`.
+- `Loveholic.drumscore`: SHA256 `26c73ab7a3e772422251e632f6e58af2284bfb739ca60c09921c1296ee947d93`.
+- MusicXML `sound@tempo`/`metronome/per-minute`와 Song.bpm은136을 유지한다.
+- 별도 `identification/miscellaneous/miscellaneous-field name="drum-practice:recording-tempo:v1"`에 `scoreBpm=136`, `bpmEstimate=136.232`, `firstBeatEstimateSeconds=0.193`, 음원SHA256·분석 방법·추정 상태를 JSON으로 저장한다.
+- 근거는 기존 `audio-alignment.json`과 음원SHA256 `ed2c7052c12e64f0a67cf3927dcd249c50493b27a19b60ab9597d8df1b08309b`다. 새 분석이나 정확도 보증이 아니다.
+
+검증 결과와 자료 보존은 아래 제작 기록을 따른다. 앱 반영 완료는 별도 확인한다.
+
 ## 이 기록의 범위
 
 | 상태 | 내용 |
@@ -64,7 +82,7 @@
 ## 음원 연결
 
 - ffmpeg로 음원을 11,025Hz mono PCM으로 읽고 세 주파수 대역의 log spectral flux와 전사한 타격 시작 박을 대조했다. 원본 MP3는 재인코딩하지 않았다.
-- 첫 박 추정 0.193초, 연주 속도 추정 136.232 BPM. 악보 인쇄값과 Song.bpm은 136을 유지했다. 실제 연결은 각 마디의 추정 start/end와 정본 오디오 앵커로 저장했다. 136과 136.232의 차이는 마지막 타격까지 약 0.36초의 누적 차이를 만든다.
+- 첫 박 추정 0.193초, 연주 속도 추정 136.232 BPM. 악보 인쇄값과 Song.bpm은 136을 유지했다. 2026-10-13에는 추정 BPM과 첫 박을 별도 메타정보로 명시했다(위 최신 기록). 실제 연결은 각 마디의 추정 start/end와 정본 오디오 앵커로 저장했다. 136과 136.232의 차이는 마지막 타격까지 약 0.36초의 누적 차이를 만든다.
 - 80박씩 6개 구간의 최적 국소 위상 이동은 −4/+4/0/0/−8/+8ms였다. 이는 구간별 상관점의 안정성이고 청취로 측정한 동기화 오차가 아니다.
 - ±1~4박의 경쟁 시작점을 비교했다. 원래 위상의 전곡 목적함수는 1.1168, ±1박은 0.9034/0.9135, ±4박은 1.0094/1.0131이다. 이 수치는 확률·정확도가 아니다. 1/2/10/36/62/79/119/120마디의 타격 예상점·주변 피크를 별도로 저장했다.
 - 첫 필인 2마디 시작은 예상 1.9547초, 주변 피크 1.9621초다. 마지막 120마디 타격 예상 209.8354초의 주변 최대 피크는 209.9084초(+73ms)다. 합주 음원의 주변 피크를 드럼의 실제 시작이라고 단정하거나 이 한 지점으로 전체 정렬을 바꾸지 않았다.
@@ -176,3 +194,20 @@ XML: `docs/experiments/loveholic-20261002/standard-lyrics-package-20261003/Loveh
 최신 generator의 원본 재추출 MusicXML을 사용했다. P1드럼 성부 동일,123마디492박1580머리·20half-muted XSD/재읽기 통과. package read/write 전체 동일,77문구 canonical manifest 복원 동일,원본PDF/MP3·PDF variant/pages·마디시각/영역·설정 보존. 실제 공통 renderMeasure SVG77중앙 표시, 원문 대조와 집중3파일31테스트 통과. IndexedDB 저장 곡은 수정하지 않았다. 앱 전체 import/iPad/배포는 개발 세션의 별도 검증이다.
 
 원본 귀속/문자 증거는 `printed-lyrics-review-20261003/`, 패키지 검사와 실제 브라우저 캡처는 새 패키지 폴더에 보존했다. 자세한 현재 상태·과거 음원 정렬 실패의 구분은 [가사 제작 기록](LOVEHOLIC-LYRICS-REVIEW.md)을 따른다. 기존 초기/반열림 패키지와 원음원은 덮어쓰지 않았다.
+
+## 2026-10-13 악보 템포와 원곡 추정 템포 분리 — 최종 사용자 결정
+
+사용자는 최초136.232 기준 변경 요청을 후속으로 정정했다. 최종 요구는 **악보136 유지, 원곡 측정136.232 표시, 원곡 선택 시 배속1.0**이다. 중간 final-02의 표준 템포136.232 변경안은 미적용·미인계 시도로 보존하고 final-03만 최신 결과로 사용한다. public/원음원·기존 제작 파일을 덮어쓰지 않았다.
+
+- 최초 입력 패키지 SHA256 `2a544df486c26feca450e7021787e43c4ad6db4fc8f8be1dc6d49d5f4cbcaf50`을 `final-03/Loveholic-before.drumscore`로 보존했다. 표준 템포 두 곳·메트로놈 두 곳136, Song 전체(설정 rate1 포함) 그대로. 음원·PDF 대체본·SVG 캐시·마디/가사 시각 전부 동일 바이트/값이다. canonical은 측정 miscellaneous-field 하나만 추가했다.
+- 입력의 `score/source`는 authoritative canonicalXML과 불일치했다. 앞서 확정한 Crash 교정 등 최신 내용은 canonical에 있으므로 이것을 정본으로 삼고 새 primary source를 동일 XML로 저장했다. canonical의 음표·주법·가사 내용은 변경하지 않았다. 기존 파일을 보존했으며, 임의로 과거 source의 악기 분류로 돌아가지 않는다.
+- MusicXML4XSD·ZIP CRC·전후 XML/전체Song·미변경 자산 대조 통과. 실제 공통 `readCanonical`, `writeCanonical`, `createScorePackage`, `readScorePackage`를 CLI로 실행하여 메타정보/마디/가사/음원 왕복과 측정 필드의 재저장 보존을 확인했다. 근거 `final-03/verification.json`, `final-03/common-api-validation.json`. 메타정보 변경으로 기존 SVG를 재생성하지 않았으며 실제 화면/청취 검증은 앱 담당자의 후속 범위다.
+- 재제작: `scripts/musicxml/loveholic_recording_tempo.py --input <검증한 이전 패키지> --alignment docs/experiments/loveholic-20261002/audio-alignment.json --out <새 폴더>`. 실제 Python은 lxml을 가진 bundled runtime을 사용한다. 기존 `loveholic_package.mjs` build에도 alignment 해시 대조와 별도 필드 저장을 적용해 재제작 때 누락하지 않는다.
+- 해결한 검증 문제: zipfile.writestr에 입력 ZipInfo 객체를 그대로 넘기면 header_offset이 바뀌어 열린 입력 ZIP의 후속 읽기가 `Bad magic number for file header`로 실패한다. `copy.copy(info)`로 출력 객체를 분리하고 원본/출력 CRC·자산 비교를 통과했다. final-01 실패 시도는 보존. 공통 package 왕복은 JSON 계약이므로 undefined 선택 속성은 직렬화에서 생략된다. 비교 기대값을 JSON 직렬화된 전체Song으로 정규화하여 실제 정의된 필드·전체 내용을 검사했다.
+- 개발 인계 요구: 측정값은 추정 정보로 구분해 표시한다. 원곡 버튼에136.232를 넣어 기존 `bpm / Song.bpm`으로 계산하면1.0017이 되므로, 원곡 동작은 명시적인 `setRate(1)` 또는 동등한 처리를 사용한다. 이미 저장된 러브홀릭의 악보BPM136·시간표·연습기록은 보존하고 측정정보를 안전하게 추가한다. 앱 수정·패키지 public 수록·기존 DB 반영은 웹앱 개발자가 소유한다.
+
+개발 인계: 2026-10-13 사용자 지정 `드럼연습실 웹앱 개발` 작업 `01a0afc9-ca21-7371-9390-06eb07c017e9`의 현재 metadata/연락 경로 확인 후 최종 결정·필드 계약·final-03 경로/해시·검증·앱 범위를 전달 성공. 제작 측 완료와 실제 앱 수정/반영/청취는 별도 상태다.
+
+## 2026-10-13 추가 결정 — 연습은 일정한 메트로놈 기준
+
+사용자가 마디·박별 추가 분석은 과하다고 판단하고, 연습은 메트로놈을 기준으로 하며 실연의 그루브를 넣지 않도록 정했다. 선택한 연습 속도의 균등한 박을 유지한다. 실제 타격의 미세한 앞섬/늦음을 따라 박 격자를 비균등하게 교정하지 않는다. 기보된 리듬은 보존한다. Loveholic의 기존 첫 박0.193초·일정한136.232 BPM 기반 연결 시간표와 final-03 자료를 유지한다. 악보136·원곡 추정136.232 별도 표시·원곡 배속1.0은 그대로다. 추가 분석/박별 교정은 진행하지 않았고 이번 변경은 문서에만 반영했다.

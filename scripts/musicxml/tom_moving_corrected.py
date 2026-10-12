@@ -1,9 +1,9 @@
-"""Generate the reviewed video basic exercises, not the previous independent routes."""
+"""Generate user-corrected S-H-M-F exercises; preserve rhythm, sticking and kick."""
 import argparse,json,struct
 from pathlib import Path
 from collections import Counter
 from lxml import etree as E
-from tom_moving import add
+from xml_helpers import add
 from verify import Resolver
 
 FIXTURE=Path(__file__).with_name('fixtures')/'tom_moving_video.json'
@@ -17,7 +17,7 @@ def write_score(fixture):
     add(add(root,'work'),'work-title',meta['title'])
     ident=add(root,'identification');add(ident,'creator','영상 기본 패턴 · 연습용 정리',type='composer')
     add(ident,'creator',meta['artist'],type='artist')
-    add(ident,'rights','Basic lesson patterns reviewed from https://www.youtube.com/watch?v=ZUTH2p9C-YM; steady practice tempo/repetitions arranged for Drum Practice. Audio: preserved Portland Kit recordings, offline EXS sample render.')
+    add(ident,'rights','Video lesson https://www.youtube.com/watch?v=ZUTH2p9C-YM; tom order corrected by user 2026-10-13; steady practice tempo/repetitions arranged for Drum Practice. Audio: preserved Portland Kit recordings, offline EXS sample render.')
     add(add(ident,'encoding'),'software','Drum Practice reviewed video exercise generator')
     sc=add(add(root,'defaults'),'scaling');add(sc,'millimeters',7);add(sc,'tenths',40)
     sp=add(add(root,'part-list'),'score-part',id='P1');add(sp,'part-name','Drums')

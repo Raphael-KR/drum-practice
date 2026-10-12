@@ -404,6 +404,7 @@ const playback = createPlaybackScreen({
     radiusAttribute: "data-loop-radius",
     settings: "open-settings-dialog",
   },
+    canonicalXML: () => record?.canonicalXML,
   song,
   player: engine,
   ready: () => !!record,

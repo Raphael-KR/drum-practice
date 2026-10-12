@@ -4,6 +4,8 @@ import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 export default defineConfig(({ mode }) => {
   const separate = mode === "editor" || mode === "player";
   return {
+    server: { host: "127.0.0.1", port: 5173, strictPort: true },
+    preview: { host: "127.0.0.1", port: 5173, strictPort: true },
     optimizeDeps: { entries: ["index.html", "editor.html", "player.html"] },
     ...(separate
       ? {

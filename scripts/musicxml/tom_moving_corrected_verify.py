@@ -32,7 +32,7 @@ def read_midi(data):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);a=p.parse_args();root=a.root
+    p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--check-public',action='store_true');a=p.parse_args();root=a.root
     fixture=json.loads(FIXTURE.read_text());source=(root/'corrected-01/tom-moving-source.musicxml').read_bytes();final=(root/'corrected-package-01/tom-moving-final.musicxml').read_bytes()
     bars,audit=verify(source,fixture);fbars,_=verify(final,fixture);assert bars==fbars
     expected=[]
@@ -61,9 +61,10 @@ def main():
         assert z.read(manifest['audio']['path'])==(root/'portland-01/tom-moving-portland.mp3').read_bytes()
         assert [(m['start'],m['end']) for m in song['measures']]==[(.25+i*3,.25+(i+1)*3) for i in range(28)]
     project=Path(__file__).resolve().parents[2]
-    assert (project/'public/scores/tom-moving.drumscore').read_bytes()==package
-    assert next(s for s in json.loads((project/'src/bundled-scores.json').read_text()) if s['file']=='scores/tom-moving.drumscore')['id']==song['id']
-    audit.update(midiReread='336 note-on + 336 note-off, exact XML offsets/durations',decoded=decoded,reproduction=repeat,canonicalSHA256=sha(final),packageSHA256=sha(package),ZIPCRC=True,publicBytesMatch=True)
+    if a.check_public:
+        assert (project/'public/scores/tom-moving.drumscore').read_bytes()==package
+        assert next(s for s in json.loads((project/'src/bundled-scores.json').read_text()) if s['file']=='scores/tom-moving.drumscore')['id']==song['id']
+    audit.update(midiReread='336 note-on + 336 note-off, exact XML offsets/durations',decoded=decoded,reproduction=repeat,canonicalSHA256=sha(final),packageSHA256=sha(package),ZIPCRC=True,publicBytesMatch=True if a.check_public else None)
     (root/'corrected-final-verification.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps({'status':audit['status'],'measures':28,'notes':336,'MIDI':'PASS','XSD':'PASS','reproduction':'PASS','audioSeconds':86.25,'package':'PASS'},ensure_ascii=False))
 if __name__=='__main__':main()

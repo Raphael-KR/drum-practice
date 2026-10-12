@@ -1,3 +1,4 @@
+import { readRecordingTempo } from "./recording-tempo";
 import { formatSongTitle, readTitleOrder, saveTitleOrder, type TitleOrder } from "./song-title";
 import { syncCurrentSection } from "./section-shortcuts";
 import { gridPhase } from "./ribbon-timeline";
@@ -87,6 +88,7 @@ export interface PlaybackScreenHost {
     radiusAttribute: string;
     settings?: string;
   };
+  canonicalXML?(): string | undefined;
   song(): Song;
   player(): Player;
   ready(): boolean;
@@ -159,6 +161,17 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     stationary: number | undefined,
     panStart = 0,
     copiedUntil = 0;
+  let selectedIndex: number | undefined;
+  const selectionIndex = () => !h.player().playing && selectedIndex !== undefined
+    ? selectedIndex : locate(h.song(), h.player().current()).index;
+  const selectionTime = () => !h.player().playing && selectedIndex !== undefined
+    ? h.song().measures[selectedIndex].start : h.player().current();
+  function selectMeasure(index: number) {
+    if (h.player().playing) seek(h.song().measures[index].start);
+    else selectedIndex = index;
+    frame();
+    stage.focus({preventScroll:true});
+  }
   const offsets: number[] = [],
     widths: number[] = [];
   const rows = {
@@ -326,6 +339,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     if (!available()) return;
     h.setBusy(true);
     try {
+      if (!h.player().playing && selectedIndex !== undefined) seek(h.song().measures[selectedIndex].start);
       if (h.display.fullscreen() && !document.fullscreenElement)
         await enterFullscreen(h.display.report);
       await h.player().play(true, fromMeasureStart);
@@ -348,6 +362,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function onState() {
     if (!h.ready()) return;
     const p = h.player();
+    if (p.playing) selectedIndex = undefined;
     if (p.playing && !stage.classList.contains("is-playing")) {
       const index = locate(h.song(), p.current()).index;
       const stageRect = stage.getBoundingClientRect();
@@ -387,6 +402,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function seek(time: number) {
     if (!h.ready()) return;
     stationary = undefined;
+    selectedIndex = undefined;
     seekPlaybackFreely(h.player(), time, (previous) => {
       lastLoop = previous;
       center = radius = undefined;
@@ -428,6 +444,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       if (available()) void h.player().prepare?.().catch(h.fail);
     },
     resume: () => play(false),
+    pausedDoubleTap: index => { selectMeasure(index); loopSlots?.endpoint(index); frame(); },
     pause,
     seek,
     selected: (index, time) => {
@@ -457,9 +474,9 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   });
   disposers.push(gestures.dispose);
   loopSlots = mountLoopSlots(root, stage, {
-    song: h.song, player: h.player, changed: h.changed,
-    pause: () => { gestures.cancel(); pause(); renderTrack(); frame(); stationary = h.player().current(); },
-    use: loop => { clearPreset(); useLoop(loop); },
+    song: h.song, player: () => ({loop:h.player().loop, current:selectionTime}), changed: h.changed,
+    pause: () => { gestures.cancel(); pause(); frame(); stationary = h.player().current(); },
+    use: loop => { if (loop) selectedIndex = undefined; clearPreset(); useLoop(loop); },
     ready: available,
   });
   disposers.push(loopSlots.dispose);
@@ -521,16 +538,15 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       cancel: gestures.cancel,
       toggle: () => run(toggle),
       mark,
-      step: (delta) =>
-        seek(
-          h.song().measures[
-            clamp(
-              locate(h.song(), h.player().current()).index + delta,
-              0,
-              h.song().measures.length - 1,
-            )
-          ].start,
-        ),
+      rows: () => h.song().settings.view === "rows",
+      rowStep: (delta) => {
+        // Two-row practice lays out four measures per row. Keep the column;
+        // an absent cell in the first/last/incomplete row is not a seek target.
+        const index = selectionIndex() + delta * 4;
+        const measure = h.song().measures[index];
+        if (measure) selectMeasure(index);
+      },
+      step: (delta) => selectMeasure(clamp(selectionIndex() + delta, 0, h.song().measures.length - 1)),
     }),
   );
   stage.tabIndex = 0;
@@ -555,7 +571,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       v = input(ids.progress),
       time = p.current();
     if (!scrub && document.activeElement !== v)
-      v.value = String(locate(h.song(), time).index + 1);
+      v.value = String(selectionIndex() + 1);
     const total = h.song().measures.length;
     v.max = String(total);
     v.setAttribute("aria-valuemax", String(total));
@@ -576,7 +592,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const label =
       performance.now() < copiedUntil
         ? t("main.message244")
-        : playbackPosition(s, time).label;
+        : playbackPosition(s, selectionTime()).label;
     const positionButton = root.querySelector<HTMLElement>(`#${ids.position}`);
     if (positionButton && positionButton.textContent !== label)
       positionButton.textContent = label;
@@ -586,6 +602,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       ribbon,
       s,
       t: time,
+      selectedIndex: !p.playing ? selectedIndex : undefined,
       playing: p.playing,
       count: p.count(),
       loop: p.loop,
@@ -603,14 +620,20 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     });
     progress();
     syncCurrentSection(root, locate(h.song(), time).index);
+    loopSlots?.refreshKeyboardPreview();
     h.afterFrame?.(time);
   }
-  async function rate(bpm: number) {
+  function originalAudioBpm() {
+    const song = h.song();
+    const recording = readRecordingTempo(h.canonicalXML?.());
+    return recording?.scoreBpm === song.bpm ? recording.bpmEstimate : song.bpm;
+  }
+  async function rate(bpm: number, original = false) {
     if (!available()) return;
     h.setBusy(true);
     try {
       if (!Number.isFinite(bpm) || bpm <= 0) throw Error(t("main.message248"));
-      await h.player().setRate(clamp(bpm / h.song().bpm, 0.5, 1.2));
+      await h.player().setRate(original ? 1 : clamp(bpm / originalAudioBpm(), 0.5, 1.2));
       h.changed();
     } finally {
       h.setBusy(false);
@@ -620,8 +643,14 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function sync() {
     if (!h.ready()) return;
     const s = h.song(),
-      bpm = Number((s.bpm * s.settings.rate).toFixed(2));
+      bpm = s.settings.rate === 1 ? s.bpm : Number((originalAudioBpm() * s.settings.rate).toFixed(3));
     get(ids.title).textContent = formatSongTitle(s);
+    const info = root.querySelector<HTMLElement>("#recording-tempo-info");
+    if (info) {
+      const recording = readRecordingTempo(h.canonicalXML?.());
+      info.hidden = !recording;
+      info.textContent = recording ? t("tempo.recordingEstimate", { score: s.bpm, recording: recording.bpmEstimate, firstBeat: recording.firstBeatEstimateSeconds }) : "";
+    }
     const tempo = get<HTMLButtonElement>(ids.tempo);
     tempo.hidden = tempo.disabled = false;
     tempo.innerHTML = `${tempoNote}<span id="original-tempo-value">= ${bpm}</span>`;
@@ -629,8 +658,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     tempo.title = t("main.message211");
     const v = input(ids.tempoInput);
     v.value = String(bpm);
-    v.min = String(Math.ceil(s.bpm * 0.5));
-    v.max = String(Math.floor(s.bpm * 1.2));
+    v.min = String(Math.ceil(originalAudioBpm() * 0.5));
+    v.max = String(Math.floor(originalAudioBpm() * 1.2));
     for (const [key, value] of [
       ["now", v.value],
       ["min", v.min],
@@ -655,7 +684,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     get("view-selected-text").textContent =
       select.selectedOptions[0]?.textContent || "";
     root.querySelectorAll<HTMLElement>("[data-tempo]").forEach((b) => {
-      const active = Math.abs(Number(b.dataset.tempo) - bpm) < 0.01;
+      const active = b.id === "tempo-reset" ? s.settings.rate === 1 : Math.abs(Number(b.dataset.tempo) - bpm) < 0.01;
       b.classList.toggle("primary", active);
       b.setAttribute("aria-pressed", String(active));
     });
@@ -699,21 +728,21 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
   }
   function openTempo() {
-    const original = h.song().bpm;
+    const original = originalAudioBpm();
     get("tempo-options").innerHTML = [
       ...new Set(
-        [0.5, 0.6, 0.7, 0.8, 0.9, 0.95].map((f) => Math.round(original * f)),
+        [0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map((f) => Math.round(original * f)),
       ),
     ]
       .map((bpm) => `<button title="${t("tooltip.tempo", {bpm})}" data-tempo="${bpm}">${bpm} BPM</button>`)
       .join("");
     get("tempo-reset").dataset.tempo = String(original);
-    get("tempo-reset").textContent = t("main.message251", { original: `\n${original}` });
+    get("tempo-reset").textContent = t("tempo.original");
     sync();
     open("tempo");
   }
   action(ids.tempo, openTempo);
-  action("tempo-reset", () => rate(h.song().bpm));
+  action("tempo-reset", () => rate(h.song().bpm, true));
   listen(get("tempo-options"), "click", (e) => {
     const b = (e.target as Element).closest<HTMLElement>("[data-tempo]");
     if (b && h.ready()) run(() => rate(Number(b.dataset.tempo)));
@@ -867,14 +896,14 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   });
   function mark() {
     if (!available()) return;
-    toggleMeasureMarker(h.song(), h.player().current(), uid());
+    toggleMeasureMarker(h.song(), selectionTime(), uid());
     renderLists();
     progress();
     h.changed();
   }
   disposers.push(
     bindMarkerSlots(get(ids.markers), h.song, seek, "data-quick-marker", false, {
-      current: () => h.player().current(),
+      current: selectionTime,
       toggleCurrent: mark,
       remove: id => {
         deleteMarkerSlot(h.song(), id);
@@ -962,6 +991,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     gestures.cancel();
     clearPreset();
     repeatPresets.clear();
+    selectedIndex = undefined;
     lastLoop = undefined;
     stationary = undefined;
     native = false;

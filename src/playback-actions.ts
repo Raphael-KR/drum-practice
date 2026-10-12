@@ -98,6 +98,8 @@ export function installPlaybackKeys(
     toggle: () => void;
     mark: () => void;
     step: (delta: number) => void;
+    rows?: () => boolean;
+    rowStep?: (delta: number) => void;
   },
   target: Document = document,
 ) {
@@ -115,7 +117,9 @@ export function installPlaybackKeys(
       if (e.repeat) return;
       h.cancel();
       h.toggle();
-    } else if (e.key.toLowerCase() === "m") {
+    } else if (!e.ctrlKey && !e.altKey && !e.metaKey &&
+      (e.code === "KeyM" || e.key.toLowerCase() === "m" || e.key === "ㅡ")) {
+      e.preventDefault();
       if (e.repeat) return;
       h.cancel();
       h.mark();
@@ -123,6 +127,10 @@ export function installPlaybackKeys(
       e.preventDefault();
       h.cancel();
       h.step(e.key === "ArrowLeft" ? -1 : 1);
+    } else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && h.rows?.() && h.rowStep) {
+      e.preventDefault();
+      h.cancel();
+      h.rowStep(e.key === "ArrowUp" ? -1 : 1);
     }
   };
   target.addEventListener("keydown", listener);
@@ -188,6 +196,7 @@ export function attachPlaybackGestures(
     pause: () => void;
     seek: (t: number) => void;
     selected: (index: number, time: number) => void;
+    pausedDoubleTap?: (index: number) => void;
     fail: (e: unknown) => void;
     target?: (e: PointerEvent) => number;
     start: () => void;
@@ -210,6 +219,7 @@ export function attachPlaybackGestures(
         : (h.target?.(e) ?? locate(h.song(), h.player().current()).index);
     },
     prepareAudio: h.prepare,
+    pausedDoubleTap: h.pausedDoubleTap,
     pause: h.pause,
     seek: (index, resume) => {
       if (!h.ready()) return;

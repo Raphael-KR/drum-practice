@@ -215,6 +215,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       radiusAttribute: "data-radius",
       settings: "settings",
     },
+    canonicalXML: () => options.canonicalXML,
     song,
     player: () => player,
     ready: () => ready,

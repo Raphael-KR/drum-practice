@@ -1,6 +1,34 @@
 # 탐탐 무빙 연습 제작
 
-## 현재 곡 정보 — 두 버전 제목·드럼킷 표기 (2026-10-06 후속 결정)
+## 현재 제목·악기 순서 — 사용자 정정 2026-10-13
+
+**탐탐 무빙 연습 / Portland 드럼킷 /28마디**. 모든 마디의 손 타격 순서는 **스네어→탐1→탐2→플로어탐(S-H-M-F)**이다. 이전 영상 판독의 S-M-H-F와 제목의(28마디)는 아래 과거 이력이며 현재 제작 규칙이 아니다. 사용자 직접 정정을 적용했으며 이번 수정에서 영상 자체를 재검증한 것은 아니다.
+
+최신 제작 폴더: `docs/experiments/tom-moving-route-20261013/final-01/`.
+
+| 파일 | SHA256 |
+|---|---|
+| tom-moving-final.musicxml | 1e2410b8bb435cfbd0628e6406e04c3de6c8ae9c9bd39e11bc59ac6760d3a59b |
+| tom-moving.drumscore | 11840f05d1366127f81c428bef7cefeb332f73b9f2ac36209df1d7bd9dad7bd9 |
+| tom-moving.mid | 6fce96dd92d12978c6aaf382cbfcbea16692123c452b7f350dd622dfab1d4d12 |
+| tom-moving-portland.mp3 | feb450641aef6b621af8a3e2380249a2efaca85ae1cefab51b66006012110e02 |
+
+ID `tom-moving-video-v2` 유지,80BPM/4박·첫 박0.25초·연주84초·음원86.25초, 손288타격+킥48타격=336. 악기별72/72/72/72/48 및 손R208/L80은 동일하다. 기존28마디와 전 이벤트 대조하여 탐1/탐2의144타격만 교환하고 음가·손·킥·마디 시각을 보존했다. H=E5/GM50, M=D5/GM47 승인 매핑은 바꾸지 않았다.
+
+최종 XML XSD/fixture·MIDI 재읽기·5종 오류 주입·WAV/MP3 시작/길이/클리핑 검사·재생성 바이트 일치·공통canonical/package 전체Song/XML/음원 왕복과ZIP CRC 통과. 최종 canonical에서 생성한 SVG를 패키지 캐시와 검수에 함께 사용했고 바이트 일치 확인. 실제Safari 출력에서 제목1개·7줄 전체S-H-M-F·R/L/빔·킥 성부를 확인했다. 근거 `final-01/verification.json`, `corrected-package-01/package-audit.json`, `corrected-package-01/score-review.png`, `corrected-final-verification.json`.
+
+주관적 청취·iPad 실제 재생·앱 저장본 교체/수록 완료는 미확인. 앱 소스/DB/public/dist는 제작자가 수정하지 않고 웹앱 개발자에게 새파일·구조/시각 보존 기준을 인계한다. 기존28마디 자료는 당시 결과로 보존하며 삭제된16마디판은 다시 만들지 않는다.
+
+## 현재 상태 — 16마디판 삭제 (사용자 결정 2026-10-13)
+
+기존16마디 `tom-moving-original-v1`은 스네어가 누락된 잘못된 제작본으로 사용자가 **원본과 백업 모두 삭제**하도록 지시했다. 이전 보존 지시는 철회됐으며 아래 과거 기록은 파일 보존/사용 지시가 아니다. 원본 영상·28마디 교정판·시작전 손플기96마디·공통 SoCal/Portland 라이브러리는 유지한다.
+
+- 현재 탐탐 무빙 악보는28마디 `tom-moving-video-v2` / Portland 드럼킷이다.
+- 제작 측은16마디 패키지·XML·MIDI·음원·조판 캐시·복사본과 구형 전용 생성/검사 도구를 삭제한다. 휴지통이나 새 백업을 만들지 않는다. 별도 삭제 기록에는 경로·크기·해시만 남긴다.
+- 기존 `tom_moving.py`에서28마디/96마디도 사용하던 작은XML 작성 함수만 `scripts/musicxml/xml_helpers.py`로 옮겨 기능을 유지한다. 16마디 작곡 데이터는 남기지 않는다.
+- 앱의 저장된16마디 악보/복원본 및 legacy ID 제거는 웹앱 개발자에게 사용자 삭제 지시를 인계한다. 다른 곡 기록은 보존하며 단순히16마디라는 이유만으로 삭제하지 않는다.
+
+## 과거 곡 정보 — 두 버전 제목·드럼킷 표기 (2026-10-06 당시)
 
 사용자가 웹앱 개발 채팅에서 두 제목을 구분하고 가수 칸에는 드럼킷 이름을 넣기로 결정했다. 그 채팅의 실제 사용자 메시지와 전달 내용을 확인했다. 이번 두 곡은 앞선 빈 가수 결정보다 이 최신 결정을 적용하며 다른 곡의 실제 가수 기준은 유지한다. 재제작 메타데이터 정본은 `scripts/musicxml/tom-moving-versions.json`이다.
 
@@ -15,7 +43,7 @@
 | 탐탐 무빙 연습 (16마디) | SoCal 드럼킷 | `tom-moving-original-v1` | `docs/experiments/tom-moving-20261006/version-labels-01/16-socal/` |
 | 탐탐 무빙 연습 (28마디) | Portland 드럼킷 | `tom-moving-video-v2` | `docs/experiments/tom-moving-20261006/version-labels-01/28-portland/` |
 
-두 폴더의 최종 파일은 각각 `tom-moving-final.musicxml`, `tom-moving.drumscore`다.16마디판 패키지 SHA256은 `04e52e08dcb8ac0568da0fac9108fac3b15747bf923be6982aa25ae8f2033dfe`, XML은 `07a52bf71c803bcbb58dbaba761f4fdaf336de0f899dc2452f74f618d71b9985`다.28마디판 패키지 SHA256은 `1c5041cbd01f043826d727ce378a9a9b5746c3dba11b7b6f6c76b91d43e03c65`, XML은 `823eee8d9819614d430b72f719df5b7e2bd8a6e8e94f6e97023974a3aa834146`다. 로컬 `public/scores/tom-moving.drumscore`는28마디판과 바이트가 같다.16마디판은 위 로컬 패키지를 기존 ID의 업데이트 입력으로 사용할 수 있다.
+두 폴더의 최종 파일은 각각 `tom-moving-final.musicxml`, `tom-moving.drumscore`다.16마디판 패키지 SHA256은 `04e52e08dcb8ac0568da0fac9108fac3b15747bf923be6982aa25ae8f2033dfe`, XML은 `07a52bf71c803bcbb58dbaba761f4fdaf336de0f899dc2452f74f618d71b9985`다.28마디판 패키지 SHA256은 `1c5041cbd01f043826d727ce378a9a9b5746c3dba11b7b6f6c76b91d43e03c65`, XML은 `823eee8d9819614d430b72f719df5b7e2bd8a6e8e94f6e97023974a3aa834146`다. 로컬 `public/scores/tom-moving.drumscore`는28마디판과 바이트가 같다.16마디판은 당시 업데이트 입력이었다. 2026-10-13 사용자 삭제 지시로 해당 파일과 백업·재제작 자료를 제거했으므로 다시 사용할 수 없다.
 
 공통 `writeCanonical/readCanonical/createScorePackage/readScorePackage`로 제목·원제·artist만 변경했다. 모든 XML 파트·나머지 Song 필드·192/336타격·마디 ID·영역·타이밍·MP3 바이트는 보존했다. SoCal MP3 해시는 `e5aedf61f5723decba9c68aa835f319ee95be19ac29d4ef4db1fb69bc046ef8e`, Portland는 `b4c2e8de8a4ce808d53dadeaf8386c348bbee6d747cec5a3265ef5f330e69f3d`로 불변이다. MIDI 파일은 수정하지 않았다. 새 MusicXML 제목은 실제 공통 renderer와 Safari27.0.1로 확인했고, 그 renderer의 제목 노드를 기존 SVG에 반영해 제목 이외 SVG 구조·타격 잉크를 정확히 보존했다. 이전 헤더 개수도 유지했다.
 
@@ -326,3 +354,26 @@ SoCal EXS에는 키50 zone이 없고 고음 탐 zone은 키48이다. 위 연결�
 ### 2026-10-06 16마디판의 후속 독립 작곡
 
 사용자는 손풀기 적합성 검토의 개선 방향을 수용하되 배속/반복 운용 제안은 악보제작자 범위에서 제외했다. 기존16마디와 달라도 되는 새 한 번 연주용 곡을 요청하여 **시작전 손플기**96마디·80BPM·4분48초로 전면 작곡했다. 새 ID `preplay-hand-warmup-v1`, SoCal 음원, 양손 각440타격이다. [새 제작 정본](PREPLAY-WARMUP-PRODUCTION.md)을 따른다. 앞의16마디 검토와16/28마디 제목·키트 메타자료는 당시 결과이며 보존한다.28마디 영상 기본 연습은 이번 개작 대상이 아니다. 앱에서 기존16마디 대체/목록 수록은 개발 담당자에게 인계한다.
+
+## 2026-10-13 제작 자료 삭제 검증
+
+사용자 승인 범위의16마디 자료 **79파일·69,854,712바이트**를 직접 unlink했다. 새 백업/휴지통 이동 없음.16마디 manifest ID·P1마디 수와 패키지/미디어 fingerprint로 대상 식별. 전용 폴더와 구형 소스/검사기, 임시 재생성 복사본 포함. 전체 프로젝트 재검색에서16ID 패키지0·16마디 tom XML0·tom-moving-socal MP3/WAV0. 혼합 ZIP/TAR35개 내장 패키지에도16마디 없음 확인. macOS tar의 `._` AppleDouble 항목은 악보 ZIP이 아닌 확장속성이므로 구분해 검사했다. 기존 PDF 변환 로컬 아카이브에서 tom 관련 파일 없음 확인.
+
+28/96마디 관련패키지16개는 전후SHA256 일치. 원본영상/Portland 음원과 공유 SoCal/Portland 샘플 라이브러리를 삭제하지 않았다. 공유XML helper 분리 후28마디336타격/96마디880타격 XSD·fixture 검사 통과. 삭제/검증 근거는 `docs/experiments/tom-moving-deletion-20261013/deletion-audit.json`이며 경로·크기·해시만 기록한 감사 자료다. 원본 악보의 새로운 백업이 아니다.
+
+앱 담당자에게 삭제대상ID·보존대상·카탈로그 legacy ID 제거와 실제 저장/복원본 정리/재조회 요청을 전달했다. 다음 앱 실행 때 제거하는 구현과 실제 사용자 origin에서 삭제 완료는 구분하며, 제작자 쪽에서 아직 사용자 브라우저 전체의 DB삭제 완료를 확인한 것은 아니다.
+
+- 앱 후속 확인: 개발자 기록에서Ego5173/5174의 현재/구형DB16마디songs/archives0건·다른곡 및28/96목록 유지 확인. 임시5174서버는 검수 후 종료했다. 사용자nativeSafari/공개사이트 저장소는 미확인으로 남는다. 제작 자료와 로컬 백업 삭제 상태와 혼동하지 않는다.
+
+## 2026-10-13 제목·탐 이동 순서 정정 — 제작·검증 완료
+- 목표: 제목을 ‘탐탐 무빙 연습’으로 바꾸고28마디 전부 스네어→탐1→탐2→플로어탐으로 교정한다.
+- 범위: 제작 fixture·metadata·MusicXML·MIDI·같은 이벤트의Portland 음원·새 렌더/패키지와 개발 인계.
+- 완료 조건: 모든 패턴/마디의 S-H-M-F 및 전후 음가/손/킥 보존,336타격/XSD/MIDI/음원/패키지 검증·실제SVG 확인.
+- 제외: 사용자 정정을 영상 재검토로 표현,16마디 재생성,96마디 변경,앱 코드/DB/public/dist·배포·자동커밋.
+- 검증: 기존28마디와 마디별 이벤트 대조(H/M만 교환),MIDI재읽기/음원재생성,공통canonical/renderer/package API왕복·실제SVG.
+
+현재 사용자의 직접 정정이 이전 영상 판독의 S-M-H-F보다 우선한다. 확정 악기 매핑은 H=Tom1/E5/GM50, M=Tom2/D5/GM47 그대로 두고 이벤트의 악기 순서를 바꾼다. 과거 영상 시각은 당시 공격 그룹의 근거로 보존하고 이번 순서를 영상으로 재검증했다고 주장하지 않는다. 최신 산출물은 docs/experiments/tom-moving-route-20261013/에 새로 제작한다. 제목에서(28마디)만 제거하며 곡 ID tom-moving-video-v2·28마디·80BPM·리듬·R/L·킥·첫 박/마디시각·Portland 키트는 유지한다.
+
+이번 재제작에서 `render_portland_exercise.py`는XML경로를 events 부모 폴더의 tom-moving-source.musicxml에서 읽으며 --xml 옵션은 없다. 잘못 지정한 첫 명령의 인자 오류를 확인하고 문서/기존 CLI 계약대로 --events/--out만 사용해 완료했다. 최종 verifier는 새 제작본 검사와 앱 수록 검사를 구분하기 위해 --check-public을 지정했을 때만 실제public 바이트를 검사한다. 기본 검사에서 미수록 상태를 통과했다고 표현하지 않으며 publicBytesMatch=null로 기록한다.
+
+- 개발 인계: 사용자 확정 앱 담당 `드럼연습실 웹앱 개발` 작업01a0afc9-ca21-7371-9390-06eb07c017e9에 최신 제목·S-H-M-F·final-01경로/해시·검증 및 기존ID/연습기록/설정 보존 조건 전달 성공. 앱 반영 완료는 아직 확인하지 않음.

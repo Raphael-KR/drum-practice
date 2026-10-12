@@ -9,7 +9,7 @@ import { playbackButton, repeatControlsHTML } from "./playback-ui";
 import { settingsSwitch } from "./settings-ui";
 import { componentName } from "./ui-standard";
 export function tempoFieldsHTML(id: string) {
-  return `<label class="tempo-number" title="${t("workspace.message543")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div class="tempo-choices"><div id="tempo-options"></div><button id="tempo-reset" title="${t("workspace.message545")}">${t("workspace.message545")}</button></div><p class="subtle">${t("workspace.message544")}</p>`;
+  return `<label class="tempo-number" title="${t("workspace.message544")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div class="tempo-choices"><div id="tempo-options"></div><button id="tempo-reset" title="${t("workspace.message545")}">${t("workspace.message545")}</button></div>`;
 }
 export function soundFieldsHTML() {
   return `<div class="playback-sound-fields">${[
@@ -185,7 +185,7 @@ export function appInfoHTML(
   version: string,
   build: { source: string; builtAt: string },
 ) {
-  return `<section class="settings-group app-info"><dl><dt>${t("portable-player.message456")}</dt><dd id="app-version">${escapeHTML(version)} (${escapeHTML(build.source)})</dd><dt>${t("portable-player.message457")}</dt><dd id="app-built-at">${escapeHTML(formatDate(new Date(build.builtAt), { timeZone: "Asia/Seoul", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }))} KST</dd></dl></section>`;
+  return `<section class="settings-group app-info"><p id="recording-tempo-info" class="subtle" hidden></p><dl><dt>${t("portable-player.message456")}</dt><dd id="app-version">${escapeHTML(version)} (${escapeHTML(build.source)})</dd><dt>${t("portable-player.message457")}</dt><dd id="app-built-at">${escapeHTML(formatDate(new Date(build.builtAt), { timeZone: "Asia/Seoul", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }))} KST</dd></dl></section>`;
 }
 
 

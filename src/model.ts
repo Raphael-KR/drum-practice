@@ -89,7 +89,7 @@ export interface Song {
   /** Visible marker IDs; empty strings preserve deleted slots. */
   markerSlots?: string[];
   loops: Loop[];
-  /** Stable eight-slot references; older saved loops remain preserved. */
+  /** Nine visible loop IDs sorted by start measure; past hidden slots stay preserved. */
   repeatSlots?: string[];
   settings: Settings;
   audioName: string;

@@ -17,7 +17,7 @@
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:playback": "node scripts/check-playback-architecture.mjs && node scripts/check-common-components.mjs && node scripts/check-playback-build.mjs",
     "dev:editor": "vite --host 127.0.0.1 --open /editor.html",
-    "dev:player": "vite --host 127.0.0.1 --port 5174 --open /player.html",
+    "dev:player": "vite --host 127.0.0.1 --open /player.html",
     "build:apps": "npm run check:i18n && npm run portable && tsc --noEmit && vite build --mode editor && vite build --mode player && node scripts/check-app-boundaries.mjs",
     "test:drum": "vitest run --exclude 'guitar-practice/**' --exclude 'deployment/**' --exclude 'dependencies/**' --exclude 'local-archives/**'",
     "version:app": "node scripts/bump-app-version.mjs"

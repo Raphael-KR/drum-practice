@@ -3,7 +3,7 @@ import argparse, json, struct
 from collections import Counter
 from pathlib import Path
 from lxml import etree as E
-from tom_moving import add
+from xml_helpers import add
 from tom_moving_corrected import INSTRUMENTS, midi
 from verify import Resolver
 
@@ -50,6 +50,7 @@ def verify(xml,fixture):
 def score(fixture):
     root=E.Element('score-partwise',version='4.0');add(add(root,'work'),'work-title',fixture['title'])
     ident=add(root,'identification');add(ident,'creator','Drum Practice',type='composer')
+    if fixture.get('artist'):add(ident,'creator',fixture['artist'],type='artist')
     add(ident,'rights','Original warmup composed for Drum Practice. Audio: preserved SoCal samples, dry offline render.')
     add(add(ident,'encoding'),'software','Drum Practice original preplay warmup generator')
     d=add(root,'defaults');sc=add(d,'scaling');add(sc,'millimeters',7);add(sc,'tenths',40)

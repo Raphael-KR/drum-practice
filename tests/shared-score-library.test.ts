@@ -2,7 +2,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { allRecords, saveRecord } from "../src/storage";
-import { listPracticeRecords, loadPracticeRecord, savePracticeState, savePracticeRecord, listPracticeArchives } from "../src/practice-library";
+import { listPracticeRecords, loadPracticeRecord, savePracticeState, savePracticeRecord } from "../src/practice-library";
 import type { RecordData } from "../src/storage";
 beforeEach(() => vi.stubGlobal("indexedDB", new IDBFactory()));
 afterEach(() => vi.unstubAllGlobals());
@@ -35,7 +35,7 @@ it("both apps read the same record and practice saves retain authoring data",asy
   await savePracticeRecord(record("from-player"));
   expect((await allRecords()).map(r=>r.song.id)).toContain("from-player");
 });
-it("migrates player-only records once and archives collisions without overwriting editor",async()=>{
+it("migrates player-only records once and keeps current collisions without overwriting editor",async()=>{
   const editor=record("collision");editor.song.title="Editor";
   const player=record("collision");player.song.title="Player";
   await seed("drum-practice",[editor],false);
@@ -43,7 +43,5 @@ it("migrates player-only records once and archives collisions without overwritin
   await Promise.all([allRecords(),listPracticeRecords()]);
   expect((await allRecords()).length).toBe(2);
   expect((await loadPracticeRecord("collision"))!.song.title).toBe("Editor");
-  expect((await listPracticeArchives("collision")).map(a=>a.record.song.title)).toEqual(["Player"]);
   await allRecords();
-  expect((await listPracticeArchives("collision")).length).toBe(1);
 });

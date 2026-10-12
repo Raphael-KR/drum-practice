@@ -29,7 +29,7 @@ it("opens useful playback help, without a footer or placeholder, and restores fo
   expect(root.querySelectorAll("#app-help-button")).toHaveLength(1);
   root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
   const d = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
-  expect(d.textContent).toContain("두 번 탭");
+  expect(d.textContent).toContain("더블클릭");
   expect(d.textContent).toContain("Space");
   expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
   expect(d.querySelector<HTMLElement>(".help-pages")!.hidden).toBe(true);
@@ -154,7 +154,7 @@ it("explains library favorites, title order and local storage", () => {
   root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
   const dialog = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
   expect(dialog.querySelectorAll(".help-cards section")).toHaveLength(3);
-  for (const text of ["즐겨찾기", "맨 위", "제목 표시 순서", "자동 공유되지 않음", "되돌림 화살표"])
+  for (const text of ["즐겨찾기", "맨 위", "제목 표시 순서", "자동 공유되지 않음", "새 파일로 교체"])
     expect(dialog.textContent).toContain(text);
   dialog.close();
   vi.unstubAllGlobals();

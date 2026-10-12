@@ -118,6 +118,22 @@ export async function build({ sourceName = "loveholic.musicxml", printedLyricsNa
   }
   let noteReview;
   let baseXML = await source.text();
+  // Keep the score's printed 136 BPM separate from recording measurements.
+  const recordingDoc = new DOMParser().parseFromString(baseXML, "application/xml");
+  const recordingMisc = recordingDoc.querySelector("identification > miscellaneous");
+  if (!recordingMisc || alignment.audio_sha256 !== provenance.audio_sha256) throw Error("Recording estimate provenance mismatch");
+  const recordingName = "drum-practice:recording-tempo:v1";
+  for (const field of recordingMisc.querySelectorAll("miscellaneous-field"))
+    if (field.getAttribute("name") === recordingName) field.remove();
+  const recordingField = recordingDoc.createElement("miscellaneous-field");
+  recordingField.setAttribute("name", recordingName);
+  recordingField.textContent = JSON.stringify({ version: 1, scoreBpm: 136,
+    bpmEstimate: Number(alignment.bpm_estimate.toFixed(3)),
+    firstBeatEstimateSeconds: Number(alignment.first_beat_estimate_seconds.toFixed(6)),
+    audioSHA256: alignment.audio_sha256, method: alignment.method,
+    status: "signal-estimate; not listening-confirmed" });
+  recordingMisc.append(recordingField);
+  baseXML = new XMLSerializer().serializeToString(recordingDoc);
   if (noteLyricsName) {
     noteReview = await getJSON(noteLyricsName);
     if (noteReview.sourcePDFSHA256 !== provenance.pdf_sha256 || noteReview.status !== "PASS") throw Error("Note lyric source mismatch");

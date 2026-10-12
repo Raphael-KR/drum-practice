@@ -13,6 +13,12 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 - 매 제작 시작 전에 [전체 제작 프로세스](../../../docs/SCORE-PRODUCTION-PROCESS.md)와 [변환 정책](../../../docs/MUSICXML-CONVERSION-POLICY.md)을 읽는다. 매핑은 [MusicXML·OSMD 매핑](../../../docs/SCORE-MUSICXML-OSMD-MAPPING.md), 표시는 [SVG 규칙](../../../docs/SVG-SCORE-RULES.md), 저장·가사는 [canonical 계약](../../../docs/MUSICXML-CANONICAL.md), 패키지는 [완성 파일 계약](../../../docs/SCORE-PACKAGE.md)을 따른다. 이 스킬은 이 정본들의 대체 매핑을 만들지 않는다.
 - 기존 승인과 입력으로 해결할 수 있는 내용을 사용자에게 다시 묻지 않는다. 문서가 헷갈리면 구조·현재/과거 상태를 정리한다. 모순 해결은 history → 관련 문서 → 과거 악보 제작 세션 → 웹 근거 순서로 확인하고 수정 이유를 기록한다.
 
+## 드럼 연습 악보의 가수란
+
+- 앞으로 만드는 모든 드럼 연습 악보의 가수란에 선택하여 사용하는 **드럼킷 이름을 반드시 넣는다**. 예: `SoCal 드럼킷`, `Portland 드럼킷`. 특정 곡만의 예외나 빈칸 기준을 재사용하지 않는다.
+- [드럼킷 선택 기준](../../../docs/GARAGEBAND-DRUM-KITS.md)에 따라 키트를 정하고, [메타정보 저장 계약](../../../docs/MUSICXML-CANONICAL.md#저장-계약)에 따라 MusicXML `creator type="artist"`와 `Song.artist` 및 패키지의 내장 정본을 동일하게 기록한다. 저장 후 재읽기에서 누락·불일치를 확인한다.
+- 일반 곡 악보는 실제 가수명을 유지한다. 이 규칙으로 요청하지 않은 음원 제작을 추가하지 않는다.
+
 ## 입력별 경로
 
 - **PDF:** 변환 정책의 벡터 구조 추출 또는 스캔·사진 Audiveris 초벌/교정 경로를 적용한다. 새 양식은 대표 구간을 먼저 평가하고 원본·자동 초벌·기존 결과를 보존한다.

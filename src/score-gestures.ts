@@ -12,6 +12,7 @@ export interface ScoreGestureCallbacks<T> {
   getTarget(event: PointerEvent): T | null;
   /** Resume/unlock AudioContext while pointer-down still has user activation. */
   prepareAudio?(): void;
+  pausedDoubleTap?(target: T): void;
   pause(): void;
   seek(target: T, resumePlaying: boolean): void;
   scrubStart(wasPlaying: boolean): void;
@@ -174,7 +175,8 @@ export function attachScoreGestures<T>(
     // Browsers can coalesce pointermove events. A moved pointer is never a tap.
     if (Math.hypot(event.clientX - finished.x, event.clientY - finished.y) >= DRAG_THRESHOLD) return;
     if (finished.secondTap) {
-      callbacks.seek(finished.target, true);
+      if (!finished.wasPlaying && callbacks.pausedDoubleTap) callbacks.pausedDoubleTap(finished.target);
+      else callbacks.seek(finished.target, true);
       return;
     }
     if (finished.wasPlaying) callbacks.pause();

@@ -15,7 +15,7 @@ export async function build(){
   const source=new Blob([await(await fetch(ROOT+'preplay-warmup-source.musicxml')).arrayBuffer()],{type:'application/vnd.recordare.musicxml+xml'});
   const audio=new Blob([await(await fetch(BASE+'docs/experiments/preplay-warmup-20261006/socal-final-01/preplay-warmup-socal.mp3')).arrayBuffer()],{type:'audio/mpeg'});
   const fixture=await(await fetch(BASE+'scripts/musicxml/fixtures/preplay_warmup.json')).json();
-  const metadata={id:fixture.id,title:fixture.title,artist:''};
+  const metadata={id:fixture.id,title:fixture.title,artist:fixture.artist};
   const generation=await(await fetch(ROOT+'generation-audit.json')).json();
   const audioAudit=await(await fetch(BASE+'docs/experiments/preplay-warmup-20261006/socal-final-01/render-audit.json')).json();
   if(generation.status!=='PASS'||await sha(audio)!==audioAudit.mp3SHA256)throw Error('Input validation/hash mismatch');
