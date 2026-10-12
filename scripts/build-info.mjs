@@ -8,7 +8,8 @@ async function files(dir) {
   return nested.flat();
 }
 export async function writeBuildInfo() {
-  const inputs = [...await files('src'), ...await files('scripts'), ...await files('public/icons'), 'package.json', 'package-lock.json', 'tsconfig.json', 'index.html', 'editor.html', 'player.html', 'vite.config.ts']
+  const hosting = [...await files('hosting/build'), ...await files('hosting/scripts'), ...await files('hosting/db'), ...await files('hosting/drizzle'), 'hosting/package.json', 'hosting/package-lock.json', 'hosting/vite.config.ts', 'hosting/drizzle.config.ts'];
+  const inputs = [...await files('src'), ...await files('server'), ...await files('scripts'), ...await files('public/icons'), ...hosting, 'package.json', 'package-lock.json', 'tsconfig.json', 'index.html', 'editor.html', 'player.html', 'vite.config.ts']
     .filter(p => p !== 'src/build-info.generated.json').sort();
   const hash = createHash('sha256');
   for (const path of inputs) { hash.update(path); hash.update(await readFile(path)); }

@@ -8,15 +8,24 @@ if (target === source) throw new Error('Sites checkout must differ from source')
 const manifest = JSON.parse(await readFile(resolve(target,'.openai/hosting.json'),'utf8'));
 if (manifest.project_id !== 'appgprj_6ab0790baa048191aaee49f58c1ffe7b') throw new Error('Wrong Site');
 // Replace only the previous generated mirror; its history is retained in Site Git.
-for(const entry of ['src','scripts','public/demo','dist','index.html','package.json','package-lock.json','tsconfig.json','vite.config.ts','source-parity.json'])
+for(const entry of ['src','server','scripts','build','db','drizzle','player-assets','public/demo','dist','index.html','package.json','package-lock.json','tsconfig.json','vite.config.ts','drizzle.config.ts','source-parity.json'])
   await rm(resolve(target,entry),{recursive:true,force:true});
-await mkdir(resolve(target,'dist'),{recursive:true});
-await cp(resolve(source,'dist/player'),resolve(target,'dist'),{recursive:true});
-await cp(resolve(target,'dist/player.html'),resolve(target,'dist/index.html'));
-await writeFile(resolve(target,'.gitignore'),'node_modules/\n.sites-runtime/\n.env*\n*.log\n');
-await writeFile(resolve(target,'README.md'),'# 드럼연습실\n\nCanonical source: /Users/raphael/Playground/drum-practice\n\nPlayer-only static release. Authoring app is local-only. Rebuild canonical player and run scripts/prepare-sites.mjs.\n');
+await mkdir(resolve(target,'player-assets'),{recursive:true});
+await cp(resolve(source,'dist/player'),resolve(target,'player-assets'),{recursive:true});
+await cp(resolve(target,'player-assets/player.html'),resolve(target,'player-assets/index.html'));
+for(const entry of ['build','scripts','db','drizzle','index.html','package.json','package-lock.json','vite.config.ts','drizzle.config.ts'])
+  await cp(resolve(source,'hosting',entry),resolve(target,entry),{recursive:true});
+await mkdir(resolve(target,'server'),{recursive:true});
+await mkdir(resolve(target,'src'),{recursive:true});
+for(const entry of ['audio-analysis-api.ts','audio-analysis-store.ts','audio-analysis-worker.ts'])
+  await cp(resolve(source,'server',entry),resolve(target,'server',entry));
+await cp(resolve(source,'src/audio-analysis-contract.ts'),resolve(target,'src/audio-analysis-contract.ts'));
+delete manifest.static;manifest.d1='DB';manifest.r2=null;
+await writeFile(resolve(target,'.openai/hosting.json'),JSON.stringify(manifest,null,2)+'\n');
+await writeFile(resolve(target,'.gitignore'),'node_modules/\ndist/\n.wrangler/\n.sites-runtime/\n.env*\n*.log\n');
+await writeFile(resolve(target,'README.md'),'# 드럼연습실\n\nCanonical source: /Users/raphael/Playground/drum-practice\n\nPlayer-only assets with a metadata-only Worker/D1 analysis API. Audio stays on each device. Authoring app remains local-only. Run scripts/prepare-sites.mjs in the canonical project, install dependencies, then npm run build here.\n');
 const digests=[];
-async function scan(dir='') {for(const e of await readdir(resolve(target,'dist',dir),{withFileTypes:true})) {const p=dir?`${dir}/${e.name}`:e.name;if(e.isDirectory()) await scan(p);else digests.push({path:p,sha256:createHash('sha256').update(await readFile(resolve(target,'dist',p))).digest('hex')});}}
+async function scan(dir='') {for(const e of await readdir(resolve(target,'player-assets',dir),{withFileTypes:true})) {const p=dir?`${dir}/${e.name}`:e.name;if(e.isDirectory()) await scan(p);else digests.push({path:p,sha256:createHash('sha256').update(await readFile(resolve(target,'player-assets',p))).digest('hex')});}}
 await scan();
 await writeFile(resolve(target,'source-parity.json'),JSON.stringify({canonicalProject:source,app:'player',version:JSON.parse(await readFile(resolve(source,'src/app-versions.json'),'utf8')).player.version,files:digests},null,2)+'\n');
 console.log(JSON.stringify({target,files:digests.length}));

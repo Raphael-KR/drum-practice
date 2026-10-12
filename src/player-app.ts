@@ -214,10 +214,7 @@ async function importFile(file: File, ownsLock = false) {
       stage = t("audioPractice.loading");
       const button = root.querySelector<HTMLButtonElement>("#import-package");
       if (button) { button.disabled = true; button.textContent = stage; }
-      const loaded = await readAudioPractice(file);
-      const confirmed = await setupAudioPractice(loaded);
-      if (!confirmed) return;
-      record = confirmed;
+      record = await readAudioPractice(file);
     } else record = await readScorePackage(file);
     stage = t("library.stageSave");
     await importPracticeRecord(record);

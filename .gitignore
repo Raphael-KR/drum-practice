@@ -36,3 +36,8 @@ public/scores/
 
 # Locally preserved GarageBand drum definitions, patches and audio samples.
 /local-libraries/
+
+# Local server analysis metadata, never audio uploads.
+/data/runtime/
+/hosting/.sites-runtime/
+/hosting/.wrangler/

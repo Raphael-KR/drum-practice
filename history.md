@@ -3721,3 +3721,31 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 버전 정정 커밋74afc47을GitHub main에푸시하고 player0.7.1/build ac1f5b592484를 발행했다. 추가 patch 상승 없이 사용자 확정 버전을 사용했다.
 - Sites 소스fcfdf43f26303e1ec4be942f32360bc00ab7714b, 저장버전57(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_626f7714a1808191a56f5386e630f8d4), 배포appgdep_6acd5148c01c8191985e1e04da5af801 succeeded.
 - 공개 HTTP200, 진입점 및 JS 바이트와 로컬player빌드 일치, 공개JS의0.7.1/build ac1f5b592484 확인. 기능 코드 변경은 없으며 기존 실제iPhone Safari 검증 한계는 유지한다.
+
+## 2026-10-13 — 0.7 안정화 및 음원 자동 가져오기
+- 사용자 보정: 최초 음원 가져오기에서 수동 박자/곡명/가수 입력을 요구하지 않는다. 자동 BPM·첫 박 추정과 로컬 파일 태그 읽기를 적용해 바로 저장·연습 화면으로 이동한다. 기존 박자 맞추기는 선택적 보정으로 유지했다. 태그 누락/손상은 파일명 제목 및 빈 가수로 처리한다.
+- 오른쪽 채널만 소리가 있는 파일 및 좌우 위상 반대 파일의 분석/파형 손실을 수정했다. 파일/태그는 외부로 보내지 않는다. music-metadata 12.2.0과 종속 라이선스 수집 지원을 추가했다.
+- 집중23개, 전체103파일/554개 테스트, 앱 분리 빌드(타입/i18n/경계), 공통 재생 구조 검사 통과. 실제 로컬 MP3 태그 자동 입력·바로 진입·재생/정지·재열기·보정 취소·손상 파일 오류/잠금 해제 확인. 검증용 신규 항목만 삭제했다.
+- 계획/근거: docs/plans/STABILIZE-0.7.md. PRD 및 음원 설계/UX/도움말을 최신 결정으로 갱신했다. Safari MCP 연결 실패로 Chromium을 사용했으며 실제 iPhone/iPad Safari 검증은 남는다. 분석은 일정 템포 추정/4분의4박자 기본값이며 변속곡·마디 첫 박 정확도를 보장하지 않는다.
+- player0.7.1/editor0.6.30 유지. 소스 빌드번호 갱신. 커밋·푸시·발행 미수행.
+
+## 2026-10-13 — iPad 음원 가져오기에서 파일 선택 직접 진입
+- 사용자 iPad 캡처의 사진 보관함/비디오 촬영 메뉴를 조사했다. WebKit WKFileUploadPanel.mm은 audio/*를 UTTypeMovie로 매핑하며 이미지/영상 유형이 있으면 선택 메뉴를 띄운다. 해당 유형이 없으면 문서 선택기로 직접 진입한다. 근거: https://github.com/WebKit/WebKit/blob/main/Source/WebKit/UIProcess/ios/forms/WKFileUploadPanel.mm (UTIsForMIMETypes, showDocumentPickerMenu).
+- AUDIO_FILE_ACCEPT에서 audio/*와 영상 MIME으로 해석될 수 있는 .webm을 제거했다. .mp3/.m4a/.wav/.aac/.ogg/.flac/.aif/.aiff 확장자를 명시한다. 기존 음원 재생·서버 악보 가져오기 및 파일 검증은 유지한다.
+- 집중23개 테스트와 타입 검사 통과. 개발 서버5173에서 수정된 accept 상수를 확인했다. iPad 실제 네이티브 파일 선택 화면은 미검증이며 Chromium 검증으로 대신하지 않는다. 앱 버전 유지, 빌드번호 갱신. 커밋·푸시·발행 미수행.
+
+## 2026-10-13 — 음원 해시·자동 분석 서버 캐시
+- 사용자 승인: 음원은 기기에만 보관하고 같은 파일의 해시·분석 결과를 서버에 저장/재사용한다. 계약·범위·운영 경계: docs/plans/AUDIO-ANALYSIS-CACHE.md.
+- 브라우저 SHA-256 + 분석기 버전으로 조회하고 miss/장애에는 로컬 분석한다. 서버에 태그의 곡명/가수·길이·BPM·첫 박·박자표·신뢰도만 JSON으로 게시한다. 파일명 대체 제목·파형·오디오·개인 마커/구간·수동 보정은 보내지 않는다. 낮은 신뢰도의 임시 기본값은 게시하지 않는다.
+- 기존5173에 API와 영속 SQLite를 연결했다. 4KiB/허용필드 검증, 첫 결과 보존, 1만건 상한 적용. Worker/D1 어댑터·스키마도 작성했지만 공개 Sites는 아직 정적 배포이며 DB/자산 바인딩과 배포 준비 스크립트 전환은 미적용이다.
+- 실제 브라우저 MP3 첫 GET404/PUT200 → 다음 GET200, 태그 유지·재생/정지·DB 필드 확인. 테스트 신규 항목2개와 해당 캐시1개만 정리. Safari MCP Transport closed로 ego-browser 사용; 실제 iPhone/iPad Safari 검증은 아니다.
+- 전체106파일561테스트 통과. 최초 전체 검사는 빌드와 병행해 build-info 불일치 및 UI 연쇄 실패4건이 있었고, 빌드 완료 후 UI25개와 전체561개 재검증은 통과했다. 이후 Worker/D1 어댑터 집중 검사 및 최종 분리 빌드 결과는 아래 기록한다.
+- 버전 player0.7.1/editor0.6.30 유지. 서버 코드도 소스 빌드번호 계산에 포함했다. 커밋·푸시·발행 없음. STT/AFM은 해시/박자 캐시 처리에 적합하지 않아 사용하지 않았다.
+- 최종: 캐시 집중3파일8개(Worker/D1 SQL 어댑터 추가 검사 포함) 통과, 타입/i18n/editor·player 분리 빌드/앱 경계 검사 통과(.tmp/cache-final-focused.log, .tmp/cache-final-build.log). 소스 build891300f1ccc5. 실제5173의 미등록 해시 API404 JSON 확인. git diff --check 통과.
+
+## 2026-10-13 — 0.7.2 공개 분석 캐시 발행 준비
+- 사용자 승인: 공개 Sites DB 연결과 커밋·푸시·발행. player0.7.2로 patch 상승(기존 음원 가져오기 자동화/안정화/분석 재사용 개선), editor0.6.30 유지.
+- 기존 Sites ID/주소/public 범위를 보존하고 정적 발행을 Worker + D1으로 전환한다. `hosting/`에 Sites starter의 sites() 빌드 통합을 유지한 얇은 API 실행 환경, Drizzle schema/생성 migration을 추가했다. `scripts/prepare-sites.mjs`가 player 자산과 API 계약만 전달한다. 제작기/원본 업로드 저장소는 포함하지 않는다.
+- 전체106파일562테스트, 집중 캐시8개, 타입/i18n/editor·player 빌드/앱 경계 통과. 공개용 Worker 빌드 및 player34파일 바이트 동일 검사 통과.
+- 배포할 Worker를 workerd/Miniflare D1에서 실행해 miss404 → PUT200 → 재조회 동일, raw audio415, 루트 player HTML 바이트 일치, editor404 확인. 시험 설정에서 assets router의 has_user_worker가 빠져 첫 smoke500이 났고 이를 올바르게 설정한 뒤 통과했다(제품 코드 변경 없음). 근거: .tmp/public-cache-full.log, .tmp/sites-cache-build.log, .tmp/sites-cache-runtime.log.
+- 정적 자산 설정 근거: https://developers.cloudflare.com/workers/vite-plugin/reference/static-assets/ 및 Sites skill의 storage/troubleshooting 계약. 실제 공개 API 및 Git/publish 결과는 후속 기록한다.

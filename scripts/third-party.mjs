@@ -13,7 +13,7 @@ async function collect(root) {
   if (!notices.length) {
     const readme = (await readdir(root)).find(n=>/^readme/i.test(n));
     const text = readme ? await readFile(`${root}/${readme}`, 'utf8') : '';
-    const at = text.search(/^#+ (?:License|Copyright)/im);
+    const at = text.search(/^#+ (?:Licen[cs]e|Copyright)/im);
     if (at < 0) throw Error(`Missing license: ${key}`);
     notices.push(text.slice(at));
   }
@@ -23,8 +23,21 @@ async function collect(root) {
   entries.push({name:p.name,version:p.version,license:p.name==='jszip'?'MIT (선택)':p.license || 'See license',url,text:notices.join('\n\n')});
   const require = createRequire(resolve(root, 'package.json'));
   for (const name of Object.keys(p.dependencies || {}).filter(n=>!n.startsWith('@types/'))) {
-    const path = require.resolve(`${name}/package.json`);
-    await collect(dirname(path));
+    let dependencyRoot;
+    try { dependencyRoot = dirname(require.resolve(`${name}/package.json`)); }
+    catch (error) {
+      if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error;
+      // Some ESM packages export their entry point but keep package.json private.
+      dependencyRoot = dirname(require.resolve(name));
+      while (true) {
+        const manifest = await readFile(resolve(dependencyRoot, 'package.json'), 'utf8').catch(() => null);
+        if (manifest && JSON.parse(manifest).name === name) break;
+        const parent = dirname(dependencyRoot);
+        if (parent === dependencyRoot) throw Error(`Cannot locate license package: ${name}`);
+        dependencyRoot = parent;
+      }
+    }
+    await collect(dependencyRoot);
   }
 }
 export async function writeThirdParty() {

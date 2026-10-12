@@ -2,8 +2,13 @@ import { defaults, uid, validateSong, type Song } from "./model";
 import { estimateTempo } from "./analysis";
 import { t } from "./i18n";
 import type { RecordData } from "./storage";
+import { audioMetadata } from "./audio-metadata";
+import {audioFileHash,loadAudioAnalysis,storeAudioAnalysis} from "./audio-analysis-cache";
+import {ANALYZER_VERSION,type AudioAnalysis} from "./audio-analysis-contract";
 
-export const AUDIO_FILE_ACCEPT = "audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac,.aif,.aiff,.webm";
+// iOS maps audio/* to a movie picker. WebM can also resolve to video/webm.
+// Audio-only extensions let Safari open the Files document picker directly.
+export const AUDIO_FILE_ACCEPT = ".mp3,.m4a,.wav,.aac,.ogg,.flac,.aif,.aiff";
 export function practiceFileKind(file: Pick<File, "name" | "type">): "score" | "audio" {
   if (/\.(drumscore|zip)$/i.test(file.name)) return "score";
   if (/\.(mp3|m4a|wav|aac|ogg|flac|aif|aiff|webm)$/i.test(file.name) || file.type.startsWith("audio/")) return "audio";
@@ -31,26 +36,56 @@ export function retimeAudio(song: Song, bpm: number, firstBeat: number, beats: n
 }
 export function waveformPeaks(buffer: AudioBuffer): number[] {
   const samples = buffer.getChannelData(0), count = Math.min(4096, samples.length);
+  const channels = Array.from({length: buffer.numberOfChannels}, (_, i) => buffer.getChannelData(i));
   return Array.from({length:count}, (_, i) => {
     let peak = 0;
     const end = Math.floor((i + 1) * samples.length / count);
-    for (let j = Math.floor(i * samples.length / count); j < end; j++) peak = Math.max(peak, Math.abs(samples[j]));
+    for (const channel of channels)
+      for (let j = Math.floor(i * samples.length / count); j < end; j++) peak = Math.max(peak, Math.abs(channel[j]));
     return Math.min(1, peak);
   });
 }
-/** Decode only on this device. No fetch, upload or score conversion. */
+/** Combine channel energy, avoiding silent-left and opposite-phase stereo cancellation. */
+export function audioAnalysisSamples(buffer: AudioBuffer): Float32Array {
+  const channels = Array.from({length: buffer.numberOfChannels}, (_, i) => buffer.getChannelData(i));
+  const samples = new Float32Array(Math.min(channels[0].length, buffer.sampleRate * 90));
+  for (let i = 0; i < samples.length; i++) {
+    let energy = 0;
+    for (const channel of channels) energy += channel[i] ** 2;
+    samples[i] = Math.sqrt(energy / channels.length);
+  }
+  return samples;
+}
+/** Audio bytes stay local; only a hash and bounded analysis metadata may be sent. */
 export async function readAudioPractice(file: File): Promise<RecordData> {
   if (!file.size) throw Error(t("audioPractice.empty"));
   const context = new AudioContext({sampleRate:32000});
   try {
-    const buffer = await context.decodeAudioData(await file.arrayBuffer());
-    const guess = estimateTempo(buffer.getChannelData(0).subarray(0, buffer.sampleRate * 90), buffer.sampleRate);
-    const bpm = guess.confidence >= .08 && Number.isFinite(guess.bpm) ? guess.bpm : 120;
-    const firstBeat = guess.confidence >= .08 && guess.firstBeat < buffer.duration ? guess.firstBeat : 0;
+    const bytes = await file.arrayBuffer();
+    const hash = await audioFileHash(bytes).catch(() => undefined);
+    const [buffer, cached] = await Promise.all([
+      context.decodeAudioData(bytes), hash ? loadAudioAnalysis(hash) : undefined,
+    ]);
+    let analysis: AudioAnalysis;
+    if (cached && Math.abs(cached.duration - buffer.duration) < .1) {
+      analysis = cached;
+    } else {
+      const metadata = await audioMetadata(file, false);
+      const guess = estimateTempo(audioAnalysisSamples(buffer), buffer.sampleRate);
+      const confident = guess.confidence >= .08 && Number.isFinite(guess.bpm);
+      analysis = {analyzerVersion:ANALYZER_VERSION,sha256:hash || '',...metadata,
+        duration:buffer.duration,bpm:confident ? guess.bpm : 120,
+        firstBeat:confident && guess.firstBeat < buffer.duration ? guess.firstBeat : 0,
+        beats:4,denominator:4,confidence:guess.confidence};
+      // Best-effort metadata-only write. Never hold up playback for the server.
+      if(hash && confident) void storeAudioAnalysis(analysis);
+    }
+    const {bpm,firstBeat,beats,denominator}=analysis;
+    const metadata={title:analysis.title || file.name.replace(/\.[^.]+$/, ''),artist:analysis.artist};
     const song: Song = {
-      version:1, id:uid(), title:file.name.replace(/\.[^.]+$/, ""), artist:"", bpm, firstBeat,
-      audioPractice: {duration:buffer.duration, beats:4, denominator:4, peaks:waveformPeaks(buffer)},
-      measures:audioMeasures(buffer.duration,bpm,firstBeat,4,4), regions:[], lyrics:[], markers:[], loops:[],
+      version:1, id:uid(), ...metadata, bpm, firstBeat,
+      audioPractice: {duration:buffer.duration, beats, denominator, peaks:waveformPeaks(buffer)},
+      measures:audioMeasures(buffer.duration,bpm,firstBeat,beats,denominator), regions:[], lyrics:[], markers:[], loops:[],
       settings:{...defaults(), click:false}, audioName:file.name, pdfName:"", pageCount:0,
     };
     validateSong(song);

@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { expect, it, vi } from "vitest";
 vi.mock("../src/landscape-keyboard", () => ({ installLandscapeKeyboardGuard: () => () => {} }));
+vi.mock('../src/audio-practice', async importOriginal => ({...await importOriginal<typeof import('../src/audio-practice')>(), readAudioPractice:vi.fn()}));
+vi.mock('../src/audio-practice-setup', () => ({setupAudioPractice:vi.fn()}));
 vi.mock("../src/help", () => ({ installHelp: vi.fn() }));
 vi.mock("../src/playback-runtime", () => ({ mountPlaybackRuntime: vi.fn() }));
 vi.mock("../src/score-package", () => ({ readScorePackage: vi.fn() }));
@@ -116,7 +118,7 @@ it("shows the empty hint only when no saved, bundled or restorable cards exist",
   try {
     await showLibrary();
     expect(hint().hidden).toBe(false);
-    expect(hint().textContent).toBe("버튼을 눌러 악보를 추가하세요.");
+    expect(hint().textContent).toBe("버튼을 눌러 음원을 추가하세요.");
     expect(hint().previousElementSibling?.id).toBe("import-package");
     expect(document.querySelector("#import-package")!.getAttribute("aria-describedby")).toBe(hint().id);
     await showLibrary();
@@ -303,4 +305,56 @@ it("opens a basic exercise from the current supplied package without an update c
   expect(importPracticeRecord).toHaveBeenLastCalledWith(next);
   expect(mountPlaybackRuntime).toHaveBeenLastCalledWith(expect.objectContaining({song:next.song,audio:next.audio}));
   await showLibrary();
+});
+
+it("imports analyzed audio directly without forcing a setup dialog and blocks duplicate requests", async () => {
+  const {showLibrary}=await import('../src/player-app');
+  const {readAudioPractice}=await import('../src/audio-practice');
+  const {setupAudioPractice}=await import('../src/audio-practice-setup');
+  const pending=deferred<any>();
+  vi.mocked(readAudioPractice).mockReturnValueOnce(pending.promise);
+  vi.mocked(listPracticeRecords).mockResolvedValue([]);
+  await showLibrary();
+  const input=document.querySelector<HTMLInputElement>('#package-file')!;
+  Object.defineProperty(input,'files',{value:[new File(['mp3'],'local.mp3',{type:'audio/mpeg'})]});
+  const reads=vi.mocked(readAudioPractice).mock.calls.length;
+  const saves=vi.mocked(importPracticeRecord).mock.calls.length;
+  const mounts=vi.mocked(mountPlaybackRuntime).mock.calls.length;
+  input.dispatchEvent(new Event('change'));input.dispatchEvent(new Event('change'));
+  expect(input.disabled).toBe(true);
+  expect(document.querySelector('#import-package')?.textContent).toContain('분석');
+  expect(readAudioPractice).toHaveBeenCalledTimes(reads+1);
+  const record={song:{id:'automatic-audio',title:'Tagged title',artist:'Tagged artist',audioPractice:{duration:5}},pages:[],audio:new Blob(['mp3']),pdf:new Blob()};
+  vi.mocked(loadPracticeRecord).mockResolvedValue(record as any);
+  vi.mocked(importPracticeRecord).mockResolvedValue({status:'added',record} as any);
+  pending.resolve(record);
+  await vi.waitFor(()=>expect(mountPlaybackRuntime).toHaveBeenCalledTimes(mounts+1));
+  await vi.waitFor(()=>expect(document.querySelector('.score-loading')).toBeNull());
+  expect(importPracticeRecord).toHaveBeenCalledTimes(saves+1);
+  expect(importPracticeRecord).toHaveBeenLastCalledWith(record);
+  expect(setupAudioPractice).not.toHaveBeenCalled();
+  expect(mountPlaybackRuntime).toHaveBeenLastCalledWith(expect.objectContaining({song:record.song}));
+  await showLibrary();
+});
+
+it("releases the audio import lock after decode or storage failure so the user can retry",async()=>{
+  const {showLibrary}=await import('../src/player-app');
+  const {readAudioPractice}=await import('../src/audio-practice');
+  await showLibrary();
+  const input=document.querySelector<HTMLInputElement>('#package-file')!;
+  const button=document.querySelector<HTMLButtonElement>('#import-package')!;
+  Object.defineProperty(input,'files',{value:[new File(['bad'],'bad.mp3')]});
+  vi.mocked(readAudioPractice).mockRejectedValueOnce(new Error('corrupt audio'));
+  input.dispatchEvent(new Event('change'));
+  await vi.waitFor(()=>expect(button.disabled).toBe(false));
+  expect(input.disabled).toBe(false);
+  expect(document.querySelector('#library-status')?.textContent).toContain('corrupt audio');
+  vi.mocked(readAudioPractice).mockResolvedValueOnce({song:{id:'audio-failed'}} as any);
+  vi.mocked(importPracticeRecord).mockRejectedValueOnce(new DOMException('Storage full','QuotaExceededError'));
+  input.dispatchEvent(new Event('change'));
+  expect(document.querySelector('#library-status')?.textContent).toBe('');
+  await vi.waitFor(()=>expect(button.disabled).toBe(false));
+  expect(input.disabled).toBe(false);
+  expect(document.querySelector('#library-status')?.textContent).toContain('QuotaExceededError: Storage full');
+  expect(document.querySelector('#library-status')?.classList.contains('is-error')).toBe(true);
 });

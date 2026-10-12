@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import {audioAnalysisPlugin} from "./server/audio-analysis-vite";
 import ko from "./src/locales/ko.json";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 export default defineConfig(({ mode }) => {
@@ -18,6 +19,7 @@ export default defineConfig(({ mode }) => {
         }
       : {}),
     plugins: [
+      audioAnalysisPlugin(),
       {
         name: "localized-document-title",
         transformIndexHtml(html) {

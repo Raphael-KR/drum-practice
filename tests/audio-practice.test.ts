@@ -1,8 +1,9 @@
 import 'fake-indexeddb/auto';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {audioMeasures, practiceFileKind, readAudioPractice, retimeAudio, waveformPeaks} from '../src/audio-practice';
+import {audioAnalysisSamples, audioMeasures, practiceFileKind, readAudioPractice, retimeAudio, waveformPeaks} from '../src/audio-practice';
 import {defaults, validateSong, type Song} from '../src/model';
 import {importPracticeRecord, loadPracticeRecord, removePracticeRecord, savePracticeState} from '../src/practice-library';
+import {estimateTempo} from '../src/analysis';
 import {songScores} from '../src/song-scores';
 import type {RecordData} from '../src/storage';
 const sample = (): Song => ({version:1,id:'audio-test',title:'Audio',bpm:120,firstBeat:.2,audioName:'song.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:5,beats:4,denominator:4,peaks:[0,.4,1]},measures:audioMeasures(5,120,.2,4,4)});
@@ -45,10 +46,22 @@ describe('local audio practice',()=>{
     await removePracticeRecord(record.song.id);
   });
   it('bounds waveform storage and always closes the decoder on invalid input',async()=>{
-    expect(waveformPeaks({getChannelData:()=>new Float32Array([-.4,.8,2])} as unknown as AudioBuffer)).toEqual([expect.closeTo(.4),expect.closeTo(.8),1]);
+    expect(waveformPeaks({numberOfChannels:1,getChannelData:()=>new Float32Array([-.4,.8,2])} as unknown as AudioBuffer)).toEqual([expect.closeTo(.4),expect.closeTo(.8),1]);
     const close=vi.fn(async()=>{});
     vi.stubGlobal('AudioContext',class {close=close;decodeAudioData=vi.fn(async()=>{throw new Error('corrupt mp3')})});
     await expect(readAudioPractice(new File(['bad'],'bad.mp3'))).rejects.toThrow('corrupt mp3');expect(close).toHaveBeenCalledOnce();
     await expect(readAudioPractice(new File([],'empty.mp3'))).rejects.toThrow('빈 음원');
   });
+});
+
+it('detects right-only and opposite-phase stereo pulses without cancelling them',()=>{
+  const sampleRate=1000, pulse=new Float32Array(20000);
+  for(let i=200;i<pulse.length;i+=500) pulse.fill(.8,i,i+20);
+  for(const channels of [[new Float32Array(pulse.length),pulse],[pulse,pulse.map(v=>-v)]]) {
+    const buffer={numberOfChannels:2,sampleRate,getChannelData:(i:number)=>channels[i]} as AudioBuffer;
+    const guess=estimateTempo(audioAnalysisSamples(buffer),sampleRate);
+    expect(guess.bpm).toBe(120);expect(guess.firstBeat).toBeCloseTo(.2,1);
+    expect(guess.confidence).toBeGreaterThan(.08);
+    expect(Math.max(...waveformPeaks(buffer))).toBeCloseTo(.8);
+  }
 });
