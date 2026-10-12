@@ -3594,3 +3594,10 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 범위:9BPM프리셋/원곡1배속,5173단일서버,개인악보보관·복원·업데이트제거/구16마디퇴역,기본연습곡최신메타/28마디경로,키보드선택/마커/구간등록/색상/터치·마우스UX와관련제작지침·스크립트/테스트/문서.
 - 검증:최종전체드럼99파일520테스트및editor/player분리빌드·경계검사통과. 최근기능별Safari검증은각이력에기록. 실제iPad손가락타건은미검증.
 - 발행대상은dist/player만이며악보제작기는로컬전용이다. 원본미디어·미추적실험/범례이미지·output/tmp자료는Git커밋에서제외하고보존한다. 발행결과는후속기록한다.
+
+## 2026-10-13 — 드럼연습실0.6.36 발행 완료
+- 기능커밋133438c1a1463668c860077bf021969b4ec7e0fe를GitHub main에푸시했다. editor0.6.28/player0.6.36,빌드11e5b766d864. 전체520테스트/분리빌드·경계검사통과.
+- Sites프로젝트appgprj_6ab0790baa048191aaee49f58c1ffe7b의기존public범위를유지했다. dist/player18파일을정본해시와대조하고악보제작기/데모미포함을확인했다. 공식포장기는manifest를dist/.openai/hosting.json에배치하는형식이다.
+- Sites소스4493e259ae3b208e8b0f8c767ce198ad9b19d4d0푸시,저장버전53(appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_c5728dd8e29c81919885072a25ccadd9),배포appgdep_6acd316767f88191b19ec71844868ec0가succeeded로종료했다.
+- 운영URL https://drum-practice-studio.dgkma.chatgpt.site . 일반CLI요청은HTTP403이었고Sites가제공한공식읽기인증을stdin으로사용해운영rootHTTP200과playerJS/CSS배포해시일치를확인했다. 인증값은파일/로그/커밋에저장하지않았다.
+- 미추적실험·범례이미지/output/tmp자료는그대로보존했다. 실제iPad직접터치검증은각변경이력의한계를유지한다.
