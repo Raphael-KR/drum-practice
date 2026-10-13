@@ -91,7 +91,7 @@ function mount(environment: "web" | "portable", alignPDF = false, canonicalXML?:
     }),
     prepare: vi.fn(async () => {}),
     volumes: vi.fn(),
-    setRate: vi.fn(async (rate: number, original = rate === 1) => {
+    setRate: vi.fn(async (rate: number, original = rate === 1, _report?: (message: string) => void) => {
       song.settings.rate = rate;
       song.settings.tempoMode = original ? "original" : "practice";
     }),
@@ -387,14 +387,14 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡136 BPM");
   expect(document.querySelector("#tempo-reset .tempo-original-bpm")!.textContent).toBe("136 BPM");
   click("tempo-reset");
-  await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(1, true));
+  await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(1, true, expect.any(Function)));
   expect(song.bpm).toBe(136);
   expect(song.settings.rate).toBe(1);
   expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
   expect(document.getElementById(ids.tempo)!.textContent).toContain("136");
   expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("true");
   await screen.rate(136);
-  expect(p.setRate).toHaveBeenLastCalledWith(136 / 136.232, false);
+  expect(p.setRate).toHaveBeenLastCalledWith(136 / 136.232, false, expect.any(Function));
   expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
   expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("false");
 });
@@ -545,7 +545,7 @@ it('shows live original BPM to one decimal, holds when stopped, and separates pr
  p.playing=false;p.position=0;screen.onState();screen.frame();
  expect(document.getElementById('original-tempo-value')!.textContent).toBe('= 127.7');
  await screen.rate(120);
- expect(p.setRate).toHaveBeenLastCalledWith(1,false);
+ expect(p.setRate).toHaveBeenLastCalledWith(1,false,expect.any(Function));
  expect(document.getElementById('original-tempo-value')!.textContent).toBe('= 120');
  expect(document.getElementById('tempo-reset')!.getAttribute('aria-pressed')).toBe('false');
  await screen.rate(120,true);
@@ -561,4 +561,23 @@ it('waveform native touch scrolling and inertia preserve playback position and s
  const seek=vi.spyOn(p,'seek');
  for(const x of [350,500,530]){stage.scrollLeft=x;stage.dispatchEvent(new Event('scroll'));screen.frame();expect(stage.scrollLeft).toBe(x);}
  expect(p.position).toBe(3.2);expect(seek).not.toHaveBeenCalled();
+});
+
+for (const environment of ["web", "portable"] as const) it(`${environment}: BPM conversion reports inside the tempo dialog and recovers after failure`, async () => {
+  const { screen, p, root } = mount(environment);
+  const notice = root.querySelector<HTMLElement>("#tempo-status")!;
+  p.setRate.mockImplementationOnce(async (_rate, _original, report) => {
+    report!("BPM 변환 42%");
+    expect(notice.textContent).toBe("BPM 변환 42%");
+    expect(notice.previousElementSibling?.className).toBe("tempo-number");
+    expect(notice.nextElementSibling?.className).toBe("tempo-choices");
+    throw Error("변환 실패");
+  });
+  await expect(screen.rate(80)).rejects.toThrow("변환 실패");
+  expect(notice.textContent).toBe("변환 실패");
+  expect(notice.classList.contains("error")).toBe(true);
+  p.setRate.mockImplementationOnce(async (_rate, _original, report) => report!("준비되었습니다."));
+  await screen.rate(90);
+  expect(notice.classList.contains("error")).toBe(false);
+  expect(notice.textContent).toBe("준비되었습니다.");
 });

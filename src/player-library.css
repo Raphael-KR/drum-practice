@@ -265,3 +265,34 @@ body:not(.has-song) #app .editor-home button {
     justify-self:start;
   }
 }
+
+/* Phone portrait: two metadata lines, then favorite + actions. */
+@media (max-width:480px) and (orientation:portrait) {
+  .player-library .practice-card-title {
+    grid-column:1 / -1;
+    grid-row:1;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:baseline;
+    gap:2px 8px;
+  }
+  .player-library .practice-card-title > h3,
+  .player-library .practice-card-title > p { grid-column:1; }
+  .player-library .practice-card-title > .audio-type {
+    grid-column:2;
+    grid-row:1 / span 2;
+    align-self:center;
+  }
+  .player-library .practice-card > .library-favorite {
+    grid-column:1;
+    grid-row:2;
+    align-self:center;
+    justify-self:start;
+  }
+  .player-library .practice-card > .practice-card-actions,
+  .player-library .practice-card > button:not(.library-favorite) {
+    grid-column:2;
+    grid-row:2;
+    align-self:center;
+  }
+}

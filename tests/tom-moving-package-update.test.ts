@@ -23,7 +23,7 @@ it("updates the shipped 28-bar score, audio and SVG cache while using incoming p
  const reopened=(await loadPracticeRecord(next.song.id))!;
  expect(reopened.song.title).toBe("탐탐 무빙 연습");
  expect(reopened.song.artist).toBe("Portland 드럼킷");
- expect(reopened.song.settings).toEqual(next.song.settings);
+ expect(reopened.song.settings).toEqual({...next.song.settings, musicVolume:.5, clickVolume:1, click:true});
  expect(reopened.song.markers).toEqual(next.song.markers);
  expect(reopened.song.loops).toEqual(next.song.loops);
  expect(reopened.canonicalXML).toBe(next.canonicalXML);

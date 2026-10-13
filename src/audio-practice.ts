@@ -127,7 +127,7 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
       version:1, id:uid(), ...metadata, bpm, firstBeat,
       audioPractice: {duration:buffer.duration, beats, denominator, peaks:waveformPeaks(buffer),...(beatTimes ? {beatTimes,followTempo:true} : {})},
       measures:beatTimes ? trackedAudioMeasures(buffer.duration,beatTimes) : audioMeasures(buffer.duration,bpm,firstBeat,beats,denominator), regions:[], lyrics:[], markers:[], loops:[],
-      settings:{...defaults(), click:false}, audioName:file.name, pdfName:"", pageCount:0,
+      settings:defaults(), audioName:file.name, pdfName:"", pageCount:0,
     };
     validateSong(song);
     return {song, audio:file, pdf:new Blob(), pages:[]};

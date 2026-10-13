@@ -1651,6 +1651,19 @@ dialog .dialoghead {
   display: none;
 }
 
+#tempo-status {
+  flex: 0 0 100%;
+  width: 100%;
+  min-height: 1.5em;
+  margin: 8px 0 0;
+  text-align: center;
+  color: var(--accent);
+  font-weight: 600;
+}
+#tempo-status.error {
+  color: var(--danger, #b42318);
+}
+
 .tempo-choices {
   display: grid;
   width: 100%;

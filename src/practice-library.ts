@@ -1,6 +1,6 @@
 import { openScoreDatabase, RETIRED_SCORE_ID } from "./score-database";
 import { t } from "./i18n";
-import { validateSong, type Song } from "./model";
+import { defaults, validateSong, type Song } from "./model";
 import type { RecordData } from "./storage";
 import { scoreStructureSignature } from "./score-package";
 import { useScore } from "./song-scores";
@@ -185,6 +185,9 @@ export function removePracticeRecord(id: string): Promise<void> {
 /** Reimport is a direct replacement. No backup or practice-state restoration. */
 export function importPracticeRecord(incoming: RecordData): Promise<PracticeImportResult> {
   const copy = snapshot(incoming);
+  // A newly imported score uses practice defaults, not the author's mix.
+  const { musicVolume, clickVolume, click } = defaults();
+  Object.assign(copy.song.settings, { musicVolume, clickVolume, click });
   return queued(async () => {
     const stored = await encode(copy);
     let existed = false;

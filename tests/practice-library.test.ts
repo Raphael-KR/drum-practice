@@ -77,6 +77,12 @@ describe("independent playback library", () => {
     const input = record();
     expect((await importPracticeRecord(input)).status).toBe("added");
     const loaded = (await loadPracticeRecord(input.song.id))!;
+    expect(loaded.song.settings).toMatchObject({ musicVolume: .5, clickVolume: 1, click: true });
+    loaded.song.settings.musicVolume = .27;
+    loaded.song.settings.clickVolume = .64;
+    loaded.song.settings.click = false;
+    await savePracticeRecord(loaded);
+    expect((await loadPracticeRecord(input.song.id))!.song.settings).toMatchObject({ musicVolume: .27, clickVolume: .64, click: false });
     expect(await loaded.pdf.text()).toBe("pdf");
     expect(loaded.pdf.type).toBe("application/pdf");
     expect(
@@ -96,7 +102,7 @@ describe("independent playback library", () => {
     next.audio = new Blob(["new audio"]);
     expect((await importPracticeRecord(next)).status).toBe("replaced");
     const loaded = (await loadPracticeRecord(old.song.id))!;
-    expect(loaded.song).toEqual(next.song);
+    expect(loaded.song).toEqual({ ...next.song, settings: { ...next.song.settings, musicVolume: .5, clickVolume: 1, click: true } });
     expect(await loaded.audio.text()).toBe("new audio");
   });
   it("preserves saved state when media read fails and continues subsequent writes", async () => {

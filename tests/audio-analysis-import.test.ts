@@ -23,6 +23,7 @@ it('reuses server timing and tags on the next import without reanalysis',async()
   const stored=vi.mocked(storeAudioAnalysis).mock.calls[0][0];
   expect(stored.title).toBe('Tag title');expect(JSON.stringify(stored)).not.toContain('private filename');
   expect(first.audio).toBe(file);
+  expect(first.song.settings).toMatchObject({musicVolume:.5,clickVolume:1,click:true});
   vi.mocked(loadAudioAnalysis).mockResolvedValueOnce(stored);
   const second=await readAudioPractice(file);
   expect(second.song.bpm).toBe(first.song.bpm);expect(second.song.artist).toBe('Tag artist');

@@ -462,7 +462,11 @@ it.each(['complete','error','switch'])('prepares practice at 1x transactionally 
   p.song=followAudioTempo({version:1,id:'live',title:'live',bpm:120,firstBeat:.2,audioName:'a.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:5,beats:4,denominator:4,peaks:[1],beatTimes:[.2,.7,1.18,1.64,2.08,2.5,2.9,3.28,3.64]},measures:audioMeasures(5,120,.2,4,4)});
   p.original={duration:5,sampleRate:32000,numberOfChannels:1,getChannelData:()=>new Float32Array(160000)} as unknown as AudioBuffer;p.rendered=p.original;
   p.position=1.18;
-  const pending=p.setRate(1,false);
+  const report=vi.fn(); p.onprogress=vi.fn();
+  const pending=p.setRate(1,false,report);
+  worker.onmessage({data:{progress:.42}});
+  expect(report).toHaveBeenLastCalledWith("BPM 변환 42%");
+  expect(p.onprogress).not.toHaveBeenCalled();
   expect(worker.data.timeMap).toBeDefined();expect(p.song.settings.tempoMode).toBe('original');
   if(action==='error'){
    worker.onerror({message:'render failed'});await expect(pending).rejects.toThrow('render failed');

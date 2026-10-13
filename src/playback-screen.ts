@@ -664,11 +664,21 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   async function rate(bpm: number, original = false) {
     if (!available()) return;
     h.setBusy(true);
+    const notice = get("tempo-status");
+    notice.textContent = "";
+    notice.classList.remove("error");
+    const report = (message: string) => {
+      if (!disposed) notice.textContent = message;
+    };
     try {
       if (!Number.isFinite(bpm) || bpm <= 0) throw Error(t("main.message248"));
-      await h.player().setRate(original ? 1 : clamp(bpm / originalAudioBpm(), 0.5, 1.2), original);
+      await h.player().setRate(original ? 1 : clamp(bpm / originalAudioBpm(), 0.5, 1.2), original, report);
       if (original) liveBpm = currentAudioBpm(h.song(), h.player().current());
       h.changed();
+    } catch (error) {
+      notice.classList.add("error");
+      report(error instanceof Error ? error.message : String(error));
+      throw error;
     } finally {
       h.setBusy(false);
       sync();

@@ -109,8 +109,8 @@ export const uid = () => crypto.randomUUID();
 export const defaults = (): Settings => ({
   rate: 1,
   click: true,
-  musicVolume: 0.8,
-  clickVolume: 0.3,
+  musicVolume: 0.5,
+  clickVolume: 1,
   countIn: 1,
   countEach: false,
   zoom: 1,

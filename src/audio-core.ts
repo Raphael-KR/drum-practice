@@ -129,11 +129,11 @@ export class Player {
   }
   outputTime(source: number) { return this.renderedMap ? mapTime(source,this.renderedMap.source,this.renderedMap.output) : source/this.renderRate; }
   sourceTime(output: number) { return this.renderedMap ? mapTime(output,this.renderedMap.output,this.renderedMap.source) : output*this.renderRate; }
-  async setRate(rate: number, original = rate === 1) {
+  async setRate(rate: number, original = rate === 1, report = this.onprogress) {
     const was = this.playing;
     this.pause();
     const request = this.playRequest;
-    if (!(await this.renderAtRate(original ? 1 : rate, original ? "original" : "practice")) || request !== this.playRequest)
+    if (!(await this.renderAtRate(original ? 1 : rate, original ? "original" : "practice", report)) || request !== this.playRequest)
       return;
     if (was) await this.play(false, false);
     this.onstate();
@@ -144,7 +144,7 @@ export class Player {
     this.worker?.terminate();
     this.worker = undefined;
   }
-  private async renderAtRate(rate: number, mode = this.song?.settings.tempoMode) {
+  private async renderAtRate(rate: number, mode = this.song?.settings.tempoMode, report = this.onprogress) {
     const gen = ++this.generation;
     this.cancelStretch();
     if (!this.original || !this.song) return false;
@@ -156,7 +156,7 @@ export class Player {
       this.renderRate = 1;
       this.renderedMap = undefined;
     } else {
-      this.onprogress(i18nText("audio-core.message002"));
+      report(i18nText("audio-core.message002"));
       const l = this.original.getChannelData(0).slice(),
         r = this.original
           .getChannelData(Math.min(1, this.original.numberOfChannels - 1))
@@ -175,7 +175,7 @@ export class Player {
           worker.onmessage = (e) => {
             if (gen !== this.generation) return;
             if (e.data.progress !== undefined) {
-              this.onprogress(
+              report(
                 i18nText("audio-core.message003", {
                   value1: Math.round(e.data.progress * 100),
                 }),
@@ -213,7 +213,7 @@ export class Player {
     }
     song.settings.rate = rate;
     song.settings.tempoMode = mode;
-    this.onprogress(i18nText("audio-core.message004"));
+    report(i18nText("audio-core.message004"));
     return true;
   }
   async prepare() {

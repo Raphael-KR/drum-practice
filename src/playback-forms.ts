@@ -9,7 +9,7 @@ import { playbackButton, repeatControlsHTML } from "./playback-ui";
 import { settingsSwitch } from "./settings-ui";
 import { componentName } from "./ui-standard";
 export function tempoFieldsHTML(id: string) {
-  return `<label class="tempo-number" title="${t("workspace.message544")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div class="tempo-choices"><div id="tempo-options"></div><button id="tempo-reset" title="${t("workspace.message545")}">${t("workspace.message545")}</button></div>`;
+  return `<label class="tempo-number" title="${t("workspace.message544")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div id="tempo-status" role="status" aria-live="polite" aria-atomic="true"></div><div class="tempo-choices"><div id="tempo-options"></div><button id="tempo-reset" title="${t("workspace.message545")}">${t("workspace.message545")}</button></div>`;
 }
 export function soundFieldsHTML() {
   return `<div class="playback-sound-fields">${[
