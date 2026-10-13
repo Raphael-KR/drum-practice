@@ -3857,3 +3857,12 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 제외: 제작기 공개·원본 음원 전송·실험 자료 및 별도 제작 자산 커밋.
 - 검증: 직전 620개 테스트·Safari 검증, 버전 갱신 후 분리 빌드/공통 재생 검사와 운영 HTTP 확인.
 - 버전: player0.8.1 및 editor0.6.32. 기존 동작 오류 수정이고 공통 재생 코드가 포함되므로 양쪽 patch 적용.
+
+### 0.8.1 커밋·푸시·공개 발행 결과
+- 기능 커밋 `482da36c5a1a4631a2561a77991c7f91f7fd05bf`, GitHub main push 및 원격 SHA 일치 확인.
+- player0.8.1 / editor0.6.32, 빌드 `19b229a7ced5`. 직전620테스트 및 버전 갱신 후 build:apps/check:playback/staged diff 검사 통과.
+- 정본 player34파일 및 index 별칭의 발행 사본 바이트 일치. 기존 Worker/D1 포함, 악보제작기 공개 없음.
+- Sites source `0521111b01ee986707950923d89d2ca841e7577e`, version60 `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_dff1f11bfdc481918a30f28f3e9b7c87`.
+- deployment `appgdep_6acdb2cddfd48191b66669268fb2c1af`, succeeded(2026-10-13 13:26 KST). 기존 public audience/DB 유지.
+- https://drum-practice-studio.dgkma.chatgpt.site HTTP200; player JS/CSS·분석/스트레치 Worker SHA256 일치. 기존578박 메타정보 GET200, 없는 해시404, 음원 형식 요청415 확인. 원본 음원 전송 없음.
+- 증거 `.tmp/release-0.8.1/{build.log,playback.log,smoke.json}`. 실기기 파일 선택/청감 테스트는 사용자가 진행할 예정이며 서버 배포/HTTP 성공과 구분한다.
