@@ -324,7 +324,7 @@ it("imports analyzed audio directly without forcing a setup dialog and blocks du
   expect(input.disabled).toBe(true);
   expect(document.querySelector('#import-package')?.textContent).toContain('분석');
   expect(readAudioPractice).toHaveBeenCalledTimes(reads+1);
-  const record={song:{id:'automatic-audio',title:'Tagged title',artist:'Tagged artist',audioPractice:{duration:5}},pages:[],audio:new Blob(['mp3']),pdf:new Blob()};
+  const record={song:{id:'automatic-audio',title:'Tagged title',artist:'Tagged artist',audioPractice:{duration:5,beatTimes:[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]}},pages:[],audio:new Blob(['mp3']),pdf:new Blob()};
   vi.mocked(loadPracticeRecord).mockResolvedValue(record as any);
   vi.mocked(importPracticeRecord).mockResolvedValue({status:'added',record} as any);
   pending.resolve(record);
@@ -357,4 +357,33 @@ it("releases the audio import lock after decode or storage failure so the user c
   expect(input.disabled).toBe(false);
   expect(document.querySelector('#library-status')?.textContent).toContain('QuotaExceededError: Storage full');
   expect(document.querySelector('#library-status')?.classList.contains('is-error')).toBe(true);
+});
+
+it('keeps the file input attached when focus returns before the picker change event', async()=>{
+ const {showLibrary}=await import('../src/player-app');
+ const {readAudioPractice}=await import('../src/audio-practice');
+ await showLibrary();
+ const input=document.querySelector<HTMLInputElement>('#package-file')!;
+ const click=vi.spyOn(input,'click').mockImplementation(()=>{});
+ document.querySelector<HTMLButtonElement>('#import-package')!.click();
+ expect(click).toHaveBeenCalledOnce();
+ window.dispatchEvent(new Event('focus'));
+ await new Promise(r=>setTimeout(r,0));
+ expect(document.querySelector('#package-file')).toBe(input);
+ vi.mocked(readAudioPractice).mockRejectedValueOnce(Error('QA picker reached import'));
+ Object.defineProperty(input,'files',{value:[new File(['audio'],'DAY6 - Love me or Leave me.mp3')]});
+ input.dispatchEvent(new Event('change'));
+ await vi.waitFor(()=>expect(document.querySelector('#library-status')?.textContent).toContain('QA picker reached import'));
+ expect(document.querySelector<HTMLButtonElement>('#import-package')!.disabled).toBe(false);
+ click.mockRestore();
+});
+it('allows normal focus refresh again after the file picker is cancelled', async()=>{
+ const {showLibrary}=await import('../src/player-app');await showLibrary();
+ const input=document.querySelector<HTMLInputElement>('#package-file')!;
+ const click=vi.spyOn(input,'click').mockImplementation(()=>{});
+ document.querySelector<HTMLButtonElement>('#import-package')!.click();
+ input.dispatchEvent(new Event('cancel'));
+ window.dispatchEvent(new Event('focus'));
+ await vi.waitFor(()=>expect(document.querySelector('#package-file')).not.toBe(input));
+ click.mockRestore();
 });

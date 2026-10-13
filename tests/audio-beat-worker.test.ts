@@ -9,11 +9,13 @@ it.each(['success','error','timeout','abort'])('settles and terminates the analy
  });
  vi.useFakeTimers();const controller=new AbortController();
  const pending=analyzeAudioBeats(buffer,120,controller.signal);
+ const result=pending.then(value=>({value}),error=>({error}));
  expect(worker.postMessage).toHaveBeenCalledOnce();
  if(mode==='success')worker.onmessage({data:{beatTimes:[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]}});
  if(mode==='error')worker.onerror({message:'WASM unavailable'});
  if(mode==='timeout')await vi.advanceTimersByTimeAsync(120000);
  if(mode==='abort')controller.abort();
- expect(await pending).toEqual(mode==='success'?[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]:undefined);
+ if(mode==='success')expect(await result).toEqual({value:[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]});
+ else expect(await result).toHaveProperty('error');
  expect(worker.terminate).toHaveBeenCalledOnce();expect(vi.getTimerCount()).toBe(0);
 });

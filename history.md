@@ -3839,3 +3839,21 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 공개 HTTP smoke: 홈 200, player JS/CSS와 박 분석·스트레치 Worker SHA-256 로컬 산출물과 일치. HTML은 Cloudflare 삽입 스크립트만 다름을 확인했다.
 - 공개 v4 API: 기존 로컬 YB ‘붉은 노을’ 분석(578개 박 시각)의 메타데이터만 PUT 200(약 204ms), 독립 GET 200(약 45ms), 모든 필드 일치. 미등록 해시 404, audio/mpeg 형식 probe 415. 원본 음원 전송 없음.
 - 증거: `.tmp/release-0.8.0/{tests.log,build.log,playback.log,smoke.json}` (Git 제외). iOS 실기기·청감 검수는 이번 발행 검증에 포함하지 않았다.
+
+## 2026-10-13 — 음원 박 추종 누락·파형 스크롤·파일 선택 복귀 수정
+- 계획/기준: `docs/plans/AUDIO-FOLLOW-RECOVERY.md`. 111.0 고정 및 몇 마디 뒤 박자 이탈, 파형 터치 스크롤 위치 이동, Site DAY6 선택 무응답 신고를 함께 다뤘다. 실제 iPad 원인 확정과 코드 경로 재현을 구분했다.
+- 박 추종: 기존 레코드/서버 캐시에 박 시각이 없으면 지원 길이 음원을 열 때 자동 보완한다. Worker 오류·시간 초과를 숨기지 않는다. 제목/가수·미디어·마커·구간·위치를 유지하고 연습 목표 BPM은 새 지원 배속 범위 안에서 보존한다. 이미 박 시각이 있으면 추종 끄기 선택도 유지한다. 서버는 누락 박 시각의 일방향 보완만 허용하며 완성된 캐시는 덮어쓰지 않는다.
+- 파형: 드래그/관성 스크롤을 화면 탐색으로 처리하여 재생 위치 seek를 발생시키지 않는다. 재생 중 제스처도 기존 일시정지/재개를 유지하면서 위치를 보존한다. 기존 악보 스크롤과 명시적 마디 선택은 유지한다.
+- 파일 선택: 공개 번들 `player-DHyvGvzG.js`의 focus 목록 갱신을 HTTP로 확인했다. 파일 선택 후 focus→change 순서에서 input이 교체되는 회귀를 재현했다. 선택 중 갱신을 막고 change/cancel 때 해제하여 선택 이벤트를 보존했다.
+- 검증: 수정 전 picker 회귀 실패, 수정 후 16개 목록 검사 통과. 전체 `npm run test:drum` 112파일/620테스트, `npm run build:apps`, `npm run check:playback`, `git diff --check` 통과. 기존 큰 번들 경고 유지.
+- Safari runtime: 24초 가속 합성 신호 45박; 기존111 BPM 레코드 열기 후45박/followTempo=true 보완 저장; 실제 재생 표시107.1→108.6→109.6→111.1→112.7→114.3. 파형 scrollLeft350/500/530에서 current/position 모두3.2초 유지. 파일 선택 focus/change 순서의 input 보존과 오류 표시·버튼 복구 확인. 시험 레코드 `qa-follow-recovery-20261013` 제거, 임시 Player prototype 복구.
+- 증거: `.tmp/daybreak-drift/` 집중/전체 테스트·빌드·공통 검사 로그. 합성 검증은 실제 음원 중반 청감 정합성이나 iPad 실기기 이벤트 순서의 확정 근거가 아니다.
+- 빌드 `0fcbd45b783d`, 앱 버전 유지. 커밋·푸시·공개 발행하지 않음. 공개 Site에는 아직 적용되지 않았다.
+
+## 2026-10-13 — 0.8.1 발행 준비
+- 목표: 음원 박 추종 누락·파형 스크롤·파일 선택 복귀 수정을 커밋·푸시·공개 발행한다.
+- 범위: 정본 main, 기존 Sites player/분석 API 및 public/DB 바인딩 유지.
+- 완료 조건: GitHub 원격 SHA 일치, Sites 배포 성공, 공개 번들과 API smoke 확인.
+- 제외: 제작기 공개·원본 음원 전송·실험 자료 및 별도 제작 자산 커밋.
+- 검증: 직전 620개 테스트·Safari 검증, 버전 갱신 후 분리 빌드/공통 재생 검사와 운영 HTTP 확인.
+- 버전: player0.8.1 및 editor0.6.32. 기존 동작 오류 수정이고 공통 재생 코드가 포함되므로 양쪽 patch 적용.

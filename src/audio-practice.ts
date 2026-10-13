@@ -1,6 +1,6 @@
 import {analyzeAudioBeats} from "./audio-beat-analysis";
 import {trackedAudioMeasures, validBeatTimes} from "./audio-beat-grid";
-import { defaults, uid, validateSong, type Song } from "./model";
+import { clamp, defaults, uid, validateSong, type Song } from "./model";
 import { estimatePracticeTempo } from "./audio-tempo";
 import { t } from "./i18n";
 import type { RecordData } from "./storage";
@@ -41,6 +41,23 @@ export function followAudioTempo(song: Song): Song {
   if(!a?.beatTimes || !validBeatTimes(a.beatTimes,a.duration))throw Error(t("audioPractice.trackingUnavailable"));
   return {...structuredClone(song), firstBeat:a.beatTimes[0], measures:trackedAudioMeasures(a.duration,a.beatTimes),
     audioPractice:{...a,beats:4,denominator:4,followTempo:true},settings:{...song.settings,rate:1,tempoMode:"original"}};
+}
+/** Upgrade pre-tracking records once; retain user tags, media and practice state. */
+export async function ensureAudioBeatTracking(record: RecordData, progress?: (text:string)=>void): Promise<RecordData> {
+  const a = record.song.audioPractice;
+  if (!a || a.beatTimes || a.duration < 4 || a.duration > 1800) return record;
+  progress?.(t("audioPractice.tracking"));
+  const analyzed = await readAudioPractice(new File([record.audio],record.song.audioName || 'audio.mp3'),progress);
+  if (!analyzed.song.audioPractice?.beatTimes) throw Error(t("audioPractice.trackingUnavailable"));
+  const song = followAudioTempo({...structuredClone(record.song),bpm:analyzed.song.bpm,
+    audioPractice:{...a,beatTimes:analyzed.song.audioPractice.beatTimes}});
+  // Preserve explicit practice speed as a target BPM when the base estimate changes.
+  const old = record.song;
+  song.settings = {...old.settings};
+  if (old.settings.tempoMode === 'practice' || (!old.settings.tempoMode && old.settings.rate !== 1))
+    song.settings.rate = clamp(old.bpm * old.settings.rate / song.bpm, .5, 1.2);
+  validateSong(song);
+  return {...record,song};
 }
 /** Existing audio can be reanalyzed without changing its identity or practice state. */
 export async function reanalyzeAudioPractice(record: RecordData, progress?: (text:string)=>void, signal?:AbortSignal): Promise<RecordData> {
@@ -84,7 +101,8 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
     ]);
     options.signal?.throwIfAborted();
     let analysis: AudioAnalysis;
-    if (cached && Math.abs(cached.duration - buffer.duration) < .1) {
+    if (cached && Math.abs(cached.duration - buffer.duration) < .1 &&
+        (buffer.duration < 4 || buffer.duration > 1800 || validBeatTimes(cached.beatTimes,buffer.duration))) {
       analysis = cached;
     } else {
       const metadata = await audioMetadata(file, false);
@@ -94,6 +112,8 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
       const detected = confident ? await analyzeAudioBeats(buffer,guess.bpm,options.signal) : undefined;
       options.signal?.throwIfAborted();
       const beatTimes = validBeatTimes(detected,buffer.duration) ? detected : undefined;
+      if (confident && buffer.duration >= 4 && buffer.duration <= 1800 && !beatTimes)
+        throw Error(t("audioPractice.trackingUnavailable"));
       analysis = {analyzerVersion:ANALYZER_VERSION,sha256:hash || '',...metadata,
         duration:buffer.duration,bpm:confident ? guess.bpm : 120,
         firstBeat:beatTimes?.[0] ?? (confident && guess.firstBeat < buffer.duration ? guess.firstBeat : 0),

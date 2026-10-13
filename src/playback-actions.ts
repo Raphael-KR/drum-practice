@@ -54,7 +54,7 @@ export function movePlaybackScrub(
   delta: number,
 ) {
   if (!h.state) return;
-  if (!h.state.resume && h.song.settings.view === "ribbon") {
+  if ((!h.state.resume || h.song.audioPractice) && h.song.settings.view === "ribbon") {
     h.stage.scrollLeft = h.panStart - delta;
     return;
   }

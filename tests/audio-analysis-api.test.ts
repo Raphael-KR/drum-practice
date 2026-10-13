@@ -54,3 +54,15 @@ it('rejects raw media, extra/private fields, oversized bodies, foreign writes an
     expect((await audioAnalysisAPI(new Request(url),store)).status).toBe(404);
   }finally{store.close();}
 });
+
+it('upgrades missing beat timestamps but never replaces a complete first analysis',async()=>{
+ const store=localAnalysisStore(':memory:');
+ try {
+  await audioAnalysisAPI(put(value),store);
+  const tracked={...value,beatTimes:[.2,.7,1.18,1.64,2.08,2.5,2.9,3.28]};
+  expect((await audioAnalysisAPI(put(tracked),store)).status).toBe(200);
+  expect(await (await audioAnalysisAPI(new Request(url),store)).json()).toEqual(tracked);
+  await audioAnalysisAPI(put({...tracked,bpm:90}),store);
+  expect(await (await audioAnalysisAPI(new Request(url),store)).json()).toEqual(tracked);
+ } finally {store.close();}
+});

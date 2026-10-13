@@ -551,3 +551,14 @@ it('shows live original BPM to one decimal, holds when stopped, and separates pr
  await screen.rate(120,true);
  expect(document.getElementById(ids.tempo)!.textContent).toContain('120.0');
 });
+
+it('waveform native touch scrolling and inertia preserve playback position and selected measure',()=>{
+ const {screen,song,p,root}=mount('web');
+ Object.assign(song,{bpm:120,firstBeat:.2,pageCount:0,pdfName:'',regions:[],scoreFormat:undefined,
+  audioPractice:{duration:12,beats:4,denominator:4,peaks:[.2,.6,1]},measures:audioMeasures(12,120,.2,4,4)});
+ screen.renderTrack();screen.sync();p.position=3.2;screen.frame();
+ const stage=root.querySelector<HTMLElement>('#stage')!;
+ const seek=vi.spyOn(p,'seek');
+ for(const x of [350,500,530]){stage.scrollLeft=x;stage.dispatchEvent(new Event('scroll'));screen.frame();expect(stage.scrollLeft).toBe(x);}
+ expect(p.position).toBe(3.2);expect(seek).not.toHaveBeenCalled();
+});

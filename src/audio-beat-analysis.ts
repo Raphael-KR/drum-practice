@@ -17,7 +17,8 @@ export function beatAnalysisSamples(buffer: AudioBuffer) {
   return {samples,sampleRate:rate};
 }
 export async function analyzeAudioBeats(buffer: AudioBuffer, bpm: number, signal?:AbortSignal): Promise<number[] | undefined> {
-  if(buffer.duration<4 || buffer.duration>1800 || typeof Worker==='undefined')return;
+  if(buffer.duration<4 || buffer.duration>1800)return;
+  if(typeof Worker==='undefined')throw Error('Beat analysis Worker unavailable');
   signal?.throwIfAborted();
   let cancel:(()=>void) | undefined;
   let worker:Worker | undefined;
@@ -33,6 +34,5 @@ export async function analyzeAudioBeats(buffer: AudioBuffer, bpm: number, signal
       worker!.onmessage=e=>e.data.error ? reject(Error(e.data.error)) : resolve(e.data.beatTimes);
       worker!.postMessage({...input,bpm},[input.samples.buffer]);
     });
-  } catch { return undefined; }
-  finally { if(cancel)signal?.removeEventListener('abort',cancel);if(timeout)clearTimeout(timeout);worker?.terminate(); }
+  } finally { if(cancel)signal?.removeEventListener('abort',cancel);if(timeout)clearTimeout(timeout);worker?.terminate(); }
 }

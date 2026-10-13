@@ -75,6 +75,7 @@ export function installScoreScroll(
     const alignedX = Number.parseFloat(stage.style.getPropertyValue("--scroll-x"));
     if (Number.isFinite(alignedX) && x === alignedX) return;
     stage.style.setProperty("--scroll-x", `${x}px`);
+    if (h.song().audioPractice) { h.selected(); return; }
     const t = timeAtScroll(h.song(), x, h.offsets, h.widths, h.position);
     if (t !== undefined) {
       h.seek(t);

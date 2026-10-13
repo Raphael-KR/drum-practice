@@ -2,6 +2,7 @@
 import { it, expect, vi } from "vitest";
 import {
   beginPlaybackScrub,
+  movePlaybackScrub,
   finishPlaybackScrub,
   validLoop,
   changePlaybackLoop,
@@ -279,4 +280,15 @@ it('keeps the paused two-row viewport fixed when selection moves between its vis
  renderScoreRows(h,state,13);expect(stage.scrollTop).toBe(400);
  renderScoreRows(h,state,9);expect(stage.scrollTop).toBe(400);
  renderScoreRows(h,state,5);expect(stage.scrollTop).toBe(200);
+});
+
+it.each([false, true])('waveform drag pans without seeking, including playing gestures (%s)', resume => {
+ const p=player();p.playing=resume;
+ const state=beginPlaybackScrub(p, undefined);
+ const stage=document.createElement('div'),seek=vi.fn();
+ const song={settings:{view:'ribbon'},audioPractice:{duration:100}} as Song;
+ movePlaybackScrub({song,stage,state,panStart:400,widths:[],duration:100,seek},-120);
+ expect(stage.scrollLeft).toBe(520);expect(seek).not.toHaveBeenCalled();expect(p.current()).toBe(5);
+ finishPlaybackScrub(p,state,false,vi.fn(),vi.fn());
+ expect(p.play).toHaveBeenCalledTimes(resume ? 1 : 0);expect(p.current()).toBe(5);
 });

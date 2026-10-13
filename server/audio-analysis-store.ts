@@ -8,7 +8,10 @@ export const ANALYSIS_SCHEMA = `CREATE TABLE IF NOT EXISTS audio_analysis (
 );`;
 export const GET_ANALYSIS = 'SELECT result_json FROM audio_analysis WHERE sha256 = ? AND analyzer_version = ?';
 export const PUT_ANALYSIS = `INSERT OR IGNORE INTO audio_analysis (sha256, analyzer_version, result_json)
-  SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM audio_analysis) < 10000`;
+  SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM audio_analysis) < 10000
+  ON CONFLICT(sha256, analyzer_version) DO UPDATE SET result_json = excluded.result_json
+  WHERE json_type(audio_analysis.result_json, '$.beatTimes') IS NULL
+    AND json_type(excluded.result_json, '$.beatTimes') = 'array'`;
 interface D1Statement {
   bind(...values: unknown[]): D1Statement;
   first<T>(): Promise<T | null>;

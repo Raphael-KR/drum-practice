@@ -1,4 +1,4 @@
-import { AUDIO_FILE_ACCEPT, practiceFileKind, readAudioPractice } from "./audio-practice";
+import { AUDIO_FILE_ACCEPT, practiceFileKind, readAudioPractice, ensureAudioBeatTracking } from "./audio-practice";
 import { setupAudioPractice } from "./audio-practice-setup";
 import { RETIRED_SCORE_ID } from "./score-database";
 import { titleOrderFieldsHTML } from "./playback-forms";
@@ -48,6 +48,7 @@ function showBuildLabel() {
   if (title) title.dataset.playerBuild = `v${appVersions.player.version} · build ${buildInfo.source.slice(0, 8)}`;
 }
 let working = false;
+let filePickerOpen = false;
 let importEpoch = 0;
 let libraryEpoch = 0;
 function report(error: unknown) {
@@ -135,6 +136,8 @@ async function openRecord(id: string) {
     } else record = await loadPracticeRecord(id);
     timing.stage("opening");
     if (!record) throw Error(t("separation.missing"));
+    const tracked = await ensureAudioBeatTracking(record, text => { message.textContent = text; });
+    if (tracked !== record) { await savePracticeRecord(tracked); record = tracked; }
     const upgradedXML = await recordingTempoUpgrade(record);
     if (upgradedXML && await savePracticeCanonicalMetadata(id, record.canonicalXML!, upgradedXML)) {
       record.canonicalXML = upgradedXML;
@@ -299,12 +302,20 @@ export async function showLibrary() {
   };
   document
     .querySelector("#import-package")!
-    .addEventListener("click", () =>
-      document.querySelector<HTMLInputElement>("#package-file")!.click(),
-    );
+    .addEventListener("click", () => {
+      if (working || filePickerOpen) return;
+      const input = document.querySelector<HTMLInputElement>("#package-file")!;
+      // Safari can restore window focus before dispatching the chosen file.
+      // Keep this input attached until change/cancel, instead of rebuilding it.
+      filePickerOpen = true;
+      try { input.click(); }
+      catch (error) { filePickerOpen = false; reportImportError(error, t("audioPractice.loading")); }
+    });
+  document.querySelector("#package-file")!.addEventListener("cancel", () => { filePickerOpen = false; });
   document
     .querySelector("#package-file")!
     .addEventListener("change", (event) => {
+      filePickerOpen = false;
       const input = event.currentTarget as HTMLInputElement;
       const file = input.files?.[0];
       input.value = "";
@@ -449,6 +460,6 @@ export async function showLibrary() {
 void showLibrary().catch(report);
 
 window.addEventListener("focus", () => {
-  if (root.classList.contains("player-library") && !working && !document.querySelector("dialog[open]"))
+  if (root.classList.contains("player-library") && !working && !filePickerOpen && !document.querySelector("dialog[open]"))
     void showLibrary().catch(report);
 });
