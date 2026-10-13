@@ -3905,3 +3905,9 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 검증: 앞선 Safari393px/744px 및 실제 BPM 변환 QA 유지. 릴리스 전체 테스트·분리 빌드·아키텍처·발행 소스 일치와 공개HTTP/API 확인 결과를 후속 기록한다.
 - 릴리스 검증 결과: 112파일/622테스트 전체 통과(maxWorkers4), build:apps/check:playback/diff 검사 통과. 과거 패키지 볼륨 기대값2개를 새 승인 기본값으로 수정했다. 첫 병렬 재실행의 UI 저장 타이밍1회 실패는 단독25테스트 및 병렬4 전체622테스트로 재확인했다.
 - Sites 발행 사본35파일의 바이트 일치 확인, Worker/D1 빌드 통과. 빌드26718e1c5b33, source30384fa9b3fac221aaa71d630654bde3109c5fc0. 배포 결과는 아래 후속 기록에 구분한다.
+
+## 2026-10-13 — 0.7.5 공개 발행 완료
+- 구현 커밋bf9aff6을origin/main에push. 앞서 보류한버전 정정도 함께 반영. 두 앱0.7.5, 공개 앱은드럼연습실만 유지.
+- Sites 버전61, source30384fa9b3fac221aaa71d630654bde3109c5fc0, deployment appgdep_6acdb9dc620881918c5168c5c4787616 succeeded.
+- 공개HTTP 확인: 홈200·HTML 일치, player CSS/JS와분석/변환Worker 4파일SHA256 일치. metadata 조회200/578박, 없는해시404, audio/mpeg 업로드거부415. 증거 .tmp/release-0.7.5/smoke.json.
+- 공개주소 https://drum-practice-studio.dgkma.chatgpt.site . 실기기 재검증은미실시이며 로컬Safari 검증과HTTP 배포 검증을구분한다.
