@@ -91,8 +91,9 @@ function mount(environment: "web" | "portable", alignPDF = false, canonicalXML?:
     }),
     prepare: vi.fn(async () => {}),
     volumes: vi.fn(),
-    setRate: vi.fn(async (rate: number) => {
+    setRate: vi.fn(async (rate: number, original = rate === 1) => {
       song.settings.rate = rate;
+      song.settings.tempoMode = original ? "original" : "practice";
     }),
   };
   const prefs = { restartMeasure: false, countOff: false };
@@ -386,14 +387,14 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡136 BPM");
   expect(document.querySelector("#tempo-reset .tempo-original-bpm")!.textContent).toBe("136 BPM");
   click("tempo-reset");
-  await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(1));
+  await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(1, true));
   expect(song.bpm).toBe(136);
   expect(song.settings.rate).toBe(1);
   expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
   expect(document.getElementById(ids.tempo)!.textContent).toContain("136");
   expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("true");
   await screen.rate(136);
-  expect(p.setRate).toHaveBeenLastCalledWith(136 / 136.232);
+  expect(p.setRate).toHaveBeenLastCalledWith(136 / 136.232, false);
   expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
   expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("false");
 });
@@ -532,4 +533,21 @@ it("audio uses common waveform navigation, rows and playback frame without score
   expect(root.querySelectorAll('.audio-measure').length).toBeGreaterThan(0);
   expect(root.querySelector('.audio-measure .crop img')).toBeNull();
   expect(fail).not.toHaveBeenCalled();
+});
+
+it('shows live original BPM to one decimal, holds when stopped, and separates practice at the same BPM', async()=>{
+ const {screen,p,song,ids,click}=mount('web');
+ click(ids.tempo);
+ song.bpm=120;song.settings.rate=1;song.settings.tempoMode='original';
+ song.audioPractice={duration:20,beats:4,denominator:4,peaks:[1],beatTimes:[.2,.7,1.18,1.64,2.08,2.5,2.9],followTempo:true};
+ p.playing=true;p.position=2.08;screen.frame();
+ expect(document.getElementById('original-tempo-value')!.textContent).toBe('= 127.7');
+ p.playing=false;p.position=0;screen.onState();screen.frame();
+ expect(document.getElementById('original-tempo-value')!.textContent).toBe('= 127.7');
+ await screen.rate(120);
+ expect(p.setRate).toHaveBeenLastCalledWith(1,false);
+ expect(document.getElementById('original-tempo-value')!.textContent).toBe('= 120');
+ expect(document.getElementById('tempo-reset')!.getAttribute('aria-pressed')).toBe('false');
+ await screen.rate(120,true);
+ expect(document.getElementById(ids.tempo)!.textContent).toContain('120.0');
 });

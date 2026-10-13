@@ -1,4 +1,4 @@
-import { locate, beatTime, uid, type Song, type Loop } from "./model";
+import { locate, beatTime, measureBeatAt, uid, type Song, type Loop } from "./model";
 import { centeredRange, loopMeasureRange } from "./practice-controls";
 import { t } from "./i18n";
 export function repeatPreset(
@@ -32,7 +32,7 @@ export function repeatFields(s: Song, l: Pick<Loop, "start" | "end">) {
   const a = locate(s, l.start),
     range = loopMeasureRange(s, l.start, l.end),
     last = s.measures[range.last];
-  const endBeat = ((l.end - last.start) / (last.end - last.start)) * last.beats;
+  const endBeat = measureBeatAt(last, l.end);
   return {
     startMeasure: a.index + 1,
     endMeasure: range.last + 1,

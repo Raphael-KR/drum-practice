@@ -1,3 +1,4 @@
+import {trackedAudioMeasures, validBeatTimes} from "./audio-beat-grid";
 import { t as i18nText } from "./i18n";
 export interface Region {
   id: string;
@@ -11,6 +12,8 @@ export interface Region {
   lyricAnchors?: { lyricId: string; quarterOffset: number; x: number }[];
 }
 export interface Measure {
+  /** Audio-only observed beat positions; score measures retain uniform timing. */
+  beatTimes?: number[];
   id: string;
   regionId: string;
   label: string;
@@ -47,6 +50,7 @@ export interface Loop {
   end: number;
 }
 export interface Settings {
+  tempoMode?: "original" | "practice";
   rate: number;
   click: boolean;
   musicVolume: number;
@@ -67,7 +71,7 @@ export interface MeasureLyric {
 }
 export interface Song {
   /** Local audio practice has timing but no score pages or regions. */
-  audioPractice?: { duration: number; beats: number; denominator: number; peaks: number[] };
+  audioPractice?: { duration: number; beats: number; denominator: number; peaks: number[]; beatTimes?: number[]; followTempo?: boolean };
   version: 1;
   id: string;
   title: string;
@@ -123,11 +127,26 @@ export function locate(song: Song, time: number) {
     index: i,
     measure: m,
     beat: m
-      ? clamp(((time - m.start) / (m.end - m.start)) * m.beats, 0, m.beats)
+      ? measureBeatAt(m, time)
       : 0,
   };
 }
+export function measureBeatAt(m: Measure, time: number) {
+  if (!m.beatTimes) return clamp(((time - m.start) / (m.end - m.start)) * m.beats, 0, m.beats);
+  if(time <= m.start)return 0;
+  for(let b=0;b<m.beats;b++) {
+    const next=m.beatTimes[b+1] ?? m.end;
+    if(time<next)return b+(time-m.beatTimes[b])/(next-m.beatTimes[b]);
+  }
+  return m.beats;
+}
 export function beatTime(m: Measure, beat: number) {
+  if(m.beatTimes) {
+    const b=clamp(beat,0,m.beats),i=Math.floor(b);
+    if(i>=m.beats)return m.end;
+    const from=m.beatTimes[i],to=m.beatTimes[i+1] ?? m.end;
+    return from+(to-from)*(b-i);
+  }
   return m.start + ((m.end - m.start) * beat) / m.beats;
 }
 export function reflow(song: Song) {
@@ -144,7 +163,7 @@ export function beatEvents(song: Song, start: number, end: number) {
     for (let b = 0; b < m.beats; b++) {
       const t = beatTime(m, b);
       if (t >= start - 1e-7 && t < end - 1e-7)
-        out.push({ time: t, accent: b === 0, beat: b + 1 });
+        out.push({ time: t, accent: !song.audioPractice?.followTempo && b === 0, beat: b + 1 });
     }
   return out;
 }
@@ -187,20 +206,17 @@ export function makeCycle(
   countBars: number,
   m: Measure,
   quarterCountOff = false,
+  observedBeatSeconds?: number,
 ): Cycle {
   const bs =
-    ((m.end - m.start) / m.beats / rate) *
+    ((observedBeatSeconds ?? (beatTime(m, 1) - m.start)) / rate) *
     (quarterCountOff ? m.denominator / 4 : 1);
   const count = quarterCountOff ? 4 : countBars * m.beats;
   // Count-off ends on the score's first beat, not the beginning of leading audio.
   // Preserve that audio and never schedule its buffer before the requested start.
   const leadingSeconds = quarterCountOff ? Math.max(0, m.start - from) / rate : 0;
   const musicAt = at + Math.max(0, count * bs - leadingSeconds);
-  const originalBeat = (m.end - m.start) / m.beats;
-  const nextBeat =
-    m.start +
-    Math.max(0, Math.ceil((from - m.start) / originalBeat - 1e-8)) *
-      originalBeat;
+  const nextBeat = beatTime(m, Math.max(0, Math.ceil(measureBeatAt(m, from) - 1e-8)));
   const countAt = quarterCountOff
     ? at + Math.max(0, leadingSeconds - count * bs)
     : at + Math.max(0, nextBeat - from) / rate;
@@ -259,14 +275,26 @@ export function validateSong(x: unknown): asserts x is Song {
     if (!a || !finite(a.duration) || a.duration <= 0 || s.firstBeat >= a.duration ||
         !Number.isInteger(a.beats) || a.beats < 1 || a.beats > 16 || ![2,4,8,16].includes(a.denominator) ||
         !Array.isArray(a.peaks) || a.peaks.length > 4096 || a.peaks.some(p => !finite(p) || p < 0 || p > 1) ||
+        (a.followTempo !== undefined && typeof a.followTempo !== 'boolean') ||
+        (a.beatTimes !== undefined && !validBeatTimes(a.beatTimes,a.duration)) ||
+        (a.followTempo && (!a.beatTimes || a.beats !== 4 || a.denominator !== 4)) ||
         s.pageCount !== 0 || s.regions.length !== 0 || s.pdfName !== "" || s.scoreFormat !== undefined ||
-        !s.measures.length || s.measures.length > 10000 ||
-        s.measures.some((m, i) => !m || m.beats !== a.beats || m.denominator !== a.denominator ||
-          Math.abs(m.start - (s.firstBeat + i * a.beats * 60 / s.bpm * 4 / a.denominator)) > 1e-6 ||
-          Math.abs(m.end - (s.firstBeat + (i + 1) * a.beats * 60 / s.bpm * 4 / a.denominator)) > 1e-6) ||
-        s.measures.at(-1)!.start >= a.duration || s.measures.at(-1)!.end < a.duration - 1e-6)
+        !s.measures.length || s.measures.length > 10000)
+      throw Error(i18nText("audioPractice.invalidTiming"));
+    if(a.followTempo) {
+      const expected=trackedAudioMeasures(a.duration,a.beatTimes!);
+      if(s.firstBeat!==a.beatTimes![0] || s.measures.length!==expected.length || s.measures.some((m,i)=>{
+        const e=expected[i];
+        return !m || m.start!==e.start || m.end!==e.end || m.beats!==e.beats || m.denominator!==4 ||
+          !Array.isArray(m.beatTimes) || m.beatTimes.length!==e.beatTimes.length || m.beatTimes.some((t,b)=>t!==e.beatTimes[b]);
+      }))throw Error(i18nText("audioPractice.invalidTiming"));
+    } else if(s.measures.some((m,i)=>!m || m.beatTimes !== undefined || m.beats!==a.beats || m.denominator!==a.denominator ||
+        Math.abs(m.start-(s.firstBeat+i*a.beats*60/s.bpm*4/a.denominator))>1e-6 ||
+        Math.abs(m.end-(s.firstBeat+(i+1)*a.beats*60/s.bpm*4/a.denominator))>1e-6) ||
+        s.measures.at(-1)!.start >= a.duration || s.measures.at(-1)!.end < a.duration-1e-6)
       throw Error(i18nText("audioPractice.invalidTiming"));
   }
+  if (s.settings?.tempoMode !== undefined && !['original','practice'].includes(s.settings.tempoMode)) throw Error('Invalid tempo mode');
   const ids = new Set<string>();
   for (const r of s.regions) {
     if (
@@ -311,6 +339,7 @@ export function validateSong(x: unknown): asserts x is Song {
   for (const m of s.measures) {
     if (
       !m ||
+      (!s.audioPractice && m.beatTimes !== undefined) ||
       typeof m.id !== "string" ||
       (s.audioPractice ? m.regionId !== "" : !ids.has(m.regionId)) ||
       mids.has(m.id) ||

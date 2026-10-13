@@ -1,5 +1,5 @@
 import { createDialog } from "./dialog-ui";
-import { retimeAudio } from "./audio-practice";
+import { retimeAudio, followAudioTempo, reanalyzeAudioPractice } from "./audio-practice";
 import { escapeHTML as esc } from "./html";
 import { t } from "./i18n";
 import type { RecordData } from "./storage";
@@ -11,6 +11,8 @@ export function setupAudioPractice(record: RecordData): Promise<RecordData | und
     const form = document.createElement("form");
     form.innerHTML = `<p>${t("audioPractice.hint")}</p>
       <audio controls preload="metadata" aria-label="${t("audioPractice.preview")}"></audio>
+      <label><input name="follow" type="checkbox">${t("audioPractice.followTempo")}</label>
+      <button type="button" data-reanalyze title="${t("audioPractice.reanalyze")}">${t("audioPractice.reanalyze")}</button><p role="status" data-status></p>
       <div class="audio-setup-grid">
       <label>${t("audioPractice.title")}<input name="title" required value="${esc(s.title)}"></label>
       <label>${t("audioPractice.artist")}<input name="artist" value="${esc(s.artist || "")}"></label>
@@ -30,6 +32,36 @@ export function setupAudioPractice(record: RecordData): Promise<RecordData | und
     audio.src = url;
     audio.onerror = () => { form.querySelector('.audio-error')!.textContent = t("audioPractice.decodeError", {detail:audio.error?.message || String(audio.error?.code || '')}); };
     let result: RecordData | undefined;
+    let candidate = record, busy = false, closed = false;
+    const abort = new AbortController();
+    const follow = field('follow');
+    const status = form.querySelector('[data-status]')!;
+    const errorText = form.querySelector('.audio-error')!;
+    const reanalyze = form.querySelector<HTMLButtonElement>('[data-reanalyze]')!;
+    const updateTiming = () => {
+      follow.disabled = busy || !candidate.song.audioPractice?.beatTimes;
+      for (const name of ['bpm','beats','denominator','first']) field(name).disabled = busy || follow.checked;
+      for (const selector of ['[data-tap]','[data-first]']) form.querySelector<HTMLButtonElement>(selector)!.disabled = busy || follow.checked;
+      reanalyze.disabled = busy;
+      form.querySelector<HTMLButtonElement>('[type=submit]')!.disabled = busy;
+      if (!busy) status.textContent = t(follow.checked ? 'audioPractice.trackedHint' : 'audioPractice.fixedHint');
+    };
+    follow.checked = !!a.followTempo;
+    follow.onchange = updateTiming;
+    updateTiming();
+    reanalyze.onclick = async () => {
+      busy = true; errorText.textContent = ''; audio.pause(); updateTiming();
+      status.textContent = t('audioPractice.tracking');
+      try {
+        candidate = await reanalyzeAudioPractice(candidate, text => { if (!closed) status.textContent = text; }, abort.signal);
+        if (closed) return;
+        follow.checked = true;
+        field('bpm').value = String(candidate.song.bpm);
+        field('first').value = String(candidate.song.firstBeat);
+        field('beats').value = '4'; field('denominator').value = '4';
+      } catch (error) { if (!closed) errorText.textContent = String(error); }
+      finally { busy = false; if (!closed) updateTiming(); }
+    };
     let taps: number[] = [];
     form.querySelector<HTMLButtonElement>('[data-tap]')!.onclick = () => {
       const now = performance.now();
@@ -41,15 +73,16 @@ export function setupAudioPractice(record: RecordData): Promise<RecordData | und
     form.querySelector<HTMLButtonElement>('[data-cancel]')!.onclick = () => d.close();
     form.onsubmit = e => {
       e.preventDefault();
+      if (busy) return;
       try {
-        const song = retimeAudio(s, Number(field('bpm').value), Number(field('first').value), Number(field('beats').value), Number(field('denominator').value));
+        const song = follow.checked ? followAudioTempo(candidate.song) : retimeAudio(candidate.song, Number(field('bpm').value), Number(field('first').value), Number(field('beats').value), Number(field('denominator').value));
         song.title = field('title').value.trim() || s.title;
         song.artist = field('artist').value.trim(); song.settings.click = field('click').checked;
         result = {...record, song}; d.close();
       } catch (error) { form.querySelector('.audio-error')!.textContent = String(error); }
     };
     d.addEventListener('close', () => {
-      audio.pause(); audio.removeAttribute('src'); audio.load(); URL.revokeObjectURL(url); d.remove(); resolve(result);
+      closed = true; abort.abort(); audio.pause(); audio.removeAttribute('src'); audio.load(); URL.revokeObjectURL(url); d.remove(); resolve(result);
     }, {once:true});
     d.showModal();
   });

@@ -25,6 +25,7 @@
   "dependencies": {
     "jszip": "^3.10.2",
     "music-metadata": "^12.2.0",
+    "music-tempo": "1.0.3",
     "opensheetmusicdisplay": "^2.1.2",
     "pdfjs-dist": "^6.3.289",
     "soundtouchjs": "^0.3.0"

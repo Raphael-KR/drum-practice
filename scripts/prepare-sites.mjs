@@ -19,7 +19,8 @@ await mkdir(resolve(target,'server'),{recursive:true});
 await mkdir(resolve(target,'src'),{recursive:true});
 for(const entry of ['audio-analysis-api.ts','audio-analysis-store.ts','audio-analysis-worker.ts'])
   await cp(resolve(source,'server',entry),resolve(target,'server',entry));
-await cp(resolve(source,'src/audio-analysis-contract.ts'),resolve(target,'src/audio-analysis-contract.ts'));
+for(const entry of ['audio-analysis-contract.ts','audio-beat-grid.ts'])
+  await cp(resolve(source,'src',entry),resolve(target,'src',entry));
 delete manifest.static;manifest.d1='DB';manifest.r2=null;
 await writeFile(resolve(target,'.openai/hosting.json'),JSON.stringify(manifest,null,2)+'\n');
 await writeFile(resolve(target,'.gitignore'),'node_modules/\ndist/\n.wrangler/\n.sites-runtime/\n.env*\n*.log\n');

@@ -1,11 +1,14 @@
-import {afterEach,expect,it,vi} from 'vitest';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+vi.mock('../src/audio-beat-analysis',()=>({analyzeAudioBeats:vi.fn(async()=>undefined)}));
 vi.mock('../src/audio-metadata',()=>({audioMetadata:vi.fn(async()=>({title:'Tag title',artist:'Tag artist'}))}));
 vi.mock('../src/audio-analysis-cache',()=>({audioFileHash:vi.fn(async()=> 'a'.repeat(64)),loadAudioAnalysis:vi.fn(),storeAudioAnalysis:vi.fn(async()=>{})}));
-vi.mock('../src/analysis',()=>({estimateTempo:vi.fn(()=>({bpm:120,firstBeat:.2,confidence:.8}))}));
-import {readAudioPractice} from '../src/audio-practice';
+vi.mock('../src/audio-tempo',()=>({estimatePracticeTempo:vi.fn(()=>({bpm:120,firstBeat:.2,confidence:.8}))}));
+import {readAudioPractice,reanalyzeAudioPractice} from '../src/audio-practice';
+import {analyzeAudioBeats} from '../src/audio-beat-analysis';
 import {audioMetadata} from '../src/audio-metadata';
 import {loadAudioAnalysis,storeAudioAnalysis} from '../src/audio-analysis-cache';
-import {estimateTempo} from '../src/analysis';
+import {estimatePracticeTempo} from '../src/audio-tempo';
+beforeEach(()=>{vi.mocked(estimatePracticeTempo).mockReturnValue({bpm:120,firstBeat:.2,confidence:.8});vi.mocked(loadAudioAnalysis).mockResolvedValue(undefined);vi.mocked(analyzeAudioBeats).mockResolvedValue(undefined);});
 afterEach(()=>{vi.unstubAllGlobals();vi.clearAllMocks();});
 function decoder(){
   vi.stubGlobal('AudioContext',class{
@@ -23,7 +26,7 @@ it('reuses server timing and tags on the next import without reanalysis',async()
   vi.mocked(loadAudioAnalysis).mockResolvedValueOnce(stored);
   const second=await readAudioPractice(file);
   expect(second.song.bpm).toBe(first.song.bpm);expect(second.song.artist).toBe('Tag artist');
-  expect(estimateTempo).toHaveBeenCalledTimes(1);expect(audioMetadata).toHaveBeenCalledTimes(1);expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
+  expect(estimatePracticeTempo).toHaveBeenCalledTimes(1);expect(audioMetadata).toHaveBeenCalledTimes(1);expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
 });
 it('reanalyzes mismatched duration and never sends fallback filenames or uncertain tempo',async()=>{
   decoder();vi.mocked(loadAudioAnalysis).mockResolvedValue(undefined);
@@ -32,7 +35,25 @@ it('reanalyzes mismatched duration and never sends fallback filenames or uncerta
   expect(first.song.title).toBe('private');
   expect(vi.mocked(storeAudioAnalysis).mock.calls[0][0].title).toBe('');
   vi.mocked(loadAudioAnalysis).mockResolvedValue({...vi.mocked(storeAudioAnalysis).mock.calls[0][0],duration:80});
-  vi.mocked(estimateTempo).mockReturnValue({bpm:200,firstBeat:0,confidence:0});
+  vi.mocked(estimatePracticeTempo).mockReturnValue({bpm:200,firstBeat:0,confidence:0});
   const second=await readAudioPractice(new File(['bytes'],'private.mp3'));
-  expect(second.song.bpm).toBe(120);expect(estimateTempo).toHaveBeenCalledTimes(2);expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
+  expect(second.song.bpm).toBe(120);expect(estimatePracticeTempo).toHaveBeenCalledTimes(2);expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
+});
+
+it('imports and reuses the whole beat map; explicit reanalysis preserves personal state',async()=>{
+ decoder();
+ const times=[.2,.7,1.18,1.64,2.08,2.5,2.9,3.28,3.64];
+ vi.mocked(analyzeAudioBeats).mockResolvedValue(times);
+ const first=await readAudioPractice(new File(['bytes'],'test.mp3'));
+ expect(first.song.audioPractice?.followTempo).toBe(true);
+ const cached=vi.mocked(storeAudioAnalysis).mock.calls[0][0];
+ vi.mocked(loadAudioAnalysis).mockResolvedValue(cached);
+ const next=await readAudioPractice(first.audio as File);
+ expect(next.song.audioPractice?.beatTimes).toEqual(times);
+ expect(analyzeAudioBeats).toHaveBeenCalledTimes(1);
+ first.song.markers=[{id:'m',name:'m',time:1}];first.song.loops=[{id:'l',name:'l',start:1,end:3}];
+ const refreshed=await reanalyzeAudioPractice(first);
+ expect(analyzeAudioBeats).toHaveBeenCalledTimes(2);
+ expect(refreshed.song.id).toBe(first.song.id);expect(refreshed.audio).toBe(first.audio);
+ expect(refreshed.song.markers).toEqual(first.song.markers);expect(refreshed.song.loops).toEqual(first.song.loops);
 });

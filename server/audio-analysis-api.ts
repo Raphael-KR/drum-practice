@@ -1,4 +1,4 @@
-import { ANALYSIS_PATH, isAudioHash, validAudioAnalysis, type AudioAnalysis } from '../src/audio-analysis-contract';
+import { ANALYSIS_PATH, MAX_ANALYSIS_BYTES, isAudioHash, validAudioAnalysis, type AudioAnalysis } from '../src/audio-analysis-contract';
 export interface AnalysisStore {
   get(hash: string): Promise<AudioAnalysis | undefined>;
   put(value: AudioAnalysis): Promise<void>;
@@ -16,7 +16,7 @@ export async function audioAnalysisAPI(request: Request, store: AnalysisStore): 
     if (request.headers.get('sec-fetch-site') === 'cross-site' ||
         (request.headers.has('origin') && request.headers.get('origin') !== url.origin)) return reply({error:'Forbidden'},403);
     if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json') return reply({error:'JSON only'},415);
-    if (Number(request.headers.get('content-length')) > 4096) return reply({error:'Too large'},413);
+    if (Number(request.headers.get('content-length')) > MAX_ANALYSIS_BYTES) return reply({error:'Too large'},413);
     // Bound actual bytes as well as Content-Length; never buffer an uploaded audio file.
     const reader = request.body?.getReader();
     if (!reader) return reply({error:'Missing body'},400);
@@ -24,7 +24,7 @@ export async function audioAnalysisAPI(request: Request, store: AnalysisStore): 
     while (true) {
       const {done,value}=await reader.read(); if(done) break;
       length+=value.byteLength;
-      if(length>4096) { await reader.cancel(); return reply({error:'Too large'},413); }
+      if(length>MAX_ANALYSIS_BYTES) { await reader.cancel(); return reply({error:'Too large'},413); }
       chunks.push(value);
     }
     const bytes=new Uint8Array(length);let at=0;for(const chunk of chunks){bytes.set(chunk,at);at+=chunk.length;}

@@ -1,5 +1,7 @@
+import {analyzeAudioBeats} from "./audio-beat-analysis";
+import {trackedAudioMeasures, validBeatTimes} from "./audio-beat-grid";
 import { defaults, uid, validateSong, type Song } from "./model";
-import { estimateTempo } from "./analysis";
+import { estimatePracticeTempo } from "./audio-tempo";
 import { t } from "./i18n";
 import type { RecordData } from "./storage";
 import { audioMetadata } from "./audio-metadata";
@@ -31,8 +33,22 @@ export function retimeAudio(song: Song, bpm: number, firstBeat: number, beats: n
   if (!song.audioPractice) throw Error(t("audioPractice.invalidTiming"));
   const measures = audioMeasures(song.audioPractice.duration, bpm, firstBeat, beats, denominator);
   return {...structuredClone(song), bpm, firstBeat, measures,
-    audioPractice: {...song.audioPractice, beats, denominator},
-    settings: {...song.settings, rate: 1}};
+    audioPractice: {...song.audioPractice, beats, denominator, followTempo:false},
+    settings: {...song.settings, rate: 1, tempoMode:"original"}};
+}
+export function followAudioTempo(song: Song): Song {
+  const a=song.audioPractice;
+  if(!a?.beatTimes || !validBeatTimes(a.beatTimes,a.duration))throw Error(t("audioPractice.trackingUnavailable"));
+  return {...structuredClone(song), firstBeat:a.beatTimes[0], measures:trackedAudioMeasures(a.duration,a.beatTimes),
+    audioPractice:{...a,beats:4,denominator:4,followTempo:true},settings:{...song.settings,rate:1,tempoMode:"original"}};
+}
+/** Existing audio can be reanalyzed without changing its identity or practice state. */
+export async function reanalyzeAudioPractice(record: RecordData, progress?: (text:string)=>void, signal?:AbortSignal): Promise<RecordData> {
+  const analyzed=await readAudioPractice(new File([record.audio],record.song.audioName || 'audio.mp3'),progress,{force:true,signal});
+  if(!analyzed.song.audioPractice?.beatTimes)throw Error(t("audioPractice.trackingUnavailable"));
+  const song={...structuredClone(record.song),bpm:analyzed.song.bpm,
+    audioPractice:{...record.song.audioPractice!,beatTimes:analyzed.song.audioPractice.beatTimes}};
+  return {...record,song:followAudioTempo(song)};
 }
 export function waveformPeaks(buffer: AudioBuffer): number[] {
   const samples = buffer.getChannelData(0), count = Math.min(4096, samples.length);
@@ -57,35 +73,40 @@ export function audioAnalysisSamples(buffer: AudioBuffer): Float32Array {
   return samples;
 }
 /** Audio bytes stay local; only a hash and bounded analysis metadata may be sent. */
-export async function readAudioPractice(file: File): Promise<RecordData> {
+export async function readAudioPractice(file: File, progress?: (text:string)=>void, options:{force?:boolean;signal?:AbortSignal} = {}): Promise<RecordData> {
   if (!file.size) throw Error(t("audioPractice.empty"));
   const context = new AudioContext({sampleRate:32000});
   try {
     const bytes = await file.arrayBuffer();
     const hash = await audioFileHash(bytes).catch(() => undefined);
     const [buffer, cached] = await Promise.all([
-      context.decodeAudioData(bytes), hash ? loadAudioAnalysis(hash) : undefined,
+      context.decodeAudioData(bytes), hash && !options.force ? loadAudioAnalysis(hash) : undefined,
     ]);
+    options.signal?.throwIfAborted();
     let analysis: AudioAnalysis;
     if (cached && Math.abs(cached.duration - buffer.duration) < .1) {
       analysis = cached;
     } else {
       const metadata = await audioMetadata(file, false);
-      const guess = estimateTempo(audioAnalysisSamples(buffer), buffer.sampleRate);
+      const guess = estimatePracticeTempo(audioAnalysisSamples(buffer), buffer.sampleRate);
       const confident = guess.confidence >= .08 && Number.isFinite(guess.bpm);
+      progress?.(t("audioPractice.tracking"));
+      const detected = confident ? await analyzeAudioBeats(buffer,guess.bpm,options.signal) : undefined;
+      options.signal?.throwIfAborted();
+      const beatTimes = validBeatTimes(detected,buffer.duration) ? detected : undefined;
       analysis = {analyzerVersion:ANALYZER_VERSION,sha256:hash || '',...metadata,
         duration:buffer.duration,bpm:confident ? guess.bpm : 120,
-        firstBeat:confident && guess.firstBeat < buffer.duration ? guess.firstBeat : 0,
-        beats:4,denominator:4,confidence:guess.confidence};
+        firstBeat:beatTimes?.[0] ?? (confident && guess.firstBeat < buffer.duration ? guess.firstBeat : 0),
+        beats:4,denominator:4,confidence:guess.confidence,...(beatTimes ? {beatTimes} : {})};
       // Best-effort metadata-only write. Never hold up playback for the server.
       if(hash && confident) void storeAudioAnalysis(analysis);
     }
-    const {bpm,firstBeat,beats,denominator}=analysis;
+    const {bpm,firstBeat,beats,denominator,beatTimes}=analysis;
     const metadata={title:analysis.title || file.name.replace(/\.[^.]+$/, ''),artist:analysis.artist};
     const song: Song = {
       version:1, id:uid(), ...metadata, bpm, firstBeat,
-      audioPractice: {duration:buffer.duration, beats, denominator, peaks:waveformPeaks(buffer)},
-      measures:audioMeasures(buffer.duration,bpm,firstBeat,beats,denominator), regions:[], lyrics:[], markers:[], loops:[],
+      audioPractice: {duration:buffer.duration, beats, denominator, peaks:waveformPeaks(buffer),...(beatTimes ? {beatTimes,followTempo:true} : {})},
+      measures:beatTimes ? trackedAudioMeasures(buffer.duration,beatTimes) : audioMeasures(buffer.duration,bpm,firstBeat,beats,denominator), regions:[], lyrics:[], markers:[], loops:[],
       settings:{...defaults(), click:false}, audioName:file.name, pdfName:"", pageCount:0,
     };
     validateSong(song);

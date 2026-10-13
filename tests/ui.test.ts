@@ -40,8 +40,9 @@ vi.mock("../src/audio", () => ({
       this.playing = true;
       this.onstate();
     }
-    async setRate(rate: number) {
+    async setRate(rate: number, original = rate === 1) {
       this.song.settings.rate = rate;
+      this.song.settings.tempoMode = original ? "original" : "practice";
     }
     seek(t: number) {
       this.position = t;
@@ -130,6 +131,8 @@ it("loads demo, exposes fixed range slots and applies the selected BPM", async (
   expect(document.querySelectorAll("#section-shortcuts button")).toHaveLength(9);
   await vi.waitFor(() => expect(document.querySelectorAll("#loop-slots button")).toHaveLength(9));
   expect(document.getElementById("loop-a")).toBeNull();
+  // Rendering the measures precedes persistence and clearing the busy flag.
+  await vi.waitFor(() => expect(document.getElementById("demo-button")!.textContent).toContain("바람과 언덕의 발라드"));
   set("rate", "89");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() =>
@@ -190,7 +193,7 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   expect(document.getElementById("song-title")!.textContent).toContain(
     "바람과 언덕의 발라드 - Real Paradis",
   );
-  expect(document.getElementById("original-tempo-value")!.textContent).toBe("= 94");
+  expect(document.getElementById("original-tempo-value")!.textContent).toBe("= 94.0");
   expect(document.querySelector(".practice-dock")).toBeNull();
   expect(document.querySelectorAll(".repeat-presets [data-loop-radius]")).toHaveLength(4);
   expect(document.getElementById("open-sound-dialog")).toBeNull();

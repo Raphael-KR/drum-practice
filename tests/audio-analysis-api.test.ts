@@ -7,13 +7,16 @@ import {localAnalysisStore} from '../server/audio-analysis-local';
 import type {AudioAnalysis} from '../src/audio-analysis-contract';
 import worker from '../server/audio-analysis-worker';
 import type {AnalysisDatabase} from '../server/audio-analysis-store';
-const hash='a'.repeat(64), url=`http://localhost:5173/api/audio-analysis/v1/${hash}`;
-const value:AudioAnalysis={analyzerVersion:1,sha256:hash,title:'곡',artist:'가수',duration:10,bpm:120,firstBeat:.2,beats:4,denominator:4,confidence:.8};
+const hash='a'.repeat(64), url=`http://localhost:5173/api/audio-analysis/v4/${hash}`;
+const value:AudioAnalysis={analyzerVersion:4,sha256:hash,title:'곡',artist:'가수',duration:10,bpm:120,firstBeat:.2,beats:4,denominator:4,confidence:.8};
 const put=(body:unknown,headers:Record<string,string>={})=>new Request(url,{method:'PUT',headers:{'content-type':'application/json',...headers},body:JSON.stringify(body)});
 it('persists across server reopening and protects the first result from replacement',async()=>{
   mkdirSync(resolve('.tmp'),{recursive:true});
   const dir=mkdtempSync(resolve('.tmp/analysis-db-test-'));const path=resolve(dir,'cache.sqlite');
   let store=localAnalysisStore(path);
+  const legacy=new DatabaseSync(path);
+  for (const version of [1,2]) legacy.prepare('INSERT INTO audio_analysis VALUES (?, ?, ?)').run(hash,version,JSON.stringify({...value,analyzerVersion:version,bpm:80}));
+  legacy.close();
   try {
     expect((await audioAnalysisAPI(new Request(url),store)).status).toBe(404);
     expect((await audioAnalysisAPI(put(value),store)).status).toBe(200);
@@ -42,11 +45,11 @@ it('uses the migration schema through the Worker D1 adapter and delegates static
 it('rejects raw media, extra/private fields, oversized bodies, foreign writes and bad versions',async()=>{
   const store=localAnalysisStore(':memory:');
   try {
-    for(const body of [{...value,audio:'bytes'},{...value,filename:'a.mp3'},{...value,analyzerVersion:2},{...value,sha256:'../x'}])
+    for(const body of [{...value,audio:'bytes'},{...value,filename:'a.mp3'},{...value,analyzerVersion:1},{...value,analyzerVersion:2},{...value,sha256:'../x'}])
       expect((await audioAnalysisAPI(put(body),store)).status).toBe(400);
     expect((await audioAnalysisAPI(put(value,{'content-type':'audio/mpeg'}),store)).status).toBe(415);
     expect((await audioAnalysisAPI(put(value,{'origin':'https://other.example'}),store)).status).toBe(403);
-    expect((await audioAnalysisAPI(put('x'.repeat(5000)),store)).status).toBe(413);
+    expect((await audioAnalysisAPI(put('x'.repeat(300000)),store)).status).toBe(413);
     expect((await audioAnalysisAPI(new Request(url,{method:'DELETE'}),store)).status).toBe(405);
     expect((await audioAnalysisAPI(new Request(url),store)).status).toBe(404);
   }finally{store.close();}

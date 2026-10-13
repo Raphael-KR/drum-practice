@@ -3,7 +3,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {audioAnalysisSamples, audioMeasures, practiceFileKind, readAudioPractice, retimeAudio, waveformPeaks} from '../src/audio-practice';
 import {defaults, validateSong, type Song} from '../src/model';
 import {importPracticeRecord, loadPracticeRecord, removePracticeRecord, savePracticeState} from '../src/practice-library';
-import {estimateTempo} from '../src/analysis';
+import {estimatePracticeTempo as estimateTempo} from '../src/audio-tempo';
 import {songScores} from '../src/song-scores';
 import type {RecordData} from '../src/storage';
 const sample = (): Song => ({version:1,id:'audio-test',title:'Audio',bpm:120,firstBeat:.2,audioName:'song.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:5,beats:4,denominator:4,peaks:[0,.4,1]},measures:audioMeasures(5,120,.2,4,4)});

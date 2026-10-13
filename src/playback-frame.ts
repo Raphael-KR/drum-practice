@@ -1,3 +1,4 @@
+import {beatTime} from "./model";
 import { savedLoopSlots, LOOP_SLOT_COUNT } from "./loop-slots";
 import { gridPhase } from "./ribbon-timeline";
 import {
@@ -52,7 +53,7 @@ export function timeAtScroll(
     if (position(i, mid, widths[i]) < x - offsets[i]) lo = mid;
     else hi = mid;
   }
-  return m.start + ((m.end - m.start) * (lo + hi)) / 2 / m.beats;
+  return beatTime(m, (lo + hi) / 2);
 }
 export function installScoreScroll(
   stage: HTMLElement,

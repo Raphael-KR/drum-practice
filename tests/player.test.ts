@@ -406,3 +406,81 @@ it.each([false, true])("replays from zero after natural completion with restartM
     vi.unstubAllGlobals();
   }
 });
+
+it.each([1,.8,1.25])('schedules tracked beats in original or normalized mode at rate %s across seeking and loop boundaries',async rate=>{
+ const {followAudioTempo,audioMeasures}=await import('../src/audio-practice');
+ const {defaults}=await import('../src/model');
+ vi.stubGlobal('AudioContext',Context);vi.stubGlobal('window',{setInterval:()=>1});
+ const times=[.2,.7,1.18,1.64,2.08,2.5,2.9,3.28,3.64,3.98,4.3,4.6];
+ const p=new Player(()=>({restartMeasure:false,countOff:false}));
+ try {
+  p.song=followAudioTempo({version:1,id:'live',title:'live',bpm:120,firstBeat:.2,audioName:'a.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:5,beats:4,denominator:4,peaks:[1],beatTimes:times},measures:audioMeasures(5,120,.2,4,4)});
+  p.song.settings.rate=rate;p.song.settings.tempoMode=rate===1?"original":"practice";p.renderRate=rate;
+  p.renderedMap=(await import("../src/audio-time-map")).audioTimeMap(p.song,5);
+  p.original={duration:5} as AudioBuffer;p.rendered={} as AudioBuffer;
+  p.position=1.18;p.loop={id:'l',name:'l',start:1.18,end:3.64};
+  const pulses=vi.spyOn(p,'pulse').mockImplementation(()=>{});
+  await p.play(false,false);const first=p.cycles[0];
+  const ctx=p.ctx as unknown as Context;
+  for(let now=first.musicAt;now<first.endAt+.02;now+=.02){ctx.currentTime=now;p.tick();}
+  if(rate!==1){const calls=pulses.mock.calls.filter(c=>c[0]>=first.musicAt&&c[0]<first.endAt);for(let i=1;i<calls.length;i++)expect(calls[i][0]-calls[i-1][0]).toBeCloseTo(.5/rate);}
+  const second=p.cycles.find(c=>c!==first)!;expect(second.musicAt).toBeCloseTo(first.endAt);
+  for(const sourceTime of times.filter(t=>t>=1.18&&t<3.64)){
+   const at=first.musicAt+p.outputTime(sourceTime)-p.outputTime(1.18);
+   expect(pulses.mock.calls.filter(c=>Math.abs(c[0]-at)<1e-7)).toHaveLength(1);
+  }
+  expect(pulses.mock.calls.some(c=>Math.abs(c[0]-second.musicAt)<1e-7)).toBe(true);
+  expect(pulses.mock.calls.every(c=>c[1]===false)).toBe(true);
+  p.pause();p.seek(2.5);pulses.mockClear();await p.play(false,false);
+  expect(p.cycles[0].from).toBe(2.5);
+ } finally {p.pause();vi.unstubAllGlobals();vi.restoreAllMocks();}
+});
+
+it('uses the last observed beat interval for count-off in a long untracked fade-out',async()=>{
+ const {followAudioTempo,audioMeasures}=await import('../src/audio-practice');
+ const {defaults}=await import('../src/model');
+ vi.stubGlobal('AudioContext',Context);vi.stubGlobal('window',{setInterval:()=>1});
+ const p=new Player(()=>({restartMeasure:false,countOff:true}));
+ try {
+  const times=[.2,.7,1.18,1.64,2.08,2.5,2.9,3.28,3.64];
+  p.song=followAudioTempo({version:1,id:'tail',title:'tail',bpm:120,firstBeat:.2,audioName:'a.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:20,beats:4,denominator:4,peaks:[1],beatTimes:times},measures:audioMeasures(20,120,.2,4,4)});
+  p.original={duration:20} as AudioBuffer;p.rendered=p.original;p.position=4;
+  await p.play();expect(p.cycles[0].countBeatSeconds).toBeCloseTo(.36);
+  expect(p.cycles[0].musicAt-p.cycles[0].at).toBeCloseTo(1.44);
+ }finally{p.pause();vi.unstubAllGlobals();}
+});
+
+it.each(['complete','error','switch'])('prepares practice at 1x transactionally and handles %s',async action=>{
+ const {followAudioTempo,audioMeasures}=await import('../src/audio-practice');
+ const {defaults}=await import('../src/model');
+ let worker:any;
+ vi.stubGlobal('document',{getElementById:()=>null});
+ vi.stubGlobal('Worker',class {onmessage:any;onerror:any;terminate=vi.fn();data:any;constructor(){worker=this;}postMessage(data:any){this.data=data;}});
+ vi.stubGlobal('AudioContext',Context);vi.stubGlobal('window',{setInterval:()=>1});
+ const p=new Player(()=>({restartMeasure:false,countOff:true}));
+ try {
+  p.song=followAudioTempo({version:1,id:'live',title:'live',bpm:120,firstBeat:.2,audioName:'a.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:5,beats:4,denominator:4,peaks:[1],beatTimes:[.2,.7,1.18,1.64,2.08,2.5,2.9,3.28,3.64]},measures:audioMeasures(5,120,.2,4,4)});
+  p.original={duration:5,sampleRate:32000,numberOfChannels:1,getChannelData:()=>new Float32Array(160000)} as unknown as AudioBuffer;p.rendered=p.original;
+  p.position=1.18;
+  const pending=p.setRate(1,false);
+  expect(worker.data.timeMap).toBeDefined();expect(p.song.settings.tempoMode).toBe('original');
+  if(action==='error'){
+   worker.onerror({message:'render failed'});await expect(pending).rejects.toThrow('render failed');
+   expect(p.song.settings.tempoMode).toBe('original');expect(p.rendered).toBe(p.original);
+  } else if(action==='switch'){
+   const old=worker;await p.setRate(1,true);await pending;
+   old.onmessage({data:{left:new Float32Array(170000),right:new Float32Array(170000)}});
+   expect(p.song.settings.tempoMode).toBe('original');expect(p.renderedMap).toBeUndefined();expect(p.rendered).toBe(p.original);
+  } else {
+   worker.onmessage({data:{left:new Float32Array(170000),right:new Float32Array(170000)}});await pending;
+   expect(p.song.settings.tempoMode).toBe('practice');expect(p.renderedMap).toBeDefined();
+   await p.play(true,false);const c=p.cycles[0];expect(c.countBeatSeconds).toBe(.5);
+   (p.ctx as unknown as Context).currentTime=c.musicAt+.25;
+   expect(p.current()).toBeCloseTo(1.41);
+   p.pause();expect(p.position).toBeCloseTo(1.41);
+   await p.setRate(1,true);expect(p.renderedMap).toBeUndefined();expect(p.rendered).toBe(p.original);
+   expect(p.position).toBeCloseTo(1.41);
+  }
+  expect(worker.terminate).toHaveBeenCalled();
+ }finally{p.pause();vi.unstubAllGlobals();}
+});

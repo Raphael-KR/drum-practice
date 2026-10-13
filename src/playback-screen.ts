@@ -1,3 +1,5 @@
+import {currentAudioBpm, originalTempoMode} from "./audio-time-map";
+import {beatTime as audioBeatTime} from "./model";
 import { audioMeasureHTML } from "./audio-practice-view";
 import { createPlaybackWakeLock } from "./playback-wake-lock";
 import { readRecordingTempo } from "./recording-tempo";
@@ -203,7 +205,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       const timeline = h.assets().ribbon!.get(index)!;
       return ribbonPosition(width, beat, s.measures[index].beats, timeline.phase);
     }
-    if (s.audioPractice) return width * beat / s.measures[index].beats;
+    if (s.audioPractice) { const m=s.measures[index]; return width * (audioBeatTime(m,beat)-m.start)/(m.end-m.start); }
     return measurePosition(s, index, beat, width, widthOf);
   }
   function ribbonAsset(index: number) {
@@ -598,6 +600,22 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       `${v.value} / ${total} · ${clock(time)} / ${clock(p.duration)}`,
     );
   }
+  let tempoSong: Song | undefined, liveBpm: number | undefined;
+  function headerBpm() {
+    const s = h.song();
+    if (tempoSong !== s) { tempoSong = s; liveBpm = undefined; }
+    if (!originalTempoMode(s)) return String(Number((originalAudioBpm() * s.settings.rate).toFixed(3)));
+    if (h.player().playing) liveBpm = currentAudioBpm(s, h.player().current());
+    return (liveBpm ?? s.bpm).toFixed(1);
+  }
+  function syncHeaderBpm() {
+    const bpm = headerBpm(), label = `= ${bpm}`;
+    const value = root.querySelector("#original-tempo-value");
+    if (value && value.textContent !== label) {
+      value.textContent = label;
+      get(ids.tempo).setAttribute("aria-label", t("main.message210", {value1: bpm}));
+    }
+  }
   function frame() {
     if (!h.ready() || !h.song().measures.length) return;
     const p = h.player(),
@@ -632,6 +650,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       regionAt: i => ribbonAsset(i)?.region,
       compare: () => h.compare?.draw(time),
     });
+    syncHeaderBpm();
     progress();
     syncCurrentSection(root, locate(h.song(), time).index);
     loopSlots?.refreshKeyboardPreview();
@@ -647,7 +666,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     h.setBusy(true);
     try {
       if (!Number.isFinite(bpm) || bpm <= 0) throw Error(t("main.message248"));
-      await h.player().setRate(original ? 1 : clamp(bpm / originalAudioBpm(), 0.5, 1.2));
+      await h.player().setRate(original ? 1 : clamp(bpm / originalAudioBpm(), 0.5, 1.2), original);
+      if (original) liveBpm = currentAudioBpm(h.song(), h.player().current());
       h.changed();
     } finally {
       h.setBusy(false);
@@ -657,7 +677,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function sync() {
     if (!h.ready()) return;
     const s = h.song(),
-      bpm = s.settings.rate === 1 ? s.bpm : Number((originalAudioBpm() * s.settings.rate).toFixed(3));
+      bpm = originalTempoMode(s) ? s.bpm : Number((originalAudioBpm() * s.settings.rate).toFixed(3));
     get(ids.title).textContent = formatSongTitle(s);
     const info = root.querySelector<HTMLElement>("#recording-tempo-info");
     if (info) {
@@ -667,8 +687,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     }
     const tempo = get<HTMLButtonElement>(ids.tempo);
     tempo.hidden = tempo.disabled = false;
-    tempo.innerHTML = `${tempoNote}<span id="original-tempo-value">= ${bpm}</span>`;
-    tempo.setAttribute("aria-label", t("main.message210", { value1: bpm }));
+    tempo.innerHTML = `${tempoNote}<span id="original-tempo-value">= ${headerBpm()}</span>`;
+    tempo.setAttribute("aria-label", t("main.message210", { value1: headerBpm() }));
     tempo.title = t("main.message211");
     const v = input(ids.tempoInput);
     v.value = String(bpm);
@@ -698,7 +718,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     get("view-selected-text").textContent =
       select.selectedOptions[0]?.textContent || "";
     root.querySelectorAll<HTMLElement>("[data-tempo]").forEach((b) => {
-      const active = b.id === "tempo-reset" ? s.settings.rate === 1 : Math.abs(Number(b.dataset.tempo) - bpm) < 0.01;
+      const active = b.id === "tempo-reset" ? originalTempoMode(s) : !originalTempoMode(s) && Math.abs(Number(b.dataset.tempo) - bpm) < 0.01;
       b.classList.toggle("primary", active);
       b.setAttribute("aria-pressed", String(active));
     });

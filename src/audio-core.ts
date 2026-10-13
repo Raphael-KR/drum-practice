@@ -1,3 +1,4 @@
+import {audioTimeMap, mapTime, type AudioTimeMap} from "./audio-time-map";
 import { t as i18nText } from "./i18n";
 import type { PlaybackPreferences } from "./playback-preferences";
 import { stickClickSamples } from "./stick-click";
@@ -19,6 +20,7 @@ export class Player {
   original?: AudioBuffer;
   rendered?: AudioBuffer;
   renderRate = 1;
+  renderedMap?: AudioTimeMap;
   song?: Song;
   loop?: Loop;
   playing = false;
@@ -68,6 +70,7 @@ export class Player {
     this.original = buffer;
     this.rendered = buffer;
     this.renderRate = 1;
+    this.renderedMap = undefined;
     this.song = song;
     this.position = Math.min(song.settings.position, buffer.duration);
     this.volumes();
@@ -87,6 +90,7 @@ export class Player {
     const now = this.ctx.currentTime;
     const c =
       [...this.cycles].reverse().find((c) => now >= c.at) || this.cycles[0];
+    if(c && this.renderedMap) return this.sourceTime(Math.min(this.outputTime(c.to),this.outputTime(c.from)+Math.max(0,now-c.musicAt)));
     return c ? cyclePosition(c, now) : this.position;
   }
   count() {
@@ -123,11 +127,13 @@ export class Player {
     this.nextClick.clear();
     if (notify) this.onstate();
   }
-  async setRate(rate: number) {
+  outputTime(source: number) { return this.renderedMap ? mapTime(source,this.renderedMap.source,this.renderedMap.output) : source/this.renderRate; }
+  sourceTime(output: number) { return this.renderedMap ? mapTime(output,this.renderedMap.output,this.renderedMap.source) : output*this.renderRate; }
+  async setRate(rate: number, original = rate === 1) {
     const was = this.playing;
     this.pause();
     const request = this.playRequest;
-    if (!(await this.renderAtRate(rate)) || request !== this.playRequest)
+    if (!(await this.renderAtRate(original ? 1 : rate, original ? "original" : "practice")) || request !== this.playRequest)
       return;
     if (was) await this.play(false, false);
     this.onstate();
@@ -138,15 +144,17 @@ export class Player {
     this.worker?.terminate();
     this.worker = undefined;
   }
-  private async renderAtRate(rate: number) {
+  private async renderAtRate(rate: number, mode = this.song?.settings.tempoMode) {
     const gen = ++this.generation;
     this.cancelStretch();
     if (!this.original || !this.song) return false;
     const original = this.original;
-    this.song.settings.rate = rate;
-    if (rate === 1) {
+    const song = this.song;
+    const timeMap = audioTimeMap({...song, settings: {...song.settings, rate, tempoMode: mode}},original.duration);
+    if (rate === 1 && !timeMap) {
       this.rendered = this.original;
       this.renderRate = 1;
+      this.renderedMap = undefined;
     } else {
       this.onprogress(i18nText("audio-core.message002"));
       const l = this.original.getChannelData(0).slice(),
@@ -179,7 +187,7 @@ export class Player {
           };
           worker.onerror = (e) => reject(Error(e.message));
           worker.postMessage(
-            { left: l, right: r, sr: original.sampleRate, rate },
+            { left: l, right: r, sr: original.sampleRate, rate, timeMap },
             [l.buffer, r.buffer],
           );
         });
@@ -201,7 +209,10 @@ export class Player {
       b.copyToChannel(result.right as Float32Array<ArrayBuffer>, 1);
       this.rendered = b;
       this.renderRate = rate;
+      this.renderedMap = timeMap;
     }
+    song.settings.rate = rate;
+    song.settings.tempoMode = mode;
     this.onprogress(i18nText("audio-core.message004"));
     return true;
   }
@@ -229,7 +240,7 @@ export class Player {
     await this.prepare();
     if (request !== this.playRequest) return;
     this.stopPlayback(false);
-    if (this.renderRate !== this.song.settings.rate) {
+    if (this.renderRate !== this.song.settings.rate || !!this.renderedMap !== !!audioTimeMap(this.song,this.duration)) {
       if (!(await this.renderAtRate(this.song.settings.rate))) return;
       if (request !== this.playRequest) return;
     }
@@ -265,14 +276,29 @@ export class Player {
     const to = Math.min(this.loop?.end ?? this.duration, this.duration);
     const m = locate(s, from).measure;
     if (!m || to <= from) return;
-    const c = makeCycle(at, from, to, s.settings.rate, 0, m, countOff);
+    // The untracked fade-out can be long; never use it as a count-off beat.
+    const beats = s.audioPractice?.followTempo ? s.audioPractice.beatTimes : undefined;
+    let observedBeatSeconds: number | undefined;
+    if (beats) {
+      const next = beats.findIndex(t => t >= from);
+      const i = Math.min(next < 0 ? beats.length - 1 : next, beats.length - 2);
+      observedBeatSeconds = beats[i + 1] - beats[i];
+    }
+    const c = makeCycle(at, from, to, s.settings.rate, 0, m, countOff, observedBeatSeconds);
+    if(this.renderedMap) {
+      c.countBeatSeconds=60/(s.bpm*s.settings.rate);
+      const leading=Math.max(0,this.outputTime(m.start)-this.outputTime(from));
+      c.musicAt=at+Math.max(0,c.count*c.countBeatSeconds-leading);
+      c.countAt=at+Math.max(0,leading-c.count*c.countBeatSeconds);
+      c.endAt=c.musicAt+this.outputTime(to)-this.outputTime(from);
+    }
     this.cycles.push(c);
     this.nextClick.set(c, 0);
     const source = this.ctx.createBufferSource();
     source.buffer = this.rendered!;
     source.connect(this.music);
     this.track(source);
-    source.start(c.musicAt, from / c.rate, (to - from) / c.rate);
+    source.start(c.musicAt, this.outputTime(from), this.outputTime(to)-this.outputTime(from));
   }
   track(n: AudioScheduledSourceNode) {
     this.nodes.add(n);
@@ -334,7 +360,7 @@ export class Player {
           count: true,
         })),
         ...beatEvents(this.song, c.from, c.to).map((b) => ({
-          at: c.musicAt + (b.time - c.from) / c.rate,
+          at: c.musicAt + this.outputTime(b.time)-this.outputTime(c.from),
           accent: b.accent,
           count: false,
         })),
