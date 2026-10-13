@@ -3829,3 +3829,13 @@ MusicXML에는 Open hi-hat 및 filled=no가 이미 존재했으나 OSMD SVG가 �
 - 제외: 제작기 공개, 원본 음원·실험 산출물·별도 제작 자산의 Git 추가, 운영 음원 업로드.
 - 검증: 611개 검사 및 앱 분리/공통 재생 검사, 패키지 바이트 대조와 운영 smoke.
 - 버전: player0.8.0(minor: 템포 추종·고정 박 음원 재생이라는 새 기능), editor0.6.31(patch: 공통 재생 화면의 BPM 표시/모드 처리 개선). 패키지 버전은 유지한다.
+
+### 0.8.0 커밋·푸시·공개 발행 결과
+- GitHub `main`: 기능 커밋 `7e76238cd40029119857890ac32da6e4f12e7d8e` 푸시 및 원격 SHA 일치 확인.
+- 릴리스 검증: `npm run test:drum` 112파일/611테스트, `npm run build:apps`, `npm run check:playback`, staged diff 검사 통과. 큰 번들 경고는 기존대로 남는다.
+- 정본 player 산출물 34개가 Sites mirror와 바이트 일치. index 별칭 포함 35개 player 파일과 기존 D1 Worker만 발행. 악보제작기는 로컬 전용 유지.
+- Sites source `5e8e08f2033ca693c777b366590ec6278df2d28c`, saved version 59 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_7e66d51d228081918d33d993d2979f1b`), deployment `appgdep_6acda78f6c708191800fe2b77992e8f7` succeeded.
+- 공개 URL: https://drum-practice-studio.dgkma.chatgpt.site — 기존 public audience 및 DB 바인딩 유지.
+- 공개 HTTP smoke: 홈 200, player JS/CSS와 박 분석·스트레치 Worker SHA-256 로컬 산출물과 일치. HTML은 Cloudflare 삽입 스크립트만 다름을 확인했다.
+- 공개 v4 API: 기존 로컬 YB ‘붉은 노을’ 분석(578개 박 시각)의 메타데이터만 PUT 200(약 204ms), 독립 GET 200(약 45ms), 모든 필드 일치. 미등록 해시 404, audio/mpeg 형식 probe 415. 원본 음원 전송 없음.
+- 증거: `.tmp/release-0.8.0/{tests.log,build.log,playback.log,smoke.json}` (Git 제외). iOS 실기기·청감 검수는 이번 발행 검증에 포함하지 않았다.
