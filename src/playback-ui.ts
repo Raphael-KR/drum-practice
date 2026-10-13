@@ -135,13 +135,13 @@ export function updatePlayhead(
   ribbon: boolean,
 ) {
   root.querySelector<HTMLElement>("#playhead-status")!.hidden = !ribbon;
-  root.querySelector("#playhead-bar")!.textContent = t("main.message245", {
+  root.querySelector("#playhead-bar")!.textContent = measure.audioPrelude ? t("audioPractice.prelude") : t("main.message245", {
     value1: measure.label,
   });
   root.querySelector("#playhead-beat")!.textContent =
-    `${count ? t("main.message246") : ""}${count || Math.min(measure.beats, Math.floor(beat) + 1)}`;
+    measure.audioPrelude ? "" : `${count ? t("main.message246") : ""}${count || Math.min(measure.beats, Math.floor(beat) + 1)}`;
   root.querySelector("#playhead-signature")!.textContent =
-    `${measure.beats}/${measure.denominator}`;
+    measure.audioPrelude ? "" : `${measure.beats}/${measure.denominator}`;
   const stage = root.querySelector<HTMLElement>("#stage")!;
   stage.style.setProperty(
     "--scroll-x",

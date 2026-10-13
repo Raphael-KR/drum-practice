@@ -324,7 +324,7 @@ it("imports analyzed audio directly without forcing a setup dialog and blocks du
   expect(input.disabled).toBe(true);
   expect(document.querySelector('#import-package')?.textContent).toContain('분석');
   expect(readAudioPractice).toHaveBeenCalledTimes(reads+1);
-  const record={song:{id:'automatic-audio',title:'Tagged title',artist:'Tagged artist',audioPractice:{duration:5,beatTimes:[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]}},pages:[],audio:new Blob(['mp3']),pdf:new Blob()};
+  const record={song:{id:'automatic-audio',title:'Tagged title',artist:'Tagged artist',audioPractice:{duration:5,startAnalyzed:true,beatTimes:[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]}},pages:[],audio:new Blob(['mp3']),pdf:new Blob()};
   vi.mocked(loadPracticeRecord).mockResolvedValue(record as any);
   vi.mocked(importPracticeRecord).mockResolvedValue({status:'added',record} as any);
   pending.resolve(record);

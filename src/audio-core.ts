@@ -4,6 +4,7 @@ import type { PlaybackPreferences } from "./playback-preferences";
 import { stickClickSamples } from "./stick-click";
 import {
   beatEvents,
+  preludeCountBeats,
   locate,
   makeCycle,
   cyclePosition,
@@ -284,7 +285,7 @@ export class Player {
       const i = Math.min(next < 0 ? beats.length - 1 : next, beats.length - 2);
       observedBeatSeconds = beats[i + 1] - beats[i];
     }
-    const c = makeCycle(at, from, to, s.settings.rate, 0, m, countOff, observedBeatSeconds);
+    const c = makeCycle(at, from, to, s.settings.rate, 0, m, countOff && !m.audioPrelude, observedBeatSeconds);
     if(this.renderedMap) {
       c.countBeatSeconds=60/(s.bpm*s.settings.rate);
       const leading=Math.max(0,this.outputTime(m.start)-this.outputTime(from));
@@ -292,6 +293,10 @@ export class Player {
       c.countAt=at+Math.max(0,leading-c.count*c.countBeatSeconds);
       c.endAt=c.musicAt+this.outputTime(to)-this.outputTime(from);
     }
+    if (m.audioPrelude && this.preferences().countOff)
+      c.preludeClicks = preludeCountBeats(s)
+        .filter(t => t >= from - 1e-7 && t < to - 1e-7)
+        .map(t => c.musicAt + this.outputTime(t) - this.outputTime(from));
     this.cycles.push(c);
     this.nextClick.set(c, 0);
     const source = this.ctx.createBufferSource();
@@ -354,6 +359,7 @@ export class Player {
     }
     for (const c of this.cycles) {
       const events = [
+        ...(c.preludeClicks ?? []).map(at => ({ at, accent: false, count: true })),
         ...Array.from({ length: c.count }, (_, i) => ({
           at: c.countAt + i * c.countBeatSeconds,
           accent: i % c.beats === 0,

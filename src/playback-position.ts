@@ -6,7 +6,7 @@ import { nearestQuarterBeat, gridLabel } from "./lyric-grid";
 /** The nearest quarter beat is the reporting/display coordinate, not a containing bin. */
 export function playbackPosition(song: Song, time: number) {
   const point = nearestQuarterBeat(song, time);
-  const label = gridLabel(point.measure, point.tick);
+  const label = point.measure.audioPrelude ? i18nText("audioPractice.prelude") : gridLabel(point.measure, point.tick);
   const text = i18nText("playback-position.message433", {
     value1: formatSongTitle(song),
     value2: "",

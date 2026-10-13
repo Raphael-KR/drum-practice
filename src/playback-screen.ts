@@ -538,10 +538,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     bindNumericDrag(input(ids.progress), {
       surface: input(ids.progress).closest<HTMLElement>(".progress-number") ?? undefined,
       onStart: beginScrub,
-      onPreview: (v) => previewScrub(h.song().measures[v - 1]?.start ?? 0),
+      onPreview: (v) => previewScrub(h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]?.start ?? 0),
       onCommit: (v) => {
         if (scrub) finishScrub();
-        else if (h.ready()) seek(h.song().measures[v - 1]?.start ?? 0);
+        else if (h.ready()) seek(h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]?.start ?? 0);
       },
       onCancel: () => finishScrub(true),
     }),
@@ -587,8 +587,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       v = input(ids.progress),
       time = p.current();
     if (!scrub && document.activeElement !== v)
-      v.value = String(selectionIndex() + 1);
-    const total = h.song().measures.length;
+      v.value = String(selectionIndex() + (h.song().measures[0]?.audioPrelude ? 0 : 1));
+    const prelude = !!h.song().measures[0]?.audioPrelude;
+    v.min = prelude ? '0' : '1';
+    v.setAttribute("aria-valuemin", v.min);
+    const total = h.song().measures.length - (prelude ? 1 : 0);
     v.max = String(total);
     v.setAttribute("aria-valuemax", String(total));
     v.parentElement!.querySelector(".progress-total")!.textContent = String(total);

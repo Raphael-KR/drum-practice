@@ -1,3 +1,4 @@
+import {estimateAudioBarOne, nearestAudioBeat} from "./audio-bar-one";
 import {analyzeAudioBeats} from "./audio-beat-analysis";
 import {trackedAudioMeasures, validBeatTimes} from "./audio-beat-grid";
 import { clamp, defaults, uid, validateSong, type Song } from "./model";
@@ -32,25 +33,48 @@ export function audioMeasures(duration: number, bpm: number, firstBeat: number, 
 export function retimeAudio(song: Song, bpm: number, firstBeat: number, beats: number, denominator: number): Song {
   if (!song.audioPractice) throw Error(t("audioPractice.invalidTiming"));
   const measures = audioMeasures(song.audioPractice.duration, bpm, firstBeat, beats, denominator);
+  if(song.audioPractice.barOne && firstBeat>0) measures.unshift({id:'audio-prelude',regionId:'',label:'0',beats:1,denominator:4,start:0,end:firstBeat,audioPrelude:true} as typeof measures[number]);
   return {...structuredClone(song), bpm, firstBeat, measures,
-    audioPractice: {...song.audioPractice, beats, denominator, followTempo:false},
+    audioPractice: {...song.audioPractice, beats, denominator, followTempo:false, ...(song.audioPractice.barOne ? {barOne:{time:firstBeat,source:song.audioPractice.barOne.source}} : {})},
     settings: {...song.settings, rate: 1, tempoMode:"original"}};
 }
 export function followAudioTempo(song: Song): Song {
-  const a=song.audioPractice;
+  const a=structuredClone(song.audioPractice);
   if(!a?.beatTimes || !validBeatTimes(a.beatTimes,a.duration))throw Error(t("audioPractice.trackingUnavailable"));
-  return {...structuredClone(song), firstBeat:a.beatTimes[0], measures:trackedAudioMeasures(a.duration,a.beatTimes),
+  if(a.barOne)a.barOne.time=nearestAudioBeat(a.beatTimes,a.barOne.time);
+  return {...structuredClone(song), firstBeat:a.barOne?.time ?? a.beatTimes[0], measures:trackedAudioMeasures(a.duration,a.beatTimes,a.barOne?.time),
     audioPractice:{...a,beats:4,denominator:4,followTempo:true},settings:{...song.settings,rate:1,tempoMode:"original"}};
+}
+/** Anchor only changes grouping; original media, beat map, markers and loops stay intact. */
+export function setAudioBarOne(song: Song, time: number): Song {
+  const a=song.audioPractice;
+  if(!a || !Number.isFinite(time) || time<0 || time>=a.duration)throw Error(t('audioPractice.invalidTiming'));
+  const at=a.followTempo && a.beatTimes ? nearestAudioBeat(a.beatTimes,time) : time;
+  const next={...structuredClone(song),audioPractice:{...a,barOne:{time:at,source:'manual' as const},startAnalyzed:true}};
+  return a.followTempo ? followAudioTempo(next) : retimeAudio(next,song.bpm,at,a.beats,a.denominator);
 }
 /** Upgrade pre-tracking records once; retain user tags, media and practice state. */
 export async function ensureAudioBeatTracking(record: RecordData, progress?: (text:string)=>void): Promise<RecordData> {
   const a = record.song.audioPractice;
-  if (!a || a.beatTimes || a.duration < 4 || a.duration > 1800) return record;
+  if (!a || a.duration < 4 || a.duration > 1800) return record;
+  if (a.beatTimes) {
+    if(a.startAnalyzed || a.barOne)return record;
+    progress?.(t("audioPractice.startAnalyzing"));
+    const context=new AudioContext({sampleRate:32000});
+    try {
+      const buffer=await context.decodeAudioData(await record.audio.arrayBuffer());
+      const barOne=a.followTempo ? estimateAudioBarOne(buffer,a.beatTimes) : undefined;
+      const song={...structuredClone(record.song),audioPractice:{...a,startAnalyzed:true,...(barOne ? {barOne} : {})}};
+      const next=a.followTempo ? followAudioTempo(song) : song;
+      next.settings={...record.song.settings};
+      validateSong(next); return {...record,song:next};
+    } finally {await context.close().catch(()=>{});}
+  }
   progress?.(t("audioPractice.tracking"));
   const analyzed = await readAudioPractice(new File([record.audio],record.song.audioName || 'audio.mp3'),progress);
   if (!analyzed.song.audioPractice?.beatTimes) throw Error(t("audioPractice.trackingUnavailable"));
   const song = followAudioTempo({...structuredClone(record.song),bpm:analyzed.song.bpm,
-    audioPractice:{...a,beatTimes:analyzed.song.audioPractice.beatTimes}});
+    audioPractice:{...a,...analyzed.song.audioPractice,barOne:a.barOne ?? analyzed.song.audioPractice.barOne}});
   // Preserve explicit practice speed as a target BPM when the base estimate changes.
   const old = record.song;
   song.settings = {...old.settings};
@@ -64,7 +88,10 @@ export async function reanalyzeAudioPractice(record: RecordData, progress?: (tex
   const analyzed=await readAudioPractice(new File([record.audio],record.song.audioName || 'audio.mp3'),progress,{force:true,signal});
   if(!analyzed.song.audioPractice?.beatTimes)throw Error(t("audioPractice.trackingUnavailable"));
   const song={...structuredClone(record.song),bpm:analyzed.song.bpm,
-    audioPractice:{...record.song.audioPractice!,beatTimes:analyzed.song.audioPractice.beatTimes}};
+    audioPractice:{...record.song.audioPractice!,...analyzed.song.audioPractice,
+      barOne:record.song.audioPractice?.barOne?.source==='manual'
+        ? {source:'manual' as const,time:nearestAudioBeat(analyzed.song.audioPractice.beatTimes,record.song.audioPractice.barOne.time)}
+        : analyzed.song.audioPractice.barOne}};
   return {...record,song:followAudioTempo(song)};
 }
 export function waveformPeaks(buffer: AudioBuffer): number[] {
@@ -129,6 +156,15 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
       measures:beatTimes ? trackedAudioMeasures(buffer.duration,beatTimes) : audioMeasures(buffer.duration,bpm,firstBeat,beats,denominator), regions:[], lyrics:[], markers:[], loops:[],
       settings:defaults(), audioName:file.name, pdfName:"", pageCount:0,
     };
+    if(beatTimes) {
+      const barOne=estimateAudioBarOne(buffer,beatTimes);
+      song.audioPractice!.startAnalyzed=true;
+      if(barOne) {
+        song.audioPractice!.barOne=barOne;
+        song.firstBeat=barOne.time;
+        song.measures=trackedAudioMeasures(buffer.duration,beatTimes,barOne.time);
+      }
+    }
     validateSong(song);
     return {song, audio:file, pdf:new Blob(), pages:[]};
   } catch (error) {

@@ -197,7 +197,7 @@ export function updateScoreFrame(h: {
     );
     e.classList.toggle("active", active);
     if (active) {
-      e.querySelector(".measure-beat")!.textContent =
+      e.querySelector(".measure-beat")!.textContent = bar.audioPrelude ? "" :
         `${count && selected === index ? i18nText("main.message246") : ""}${selected !== index ? 1 : count || Math.min(m.beats, Math.floor(beat) + 1)}`;
     }
   });

@@ -98,3 +98,24 @@ it('keeps restored practice speed within the supported range after a large tempo
  expect(next.song.settings.rate).toBe(.5);
  expect(next.song.audioPractice!.followTempo).toBe(true);
 });
+it('preserves a manual bar-one reference through reanalysis and never includes it in the shared cache',async()=>{
+ decoder();const first=await readAudioPractice(new File(['bytes'],'live.mp3'));
+ const {setAudioBarOne}=await import('../src/audio-practice');
+ first.song=setAudioBarOne(first.song,1.7);
+ vi.mocked(analyzeAudioBeats).mockResolvedValue([.2,.69,1.17,1.65,2.14,2.63,3.12,3.6]);
+ const next=await reanalyzeAudioPractice(first);
+ expect(next.song.audioPractice!.barOne).toEqual({time:1.65,source:'manual'});
+ expect(vi.mocked(storeAudioAnalysis).mock.calls.every(([a])=>!('barOne' in a))).toBe(true);
+});
+it('upgrades the start reference once without changing fixed-tempo preference or repeating beat analysis',async()=>{
+ decoder();const first=await readAudioPractice(new File(['bytes'],'test.mp3'));
+ const {retimeAudio}=await import('../src/audio-practice');
+ first.song=retimeAudio(first.song,120,.2,4,4);
+ delete first.song.audioPractice!.startAnalyzed;
+ const next=await ensureAudioBeatTracking(first);
+ expect(next.song.audioPractice!.startAnalyzed).toBe(true);
+ expect(next.song.audioPractice!.followTempo).toBe(false);
+ expect(next.song.audioPractice!.barOne).toBeUndefined();
+ expect(analyzeAudioBeats).toHaveBeenCalledTimes(1);
+ expect(await ensureAudioBeatTracking(next)).toBe(next);
+});

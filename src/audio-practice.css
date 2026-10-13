@@ -23,3 +23,12 @@
   .audio-setup-grid {grid-template-columns:1fr;}
   .audio-practice.drawer-playback .playback-drawer {height:180px;}
 }
+
+.audio-anchor-wave {height:110px;position:relative;overflow:hidden;background:white;border:1px solid #b8cce8;border-radius:8px;touch-action:pan-y;}
+.audio-anchor-wave svg {width:100%;height:100%;fill:#779bbc;}
+.audio-anchor-wave button {position:absolute;top:0;height:100%;width:16px;min-width:0;padding:0;border:0;border-left:1px solid #9db5d6;border-radius:0;background:transparent;}
+.audio-anchor-wave button:hover,.audio-anchor-wave button:focus-visible {background:#d9e7ff80;}
+.audio-anchor-cursor {position:absolute;top:0;bottom:0;border-left:2px solid #e53935;pointer-events:none;}
+.audio-anchor-editor input {width:100%;}
+.audio-anchor-editor [data-anchor-info] {min-height:2.8em;}
+.audio-measure.is-prelude {background:#f1f3f5;}

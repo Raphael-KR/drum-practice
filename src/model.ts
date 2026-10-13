@@ -12,6 +12,7 @@ export interface Region {
   lyricAnchors?: { lyricId: string; quarterOffset: number; x: number }[];
 }
 export interface Measure {
+  audioPrelude?: boolean;
   /** Audio-only observed beat positions; score measures retain uniform timing. */
   beatTimes?: number[];
   id: string;
@@ -71,7 +72,7 @@ export interface MeasureLyric {
 }
 export interface Song {
   /** Local audio practice has timing but no score pages or regions. */
-  audioPractice?: { duration: number; beats: number; denominator: number; peaks: number[]; beatTimes?: number[]; followTempo?: boolean };
+  audioPractice?: { duration: number; beats: number; denominator: number; peaks: number[]; beatTimes?: number[]; followTempo?: boolean; barOne?: import("./audio-bar-one").AudioBarOne; startAnalyzed?: boolean };
   version: 1;
   id: string;
   title: string;
@@ -159,13 +160,22 @@ export function reflow(song: Song) {
 }
 export function beatEvents(song: Song, start: number, end: number) {
   const out: { time: number; accent: boolean; beat: number }[] = [];
-  for (const m of song.measures)
+  for (const m of song.measures.filter(m => !m.audioPrelude))
     for (let b = 0; b < m.beats; b++) {
       const t = beatTime(m, b);
       if (t >= start - 1e-7 && t < end - 1e-7)
-        out.push({ time: t, accent: !song.audioPractice?.followTempo && b === 0, beat: b + 1 });
+        out.push({ time: t, accent: (!song.audioPractice?.followTempo || !!song.audioPractice.barOne) && b === 0, beat: b + 1 });
     }
   return out;
+}
+// Source times: count along with the retained intro, never delay the recording.
+export function preludeCountBeats(song: Song) {
+  const prelude = song.measures[0];
+  if (!song.audioPractice || !prelude?.audioPrelude) return [];
+  const end = prelude.end;
+  if (song.audioPractice.followTempo && song.audioPractice.beatTimes)
+    return song.audioPractice.beatTimes.filter(t => t < end - 1e-7).slice(-4);
+  return [4, 3, 2, 1].map(n => end - n * 60 / song.bpm).filter(t => t >= 0);
 }
 export function xAtBeat(region: Region, m: Measure, beat: number) {
   const xs = region.beatXs;
@@ -187,6 +197,7 @@ export function continuousX(
   return last + (nextFirstX - last) * (beat - m.beats + 1);
 }
 export interface Cycle {
+  preludeClicks?: number[];
   at: number;
   countAt: number;
   musicAt: number;
@@ -275,6 +286,8 @@ export function validateSong(x: unknown): asserts x is Song {
     if (!a || !finite(a.duration) || a.duration <= 0 || s.firstBeat >= a.duration ||
         !Number.isInteger(a.beats) || a.beats < 1 || a.beats > 16 || ![2,4,8,16].includes(a.denominator) ||
         !Array.isArray(a.peaks) || a.peaks.length > 4096 || a.peaks.some(p => !finite(p) || p < 0 || p > 1) ||
+        (a.startAnalyzed !== undefined && typeof a.startAnalyzed !== 'boolean') ||
+        (a.barOne !== undefined && (!a.barOne || !finite(a.barOne.time) || a.barOne.time < 0 || a.barOne.time >= a.duration || !['manual','estimated'].includes(a.barOne.source))) ||
         (a.followTempo !== undefined && typeof a.followTempo !== 'boolean') ||
         (a.beatTimes !== undefined && !validBeatTimes(a.beatTimes,a.duration)) ||
         (a.followTempo && (!a.beatTimes || a.beats !== 4 || a.denominator !== 4)) ||
@@ -282,13 +295,15 @@ export function validateSong(x: unknown): asserts x is Song {
         !s.measures.length || s.measures.length > 10000)
       throw Error(i18nText("audioPractice.invalidTiming"));
     if(a.followTempo) {
-      const expected=trackedAudioMeasures(a.duration,a.beatTimes!);
-      if(s.firstBeat!==a.beatTimes![0] || s.measures.length!==expected.length || s.measures.some((m,i)=>{
+      const expected=trackedAudioMeasures(a.duration,a.beatTimes!,a.barOne?.time);
+      if(s.firstBeat!==(a.barOne?.time ?? a.beatTimes![0]) || s.measures.length!==expected.length || s.measures.some((m,i)=>{
         const e=expected[i];
-        return !m || m.start!==e.start || m.end!==e.end || m.beats!==e.beats || m.denominator!==4 ||
+        return !m || !!m.audioPrelude!==!!e.audioPrelude || m.label!==e.label || m.start!==e.start || m.end!==e.end || m.beats!==e.beats || m.denominator!==4 ||
           !Array.isArray(m.beatTimes) || m.beatTimes.length!==e.beatTimes.length || m.beatTimes.some((t,b)=>t!==e.beatTimes[b]);
       }))throw Error(i18nText("audioPractice.invalidTiming"));
-    } else if(s.measures.some((m,i)=>!m || m.beatTimes !== undefined || m.beats!==a.beats || m.denominator!==a.denominator ||
+    } else if((a.barOne && (s.firstBeat!==a.barOne.time || (s.firstBeat>0 &&
+      (!s.measures[0].audioPrelude || s.measures[0].start!==0 || s.measures[0].end!==s.firstBeat)))) ||
+      s.measures.some((m,i)=>m.audioPrelude && (!a.barOne || i!==0 || m.beats!==1 || m.label!=='0' || m.beatTimes!==undefined)) || s.measures.filter(m=>!m.audioPrelude).some((m,i)=>!m || m.beatTimes !== undefined || m.beats!==a.beats || m.denominator!==a.denominator ||
         Math.abs(m.start-(s.firstBeat+i*a.beats*60/s.bpm*4/a.denominator))>1e-6 ||
         Math.abs(m.end-(s.firstBeat+(i+1)*a.beats*60/s.bpm*4/a.denominator))>1e-6) ||
         s.measures.at(-1)!.start >= a.duration || s.measures.at(-1)!.end < a.duration-1e-6)
@@ -339,7 +354,7 @@ export function validateSong(x: unknown): asserts x is Song {
   for (const m of s.measures) {
     if (
       !m ||
-      (!s.audioPractice && m.beatTimes !== undefined) ||
+      (!s.audioPractice && (m.beatTimes !== undefined || m.audioPrelude !== undefined)) ||
       typeof m.id !== "string" ||
       (s.audioPractice ? m.regionId !== "" : !ids.has(m.regionId)) ||
       mids.has(m.id) ||

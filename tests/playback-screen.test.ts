@@ -22,7 +22,7 @@ import {
   playbackBrandHTML,
   metronomeControlHTML,
 } from "../src/playback-forms";
-import { audioMeasures } from "../src/audio-practice";
+import { audioMeasures, setAudioBarOne } from "../src/audio-practice";
 import { playbackPosition } from "../src/playback-position";
 const disposers: (() => void)[] = [];
 beforeEach(() => {
@@ -533,6 +533,21 @@ it("audio uses common waveform navigation, rows and playback frame without score
   expect(root.querySelectorAll('.audio-measure').length).toBeGreaterThan(0);
   expect(root.querySelector('.audio-measure .crop img')).toBeNull();
   expect(fail).not.toHaveBeenCalled();
+});
+
+it('keeps prelude labels beat-free and numbers the first actual bar as one',()=>{
+ const {screen,song,p,root,ids}=mount('web');
+ Object.assign(song,{bpm:120,firstBeat:0,pageCount:0,pdfName:'',regions:[],scoreFormat:undefined,
+  audioPractice:{duration:12,beats:4,denominator:4,peaks:[1]},measures:audioMeasures(12,120,0,4,4)});
+ Object.assign(song,setAudioBarOne(song,4));
+ screen.renderTrack();screen.sync();p.position=0;screen.frame();
+ expect(root.querySelector('.audio-measure .label')!.textContent).toBe('연주 전');
+ expect(root.querySelector('#playhead-bar')!.textContent).toBe('연주 전');
+ const progress=root.querySelector<HTMLInputElement>(`#${ids.progress}`)!;
+ expect([progress.value,progress.min,progress.max,progress.getAttribute('aria-valuemin')]).toEqual(['0','0','4','0']);
+ screen.seek(4);screen.frame();
+ expect(progress.value).toBe('1');
+ expect(root.querySelector('.audio-measure .measure-beat')!.textContent).toBe('');
 });
 
 it('shows live original BPM to one decimal, holds when stopped, and separates practice at the same BPM', async()=>{

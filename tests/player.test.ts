@@ -488,3 +488,55 @@ it.each(['complete','error','switch'])('prepares practice at 1x transactionally 
   expect(worker.terminate).toHaveBeenCalled();
  }finally{p.pause();vi.unstubAllGlobals();}
 });
+
+it('plays the recorded prelude without delaying audio, then accents anchored bar one',async()=>{
+ vi.stubGlobal('AudioContext',Context);vi.stubGlobal('window',{setInterval:()=>1});
+ vi.stubGlobal('localStorage',{getItem:()=>JSON.stringify({restartMeasure:true,countOff:true})});
+ const p=new Player();
+ try {
+  const {audioMeasures,followAudioTempo,setAudioBarOne}=await import('../src/audio-practice');
+  const {defaults}=await import('../src/model');
+  const times=Array.from({length:32},(_,i)=>.2+i*.5);
+  p.song=setAudioBarOne(followAudioTempo({version:1,id:'live',title:'Live',bpm:120,firstBeat:.2,audioName:'a.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:18,beats:4,denominator:4,peaks:[],beatTimes:times},measures:audioMeasures(18,120,.2,4,4)}),times[17]);
+  p.original={duration:18} as AudioBuffer;p.rendered=p.original;p.position=0;
+  const pulse=vi.spyOn(p,'pulse');
+  await p.play();const cycle=p.cycles[0];expect(cycle.count).toBe(0);expect(cycle.from).toBe(0);expect(pulse).not.toHaveBeenCalled();
+  (p.ctx as unknown as Context).currentTime=cycle.musicAt+times[17];p.tick();
+  expect(pulse).toHaveBeenCalledWith(expect.closeTo(cycle.musicAt+times[17]),true,false);
+  p.pause();p.position=times[17];await p.play();expect(p.cycles[0].count).toBe(4);
+ } finally {p.pause();vi.unstubAllGlobals();}
+});
+
+for (const mode of ['original','practice','fixed'] as const) it(`overlays prelude count-off in ${mode} mode without silence or duplicate downbeats`,async()=>{
+ vi.stubGlobal('AudioContext',Context);vi.stubGlobal('window',{setInterval:()=>1});
+ const prefs={restartMeasure:false,countOff:true};const p=new Player(()=>prefs);
+ try {
+  const {audioMeasures,followAudioTempo,setAudioBarOne,retimeAudio}=await import('../src/audio-practice');
+  const {defaults,preludeCountBeats}=await import('../src/model');
+  const {audioTimeMap}=await import('../src/audio-time-map');
+  const times=[.2,.7,1.18,1.64,2.08,2.5,2.9,3.28,3.64,4.02,4.4,4.78,5.16];
+  let song=setAudioBarOne(followAudioTempo({version:1,id:'intro',title:'Intro',bpm:120,firstBeat:.2,audioName:'a.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[],loops:[],settings:defaults(),audioPractice:{duration:7,beats:4,denominator:4,peaks:[],beatTimes:times},measures:audioMeasures(7,120,.2,4,4)}),3.64);
+  if(mode==='fixed')song=retimeAudio(song,120,3.64,4,4);
+  if(mode==='practice'){song.settings.tempoMode='practice';song.settings.rate=.75;}
+  p.song=song;p.original={duration:7} as AudioBuffer;p.rendered=p.original;
+  p.renderRate=song.settings.rate;p.renderedMap=audioTimeMap(song,7);
+  const pulse=vi.spyOn(p,'pulse');const counts=preludeCountBeats(song);
+  expect(counts).toHaveLength(4);counts.forEach((t,i)=>expect(t).toBeCloseTo(mode==='fixed'?1.64+i*.5:times[4+i]));
+  await p.play();const c=p.cycles[0],ctx=p.ctx as unknown as Context;
+  expect(c.musicAt).toBe(c.at);expect(c.count).toBe(0);
+  expect(ctx.nodes[0].started[0]).toBe(c.at);expect(ctx.nodes[0].started[1]).toBe(0);
+  const expected=counts.map(t=>c.musicAt+p.outputTime(t));
+  expect(c.preludeClicks).toEqual(expected);
+  if(mode==='practice')for(let i=1;i<expected.length;i++)expect(expected[i]-expected[i-1]).toBeCloseTo(60/90);
+  for(const time of expected){ctx.currentTime=time;p.tick();}
+  expect(pulse.mock.calls.filter(v=>v[2])).toEqual(expected.map(t=>[t,false,true]));
+  const entrance=c.musicAt+p.outputTime(song.firstBeat);ctx.currentTime=entrance;p.tick();
+  expect(pulse.mock.calls.filter(v=>Math.abs(v[0]-entrance)<1e-7)).toEqual([[entrance,true,false]]);
+  p.pause();pulse.mockClear();p.position=counts[2]+.01;await p.play();
+  expect(p.cycles[0].musicAt).toBe(p.cycles[0].at);expect(p.cycles[0].preludeClicks).toHaveLength(1);
+  p.pause();prefs.countOff=false;p.position=0;await p.play();
+  expect(p.cycles[0].preludeClicks).toBeUndefined();expect(p.cycles[0].musicAt).toBe(p.cycles[0].at);
+  p.pause();prefs.countOff=true;p.position=0;await p.play(false,false);
+  expect(p.cycles[0].preludeClicks).toHaveLength(4); // seeking/restarting the music preserves its embedded cue
+ }finally{p.pause();vi.unstubAllGlobals();}
+});
