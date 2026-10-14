@@ -171,7 +171,7 @@ filled=no와 other-technical의 기존 조사 결과는 이력에 보존한다. 
 
 ## 근거와 관리
 
-- 상세 조사/버전/재현 결과: [DRUM-NOTATION-SUPPORT-AUDIT.md](DRUM-NOTATION-SUPPORT-AUDIT.md).
+- 상세 조사 보관본은 2026-10-13 사용자 요청으로 삭제했다. 이 문서의 확정 규칙은 유지하며 새 지원 판정에는 별도 재검증이 필요하다.
 - 원본 OSMD 2.1.2, develop `0502732` + fill 패치 `b62a6ca`의 Safari 27 비교. 패치가 필요한 방식은 위 지원 판정에 의존하지 않는다.
 - 재현: `public/qa/drum-notation-audit.html`, `public/qa/rest-sticking-audit.html`.
 - [MusicXML 타악기](https://www.w3.org/2021/06/musicxml40/tutorial/percussion/), [notehead](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/notehead/), [rest](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/rest/).

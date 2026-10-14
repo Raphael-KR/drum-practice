@@ -21,7 +21,7 @@ SCORE_PACKAGE_EXTENSION // ".drumscore"
 
 `manifest.json`의 최상위 `format`은 `drumscore`, `version`은 `1`이다. 다른 버전은 거부한다.
 
-- `song`: 전체 Song. 제목·원제·가수·작사·작곡·마디·박자·음원 시각·가사 위치·마커·반복·재생 설정을 그대로 보존한다. 축약 HTML용 `playbackSong`은 사용하지 않는다.
+- `song`: 전체 Song. 제목·원제·가수·작사·작곡·마디·박자·음원 시각·가사 위치·마커·반복·재생 설정을 그대로 보존한다.
 - `source`, `audio`, `pages`: `{ path, type, size }` 자산 참조. 바이너리는 ZIP 엔트리로 저장하며 base64를 사용하지 않는다.
 - `canonicalXML`: 존재하면 그대로 보존하는 정본 XML 문자열.
 - `otherScores`: 다른 악보 형식의 이름·파트·페이지·영역·마디 연결과 원본 자산. 현재 PDF와 MusicXML 한 쌍까지 지원한다.

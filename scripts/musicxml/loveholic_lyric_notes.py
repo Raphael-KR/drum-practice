@@ -24,7 +24,7 @@ def build(folder, output):
         raise ValueError('Use a fresh output directory')
     if hashlib.sha256((folder/'source.pdf').read_bytes()).hexdigest() != PDF_SHA256:
         raise ValueError('Source digest mismatch')
-    printed = json.loads((folder/'printed-lyrics-review-20261003/printed-measure-lyrics.json').read_text())
+    printed = json.loads((folder/'lyrics/printed-measure-lyrics.json').read_text())
     assert printed['status'] == 'PASS' and printed['sourcePDFSHA256'] == PDF_SHA256
     bars = json.loads((folder/'extracted.json').read_text())
     entries = []

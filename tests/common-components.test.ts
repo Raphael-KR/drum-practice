@@ -4,7 +4,7 @@ import { Blob as NodeBlob } from "node:buffer";
 import { mountPlaybackShell } from "../src/playback-shell";
 import {
   webPlaybackBindings,
-  portablePlaybackBindings,
+  playerPlaybackBindings,
 } from "../src/playback-ui";
 import { iconButton } from "../src/icons";
 import { download } from "../src/download";
@@ -30,7 +30,7 @@ afterEach(() => {
 });
 for (const [host, binding] of [
   ["web", webPlaybackBindings],
-  ["portable", portablePlaybackBindings],
+  ["player", playerPlaybackBindings],
 ] as const)
   it(`${host}: same shell, unique controls, authoring slots retained`, () => {
     document.body.innerHTML =

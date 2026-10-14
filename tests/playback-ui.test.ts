@@ -6,7 +6,7 @@ import {
   transportHTML,
   repeatControlsHTML,
   webPlaybackBindings,
-  portablePlaybackBindings,
+  playerPlaybackBindings,
 } from "../src/playback-ui";
 import { renderMeasure } from "../src/playback-measure";
 import { installUIStandard } from "../src/ui-standard";
@@ -14,7 +14,7 @@ import type { Song } from "../src/model";
 
 for (const [surface, bindings] of [
   ["web", webPlaybackBindings],
-  ["portable", portablePlaybackBindings],
+  ["player", playerPlaybackBindings],
 ] as const) {
   it(`shares transport hierarchy and preserves handlers and state: ${surface}`, () => {
     document.body.innerHTML = `<div id="app"><h1 id="${bindings.title}"></h1><button id="${bindings.tempo}"></button>
@@ -101,7 +101,7 @@ it("renders safe lyrics and a correctly hidden marker from a single measure comp
 });
 
 import { icon } from "../src/icon-svg";
-it("renders every portable action icon without authoring definitions", () => {
+it("renders every player action icon without authoring definitions", () => {
   for (const name of ["screen", "info", "close", "settings", "metronome", "bookmark", "sliders", "start", "repeat", "rewind", "check", "play", "pause"]) {
     const svg=icon(name);
     expect(svg).not.toContain("undefined");

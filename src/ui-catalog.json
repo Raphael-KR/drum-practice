@@ -8,7 +8,7 @@
       "role": "banner",
       "selectors": {
         "web": "header",
-        "portable": "header"
+        "player": "header"
       },
       "name": {
         "ko": "component.header.name",
@@ -25,7 +25,7 @@
       "role": "region",
       "selectors": {
         "web": "#stage",
-        "portable": "#stage"
+        "player": "#stage"
       },
       "name": {
         "ko": "component.score.name",
@@ -42,7 +42,7 @@
       "role": "region",
       "selectors": {
         "web": ".playback-group",
-        "portable": ".playback-group"
+        "player": ".playback-group"
       },
       "name": {
         "ko": "component.playback.name",
@@ -59,7 +59,7 @@
       "role": "group",
       "selectors": {
         "web": ".transport",
-        "portable": ".transport"
+        "player": ".transport"
       },
       "name": {
         "ko": "component.playback.primary.name",
@@ -76,7 +76,7 @@
       "role": "group",
       "selectors": {
         "web": "#repeat-controls",
-        "portable": ".repeat-controls"
+        "player": ".repeat-controls"
       },
       "name": {
         "ko": "component.playback.secondary.name",
@@ -93,7 +93,7 @@
       "role": "",
       "selectors": {
         "web": "#status",
-        "portable": "#status"
+        "player": "#status"
       },
       "name": {
         "ko": "component.footer.name",
@@ -110,7 +110,7 @@
       "role": "",
       "selectors": {
         "web": "#open-settings-dialog",
-        "portable": "#settings"
+        "player": "#settings"
       },
       "name": {
         "ko": "component.settings.name",
@@ -127,7 +127,7 @@
       "role": "",
       "selectors": {
         "web": "#library-button",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.library.name",
@@ -144,7 +144,7 @@
       "role": "",
       "selectors": {
         "web": "#original-tempo",
-        "portable": "#bpm"
+        "player": "#bpm"
       },
       "name": {
         "ko": "component.tempo.name",
@@ -161,7 +161,7 @@
       "role": "",
       "selectors": {
         "web": "#click",
-        "portable": "#click"
+        "player": "#click"
       },
       "name": {
         "ko": "component.metronome.name",
@@ -178,7 +178,7 @@
       "role": "",
       "selectors": {
         "web": "#header-fullscreen",
-        "portable": "#header-fullscreen"
+        "player": "#header-fullscreen"
       },
       "name": {
         "ko": "component.fullscreen.name",
@@ -195,7 +195,7 @@
       "role": "",
       "selectors": {
         "web": "#header-reload",
-        "portable": "#header-reload"
+        "player": "#header-reload"
       },
       "name": {
         "ko": "component.reload.name",
@@ -212,7 +212,7 @@
       "role": "",
       "selectors": {
         "web": "#home",
-        "portable": "#home"
+        "player": "#home"
       },
       "name": {
         "ko": "component.home.name",
@@ -229,7 +229,7 @@
       "role": "",
       "selectors": {
         "web": "#play",
-        "portable": "#play"
+        "player": "#play"
       },
       "name": {
         "ko": "component.play.name",
@@ -246,7 +246,7 @@
       "role": "",
       "selectors": {
         "web": "#jump",
-        "portable": "#rewind"
+        "player": "#rewind"
       },
       "name": {
         "ko": "component.rewind.name",
@@ -263,7 +263,7 @@
       "role": "",
       "selectors": {
         "web": "#goto",
-        "portable": "#rewind-bars"
+        "player": "#rewind-bars"
       },
       "name": {
         "ko": "component.rewindCount.name",
@@ -280,7 +280,7 @@
       "role": "",
       "selectors": {
         "web": "#copy-position",
-        "portable": "#position"
+        "player": "#position"
       },
       "name": {
         "ko": "component.position.name",
@@ -297,7 +297,7 @@
       "role": "",
       "selectors": {
         "web": "#progress-percent",
-        "portable": "#percent"
+        "player": "#percent"
       },
       "name": {
         "ko": "component.progress.name",
@@ -314,7 +314,7 @@
       "role": "",
       "selectors": {
         "web": "#open-marker-dialog",
-        "portable": "#mark"
+        "player": "#mark"
       },
       "name": {
         "ko": "component.mark.name",
@@ -331,7 +331,7 @@
       "role": "",
       "selectors": {
         "web": "#open-sound-dialog",
-        "portable": "#sound"
+        "player": "#sound"
       },
       "name": {
         "ko": "component.sound.name",
@@ -348,7 +348,7 @@
       "role": "",
       "selectors": {
         "web": "#open-loop-dialog",
-        "portable": "#adjust"
+        "player": "#adjust"
       },
       "name": {
         "ko": "component.loop.name",
@@ -365,7 +365,7 @@
       "role": "",
       "selectors": {
         "web": "#quick-stop-loop",
-        "portable": "#loop-off"
+        "player": "#loop-off"
       },
       "name": {
         "ko": "component.loopOff.name",
@@ -382,7 +382,7 @@
       "role": "",
       "selectors": {
         "web": "#quick-markers",
-        "portable": "#markers"
+        "player": "#markers"
       },
       "name": {
         "ko": "component.markers.name",
@@ -399,7 +399,7 @@
       "role": "",
       "selectors": {
         "web": "#view",
-        "portable": "#view"
+        "player": "#view"
       },
       "name": {
         "ko": "component.view.name",
@@ -416,7 +416,7 @@
       "role": "",
       "selectors": {
         "web": "#zoom",
-        "portable": "#zoom"
+        "player": "#zoom"
       },
       "name": {
         "ko": "component.zoom.name",
@@ -433,7 +433,7 @@
       "role": "",
       "selectors": {
         "web": "#loop-a",
-        "portable": "#loop-a"
+        "player": "#loop-a"
       },
       "name": {
         "ko": "component.loopStart.name",
@@ -450,7 +450,7 @@
       "role": "",
       "selectors": {
         "web": "#loop-b",
-        "portable": "#loop-b"
+        "player": "#loop-b"
       },
       "name": {
         "ko": "component.loopEnd.name",
@@ -467,7 +467,7 @@
       "role": "",
       "selectors": {
         "web": "#loop-ab",
-        "portable": "#loop-ab"
+        "player": "#loop-ab"
       },
       "name": {
         "ko": "component.loopStartBeat.name",
@@ -484,7 +484,7 @@
       "role": "",
       "selectors": {
         "web": "#loop-bb",
-        "portable": "#loop-bb"
+        "player": "#loop-bb"
       },
       "name": {
         "ko": "component.loopEndBeat.name",
@@ -501,7 +501,7 @@
       "role": "",
       "selectors": {
         "web": "#music-volume",
-        "portable": "#music-volume"
+        "player": "#music-volume"
       },
       "name": {
         "ko": "component.musicVolume.name",
@@ -518,7 +518,7 @@
       "role": "",
       "selectors": {
         "web": "#click-volume",
-        "portable": "#click-volume"
+        "player": "#click-volume"
       },
       "name": {
         "ko": "component.clickVolume.name",
@@ -535,7 +535,7 @@
       "role": "",
       "selectors": {
         "web": "#rate",
-        "portable": "#tempo"
+        "player": "#tempo"
       },
       "name": {
         "ko": "component.tempoValue.name",
@@ -552,7 +552,7 @@
       "role": "",
       "selectors": {
         "web": "[data-close]",
-        "portable": "button[id$=\"-close\"]"
+        "player": "button[id$=\"-close\"]"
       },
       "name": {
         "ko": "component.close.name",
@@ -569,7 +569,7 @@
       "role": "",
       "selectors": {
         "web": "#prefer-pdf",
-        "portable": "#pdf-view"
+        "player": "#pdf-view"
       },
       "name": {
         "ko": "component.pdf.name",
@@ -586,7 +586,7 @@
       "role": "",
       "selectors": {
         "web": "#note-highlight",
-        "portable": "#highlight"
+        "player": "#highlight"
       },
       "name": {
         "ko": "component.highlight.name",
@@ -603,7 +603,7 @@
       "role": "",
       "selectors": {
         "web": "#auto-fullscreen",
-        "portable": "#fullscreen"
+        "player": "#fullscreen"
       },
       "name": {
         "ko": "component.autoFullscreen.name",
@@ -620,7 +620,7 @@
       "role": "",
       "selectors": {
         "web": "#restart-measure",
-        "portable": "#restart"
+        "player": "#restart"
       },
       "name": {
         "ko": "component.restart.name",
@@ -637,7 +637,7 @@
       "role": "",
       "selectors": {
         "web": "#count-off",
-        "portable": "#countoff"
+        "player": "#countoff"
       },
       "name": {
         "ko": "component.countoff.name",
@@ -654,7 +654,7 @@
       "role": "",
       "selectors": {
         "web": "#open-screen-dialog",
-        "portable": "[data-menu=\"screen\"]"
+        "player": "[data-menu=\"screen\"]"
       },
       "name": {
         "ko": "component.settings.screen.name",
@@ -671,7 +671,7 @@
       "role": "",
       "selectors": {
         "web": "#open-playback-settings",
-        "portable": "[data-menu=\"playback\"]"
+        "player": "[data-menu=\"playback\"]"
       },
       "name": {
         "ko": "component.settings.playback.name",
@@ -688,7 +688,7 @@
       "role": "",
       "selectors": {
         "web": "#open-score-settings",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.settings.score.name",
@@ -705,7 +705,7 @@
       "role": "",
       "selectors": {
         "web": "#open-info-settings",
-        "portable": "[data-menu=\"info\"]"
+        "player": "[data-menu=\"info\"]"
       },
       "name": {
         "ko": "component.settings.info.name",
@@ -722,7 +722,7 @@
       "role": "",
       "selectors": {
         "web": "#manage-edit",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.manage.edit.name",
@@ -739,7 +739,7 @@
       "role": "",
       "selectors": {
         "web": "#manage-files",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.manage.files.name",
@@ -756,7 +756,7 @@
       "role": "",
       "selectors": {
         "web": "#file-xml",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.file.xml.name",
@@ -773,7 +773,7 @@
       "role": "",
       "selectors": {
         "web": "#file-pdf",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.file.pdf.name",
@@ -790,7 +790,7 @@
       "role": "",
       "selectors": {
         "web": "#file-lyrics",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.file.lyrics.name",
@@ -807,7 +807,7 @@
       "role": "",
       "selectors": {
         "web": "#file-audio",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.file.audio.name",
@@ -824,7 +824,7 @@
       "role": "",
       "selectors": {
         "web": "#file-export",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.file.export.name",
@@ -841,7 +841,7 @@
       "role": "",
       "selectors": {
         "web": "#export-selected",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.export.selected.name",
@@ -858,7 +858,7 @@
       "role": "",
       "selectors": {
         "web": "#full-lyrics-dialog",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.lyrics.all.name",
@@ -875,7 +875,7 @@
       "role": "",
       "selectors": {
         "web": "#original-button",
-        "portable": ""
+        "player": ""
       },
       "name": {
         "ko": "component.score.pdf.name",

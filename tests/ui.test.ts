@@ -373,7 +373,8 @@ it("keeps icon controls accessible and updates play and metronome states", async
   expect(document.getElementById("open-settings-dialog")!.getAttribute("aria-label")).toBe("설정");
   expect(document.getElementById("click")!.closest("label")!.previousElementSibling!.id).toBe("original-tempo");
   expect(document.getElementById("fullscreen")).toBeNull();
-  expect(document.getElementById("save-html")!.closest("#backup-dialog")).not.toBeNull();
+  expect(document.getElementById("save-html")).toBeNull();
+  expect(document.querySelector('#export-choices input[value="html"]')).toBeNull();
   expect(document.getElementById("rate")!.closest("#tempo-dialog")).not.toBeNull();
   for (const id of ["tempo-presets", "slower", "faster"]) expect(document.getElementById(id)).toBeNull();
   expect(document.getElementById("jump")!.getAttribute("aria-label")).toContain("되감기");

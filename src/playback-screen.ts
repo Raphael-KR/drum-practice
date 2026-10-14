@@ -68,7 +68,7 @@ import { componentName, installUIStandard, uiText } from "./ui-standard";
 
 export interface PlaybackScreenHost {
   root: HTMLElement;
-  environment: "web" | "portable";
+  environment: "web" | "player";
   preferences: {
     restartId: string;
     countoffId: string;

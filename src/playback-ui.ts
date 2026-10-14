@@ -38,7 +38,7 @@ export const webPlaybackBindings: PlaybackBindings = {
   tempo: "original-tempo",
   tempoInput: "rate",
 };
-export const portablePlaybackBindings: PlaybackBindings = {
+export const playerPlaybackBindings: PlaybackBindings = {
   rewind: "rewind-bars",
   position: "position",
   progress: "percent",

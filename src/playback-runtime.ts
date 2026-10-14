@@ -17,7 +17,7 @@ import {
   replacePlaybackAssets,
   releasePlaybackAssets,
 } from "./playback-assets";
-import { playbackInitial, type PlaybackInitial } from "./playback-export";
+import { playbackInitial, type PlaybackInitial } from "./playback-initial";
 import {
   appInfoHTML,
   selectPlaybackSettings,
@@ -27,7 +27,7 @@ import { createPlaybackScreen } from "./playback-screen";
 import { mountPlaybackShell } from "./playback-shell";
 import {
   playbackButton,
-  portablePlaybackBindings,
+  playerPlaybackBindings,
   scoreStageHTML,
 } from "./playback-ui";
 import { type StaffPosition } from "./practice-staff-layout";
@@ -45,7 +45,7 @@ export interface PlaybackRuntimeOptions {
   onLibrary?: () => void;
   onLoading?: (phase: "screen" | "audio") => void;
 }
-/** Blob-based playback host shared by the library app and self-contained HTML. */
+/** Blob-based playback host for the practice library app. */
 export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   const { root } = options;
   const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
@@ -85,7 +85,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   document.body.classList.add("has-song");
   root.classList.toggle("audio-practice", !!s.audioPractice);
   renderKeepingTopHeader(root,
-    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML()}</section><p id="status" role="status">${i18nText("portable-player.message453")}</p></main>`);
+    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML()}</section><p id="status" role="status">${i18nText("playback.message453")}</p></main>`);
   let management: ReturnType<typeof attachPracticeManagement> | undefined;
   const markerContent = document.createElement("div");
   markerContent.innerHTML = practiceMarkerHTML();
@@ -94,7 +94,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   const { addSettings } = mountPlaybackShell($("app"), {
     showPosition: false,
     ids: {
-      ...portablePlaybackBindings,
+      ...playerPlaybackBindings,
       markers: "quick-markers",
       rewindButton: "rewind",
       mark: "mark",
@@ -182,7 +182,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   player.onprogress = status;
   const playback = createPlaybackScreen({
     root: $("app"),
-    environment: "portable",
+    environment: "player",
     initialLastLoop: s.loops[0],
     preferences: {
       restartId: "restart",
@@ -208,7 +208,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       report: status,
     },
     ids: {
-      ...portablePlaybackBindings,
+      ...playerPlaybackBindings,
       markers: "quick-markers",
       rewindButton: "rewind",
       mark: "mark",
@@ -276,7 +276,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
                   ),
                 )
               )
-                throw Error(i18nText("portable-player.message468"));
+                throw Error(i18nText("playback.message468"));
             }
           : undefined,
     });
@@ -337,7 +337,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     await player.load(data.audio, s);
     options.onLoading?.("screen");
     if (s.measures[0].start >= player.duration)
-      throw Error(i18nText("portable-player.message469"));
+      throw Error(i18nText("playback.message469"));
     ready = true;
     playback.sync();
     playback.renderTrack();

@@ -11,7 +11,7 @@ describe('shared UI standard',()=>{
   expect(componentName('playback.primary')).toBe('재생1바');
   expect(componentName('playback.primary','ko',true)).toBe('재생 및 위치 조절');
  });
- for(const surface of ['web','portable'] as const) it(`groups existing controls without replacing their handlers (${surface})`,()=>{
+ for(const surface of ['web','player'] as const) it(`groups existing controls without replacing their handlers (${surface})`,()=>{
   document.body.innerHTML=`<main id="app"><div id="stage"></div><div class="transport"><button id="home">Home</button></div><section id="repeat-controls" class="repeat-controls"></section><dialog id="settings-dialog"><h2>설정</h2></dialog></main>`;
   const root=document.getElementById('app')!;
   let clicks=0;document.getElementById('home')!.onclick=()=>clicks++;

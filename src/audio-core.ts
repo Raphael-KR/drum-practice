@@ -12,7 +12,6 @@ import {
   type Song,
   type Loop,
 } from "./model";
-import { portableWorkerURL } from "./audio-worker";
 import { createMixLimiterCurve, MIX_INPUT_GAIN, METRONOME_MAX_GAIN } from "./audio-levels";
 export class Player {
   ctx: AudioContext;
@@ -162,12 +161,9 @@ export class Player {
         r = this.original
           .getChannelData(Math.min(1, this.original.numberOfChannels - 1))
           .slice();
-      const portableURL = portableWorkerURL();
-      const worker = portableURL
-        ? new Worker(portableURL)
-        : new Worker(new URL("./stretch-worker.ts", import.meta.url), {
-            type: "module",
-          });
+      const worker = new Worker(new URL("./stretch-worker.ts", import.meta.url), {
+        type: "module",
+      });
       this.worker = worker;
       let result: { left: Float32Array; right: Float32Array } | undefined;
       try {
@@ -194,7 +190,6 @@ export class Player {
         });
       } finally {
         worker.terminate();
-        if (portableURL) URL.revokeObjectURL(portableURL);
         if (this.worker === worker) {
           this.worker = undefined;
           this.cancelRender = undefined;

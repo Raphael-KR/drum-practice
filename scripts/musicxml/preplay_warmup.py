@@ -11,7 +11,7 @@ FIXTURE=Path(__file__).with_name('fixtures')/'preplay_warmup.json'
 BPM,FIRST,SR,TAIL=80,.25,44100,2
 
 def verify(xml,fixture):
-    schema=Path(__file__).resolve().parents[2]/'docs/experiments/musicxml/schema'
+    schema=Path(__file__).resolve().parents[2]/'data/reference/musicxml/schema'
     p=E.XMLParser();p.resolvers.add(Resolver(schema))
     E.XMLSchema(E.parse(str(schema/'musicxml.xsd'),p)).assertValid(E.fromstring(xml))
     root=E.fromstring(xml);bars=root.findall('part[@id="P1"]/measure')

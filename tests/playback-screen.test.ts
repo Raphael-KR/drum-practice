@@ -6,7 +6,7 @@ import type { Song, Loop } from "../src/model";
 import { createPlaybackScreen } from "../src/playback-screen";
 import {
   webPlaybackBindings,
-  portablePlaybackBindings,
+  playerPlaybackBindings,
   transportHTML,
   scoreStageHTML,
 } from "../src/playback-ui";
@@ -45,9 +45,9 @@ afterEach(() => {
     .forEach((fn) => fn());
   vi.unstubAllGlobals();
 });
-function mount(environment: "web" | "portable", alignPDF = false, canonicalXML?: string) {
+function mount(environment: "web" | "player", alignPDF = false, canonicalXML?: string) {
   const ids = {
-    ...(environment === "web" ? webPlaybackBindings : portablePlaybackBindings),
+    ...(environment === "web" ? webPlaybackBindings : playerPlaybackBindings),
     rewindButton: "back",
     mark: "mark",
     sound: "sound",
@@ -150,7 +150,7 @@ function mount(environment: "web" | "portable", alignPDF = false, canonicalXML?:
     root.querySelector<HTMLButtonElement>(`#${id}`)!.click();
   return { screen, p, song, root, ids, input, click, fail, changed, prefs };
 }
-for (const environment of ["web", "portable"] as const) {
+for (const environment of ["web", "player"] as const) {
   it(`${environment}: same transport validates rewind, copies full quarter-beat context and reports progress`, async () => {
     const { screen, p, song, ids, input, click, fail } = mount(environment);
     p.position = song.measures[10].start + 0.3;
@@ -254,7 +254,7 @@ for (const environment of ["web", "portable"] as const) {
   });
 }
 
-for (const environment of ["web", "portable"] as const) {
+for (const environment of ["web", "player"] as const) {
   it(`${environment}: PDF uses the shared staff layout rather than crop scaling`, () => {
     const {root,song,screen} = mount(environment,true);
     song.scoreFormat="pdf";
@@ -268,7 +268,7 @@ for (const environment of ["web", "portable"] as const) {
 }
 
 it("fixed control board stays visible while shortcuts and repeat presets are used", () => {
-  const {root,p,song,click,ids,input,screen} = mount("portable");
+  const {root,p,song,click,ids,input,screen} = mount("player");
   const preset = root.querySelector<HTMLButtonElement>('[data-radius="1"]')!;
   p.position = song.measures[20].start;
   preset.click();
@@ -299,7 +299,7 @@ it("fixed control board stays visible while shortcuts and repeat presets are use
   expect(root.querySelector("#loop-dialog")).toBeNull();
 });
 
-for (const environment of ["web", "portable"] as const) {
+for (const environment of ["web", "player"] as const) {
   for (const radius of [1, 2, 3, 4]) {
     it(`${environment}: play starts active radius ${radius} at its loop beginning`, async () => {
       const {root, p, song, click} = mount(environment);
@@ -333,7 +333,7 @@ for (const environment of ["web", "portable"] as const) {
   });
 }
 
-for (const environment of ["web", "portable"] as const) {
+for (const environment of ["web", "player"] as const) {
   for (const lower of [false, true]) {
     it(`${environment}: play preserves the selected ${lower ? 'lower' : 'upper'} row`, async () => {
       const {root, p, song, screen, click} = mount(environment);
@@ -373,7 +373,7 @@ it('measure counter seeks to the selected measure start, including the last meas
 it("shows recording estimates in app info and resets audio to exactly 1 after manual practice rate", async () => {
   const metadata = { version: 1, scoreBpm: 136, bpmEstimate: 136.232, firstBeatEstimateSeconds: .193, audioSHA256: "a".repeat(64), method: "signal", status: "estimate" };
   const xml = `<score-partwise><identification><miscellaneous><miscellaneous-field name="drum-practice:recording-tempo:v1">${JSON.stringify(metadata)}</miscellaneous-field></miscellaneous></identification></score-partwise>`;
-  const { screen, p, song, click, ids } = mount("portable", false, xml);
+  const { screen, p, song, click, ids } = mount("player", false, xml);
   song.bpm = 136;
   click(ids.tempo);
   expect(document.getElementById("recording-tempo-info")!.textContent).toContain("136.232");
@@ -398,7 +398,7 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
   expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("false");
 });
-for (const environment of ['web','portable'] as const) it(`${environment}: vertical arrows select the same column in adjacent rows without jumping at missing cells`, () => {
+for (const environment of ['web','player'] as const) it(`${environment}: vertical arrows select the same column in adjacent rows without jumping at missing cells`, () => {
  const {song,p,screen,ids}=mount(environment);song.settings.view='rows';screen.renderTrack();
  const selected=()=>Number((document.getElementById(ids.progress) as HTMLInputElement).value)-1;
  const key=(key:string)=>{const e=new KeyboardEvent('keydown',{key,cancelable:true});document.dispatchEvent(e);screen.frame();return e;};
@@ -416,7 +416,7 @@ for (const environment of ['web','portable'] as const) it(`${environment}: verti
  screen.seek(song.measures[105].start);key('ArrowDown');expect(selected()).toBe(109);
  song.settings.view='ribbon';expect(key('ArrowUp').defaultPrevented).toBe(false);expect(selected()).toBe(109);
 });
-for (const environment of ['web','portable'] as const) it(`${environment}: Enter registers a range while arrow keys continue navigating between endpoints`,()=>{
+for (const environment of ['web','player'] as const) it(`${environment}: Enter registers a range while arrow keys continue navigating between endpoints`,()=>{
  const {p,song,screen,root,ids}=mount(environment);
  const selected=()=>Number((document.getElementById(ids.progress) as HTMLInputElement).value)-1;song.settings.view='rows';screen.renderTrack();
  const key=(key:string)=>{document.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));screen.frame();};
@@ -425,7 +425,7 @@ for (const environment of ['web','portable'] as const) it(`${environment}: Enter
  key('Enter');expect(song.loops.at(-1)).toMatchObject({start:song.measures[1].start,end:song.measures[6].end});
  expect(root.querySelector('#loop-slots')!.textContent).toContain('2~7');
 });
-for(const environment of ['web','portable'] as const)it(`${environment}: Latin M and Korean physical M both toggle the current measure marker`,()=>{
+for(const environment of ['web','player'] as const)it(`${environment}: Latin M and Korean physical M both toggle the current measure marker`,()=>{
  const {p,song,screen}=mount(environment);song.markers=[];song.markerSlots=[];p.position=song.measures[4].start+.1;
  const key=(key:string,isComposing=false)=>{document.dispatchEvent(new KeyboardEvent('keydown',{key,code:'KeyM',isComposing,cancelable:true}));screen.frame();};
  key('m');expect(song.markers).toHaveLength(1);expect(song.markers[0].time).toBe(song.measures[4].start);
@@ -434,7 +434,7 @@ for(const environment of ['web','portable'] as const)it(`${environment}: Latin M
  key('Process',true);expect(song.markers).toHaveLength(0);
 });
 
-for(const environment of ['web','portable'] as const)for(const view of ['ribbon','rows'] as const)it(`${environment} ${view}: selection leaves paused playback and shading fixed, then Play starts selected bar`,async()=>{
+for(const environment of ['web','player'] as const)for(const view of ['ribbon','rows'] as const)it(`${environment} ${view}: selection leaves paused playback and shading fixed, then Play starts selected bar`,async()=>{
  const {p,song,screen,root,ids}=mount(environment);song.settings.view=view;screen.renderTrack();
  const paused=song.measures[4].start+.3;screen.seek(paused);screen.frame();
  const shade=()=>Array.from(root.querySelectorAll<HTMLElement>('.measure')).map(e=>e.style.getPropertyValue('--played'));
@@ -448,7 +448,7 @@ for(const environment of ['web','portable'] as const)for(const view of ['ribbon'
  await screen.toggle();expect(p.playing).toBe(true);expect(p.position).toBe(song.measures[5].start);
 });
 
-for(const environment of ['web','portable'] as const)for(const view of ['rows','ribbon'] as const)it(`${environment} ${view}: saved ranges remain marked without active repeat and disappear after deletion`,()=>{
+for(const environment of ['web','player'] as const)for(const view of ['rows','ribbon'] as const)it(`${environment} ${view}: saved ranges remain marked without active repeat and disappear after deletion`,()=>{
  const {p,song,screen,root}=mount(environment);song.settings.view=view;
  song.loops=[{id:'saved-range',name:'2~4',start:song.measures[1].start,end:song.measures[3].end}];song.repeatSlots=['saved-range'];p.loop=undefined;
  screen.renderTrack();screen.frame();
@@ -457,7 +457,7 @@ for(const environment of ['web','portable'] as const)for(const view of ['rows','
  document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',cancelable:true}));screen.frame();expect(marked()).toEqual([1,2,3]);
  song.loops=[];song.repeatSlots=[];screen.frame();expect(marked()).toEqual([]);
 });
-for(const environment of ['web','portable'] as const)it(`${environment}: range buttons jump from keyboard selection and delete at the selected start measure`,()=>{
+for(const environment of ['web','player'] as const)it(`${environment}: range buttons jump from keyboard selection and delete at the selected start measure`,()=>{
  const {p,song,screen,root,ids}=mount(environment);
  song.loops=[{id:'range',name:'6~8',start:song.measures[5].start,end:song.measures[7].end}];song.repeatSlots=['range'];screen.renderLists();
  const key=(key:string)=>{document.dispatchEvent(new KeyboardEvent('keydown',{key,cancelable:true}));screen.frame();};
@@ -467,7 +467,7 @@ for(const environment of ['web','portable'] as const)it(`${environment}: range b
  root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();screen.frame();expect(song.loops).toHaveLength(0);expect(p.loop).toBeUndefined();
 });
 
-for(const environment of ['web','portable'] as const)it(`${environment}: entering range selection preserves the browsed two-row viewport and score DOM`,()=>{
+for(const environment of ['web','player'] as const)it(`${environment}: entering range selection preserves the browsed two-row viewport and score DOM`,()=>{
  const {song,screen,root,p}=mount(environment);song.settings.view='rows';screen.renderTrack();screen.frame();
  const stage=root.querySelector<HTMLElement>('#stage')!,first=root.querySelector('.measure');stage.scrollTop=728;
  root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();screen.frame();
@@ -475,7 +475,7 @@ for(const environment of ['web','portable'] as const)it(`${environment}: enterin
  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));screen.frame();expect(stage.scrollTop).toBe(728);
 });
 
-for(const environment of ['web','portable'] as const)it(`${environment}: paused double clicks register inclusive endpoints without seeking or playing`,()=>{
+for(const environment of ['web','player'] as const)it(`${environment}: paused double clicks register inclusive endpoints without seeking or playing`,()=>{
  vi.useFakeTimers();const {song,screen,root,p}=mount(environment);screen.renderTrack();screen.frame();
  const double=(index:number)=>{for(let i=0;i<2;i++)for(const type of ['pointerdown','pointerup']){const e=new MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:100,clientY:100});Object.assign(e,{pointerId:1,pointerType:'mouse',isPrimary:true});root.querySelector(`[data-index="${index}"]`)!.dispatchEvent(e);}};
  double(5);expect(song.loops).toHaveLength(0);expect(root.querySelector('#loop-slots')!.textContent).toContain('6~?');expect(p.position).toBe(0);
@@ -484,7 +484,7 @@ for(const environment of ['web','portable'] as const)it(`${environment}: paused 
  double(15);document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));expect(song.loops).toHaveLength(2);vi.useRealTimers();
 });
 
-for (const environment of ['web','portable'] as const) for (const pointerType of ['mouse','touch']) for (const view of ['ribbon','rows'] as const)
+for (const environment of ['web','player'] as const) for (const pointerType of ['mouse','touch']) for (const view of ['ribbon','rows'] as const)
 it(`${environment}/${view}: one ${pointerType} tap plays the selected measure, different measures only select`, async () => {
   vi.useFakeTimers();
   try {
@@ -497,7 +497,7 @@ it(`${environment}/${view}: one ${pointerType} tap plays the selected measure, d
     tap(4);await vi.advanceTimersByTimeAsync(300);expect(p.play).toHaveBeenCalledTimes(2);expect(p.position).toBe(song.measures[4].start);
   } finally { vi.useRealTimers(); }
 });
-for(const environment of ['web','portable'] as const) it(`${environment}: selected taps during Enter range entry cannot start playback`, async()=>{
+for(const environment of ['web','player'] as const) it(`${environment}: selected taps during Enter range entry cannot start playback`, async()=>{
   vi.useFakeTimers();
   try {
     const {root,p,screen}=mount(environment);screen.renderTrack();
@@ -509,7 +509,7 @@ for(const environment of ['web','portable'] as const) it(`${environment}: select
   } finally { vi.useRealTimers(); }
 });
 
-for(const environment of ['web','portable'] as const) it(`${environment}: double clicking the already selected measure registers a range, never plays`,()=>{
+for(const environment of ['web','player'] as const) it(`${environment}: double clicking the already selected measure registers a range, never plays`,()=>{
   vi.useFakeTimers();
   try {
     const {root,p,song}=mount(environment);song.loops=[];song.repeatSlots=[];
@@ -523,7 +523,7 @@ for(const environment of ['web','portable'] as const) it(`${environment}: double
 });
 
 it("audio uses common waveform navigation, rows and playback frame without score assets", () => {
-  const {screen,song,p,root,fail}=mount("portable");
+  const {screen,song,p,root,fail}=mount("player");
   Object.assign(song,{bpm:120,firstBeat:.2,pageCount:0,pdfName:"",regions:[],scoreFormat:undefined,audioPractice:{duration:12,beats:4,denominator:4,peaks:[.2,.6,1]},measures:audioMeasures(12,120,.2,4,4)});
   screen.renderTrack();screen.sync();
   expect(root.querySelectorAll('.audio-measure').length).toBe(6);
@@ -578,7 +578,7 @@ it('waveform native touch scrolling and inertia preserve playback position and s
  expect(p.position).toBe(3.2);expect(seek).not.toHaveBeenCalled();
 });
 
-for (const environment of ["web", "portable"] as const) it(`${environment}: BPM conversion reports inside the tempo dialog and recovers after failure`, async () => {
+for (const environment of ["web", "player"] as const) it(`${environment}: BPM conversion reports inside the tempo dialog and recovers after failure`, async () => {
   const { screen, p, root } = mount(environment);
   const notice = root.querySelector<HTMLElement>("#tempo-status")!;
   p.setRate.mockImplementationOnce(async (_rate, _original, report) => {

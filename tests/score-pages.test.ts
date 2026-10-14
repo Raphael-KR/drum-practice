@@ -1,12 +1,12 @@
 import { it, expect } from "vitest";
 import { compressSVG, displayPage, SVG_GZIP } from "../src/score-pages";
-import { packSong, unpackSong } from "../src/portable";
+import { packSong, unpackSong } from "../src/record-serialization";
 import { readFileSync } from "node:fs";
 import { saveRecord, allRecords } from "../src/storage";
 import "fake-indexeddb/auto";
 const svg =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text>가사</text></svg>';
-it("compresses SVG losslessly through storage and portable packing", async () => {
+it("compresses SVG losslessly through storage and backup serialization", async () => {
   const page = await compressSVG(svg);
   expect(page.type).toBe(SVG_GZIP);
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));

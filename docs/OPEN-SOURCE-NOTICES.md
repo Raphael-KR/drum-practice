@@ -2,7 +2,7 @@
 
 ## 배포물의 표시
 
-설정 > 정보 > 오픈소스 라이선스에서 설치 버전, 라이선스, 저작권/면책을 포함한 전문, 프로젝트 소스 링크를 확인한다. 내용은 번들에 포함하므로 내보낸 HTML에서도 오프라인으로 읽을 수 있다. SoundTouchJS 패키지의 비압축 dist/soundtouch.js도 저장할 수 있다.
+설정 > 정보 > 오픈소스 라이선스에서 설치 버전, 라이선스, 저작권/면책을 포함한 전문, 프로젝트 소스 링크를 확인한다. 내용은 앱 번들에 포함한다. SoundTouchJS 패키지의 비압축 dist/soundtouch.js도 저장할 수 있다.
 
 직접 의존성:
 - OpenSheetMusicDisplay 2.1.2: BSD-3-Clause
@@ -14,7 +14,7 @@
 
 scripts/third-party.mjs가 설치된 런타임 의존성을 따라 패키지 LICENSE/COPYING/NOTICE 전문을 수집한다. 별도 파일이 없는 경우 README의 라이선스 절을 보존한다. OSMD의 VexFlow 등 하위 의존성과 PDF.js 동봉 폰트/CMap/디코더 고지도 포함한다. 추가 고지는 사용 여부보다 넓게 보존할 수 있다. 개발 도구만의 의존성은 대상이 아니다.
 
-pretest 및 portable 빌드에서 생성한다. 라이선스 원문을 찾지 못하면 빌드가 실패한다. 생성 JSON은 Git에서 제외하며 앱 코드에 HTML로 삽입하지 않고 textContent로 표시한다. 기존 portable-licenses 데이터와 법적 주석도 보존한다.
+pretest, 개발 서버 시작 및 앱 빌드에서 생성한다. 라이선스 원문을 찾지 못하면 빌드가 실패한다. 생성 JSON은 Git에서 제외하며 앱 코드에 HTML로 삽입하지 않고 textContent로 표시한다. 번들의 법적 주석도 보존한다.
 
 ## 범위와 외부 배포 확인 항목
 

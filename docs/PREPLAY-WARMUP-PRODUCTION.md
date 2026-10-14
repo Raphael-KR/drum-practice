@@ -1,8 +1,22 @@
 # 시작전 손플기 — 독립 손 준비 연습곡
 
+## 현재 폴더 구성
+
+기준 경로: `data/production/preplay-warmup/`.
+
+| 폴더 | 보관 내용 |
+| --- | --- |
+| `source/` | 작곡 데이터, MIDI 이벤트, 원본 MusicXML, MIDI |
+| `audio/` | SoCal WAV·MP3, 음원 생성 기록 |
+| `final/` | 가수란을 정정한 최종 MusicXML·drumscore |
+
+2026-10-13 폴더 이름을 정리하고 이전 `package-02`를 삭제했다. 최종 폴더의 중복 MIDI·MP3는 제거했다. MIDI는 source, 음원은 audio에 하나씩 보관한다. 아래 제작 차수 이름은 과거 이력이다. 음원 생성 기록의 입력 경로는 당시 경로를 보존한다.
+
+> 2026-10-13 정리: 최신 제작 파일은 `data/production/preplay-warmup/final/`에 보존했다. 아래 과거 실험 경로·보고서·초판 보존 기록은 당시 이력이다. 별도로 보존한 원본 외 실험 자료는 삭제했으며, 과거 검사 통과는 이번 정리 후 재검사를 뜻하지 않는다.
+
 ## 현재 결과 — 가수란 정정 (2026-10-06)
 
-사용자의 직접 정정에 따라 **artist=SoCal 드럼킷**. 최신 파일은 `docs/experiments/preplay-warmup-20261006/final-02/`이며 final-01은 초판으로 보존한다. MusicXML의 `identification/creator type="artist"`, 패키지 Song.artist 및 내장 canonicalXML/source를 일치시켰다.
+사용자의 직접 정정에 따라 **artist=SoCal 드럼킷**. 최신 파일은 `data/production/preplay-warmup/final/`이다. 초판 보관본은 삭제했다. MusicXML의 `identification/creator type="artist"`, 패키지 Song.artist 및 내장 canonicalXML/source를 일치시켰다.
 
 - MusicXML SHA256: `dbfade6bd24f3f11b21ff29b2a1c0d29c41b20b17087afbbf9d2c145bdd8634d`
 - 패키지 SHA256: `8994b17b75385fd0fc46ebf954506ef352297c05b51f5581160fa260a59e0c04`
@@ -86,7 +100,7 @@ S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음
 
 ## 재제작 경로
 
-소스는 `scripts/musicxml/preplay_warmup.py`, 작곡 fixture `scripts/musicxml/fixtures/preplay_warmup.json`, 음원 `scripts/musicxml/render_socal_warmup.py`, 패키지 `scripts/musicxml/preplay_warmup_package.mjs`, 수신기 `scripts/musicxml/preplay_warmup_evidence_server.py`다. Python은 lxml/numpy가 있는 `/Users/raphael/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3`를 사용한다. 각 CLI의 `--out`은 항상 새 폴더여야 한다. 음원은 `--xml`과 `--events` 모두 지정한다. 패키지 helper의 입력 경로는 현재 검증한 composition-03/socal-final-01이며, 새 변형에서는 검증된 새 입력으로 바꾼다. Vite localhost5173과 localhost5191 수신기를 사용하고 승인된 별도 탭에서 helper를 호출한다. 기존의192/336타격용 generator/renderer 가드를 제거하지 않는다.
+소스는 `scripts/musicxml/preplay_warmup.py`, 작곡 fixture `scripts/musicxml/fixtures/preplay_warmup.json`, 음원 `scripts/musicxml/render_socal_warmup.py`, 패키지 `scripts/musicxml/preplay_warmup_package.mjs`, 수신기 `scripts/musicxml/preplay_warmup_evidence_server.py`다. Python은 lxml/numpy가 있는 `/Users/raphael/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3`를 사용한다. 각 CLI의 `--out`은 항상 새 폴더여야 한다. 음원은 `--xml`과 `--events` 모두 지정한다. 패키지 helper의 입력 경로는 현재 source/audio이며, 새 변형에서는 검증된 새 입력으로 바꾼다. Vite localhost5173과 localhost5191 수신기를 사용하고 승인된 별도 탭에서 helper를 호출한다. 기존의192/336타격용 generator/renderer 가드를 제거하지 않는다.
 
 ## 개발 인계
 

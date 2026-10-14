@@ -211,7 +211,7 @@ def main():
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     schema_path = (
-        Path(__file__).resolve().parents[2] / "docs/experiments/musicxml/schema"
+        Path(__file__).resolve().parents[2] / "data/reference/musicxml/schema"
     )
     parser = E.XMLParser(no_network=True)
     parser.resolvers.add(Resolver(schema_path))

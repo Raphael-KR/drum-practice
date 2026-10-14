@@ -71,7 +71,7 @@ def read_events(xml):
     return out
 
 def verify(xml,fixture):
-    schema=Path(__file__).resolve().parents[2]/'docs/experiments/musicxml/schema';parser=E.XMLParser();parser.resolvers.add(Resolver(schema));E.XMLSchema(E.parse(str(schema/'musicxml.xsd'),parser)).assertValid(E.fromstring(xml))
+    schema=Path(__file__).resolve().parents[2]/'data/reference/musicxml/schema';parser=E.XMLParser();parser.resolvers.add(Resolver(schema));E.XMLSchema(E.parse(str(schema/'musicxml.xsd'),parser)).assertValid(E.fromstring(xml))
     bars=read_events(xml);assert len(bars)==fixture['expected']['measures'];counts=Counter();hands=Counter();index=0
     for s in fixture['sections']:
         for pattern in s['patterns']:

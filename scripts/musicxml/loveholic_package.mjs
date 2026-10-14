@@ -9,7 +9,7 @@ import { defaults, validateSong } from "/src/model.ts";
 import { displayPage } from "/src/score-pages.ts";
 import { projectLyrics } from "/src/lyric-score.ts";
 
-const ROOT = "/@fs/Users/raphael/Playground/drum-practice/docs/experiments/loveholic-20261002/";
+const ROOT = "/@fs/Users/raphael/Playground/drum-practice/data/production/loveholic/";
 const getBlob = async (name, type) => new Blob([await (await fetch(ROOT + name)).arrayBuffer()], { type });
 const getJSON = async name => (await fetch(ROOT + name)).json();
 const base64 = async blob => {
@@ -84,12 +84,12 @@ export async function refresh({ packageName, evidencePort = 5187 }) {
   return status;
 }
 
-export async function build({ sourceName = "loveholic.musicxml", printedLyricsName, noteLyricsName, evidencePort = 5186 } = {}) {
+export async function build({ sourceName = "source/loveholic.musicxml", printedLyricsName, noteLyricsName, evidencePort = 5186 } = {}) {
   if (printedLyricsName && noteLyricsName) throw Error("Choose one printed lyric representation");
   const [provenance, alignment, bars, cues, cropSystems, pdf, audio, source] = await Promise.all([
-    getJSON("provenance.json"), getJSON("audio-alignment.json"), getJSON("extracted.json"), getJSON("printed-lyric-cues.json"),
-    getJSON("pdf-crop-systems.json"),
-    getBlob("source.pdf", "application/pdf"), getBlob("source.mp3", "audio/mpeg"),
+    getJSON("source/provenance.json"), getJSON("audio/audio-alignment.json"), getJSON("source/extracted.json"), getJSON("source/printed-lyric-cues.json"),
+    getJSON("source/pdf-crop-systems.json"),
+    getBlob("source/source.pdf", "application/pdf"), getBlob("audio/source.mp3", "audio/mpeg"),
     getBlob(sourceName, "application/vnd.recordare.musicxml+xml"),
   ]);
   if (await hash(pdf) !== provenance.pdf_sha256 || await hash(audio) !== provenance.audio_sha256) throw Error("Source digest mismatch");

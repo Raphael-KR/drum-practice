@@ -21,7 +21,7 @@
 
 - 1차: 기존 검출기를 PDF에 적용하면 123개 중 5개에서 실패. 오선의 인접 픽셀 간격을 4배해 누적되는 반올림 오차를 발견했다.
 - 2차: 오선 전체 폭으로 간격을 구해 4개를 해결. 좁은 103마디는 빔/음표 때문에 실패하여 동일 줄 전체 폭을 사용하고 결과를 캐시했다. 123/123 검출.
-- 3차: 자산 준비 후에도 화면에 차이가 남음. `playback-screen.ts`의 두 곳에서도 MusicXML만 정렬하는 조건이 남아 있었다. 공통 화면 조립부까지 수정하고 web/portable × 한줄/두줄 회귀 검사를 추가했다.
+- 3차: 자산 준비 후에도 화면에 차이가 남음. `playback-screen.ts`의 두 곳에서도 MusicXML만 정렬하는 조건이 남아 있었다. 공통 화면 조립부까지 수정하고 web/player × 한줄/두줄 회귀 검사를 추가했다.
 - PDF는 줄별 crop 높이가 아니라 검출한 오선 간격으로 배율을 정한다. 모든 원본 영역을 포함하는 공통 위/아래 여백을 계산한다. 검출 실패 시 전체 PDF를 기존 crop 방식으로 표시하여 일부만 다른 배율이 되는 일을 피한다.
 - 실제 Loveholic123마디 계산 검사: 오선 간격8.50746px 동일, 기준선75.22388px 동일, 영역 잘림0(250px셀/150px높이 기준). 벡터 원본32줄과 검출 top 오차 최대1.62 원본 이미지px. 래스터 오차를 0으로 주장하지 않는다.
 - Safari 응답형 디자인 모드의 iPad mini 프리셋(1133×744, 실제 페이지1130×750)을 확인. PDF 한줄/두줄, 가사 포함, 재생0:14→0:23 및 정지, 화면 가로 넘침 없음 확인. screenshots `review-pdf-ipad-responsive-final.png`, `review-pdf-rows.png`.
@@ -36,7 +36,7 @@
 | 막힌 부분 | 해결과 재발 방지 |
 | --- | --- |
 | PDF 5마디 오선 검출 실패 | 인접 선 간격의 반올림 오차가 누적됐다. 전체 오선 간격으로 추정하고, 좁은 마디는 같은 줄 영역을 합쳐 검출했다. `tests/staff-geometry.test.ts`의 subpixel 검사와 실제 전곡 검출 수를 함께 확인한다. 다른 PDF에서도 123/123을 보장한다고 해석하지 않는다. |
-| 자산 검출 성공 후에도 화면 배율이 그대로 | 자산 준비만 수정하고 화면 조립부 두 곳의 MusicXML 조건을 놓쳤다. `preparePlaybackAssets → createPlaybackScreen → scoreLayout/measureWidth` 호출 경로를 끝까지 추적한다. `tests/playback-screen.test.ts`에서 web/portable 모두 PDF 공통 배율을 사용하는지 검사하고 한줄·두줄을 실제 화면에서 확인한다. |
+| 자산 검출 성공 후에도 화면 배율이 그대로 | 자산 준비만 수정하고 화면 조립부 두 곳의 MusicXML 조건을 놓쳤다. `preparePlaybackAssets → createPlaybackScreen → scoreLayout/measureWidth` 호출 경로를 끝까지 추적한다. `tests/playback-screen.test.ts`에서 web/player 모두 PDF 공통 배율을 사용하는지 검사하고 한줄·두줄을 실제 화면에서 확인한다. |
 | 오선 정렬 과정에서 인쇄 가사 잘림 위험 | 고정 15간격 프레임을 PDF에 강제하지 않고 원본 crop 전체를 포함하는 공통 프레임을 계산했다. `tests/practice-staff-layout.test.ts`에서 가사 포함 영역과 검출 불가 시 전체 fallback을 검사한다. 배율 통일을 위해 원본 내용을 자르지 않는다. |
 | PDF 검출 추가 후 테스트 실패 | canvas mock에 새로 호출하는 `getImageData`가 없었다. 테스트 환경을 보완하고 제작앱 명칭·버전 기대값을 실제 앱별 정의에 연결했다. 제품 코드 실패와 mock/기대값 실패를 분리해 확인한다. |
 | 대량 병렬 테스트에서 저장 검사 timeout | 70 worker 실행에서 발생하고 4 worker 전체 실행은 통과했다. 자원 경합은 추정이며 원인 확정으로 기록하지 않는다. 재현 시 worker 수·실행 로그를 함께 보존하고 `npx vitest run --maxWorkers=4`로 전체 결과를 확인한다. timeout 확대만으로 해결했다고 하지 않는다. |

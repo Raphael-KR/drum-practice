@@ -6,7 +6,7 @@ vi.mock('../src/audio-practice-setup', () => ({setupAudioPractice:vi.fn()}));
 vi.mock("../src/help", () => ({ installHelp: vi.fn() }));
 vi.mock("../src/playback-runtime", () => ({ mountPlaybackRuntime: vi.fn() }));
 vi.mock("../src/score-package", () => ({ readScorePackage: vi.fn() }));
-vi.mock("../src/playback-export", () => ({ playbackInitial: {} }));
+vi.mock("../src/playback-initial", () => ({ playbackInitial: {} }));
 vi.mock("../src/practice-library", () => ({
   listPracticeRecords: vi.fn(async () => []),
   removePracticeRecord: vi.fn(), loadPracticeRecord: vi.fn(),
@@ -24,7 +24,7 @@ function deferred<T>() {
   const promise = new Promise<T>(r => { resolve = r; });
   return { promise, resolve };
 }
-it("ignores stale list and archive reads when focus refreshes overlap", async () => {
+it("ignores stale list reads when focus refreshes overlap", async () => {
   document.body.innerHTML = '<div id="app"></div>';
   const { showLibrary } = await import("../src/player-app");
   await showLibrary();
@@ -107,7 +107,7 @@ it("shows download percentages on the bundled button and restores it after failu
   expect(button.hasAttribute("aria-busy")).toBe(false);
 });
 
-it("shows the empty hint only when no saved, bundled or restorable cards exist", async () => {
+it("shows the empty hint when no saved or bundled cards exist", async () => {
   const { showLibrary } = await import("../src/player-app");
   const { default: bundled } = await import("../src/bundled-scores.json");
   vi.mocked(listPracticeRecords).mockResolvedValue([]);
@@ -160,7 +160,7 @@ it("clears previous errors on retry, reports package/storage causes and stays si
   expect(document.body.textContent).not.toContain("저장되었습니다");
 });
 
-it("keeps basic exercises in their own section before and after import, including restore actions", async () => {
+it("keeps basic exercises in their own section before and after import without recovery controls", async () => {
   const { showLibrary } = await import("../src/player-app");
   const { default: bundled } = await import("../src/bundled-scores.json");
   const basic = bundled.find(s => "category" in s && s.category === "basic")!;
@@ -199,7 +199,7 @@ it("keeps basic exercises in their own section before and after import, includin
   }
 });
 
-it("hides retired 16-bar records and archives without affecting unrelated same-title scores", async () => {
+it("hides retired 16-bar records without affecting unrelated same-title scores", async () => {
   const { showLibrary } = await import("../src/player-app");
   const { default: bundled } = await import("../src/bundled-scores.json");
   const basic = bundled.find(s => s.id === "tom-moving-video-v2")!;
@@ -216,7 +216,7 @@ it("hides retired 16-bar records and archives without affecting unrelated same-t
   expect(document.querySelector("#personal-practice-records")!.textContent).not.toContain(basic.title);
 });
 
-it("keeps the warmup first with saved scores and archives and offers no old 16-bar download", async () => {
+it("keeps the warmup first with saved and bundled scores and offers no old 16-bar download", async () => {
   const { showLibrary } = await import("../src/player-app");
   const record = (id: string, title: string) => ({ song: { id, title } }) as any;
   vi.mocked(listPracticeRecords).mockResolvedValue([record("tom-moving-video-v2", "Tom"), record("preplay-hand-warmup-v1", "시작전 손플기")]);

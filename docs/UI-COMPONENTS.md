@@ -28,9 +28,9 @@
 | progress | 곡 진행률 | 곡 진행률 | Song progress | playback.primary |
 | mark | 현재 마디 마킹 | 현재 마디 마킹 | Mark current measure | playback.primary |
 | sound | 소리 | 소리 | Sound | playback.primary |
-| loop | 반복 구간 조정 | 반복 구간 조정 | Adjust loop | playback.secondary |
+| loop | 구간 반복 | 반복 켜기·끄기 | Adjust loop | playback.secondary |
 | loopOff | 반복 해제 | 반복 해제 | Turn loop off | playback.secondary |
-| markers | 최근 마커 3개 | 최근 마커 3개 | Three recent markers | playback.secondary |
+| markers | 마커 버튼 5개 | 마커 버튼 5개 | Three recent markers | playback.secondary |
 | view | 악보 스타일 | 악보 스타일 | Score layout | settings |
 | zoom | 악보 크기 | 악보 크기 | Score size | settings |
 | loopStart | 시작 마디 | 시작 마디 | Loop start measure | loop |

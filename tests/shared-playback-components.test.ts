@@ -161,7 +161,7 @@ it("frame applies shared loop boundaries, progress and native viewport rules", (
     ribbon.querySelector('[data-index="1"]')!.classList.contains("active"),
   ).toBe(true);
 });
-it("marker slots resolve the same measure from web IDs and portable indexes", () => {
+it("marker slots resolve the same measure from web IDs and player indexes", () => {
   const s = song();
   s.markers = [{ id: "m", name: "test", time: s.measures[8].start + 0.1 }];
   for (const byIndex of [false, true]) {
@@ -211,8 +211,8 @@ it("both entry points mount the single screen owner", () => {
   }
 });
 
-it("portable switch visibility uses the shared component selector", () => {
-  const source = readFileSync("src/portable-player.ts", "utf8");
+it("player switch visibility uses the shared component selector", () => {
+  const source = readFileSync("src/playback-runtime.ts", "utf8");
   expect(source).not.toContain('closest<HTMLElement>(".setting")');
   document.body.innerHTML = settingsSwitch(
     "highlight",

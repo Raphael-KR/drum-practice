@@ -41,7 +41,7 @@ def check(folder):
     assert [b['number'] for b in bars if b['section']]==[1,21,37,53,63,80,96,112]
     assert [b['number'] for b in bars if b['wedges']]==[36,62,79,95,119]
     path=folder/'loveholic.musicxml'
-    schema=Path('docs/experiments/musicxml/schema/musicxml.xsd')
+    schema=Path('data/reference/musicxml/schema/musicxml.xsd')
     audit=verify_musicxml(bars,path,schema)
     assert (audit['accents'],audit['open_actions'],audit['close_actions'],audit['half_muted'])==(9,36,1,20)
     crops=json.loads((folder/'pdf-crop-systems.json').read_text())

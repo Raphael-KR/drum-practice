@@ -3,7 +3,7 @@ import {it,expect} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {correctMeasureFiveRests} from '../src/score-rest-correction';
 it('separates bar 5 rests without changing musical events or other measures',()=>{
- const original=readFileSync('public/demo/qa/musicxml-candidate.musicxml','utf8');
+ const original=readFileSync('data/reference/test-fixtures/musicxml-candidate.musicxml','utf8');
  const fixed=correctMeasureFiveRests(original);expect(fixed.changed).toBe(true);
  const a=new DOMParser().parseFromString(original,'application/xml');const b=new DOMParser().parseFromString(fixed.text,'application/xml');
  const rests=Array.from(b.querySelectorAll('part[id="P1"] > measure[number="5"] rest'));
@@ -20,7 +20,7 @@ it('does not replace explicit placements or apply to unrelated XML',()=>{
 
 import {fixAllDrumRestPositions} from '../src/score-rest-correction';
 it('fixes every rest to one of three audited lanes without changing rhythm or notes',()=>{
- const text=readFileSync('public/demo/qa/musicxml-candidate.musicxml','utf8');
+ const text=readFileSync('data/reference/test-fixtures/musicxml-candidate.musicxml','utf8');
  const result=fixAllDrumRestPositions(text);
  expect(result.counts).toEqual({cymbal:15,drum:10,kick:237,fullBar:5});
  const a=new DOMParser().parseFromString(text,'application/xml'),b=new DOMParser().parseFromString(result.text,'application/xml');

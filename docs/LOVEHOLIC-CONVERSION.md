@@ -1,5 +1,11 @@
 # Loveholic PDF → MusicXML 작업
 
+> 2026-10-13 정리: 최신 제작 파일은 `data/production/loveholic/final/`에 보존했다. 아래 과거 실험 경로·보고서·초판 보존 기록은 당시 이력이다. 별도로 보존한 원본 외 실험 자료는 삭제했으며, 과거 검사 통과는 이번 정리 후 재검사를 뜻하지 않는다.
+
+현재 제작 폴더는 `source/`(PDF·변환 XML·추출 자료), `audio/`(MP3·박자 분석), `final/`(최종 MusicXML·drumscore)로 나뉜다. 가사 매핑 입력 세 파일은 `source/lyrics/`에 모았다. `source/canonical.musicxml`과 `source/loveholic.musicxml`은 최종본과 내용이 다른 제작 입력으로 보존한다.
+
+제작 helper의 경로 기준은 `data/production/loveholic/`이다. `build`의 기본 XML은 `source/loveholic.musicxml`이며 가사 인자는 `source/lyrics/printed-measure-lyrics.json` 또는 `source/lyrics/printed-note-lyrics.json`, PDF 앵커 인자는 `source/lyrics/pdf-lyric-note-anchors.json`이다. Python 가사 제작 도구의 `--folder`에는 `source/`를 준다. 과거 실험에서 삭제된 `pdf-crop-systems.json` 등 추가 산출물은 패키지 재제작 전 별도 재생성이 필요하다. 이번 정리에서 재생성·패키징 시험은 실행하지 않았다.
+
 새 곡의 전체 순서는 [악보 제작 프로세스](SCORE-PRODUCTION-PROCESS.md)를 따른다. 아래는 단계별 제작 이력이며 초기 산출물과 후속 수정본을 구별한다. 초기 ‘G5 원 안 ×=Open Hi-Hat’ 분류는 후속 사용자 확인에서 해당 Y89개를 Crash로 교정했다. 현재 실행에는 [매핑 정본의 최종 재확인](SCORE-MUSICXML-OSMD-MAPPING.md#2026-10-03-최종-재확인-모든-곡에-확정-범례-적용)을 적용한다. 성부·화음·기둥의 원본 구성은 유지한다.
 
 ## 현재 원곡 속도 정보 — 사용자 결정 2026-10-13
@@ -10,7 +16,7 @@
 - 제외: 앱 코드/DB·public/dist 변경, 재분석·재인코딩·PDF/HTML 생성·커밋/배포. 기존 파일과 중간 시도 보존.
 - 검증: XSD·ZIP CRC·전후 데이터 대조·실제 공통 canonical/package API 저장/재읽기. 화면 표시와 원곡 버튼의 실제 동작은 개발 담당자 검증 범위.
 
-최신 제작 파일: `/Users/raphael/Playground/drum-practice/docs/experiments/loveholic-tempo-20261013/final-03/`.
+최신 제작 파일: `/Users/raphael/Playground/drum-practice/data/production/loveholic/final/`.
 
 - `Loveholic-final.musicxml`: SHA256 `af81c955e5056a9c0445ceec7733da067bb238695a0b24f86c1a0850c04fb481`.
 - `Loveholic.drumscore`: SHA256 `26c73ab7a3e772422251e632f6e58af2284bfb739ca60c09921c1296ee947d93`.
@@ -126,9 +132,9 @@ Poppler 원본 래스터의 줄 사이 빈 띠에서 이전 줄 가사 뒤의 �
 
 ```sh
 mkdir docs/experiments/loveholic-20261002/reproduce-01
-cp docs/experiments/loveholic-20261002/provenance.json docs/experiments/loveholic-20261002/source-poppler-*.png docs/experiments/loveholic-20261002/reproduce-01/
-docs/experiments/musicxml/venv/bin/python scripts/musicxml/loveholic.py --pdf docs/experiments/loveholic-20261002/source.pdf --out docs/experiments/loveholic-20261002/reproduce-01
-/Users/raphael/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/musicxml/loveholic_audio.py --audio docs/experiments/loveholic-20261002/source.mp3 --bars docs/experiments/loveholic-20261002/reproduce-01/extracted.json --out docs/experiments/loveholic-20261002/reproduce-01/audio-alignment.json
+cp data/production/loveholic/source/provenance.json docs/experiments/loveholic-20261002/source-poppler-*.png docs/experiments/loveholic-20261002/reproduce-01/
+docs/experiments/musicxml/venv/bin/python scripts/musicxml/loveholic.py --pdf data/production/loveholic/source/source.pdf --out docs/experiments/loveholic-20261002/reproduce-01
+/Users/raphael/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/musicxml/loveholic_audio.py --audio data/production/loveholic/audio/source.mp3 --bars docs/experiments/loveholic-20261002/reproduce-01/extracted.json --out docs/experiments/loveholic-20261002/reproduce-01/audio-alignment.json
 docs/experiments/musicxml/venv/bin/python scripts/musicxml/verify_loveholic.py --dir docs/experiments/loveholic-20261002/reproduce-01
 npx vitest run --exclude 'guitar-practice/**' tests/musicxml.test.ts tests/canonical-xml.test.ts tests/score-package.test.ts
 ```
@@ -202,7 +208,7 @@ XML: `docs/experiments/loveholic-20261002/standard-lyrics-package-20261003/Loveh
 - 최초 입력 패키지 SHA256 `2a544df486c26feca450e7021787e43c4ad6db4fc8f8be1dc6d49d5f4cbcaf50`을 `final-03/Loveholic-before.drumscore`로 보존했다. 표준 템포 두 곳·메트로놈 두 곳136, Song 전체(설정 rate1 포함) 그대로. 음원·PDF 대체본·SVG 캐시·마디/가사 시각 전부 동일 바이트/값이다. canonical은 측정 miscellaneous-field 하나만 추가했다.
 - 입력의 `score/source`는 authoritative canonicalXML과 불일치했다. 앞서 확정한 Crash 교정 등 최신 내용은 canonical에 있으므로 이것을 정본으로 삼고 새 primary source를 동일 XML로 저장했다. canonical의 음표·주법·가사 내용은 변경하지 않았다. 기존 파일을 보존했으며, 임의로 과거 source의 악기 분류로 돌아가지 않는다.
 - MusicXML4XSD·ZIP CRC·전후 XML/전체Song·미변경 자산 대조 통과. 실제 공통 `readCanonical`, `writeCanonical`, `createScorePackage`, `readScorePackage`를 CLI로 실행하여 메타정보/마디/가사/음원 왕복과 측정 필드의 재저장 보존을 확인했다. 근거 `final-03/verification.json`, `final-03/common-api-validation.json`. 메타정보 변경으로 기존 SVG를 재생성하지 않았으며 실제 화면/청취 검증은 앱 담당자의 후속 범위다.
-- 재제작: `scripts/musicxml/loveholic_recording_tempo.py --input <검증한 이전 패키지> --alignment docs/experiments/loveholic-20261002/audio-alignment.json --out <새 폴더>`. 실제 Python은 lxml을 가진 bundled runtime을 사용한다. 기존 `loveholic_package.mjs` build에도 alignment 해시 대조와 별도 필드 저장을 적용해 재제작 때 누락하지 않는다.
+- 재제작: `scripts/musicxml/loveholic_recording_tempo.py --input <검증한 이전 패키지> --alignment data/production/loveholic/audio/audio-alignment.json --out <새 폴더>`. 실제 Python은 lxml을 가진 bundled runtime을 사용한다. 기존 `loveholic_package.mjs` build에도 alignment 해시 대조와 별도 필드 저장을 적용해 재제작 때 누락하지 않는다.
 - 해결한 검증 문제: zipfile.writestr에 입력 ZipInfo 객체를 그대로 넘기면 header_offset이 바뀌어 열린 입력 ZIP의 후속 읽기가 `Bad magic number for file header`로 실패한다. `copy.copy(info)`로 출력 객체를 분리하고 원본/출력 CRC·자산 비교를 통과했다. final-01 실패 시도는 보존. 공통 package 왕복은 JSON 계약이므로 undefined 선택 속성은 직렬화에서 생략된다. 비교 기대값을 JSON 직렬화된 전체Song으로 정규화하여 실제 정의된 필드·전체 내용을 검사했다.
 - 개발 인계 요구: 측정값은 추정 정보로 구분해 표시한다. 원곡 버튼에136.232를 넣어 기존 `bpm / Song.bpm`으로 계산하면1.0017이 되므로, 원곡 동작은 명시적인 `setRate(1)` 또는 동등한 처리를 사용한다. 이미 저장된 러브홀릭의 악보BPM136·시간표·연습기록은 보존하고 측정정보를 안전하게 추가한다. 앱 수정·패키지 public 수록·기존 DB 반영은 웹앱 개발자가 소유한다.
 

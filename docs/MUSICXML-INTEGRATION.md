@@ -12,7 +12,7 @@
 
 검토 수정: Audiveris XML의 part 아래 주석을 measure로 처리하던 비교 발췌 오류를 수정하고 회귀 검사를 추가했다.
 
-기본 npm run build는 portable HTML을 생성하므로 실행하지 않는다. 대신 i18n, 기존 출력에 대한 playback 검사, TypeScript, Vite build(publicDir:false)를 실행한다. Vite의 앱 index.html은 웹앱 빌드이며 HTML 재생 파일이 아니다. 기존 재생 HTML은 재생성하지 않는다.
+현재 `npm run build`는 앱 코드만 빌드한다. 독립 HTML 템플릿 생성 단계는 제거했다. Vite의 index.html은 웹앱 진입점이다. 아래 검증 기록은 당시 실행 결과다.
 
 ## 검증 결과와 자료 보존
 

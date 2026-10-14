@@ -13,13 +13,13 @@ for(const file of ['src/main.ts','src/playback-runtime.ts']){
  assert(!/<input[^>]*id=\\?["'](?:loop-a|loop-b|loop-ab|loop-bb|music-volume|click-volume)/.test(source),`${file}: copied playback form`);
  report[file]=sites.filter(c=>c.name==='createPlaybackScreen'||c.name.startsWith('playback.'));
 }
-for(const file of ['src/portable-player.ts','src/player-app.ts']) {
+for(const file of ['src/player-app.ts']) {
  const sites=calls(file); assert.equal(sites.filter(c=>c.name==='mountPlaybackRuntime').length,1,`${file}: shared runtime mount`);
  for(const name of [...owned,...retired])assert(!sites.some(c=>c.name===name),`${file}: playback ownership escaped`);
 }
 const core=calls('src/playback-screen.ts');for(const name of retired)assert(!core.some(c=>c.name===name),`Retired playback operation restored: ${name}`);for(const name of owned)assert(core.some(c=>c.name===name),`Missing central owner call: ${name}`);
 for(const file of ['src/playback-screen.ts','src/playback-forms.ts']){
- const source=fs.readFileSync(file,'utf8');assert(!/from ["'].\/(storage|workspace|score-management|editor-session|main|portable-player)["']/.test(source),`${file}: host dependency`);
+ const source=fs.readFileSync(file,'utf8');assert(!/from ["'].\/(storage|workspace|score-management|editor-session|main|player-app)["']/.test(source),`${file}: host dependency`);
 }
 const inventory=fs.readFileSync('docs/plans/PLAYBACK-SCREEN-INVENTORY.md','utf8');for(const id of [...Array.from({length:25},(_,i)=>`P${String(i+1).padStart(2,'0')}`),...Array.from({length:6},(_,i)=>`E${String(i+1).padStart(2,'0')}`)])assert(inventory.includes(`| ${id} |`),`Missing inventory item ${id}`);
 fs.mkdirSync('docs/experiments',{recursive:true});fs.writeFileSync('docs/experiments/playback-call-sites.json',JSON.stringify(report,null,2));

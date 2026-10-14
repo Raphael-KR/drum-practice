@@ -122,4 +122,4 @@
 4. 좁은 세로 화면의50%는 작은 음표를 보인다. 편안함의 보편적 보장은 하지 않으며 사용자가 확대하면 자연스럽게 보이는 마디 수가 줄어든다. 매우 복잡한 다른 악보의 조밀도/꾸밈음/기호는 추가 검수가 필요하다.
 5. 병행 제작 세션이 Loveholic 로컬 패키지를269개 위치 가사로 교체했다. 그 자료를 보존했고 본 작업은 원본 PDF/MusicXML이나 가사 데이터를 수정하지 않았다. 가사 내용의 전수 검수는 해당 제작 세션 책임이다.
 
-근거 폴더: `docs/experiments/ribbon-density-20261003/`. JSON/시뮬레이터 PNG/QA 모듈은 로컬 실험 자료. 로그 `.tmp/density-tests.log`, `.tmp/density-build.log`. 독립 HTML 파일 생성·저장 및 Sites 배포 없음. 빌드용 템플릿 생성은 기존 앱 기능을 위해 유지한다.
+근거 폴더: `docs/experiments/ribbon-density-20261003/`. JSON/시뮬레이터 PNG/QA 모듈은 로컬 실험 자료. 로그 `.tmp/density-tests.log`, `.tmp/density-build.log`. 독립 HTML 파일 생성·저장 및 Sites 배포 없음. 독립 HTML 템플릿 생성은 2026-10-13에 폐기했다.

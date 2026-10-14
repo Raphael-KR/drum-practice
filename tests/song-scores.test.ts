@@ -13,7 +13,7 @@ import {
   unpackSong,
   packScores,
   unpackScores,
-} from "../src/portable";
+} from "../src/record-serialization";
 function fixture(): RecordData {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   song.id = "song-variants-test";

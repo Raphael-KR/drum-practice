@@ -86,4 +86,4 @@
 
 로컬 근거: `docs/experiments/browser-musicxml-20261003/`의 `audit.json`, `playback.json`, `device-cold.json`, `memory-baseline.jsonl`, `device-state-final.json`, 화면 캡처. 미디어/실험 출력은 Git 제외 정책을 따른다. 실행 로그는 `.tmp/direct-tests.log`, `.tmp/direct-build.log`.
 
-OSMD 청크는 gzip 약349kB 추가이며 지연 로드한다. 물리 iPad의 첫 다운로드, 장시간 음원 재생/열화, 실제 터치 검증은 이번 결과가 대신하지 않는다. 원본 인쇄 PDF와 모든 주법의 사람 전수 대조도 자동 좌표 검증과 구분한다. 독립 HTML 재생 파일 생성·저장, Sites 배포, 원격 push는 수행하지 않았다. 기존 빌드용 템플릿 생성은 유지했다.
+OSMD 청크는 gzip 약349kB 추가이며 지연 로드한다. 물리 iPad의 첫 다운로드, 장시간 음원 재생/열화, 실제 터치 검증은 이번 결과가 대신하지 않는다. 원본 인쇄 PDF와 모든 주법의 사람 전수 대조도 자동 좌표 검증과 구분한다. 독립 HTML 재생 파일 생성·저장, Sites 배포, 원격 push는 수행하지 않았다. 당시 유지했던 독립 HTML 템플릿 생성은 2026-10-13에 폐기했다.

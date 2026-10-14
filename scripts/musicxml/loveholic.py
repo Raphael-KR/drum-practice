@@ -438,6 +438,6 @@ if __name__ == "__main__":
     for subset, filename in [(bars[:10], "representatives.musicxml"), (bars, "loveholic.musicxml")]:
         path = a.out / filename
         write_musicxml(subset, path, provenance, cues)
-        counts = verify_musicxml(subset, path, Path("docs/experiments/musicxml/schema/musicxml.xsd"))
+        counts = verify_musicxml(subset, path, Path("data/reference/musicxml/schema/musicxml.xsd"))
         (a.out / (filename + ".audit.json")).write_text(json.dumps(counts, indent=2))
         print(filename, counts)

@@ -6,7 +6,7 @@
 
 - 지침: `/Users/raphael/AGENTS.md`, 프로젝트 `AGENTS.md`.
 - 입력 의미: [확정 매핑](SCORE-MUSICXML-OSMD-MAPPING.md), [정본 XML 계약](MUSICXML-CANONICAL.md).
-- 출력: [SVG 규칙](SVG-SCORE-RULES.md), [표기 지원 조사](DRUM-NOTATION-SUPPORT-AUDIT.md).
+- 출력: [SVG 규칙](SVG-SCORE-RULES.md), [확정 표기 매핑](SCORE-MUSICXML-OSMD-MAPPING.md).
 - 이전 제작 세션 `01a0b7de-deef-7572-8833-02cf6080ddb1`: [변환 재현](MUSICXML-CONVERSION.md), [비교](MUSICXML-COMPARISON.md), [통합](MUSICXML-INTEGRATION.md).
 - Loveholic 제작: [제작·검증 기록](LOVEHOLIC-CONVERSION.md). 로컬 근거 폴더는 `docs/experiments/loveholic-20261002/`다.
 - 재생·배포에서 막혔다가 해결한 사례: [Loveholic 재검토의 해결·예방 절차](LOVEHOLIC-REVIEW.md#다음-작업에서-재사용할-해결예방-절차). PDF 검출·공통 화면 호출 누락·가사 보존·테스트 환경·대체 검증 경로·Sites 배포를 다룬다.

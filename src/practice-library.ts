@@ -5,17 +5,23 @@ import type { RecordData } from "./storage";
 import { scoreStructureSignature } from "./score-package";
 import { useScore } from "./song-scores";
 import { practiceMetadataUpgrade } from "./practice-metadata-upgrade";
+import {
+  storeMedia,
+  restoreMedia,
+  storeScoreMedia,
+  restoreScoreMedia,
+  type StoredMedia,
+} from "./stored-media";
 
-type Media = { bytes: ArrayBuffer; type: string };
 type Stored = Omit<RecordData, "pdf" | "audio" | "pages" | "otherScores"> & {
   mediaFormat: "bytes-v1";
-  pdf: Media;
-  audio: Media;
-  pages: Media[];
+  pdf: StoredMedia;
+  audio: StoredMedia;
+  pages: StoredMedia[];
   otherScores?: (Omit<
     NonNullable<RecordData["otherScores"]>[number],
     "source" | "pages"
-  > & { source: Media; pages: Media[] })[];
+  > & { source: StoredMedia; pages: StoredMedia[] })[];
 };
 export type PracticeImportResult = {
   status: "added" | "replaced";
@@ -46,39 +52,31 @@ function snapshot(record: RecordData): RecordData {
   };
 }
 async function encode(record: RecordData): Promise<Stored> {
-  if (record.song.id === RETIRED_SCORE_ID) throw new Error(t("library.retiredScore"));
+  if (record.song.id === RETIRED_SCORE_ID)
+    throw new Error(t("library.retiredScore"));
   validateSong(record.song);
-  const media = async (blob: Blob): Promise<Media> => ({
-    bytes: await blob.arrayBuffer(),
-    type: blob.type,
-  });
-  const [pdf, audio, pages, otherScores] = await Promise.all([
-    media(record.pdf),
-    media(record.audio),
-    Promise.all(record.pages.map(media)),
+  const [media, otherScores] = await Promise.all([
+    storeScoreMedia(record),
     Promise.all(
       (record.otherScores ?? []).map(async (score) => ({
         ...score,
-        source: await media(score.source),
-        pages: await Promise.all(score.pages.map(media)),
+        source: await storeMedia(score.source),
+        pages: await Promise.all(score.pages.map(storeMedia)),
       })),
     ),
   ]);
-  return { ...record, mediaFormat: "bytes-v1", pdf, audio, pages, otherScores };
+  return { ...record, mediaFormat: "bytes-v1", ...media, otherScores };
 }
 function decode(record: Stored): RecordData {
   if (!("mediaFormat" in record)) return record as RecordData;
-  const media = (value: Media) => new Blob([value.bytes], { type: value.type });
   const { mediaFormat: _, ...rest } = record;
   return {
     ...rest,
-    pdf: media(record.pdf),
-    audio: media(record.audio),
-    pages: record.pages.map(media),
+    ...restoreScoreMedia(record),
     otherScores: record.otherScores?.map((score) => ({
       ...score,
-      source: media(score.source),
-      pages: score.pages.map(media),
+      source: restoreMedia(score.source),
+      pages: score.pages.map(restoreMedia),
     })),
   };
 }
@@ -99,22 +97,36 @@ async function read<T>(
 }
 export async function listPracticeRecords(): Promise<RecordData[]> {
   const records = (await read<Stored[]>((store) => store.getAll())).map(decode);
-  for (let i = 0; i < records.length; i++) records[i] = await upgradePracticeMetadata(records[i]);
+  for (let i = 0; i < records.length; i++)
+    records[i] = await upgradePracticeMetadata(records[i]);
   return records;
 }
-async function upgradePracticeMetadata(record: RecordData): Promise<RecordData> {
+async function upgradePracticeMetadata(
+  record: RecordData,
+): Promise<RecordData> {
   const next = await practiceMetadataUpgrade(record);
   if (!next) return record;
   return queued(async () => {
     let updated: RecordData = record;
-    await change(tx => {
-      const store = tx.objectStore("songs"), request = store.get(record.song.id);
+    await change((tx) => {
+      const store = tx.objectStore("songs"),
+        request = store.get(record.song.id);
       request.onsuccess = () => {
         const stored = request.result as Stored | undefined;
-        if (!stored || stored.canonicalXML !== record.canonicalXML ||
-          stored.song.title !== record.song.title || stored.song.artist !== record.song.artist) return;
-        const song = { ...stored.song, title:next.song.title, originalTitle:next.song.originalTitle, artist:next.song.artist };
-        const revised = { ...stored, song, canonicalXML:next.canonicalXML };
+        if (
+          !stored ||
+          stored.canonicalXML !== record.canonicalXML ||
+          stored.song.title !== record.song.title ||
+          stored.song.artist !== record.song.artist
+        )
+          return;
+        const song = {
+          ...stored.song,
+          title: next.song.title,
+          originalTitle: next.song.originalTitle,
+          artist: next.song.artist,
+        };
+        const revised = { ...stored, song, canonicalXML: next.canonicalXML };
         store.put(revised);
         updated = decode(revised);
       };
@@ -163,10 +175,14 @@ export function savePracticeRecord(record: RecordData): Promise<void> {
   });
 }
 /** Metadata-only upgrade; never overwrite a concurrent edit or practice state. */
-export function savePracticeCanonicalMetadata(id: string, previous: string, next: string): Promise<boolean> {
+export function savePracticeCanonicalMetadata(
+  id: string,
+  previous: string,
+  next: string,
+): Promise<boolean> {
   return queued(async () => {
     let saved = false;
-    await change(tx => {
+    await change((tx) => {
       const store = tx.objectStore("songs");
       const request = store.get(id);
       request.onsuccess = () => {
@@ -180,10 +196,16 @@ export function savePracticeCanonicalMetadata(id: string, previous: string, next
   });
 }
 export function removePracticeRecord(id: string): Promise<void> {
-  return queued(() => change(tx => { tx.objectStore("songs").delete(id); }));
+  return queued(() =>
+    change((tx) => {
+      tx.objectStore("songs").delete(id);
+    }),
+  );
 }
 /** Reimport is a direct replacement. No backup or practice-state restoration. */
-export function importPracticeRecord(incoming: RecordData): Promise<PracticeImportResult> {
+export function importPracticeRecord(
+  incoming: RecordData,
+): Promise<PracticeImportResult> {
   const copy = snapshot(incoming);
   // A newly imported score uses practice defaults, not the author's mix.
   const { musicVolume, clickVolume, click } = defaults();
@@ -192,14 +214,21 @@ export function importPracticeRecord(incoming: RecordData): Promise<PracticeImpo
     const stored = await encode(copy);
     let existed = false;
     let failure: unknown;
-    await change(tx => {
+    await change((tx) => {
       const songs = tx.objectStore("songs");
       const request = songs.get(stored.song.id);
       request.onsuccess = () => {
         existed = !!request.result;
-        try { songs.put(stored); } catch (error) { failure = error; tx.abort(); }
+        try {
+          songs.put(stored);
+        } catch (error) {
+          failure = error;
+          tx.abort();
+        }
       };
-    }).catch(error => { throw failure ?? error; });
+    }).catch((error) => {
+      throw failure ?? error;
+    });
     if (failure) throw failure;
     return { status: existed ? "replaced" : "added", record: decode(stored) };
   });

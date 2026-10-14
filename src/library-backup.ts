@@ -1,6 +1,6 @@
 import { t as i18nText } from "./i18n";
 import JSZip from "jszip";
-import { packSong, unpackSong, type PortableSong } from "./portable";
+import { packSong, unpackSong, type PackedRecord } from "./record-serialization";
 import { validateSong } from "./model";
 import type { RecordData } from "./storage";
 export const preferenceKeys = [
@@ -13,7 +13,7 @@ export interface LibraryArchive {
   version: 1;
   kind: "drum-practice-library";
   createdAt: string;
-  records: (PortableSong & Pick<RecordData, "editDraft" | "revisions">)[];
+  records: (PackedRecord & Pick<RecordData, "editDraft" | "revisions">)[];
   preferences: Record<string, string>;
 }
 export async function exportLibrary(

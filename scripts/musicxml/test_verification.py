@@ -8,7 +8,7 @@ from pathlib import Path
 from lxml import etree as E
 from verify import verify
 
-BASE = Path(__file__).resolve().parents[2] / "docs/experiments/musicxml"
+BASE = Path(__file__).resolve().parents[2] / "data/reference/musicxml"
 
 
 class VerificationTests(unittest.TestCase):

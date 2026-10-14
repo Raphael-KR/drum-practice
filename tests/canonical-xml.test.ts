@@ -136,10 +136,10 @@ it("binds audio anchors to audio bytes", async () => {
   r.audio = new NativeBlob(["other"]);
   await expect(verifyCanonicalAudio(r)).rejects.toThrow("음원");
 });
-it('preserves canonical XML through format switching, storage and portable packing',async()=>{
+it('preserves canonical XML through format switching, storage and backup serialization',async()=>{
  vi.stubGlobal('Blob',NativeBlob);
  const {saveRecord,allRecords,deleteRecord}=await import('../src/storage');
- const {packSong,unpackSong}=await import('../src/portable');
+ const {packSong,unpackSong}=await import('../src/record-serialization');
  const {activeScore,useScore}=await import('../src/song-scores');
  const {indexedDB}=await import('fake-indexeddb');vi.stubGlobal('indexedDB',indexedDB);
  const s=song();s.id='canonical-storage-qa';const r={song:s,pdf:new NativeBlob(['pdf']),audio:new NativeBlob(['audio']),pages:Array.from({length:s.pageCount},()=>new NativeBlob(['page'])),canonicalXML:writeCanonical(s)} as any;

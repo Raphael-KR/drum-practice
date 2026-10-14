@@ -12,7 +12,7 @@ async function read(path:string):Promise<RecordData> {
  return {song:m.song,canonicalXML:m.canonicalXML,pdf:await media(m.source.path,"application/xml"),audio:await media(m.audio.path,"audio/mpeg"),pages:await Promise.all(m.pages.map((p:{path:string})=>media(p.path,"image/svg+xml")))};
 }
 it("updates the shipped 28-bar score, audio and SVG cache while using incoming practice state on reopen",async()=>{
- const old=await read("docs/experiments/tom-moving-20261006/version-labels-01/28-portland/tom-moving.drumscore");
+ const old=await read("data/reference/test-fixtures/tom-moving-28-portland.drumscore");
  const next=await read("public/scores/tom-moving.drumscore");
  old.song.settings.position=9.25;old.song.settings.rate=.8;
  old.song.markers=[{id:"local",name:"Practice",time:6.25}];

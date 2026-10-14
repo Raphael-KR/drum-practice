@@ -10,7 +10,7 @@ import {
   scoreFormat,
 } from "../src/score-import";
 import { validateSong, type Song } from "../src/model";
-import { packSong, unpackSong } from "../src/portable";
+import { packSong, unpackSong } from "../src/record-serialization";
 beforeAll(() => {
   globalThis.DOMParser = new JSDOM().window.DOMParser;
 });
@@ -98,7 +98,7 @@ it("selects a single part, removes unused definitions and reports repeat policy"
   expect(s.warnings).toHaveLength(1);
   expect(() => parseMusicXML(multi, "missing")).toThrow("파트");
 });
-it("preserves timeline, lyrics, loops, marker and old song on geometry replacement and portable roundtrip", async () => {
+it("preserves timeline, lyrics, loops, marker and old song on geometry replacement and backup roundtrip", async () => {
   const song = JSON.parse(
       readFileSync("public/demo/song.json", "utf8"),
     ) as Song,

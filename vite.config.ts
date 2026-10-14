@@ -30,12 +30,6 @@ export default defineConfig(({ mode }) => {
         name: "app-boundary-evidence",
         generateBundle(_, bundle) {
           if (!separate) return;
-          if (mode === "editor")
-            this.emitFile({
-              type: "asset",
-              fileName: "portable-template.html",
-              source: readFileSync("public/portable-template.html"),
-            });
           if (mode === "player") {
             for (const name of ["apple-touch-icon.png", "apple-touch-icon-180.png", "favicon.ico", "favicon-32.png", "icon-192.png"])
               this.emitFile({type: "asset", fileName: `icons/${name}`, source: readFileSync(`public/icons/${name}`)});

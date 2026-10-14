@@ -6,18 +6,20 @@ import { defaults, validateSong, makeCycle } from '/src/model.ts';
 import { displayPage } from '/src/score-pages.ts';
 
 const BASE='/@fs/Users/raphael/Playground/drum-practice/';
-const ROOT=BASE+'docs/experiments/tom-moving-route-20261013/corrected-01/';
+const ROOT=BASE+'data/production/tom-moving/source/';
 const sha=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await b.arrayBuffer())),v=>v.toString(16).padStart(2,'0')).join('');
 const b64=async b=>{const bytes=new Uint8Array(await b.arrayBuffer());let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);};
 const save=async (endpoint,data)=>{const r=await fetch('http://127.0.0.1:5190/'+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok)throw Error('Evidence receiver '+r.status);};
 
 export async function build(){
   const source=new Blob([await(await fetch(ROOT+'tom-moving-source.musicxml')).arrayBuffer()],{type:'application/vnd.recordare.musicxml+xml'});
-  const audio=new Blob([await(await fetch(BASE+'docs/experiments/tom-moving-route-20261013/portland-01/tom-moving-portland.mp3')).arrayBuffer()],{type:'audio/mpeg'});
+  const audio=new Blob([await(await fetch(BASE+'data/production/tom-moving/audio/tom-moving-portland.mp3')).arrayBuffer()],{type:'audio/mpeg'});
   const fixture=await(await fetch(BASE+'scripts/musicxml/fixtures/tom_moving_video.json')).json();
   const metadata=(await(await fetch(BASE+'scripts/musicxml/tom-moving-versions.json')).json()).versions.find(v=>v.id==='tom-moving-video-v2');
-  const generation=await(await fetch(ROOT+'generation-audit.json')).json();
-  const audioAudit=await(await fetch(BASE+'docs/experiments/tom-moving-route-20261013/portland-01/render-audit.json')).json();
+  const generationResponse=await fetch(ROOT+'generation-audit.json');
+  if(!generationResponse.ok)throw Error('Generation audit was cleaned up. Run scripts/musicxml/tom_moving_corrected.py with --out pointing to the source folder after obtaining test permission, then retry.');
+  const generation=await generationResponse.json();
+  const audioAudit=await(await fetch(BASE+'data/production/tom-moving/audio/render-audit.json')).json();
   if(generation.status!=='PASS'||await sha(audio)!==audioAudit.mp3SHA256)throw Error('Input validation/hash mismatch');
   const render=await renderMusicXML(source,s=>window.tomMovingProgress=s,'P1');
   if(render.regions.length!==28)throw Error('Expected 28 regions');

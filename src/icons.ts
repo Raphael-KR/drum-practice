@@ -45,12 +45,6 @@ export function arrangeIcons() {
       i18nText("icons.message056"),
       i18nText("icons.message056"),
     ],
-    [
-      "save-html",
-      "export",
-      i18nText("icons.message057"),
-      i18nText("icons.message058"),
-    ],
     ["open-settings-dialog", "settings", i18nText("icons.message059")],
     [
       "quick-add-marker",

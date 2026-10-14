@@ -39,7 +39,7 @@ def update(source,alignment_path,output):
         after=E.fromstring(xml.encode());saved=after.find(f'identification/miscellaneous/miscellaneous-field[@name="{FIELD}"]')
         assert json.loads(saved.text)==data;saved.getparent().remove(saved)
         assert E.tostring(after)==E.tostring(root)
-        schema=Path(__file__).resolve().parents[2]/'docs/experiments/musicxml/schema';parser=E.XMLParser();parser.resolvers.add(Resolver(schema))
+        schema=Path(__file__).resolve().parents[2]/'data/reference/musicxml/schema';parser=E.XMLParser();parser.resolvers.add(Resolver(schema))
         E.XMLSchema(E.parse(str(schema/'musicxml.xsd'),parser)).assertValid(E.fromstring(xml.encode()))
         (output/'Loveholic-final.musicxml').write_text(xml)
         audit={'status':'PASS','scoreBpm':136,'recordingTempo':data,'inputSHA256':sha(source.read_bytes()),'packageSHA256':sha(target.read_bytes()),'canonicalSHA256':sha(xml.encode()),'SongAllFieldsUnchanged':True,'canonicalOnlyAddedRecordingTempoField':True,'notesLyricsAnchorsAudioSVGVariantsUnchanged':True,'MusicXML4XSD':True,'zipCRC':True,'sourceCanonicalEqualAfter':True,'legacySourceCanonicalEqualBefore':z.read(original['source']['path']).decode()==oldxml,'sourceConsistencyResolution':'primary XML asset synchronized to authoritative canonical; canonical drum/lyric notation preserved','unchangedZIPEntries':unchanged,'originalRate':1,'appIntegration':'pending developer'}

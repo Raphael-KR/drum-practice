@@ -90,7 +90,7 @@
 ```sh
 docs/experiments/musicxml/venv/bin/python scripts/musicxml/compare.py \
   --claude /Users/raphael/Downloads/kaze_to_oka_no_ballad_drums.musicxml \
-  --codex docs/experiments/musicxml/real-paradis-110-candidate.musicxml \
+  --codex data/reference/musicxml/real-paradis-110-candidate.musicxml \
   --out docs/experiments/musicxml-comparison
 ```
 

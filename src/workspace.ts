@@ -5,7 +5,6 @@ import { licenseSection } from "./licenses";
 import { appInfoHTML, selectPlaybackSettings } from "./playback-forms";
 import { mountPlaybackShell } from "./playback-shell";
 import { webPlaybackBindings } from "./playback-ui";
-import { isPortable } from "./portable";
 import { componentName } from "./ui-standard";
 // Arrange existing controls without duplicating their state or event handlers.
 export type SettingsCategory = "screen" | "playback" | "score" | "info";
@@ -33,7 +32,6 @@ export function updateViewWidth() {
   if (mirror) mirror.textContent = select.selectedOptions[0]?.textContent || "";
 }
 export function selectSettingsCategory(category: SettingsCategory) {
-  if (isPortable && category === "score") category = "screen";
   lastCategory = category;
   try {
     localStorage.setItem(SETTINGS_KEY, category);
@@ -152,11 +150,8 @@ export function arrangeWorkspace() {
       "</button>",
   );
   const backupBody = group(i18nText("workspace.message563"), "backup-dialog");
-  el("save-html").textContent = i18nText("icons.message058");
   backupBody.append(
-    el("save-html"),
     ...backup.children,
-    el("portable-note"),
     el("alignment-note"),
   );
   const info = settingsPanel("info", "info-settings", "open-info-settings");

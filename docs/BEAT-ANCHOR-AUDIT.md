@@ -131,7 +131,7 @@
 
 후속 사용자 요청에 따라 빈48개 영역 모두에 표시 기준을 추가했다. 실제 음표/쉼표 패턴37개(기존41 포함)는 원본 PDF의 정박 열을 읽어 좌표화했다. 나머지11개는 개별 음표가 없는 기호 마디로 명시적 균등 진행을 사용한다. 기존62개 기준점은 유지했다. 결과적으로 전체110마디가 beats+1개의 표시 기준점을 갖는다.
 
-정본: src/score-anchor-data.ts, 생성 절차 scripts/score/build-anchor-corrections.py. 입력 열 좌표는 로컬 docs/experiments/beat-anchor-audit/columns.json. 원본 마디 crop의 page/x/y/w/h가 일치하고 beatXs가 비어 있을 때만 적용한다. 사용자가 수정한 crop·기준점에는 적용하지 않는다. 적용은 표시 단계이며 음원/가사/저장 원본을 수정하지 않는다.
+정본: src/score-anchor-data.ts, 생성 절차 scripts/score/build-anchor-corrections.py. 입력 열 좌표는 로컬 data/reference/beat-anchor-columns.json. 원본 마디 crop의 page/x/y/w/h가 일치하고 beatXs가 비어 있을 때만 적용한다. 사용자가 수정한 crop·기준점에는 적용하지 않는다. 적용은 표시 단계이며 음원/가사/저장 원본을 수정하지 않는다.
 
 84마디는 첫 박 쉼표와 마지막 박 쉼표를 포함한 5박+마디끝 좌표를 사용한다. 이번 보정은 정박 경계 보정이다. 16분음표·점음표·셋잇단음표 등 박 내부의 모든 음표를 별도 앵커로 전사한 것은 아니며 정박 사이 진행은 선형 보간이다.
 

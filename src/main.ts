@@ -75,7 +75,6 @@ import {
   replacePlaybackAssets,
 } from "./playback-assets";
 import "./playback-base.css";
-import { makePlaybackHTML, packCombinedPlayback } from "./playback-export";
 import {
   readPlaybackPreferences,
   savePlaybackPreferences,
@@ -147,13 +146,7 @@ import {
   type Region,
   type Song,
 } from "./model";
-import {
-  isPortable,
-  packScores,
-  shellFromDocument,
-  unpackScores,
-  unpackSong,
-} from "./portable";
+import { packScores, unpackScores } from "./record-serialization";
 const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 const val = (id: string) => $(id) as HTMLInputElement;
@@ -184,8 +177,6 @@ const app = $("app");
 app.innerHTML =
   '\n<header><div class="brand"></div><div class="actions"><button id="library-button">' +
   i18nText("icons.message054") +
-  '</button><button id="save-html" hidden>' +
-  i18nText("icons.message057") +
   '</button><button id="edit-button" hidden>' +
   i18nText("main.message099") +
   '</button><a class="editor-player-link" href="/player.html">' +
@@ -196,9 +187,7 @@ app.innerHTML =
   i18nText("editorHome.new") +
   '</button></div><div id="editor-home-list" class="practice-records" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button><p class="subtle">' +
   i18nText("main.message106") +
-  '</p></section>\n<div id="busy" role="status" aria-live="polite"></div><p id="portable-note" class="subtle" hidden>' +
-  i18nText("main.message107") +
-  '</p>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
+  '</p></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
   i18nText("main.message112") +
   '</button></div></div>\n<div id="review-tools" hidden><span id="review-message">' +
   i18nText("main.message113") +
@@ -364,10 +353,8 @@ app.innerHTML =
   '</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>';
 arrangeWorkspace();
 arrangeIcons();
-if (!isPortable) {
-  $("song-title").textContent = i18nText("separation.editorTitle");
-  document.title = i18nText("separation.editorTitle");
-}
+$("song-title").textContent = i18nText("separation.editorTitle");
+document.title = i18nText("separation.editorTitle");
 const playback = createPlaybackScreen({
   root: app,
   environment: "web",
@@ -476,7 +463,6 @@ function songControlsAvailable(enabled: boolean) {
     "lyrics-button",
     "metadata-button",
     "export",
-    "save-html",
     "review-add-score",
     "replace-score-button",
     "export-musicxml",
@@ -565,7 +551,7 @@ async function persist() {
   await saveRecord(session?.forStorage() || record);
   management?.refresh();
   status(
-    isPortable ? i18nText("main.message215") : i18nText("main.message216"),
+    i18nText("main.message216"),
   );
 }
 function queueSave() {
@@ -616,12 +602,10 @@ async function activate(r: RecordData) {
   validateSong(r.song);
   busy = true;
   try {
-    if (!isPortable) {
-      if (await repairBundledMetadata(r)) await saveRecord(r);
-      r = await attachBundledScore(r, status);
-      r = await correctStoredRests(r, status);
-      r = await (await import('./browser-score')).prepareBrowserScore(r, status);
-    }
+    if (await repairBundledMetadata(r)) await saveRecord(r);
+    r = await attachBundledScore(r, status);
+    r = await correctStoredRests(r, status);
+    r = await (await import('./browser-score')).prepareBrowserScore(r, status);
     const preferred = scorePreference(r).format;
     if (preferred !== (r.song.scoreFormat ?? "pdf"))
       r = useScore(
@@ -629,7 +613,6 @@ async function activate(r: RecordData) {
         songScores(r).find((s) => s.format === preferred)!,
       );
     if (
-      !isPortable &&
       r.song.scoreFormat === "musicxml" &&
       r.pages.some((p) => p.type !== SVG_GZIP)
     ) {
@@ -681,7 +664,6 @@ async function activate(r: RecordData) {
     $("welcome").hidden = true;
     $("practice").hidden = false;
     $("edit-button").hidden = false;
-    $("save-html").hidden = false;
     songControlsAvailable(true);
     updateSongHeading();
     val("seek").max = String(engine().duration);
@@ -690,12 +672,10 @@ async function activate(r: RecordData) {
     renderTrack();
     renderLists();
     await persist();
-    if (!isPortable) {
-      rememberScore(r.song.id);
-      $("demo-button").textContent = i18nText("main.message223", {
-        value1: r.song.title,
-      });
-    }
+    rememberScore(r.song.id);
+    $("demo-button").textContent = i18nText("main.message223", {
+      value1: r.song.title,
+    });
     status("");
   } finally {
     busy = false;
@@ -748,10 +728,10 @@ function syncViewChoices() {
             f === "pdf" ? i18nText("term.PDF") : i18nText("term.MusicXML"),
           )
           .join(", "),
-        value3: isPortable ? i18nText("main.message229") : "",
+        value3: "",
       })
     : "";
-  $("review-add-score").hidden = isPortable || !missing.length;
+  $("review-add-score").hidden = !missing.length;
 }
 // Prepare geometry before swapping it, leaving audio and loop scheduling intact.
 val("prefer-pdf").onchange = async () => {
@@ -815,7 +795,6 @@ async function prepareReview() {
         (p) => p.type !== SVG_GZIP && p.type !== "image/svg+xml",
       )
     ) {
-      if (isPortable) throw Error(i18nText("main.message237"));
       const rendered = await renderScore(
         pair[1].source,
         "musicxml",
@@ -1092,7 +1071,6 @@ async function openLibrary() {
             '">' +
             i18nText("main.message282") +
             '</span></div><div class="song-card-actions" ' +
-            String(isPortable ? "hidden" : "") +
             '><button data-attach="' +
             String(i) +
             '" aria-label="' +
@@ -1155,7 +1133,6 @@ $("library-list").onclick = async (e) => {
         $("original-tempo").hidden = true;
         $("edit-button").hidden = true;
         document.body.classList.remove("has-song");
-        $("save-html").hidden = true;
         songControlsAvailable(false);
       }
       await deleteRecord(deleting);
@@ -1175,7 +1152,6 @@ function openNew() {
 action("new-button", openNew);
 action("welcome-new", openNew);
 async function refreshRecentScore() {
-  if (isPortable) return;
   const records = (await allRecords()).filter(r => !r.song.audioPractice);
   const recent = chooseRecent(records);
   $("editor-home-list").innerHTML = records.length
@@ -1357,7 +1333,7 @@ document.addEventListener("open-score-editor", () => {
     void openEditor().catch(error);
 });
 async function openEditor() {
-  if (!record || isPortable) return;
+  if (!record) return;
   scoreGestures.cancel();
   selected = locate(song(), engine().current()).index;
   selected = clamp(selected, 0, song().measures.length - 1);
@@ -2112,45 +2088,10 @@ $("new-form").onsubmit = async (e) => {
     error(e);
   }
 };
-// Each exported file boots its embedded song without a server or storage origin.
-action("save-html", async () => {
-  if (!record || busy) return;
-  const button = $<HTMLButtonElement>("save-html");
-  button.disabled = true;
-  try {
-    await persist();
-    download(await portableBlob(), song().title + i18nText("main.message340"));
-    status(i18nText("main.message341"));
-  } finally {
-    button.disabled = false;
-  }
+void refreshRecentScore().catch(error);
+window.addEventListener("focus", () => {
+  if (!$("welcome").hidden) void refreshRecentScore().catch(error);
 });
-
-if (isPortable) {
-  for (const id of ["new-button", "welcome-new", "demo-button"])
-    $(id).hidden = true;
-  // New PDF input and ZIP restoration belong to the authoring web app.
-  val("restore").closest("label")!.hidden = true;
-  $("portable-note").hidden = false;
-  document.title = i18nText("main.message342");
-  void (async () => {
-    const packed = JSON.parse(
-      document.getElementById("portable-data")!.textContent!,
-    );
-    if (!packed) throw Error(i18nText("main.message343"));
-    const r = unpackSong(packed);
-    await activate(r);
-    document.title = r.song.title + i18nText("main.message344");
-    status(i18nText("main.message345"));
-  })().catch(error);
-}
-
-if (!isPortable) {
-  void refreshRecentScore().catch(error);
-  window.addEventListener("focus", () => {
-    if (!$("welcome").hidden) void refreshRecentScore().catch(error);
-  });
-}
 
 const replaceDialog = createDialog(
   "replace-score-dialog",
@@ -2178,7 +2119,6 @@ const replaceButton = document.createElement("button");
 replaceButton.id = "replace-score-button";
 replaceButton.textContent = i18nText("main.message346");
 $("backup-dialog").append(replaceButton);
-replaceButton.hidden = isPortable;
 replaceButton.disabled = !record;
 replaceButton.onclick = () => {
   if (!record) return;
@@ -2332,7 +2272,6 @@ vocalDialog.insertAdjacentHTML(
 const vocalButton = document.createElement("button");
 vocalButton.id = "import-vocal";
 vocalButton.textContent = i18nText("main.message362");
-vocalButton.hidden = isPortable;
 $("show-all").after(vocalButton);
 vocalButton.onclick = () => {
   engine().pause();
@@ -2598,42 +2537,6 @@ session = editorSession({
   persist,
   error,
 });
-let playbackExportPending = false;
-async function portableBlob() {
-  if (!record) throw Error(i18nText("main.message218"));
-  if (playbackExportPending) throw Error(i18nText("main.message369"));
-  playbackExportPending = true;
-  try {
-    const snapshot = {
-      ...record,
-      song: {
-        ...record.song,
-        loops:
-          engine().loop || playback.lastLoop
-            ? [(engine().loop || playback.lastLoop)!]
-            : record.song.loops,
-      },
-    };
-    const data = await packCombinedPlayback(snapshot, {
-      ...readPlaybackPreferences(),
-      fullscreen: autoFullscreenEnabled(),
-      highlight: readNoteHighlight(),
-    });
-    const response = await fetch(
-      `${import.meta.env.BASE_URL}portable-template.html`,
-    );
-    if (!response.ok) throw Error(i18nText("main.message370"));
-    const doc = new DOMParser().parseFromString(
-      await response.text(),
-      "text/html",
-    );
-    return new Blob([makePlaybackHTML(shellFromDocument(doc), data)], {
-      type: "text/html;charset=utf-8",
-    });
-  } finally {
-    playbackExportPending = false;
-  }
-}
 management = setupScoreManagement({
   get: () => record,
   error,
@@ -2671,8 +2574,6 @@ management = setupScoreManagement({
             song().audioName.replace(/[\\/:*?"<>|]/g, "_") || title + ".audio",
           blob: record.audio,
         });
-      if (k === "html")
-        files.push({ name: title + ".html", blob: await portableBlob() });
     }
     if (files.length === 1) download(files[0].blob, files[0].name);
     else {

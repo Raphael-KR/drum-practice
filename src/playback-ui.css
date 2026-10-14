@@ -2319,18 +2319,10 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 .drawer-playback #loop-beat-controls label {flex-direction:row;align-items:center;gap:3px;}
 .drawer-playback .playback-loop-fields > .flex {margin:0;}
 
-/* Fixed control board: lists use explicit paging, never scrolling. */
+/* Keep the fixed control board within its panel bounds. */
 .drawer-playback .playback-drawer,
 .drawer-playback .drawer-panel,
 .drawer-playback .drawer-panel .list {overflow:clip;}
-.drawer-playback .control-board-list {display:flex;align-items:center;gap:4px;min-width:0;max-width:100%;}
-.drawer-playback .control-board-list .list {display:block;flex:1;min-width:0;margin:0;height:46px!important;max-height:46px;}
-.drawer-playback .control-board-list .listitem {height:44px;box-sizing:border-box;}
-.drawer-playback .control-board-pages {display:flex;gap:2px;flex-shrink:0;}
-.drawer-playback .control-board-pages button {width:44px;min-width:44px;padding:0;font-size:24px;}
-@media (orientation:portrait), (max-width:800px) {
- .drawer-playback [data-drawer-panel=marker] .control-board-list {flex:1;}
-}
 
 /* Transport owns position and rewind amount; the board never duplicates them. */
 .drawer-playback .transport-rewind-number {box-sizing:border-box;width:44px;min-width:44px;height:48px;text-align:center;font-size:16px;padding:6px 2px;}

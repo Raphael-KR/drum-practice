@@ -104,11 +104,11 @@ SVG의 텍스트 글꼴만 `YuMincho`로 지정하고 `サビ`를 기존 프레�
 ```sh
 python3 -m venv docs/experiments/musicxml/venv
 docs/experiments/musicxml/venv/bin/pip install -r scripts/musicxml/requirements.txt
-cp /Users/raphael/Playground/drum-practice/data/reference/geometry.json docs/experiments/musicxml/geometry.json
+cp /Users/raphael/Playground/drum-practice/data/reference/geometry.json data/reference/musicxml/geometry.json
 mkdir -p docs/experiments/musicxml/schema
-curl -fsSL https://raw.githubusercontent.com/w3c/musicxml/v4.0/schema/musicxml.xsd -o docs/experiments/musicxml/schema/musicxml.xsd
-curl -fsSL https://raw.githubusercontent.com/w3c/musicxml/v4.0/schema/xml.xsd -o docs/experiments/musicxml/schema/xml.xsd
-curl -fsSL https://raw.githubusercontent.com/w3c/musicxml/v4.0/schema/xlink.xsd -o docs/experiments/musicxml/schema/xlink.xsd
+curl -fsSL https://raw.githubusercontent.com/w3c/musicxml/v4.0/schema/musicxml.xsd -o data/reference/musicxml/schema/musicxml.xsd
+curl -fsSL https://raw.githubusercontent.com/w3c/musicxml/v4.0/schema/xml.xsd -o data/reference/musicxml/schema/xml.xsd
+curl -fsSL https://raw.githubusercontent.com/w3c/musicxml/v4.0/schema/xlink.xsd -o data/reference/musicxml/schema/xlink.xsd
 ```
 
 이하 `PY`는 위 가상환경 Python 경로, `OUT`은 산출물 경로다. 임의의 사용자 파일이 있는 디렉터리를 OUT으로 지정하지 않는다.

@@ -6,18 +6,20 @@ import { defaults, validateSong, makeCycle } from '/src/model.ts';
 import { displayPage } from '/src/score-pages.ts';
 
 const BASE='/@fs/Users/raphael/Playground/drum-practice/';
-const ROOT=BASE+'docs/experiments/preplay-warmup-20261006/composition-03/';
+const ROOT=BASE+'data/production/preplay-warmup/source/';
 const sha=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await b.arrayBuffer())),v=>v.toString(16).padStart(2,'0')).join('');
 const b64=async b=>{const bytes=new Uint8Array(await b.arrayBuffer());let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);};
 const save=async (endpoint,data)=>{const r=await fetch('http://127.0.0.1:5191/'+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok)throw Error('Evidence receiver '+r.status);};
 
 export async function build(){
   const source=new Blob([await(await fetch(ROOT+'preplay-warmup-source.musicxml')).arrayBuffer()],{type:'application/vnd.recordare.musicxml+xml'});
-  const audio=new Blob([await(await fetch(BASE+'docs/experiments/preplay-warmup-20261006/socal-final-01/preplay-warmup-socal.mp3')).arrayBuffer()],{type:'audio/mpeg'});
+  const audio=new Blob([await(await fetch(BASE+'data/production/preplay-warmup/audio/preplay-warmup-socal.mp3')).arrayBuffer()],{type:'audio/mpeg'});
   const fixture=await(await fetch(BASE+'scripts/musicxml/fixtures/preplay_warmup.json')).json();
   const metadata={id:fixture.id,title:fixture.title,artist:fixture.artist};
-  const generation=await(await fetch(ROOT+'generation-audit.json')).json();
-  const audioAudit=await(await fetch(BASE+'docs/experiments/preplay-warmup-20261006/socal-final-01/render-audit.json')).json();
+  const generationResponse=await fetch(ROOT+'generation-audit.json');
+  if(!generationResponse.ok)throw Error('Generation audit was cleaned up. Run scripts/musicxml/preplay_warmup.py with --out pointing to the source folder after obtaining test permission, then retry.');
+  const generation=await generationResponse.json();
+  const audioAudit=await(await fetch(BASE+'data/production/preplay-warmup/audio/render-audit.json')).json();
   if(generation.status!=='PASS'||await sha(audio)!==audioAudit.mp3SHA256)throw Error('Input validation/hash mismatch');
   const render=await renderMusicXML(source,s=>window.warmupProgress=s,'P1');
   if(render.regions.length!==96)throw Error('Expected 96 regions');

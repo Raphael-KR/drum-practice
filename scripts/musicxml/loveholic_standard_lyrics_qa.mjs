@@ -8,7 +8,7 @@ import { scoreLayout, layoutScoreLyrics, measureWidth } from "/src/playback-layo
 import { displayRegion } from "/src/score-view.ts";
 import { xAtBeat } from "/src/model.ts";
 
-const path = "/@fs/Users/raphael/Playground/drum-practice/docs/experiments/loveholic-20261002/standard-lyrics-package-20261003/Loveholic.drumscore";
+const path = "/@fs/Users/raphael/Playground/drum-practice/data/production/loveholic/final/Loveholic.drumscore";
 const positions = s => s.lyrics.map(l => ({ id:l.id, text:l.text, ...l.scorePosition }));
 
 export async function review(format = "svg", packagePath = path) {

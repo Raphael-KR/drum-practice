@@ -21,7 +21,7 @@
 ## 최종 검증과 배포
 
 - Loveholic32줄의 원본 region fingerprint에만 crop을 적용했다. PDF 박 좌표 오차 최대5.56e-17, SVG 우회, 원본파일 보존. Safari iPad mini 응답형 화면에서4마디×2행, 첫4/4 보존, 한줄/두줄 표시와 재생·정지를 검수했다.
-- half-muted의 명시적 pictHalfOpen1만 공식 Bravura U+E7F6 path로 보완한다. 원본 글리프의 임의 도형 재현이 아니다. OFL과 원본 SHA는 src/vendor에 보존, 앱 및 portable 템플릿 라이선스에 포함. 기본 brass half-muted는 변경하지 않는다.
+- half-muted의 명시적 pictHalfOpen1만 공식 Bravura U+E7F6 path로 보완한다. 원본 글리프의 임의 도형 재현이 아니다. OFL과 원본 SHA는 src/vendor에 보존, 앱 라이선스에 포함. 기본 brass half-muted는 변경하지 않는다.
 - 제작 세션의 새 패키지 SHA256: ab36ce61084b9d619520b1ded8cd6a26aa7745a9bcc92b1698fc8078b8e71a1f. Safari 보관함 재읽기20/20glyph,123마디 확인. 33–35마디의 표기를 직접 캡처 검수했다.
 - 이미 가져온 번들 악보가 자동 갱신되지 않는 경로를 발견했다. 공통 import/merge를 사용하는 악보 업데이트 버튼을 추가했고, Safari에서 실제 클릭 전후 설정·위치·마커·반복 정보가 동일함을 확인했다. 강제 덮어쓰기 대신 기존 구조 충돌 처리도 재사용한다.
 - 전후 비교를 window 변수에 두자 개발 서버 HMR로 변수가 소실됐다. sessionStorage에 QA snapshot을 두고 재검증하여 보존 true를 확인했다. 기록 손실로 오판하지 않는다.

@@ -23,7 +23,7 @@ export function soundFieldsHTML() {
     .join("")}</div>`;
 }
 export function zoomFieldHTML() {
-  return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("portable-player.message455")}</strong><span class="zoom-scale"><input id="zoom" type="range" min="0" max="100" step="0.5" value="50" list="zoom-ticks"><datalist id="zoom-ticks">${ZOOM_TICKS.map(p=>`<option value="${p}"></option>`).join("")}</datalist><span class="zoom-tick-labels" aria-hidden="true">${ZOOM_TICKS.map(p=>`<span>${Math.round(zoomFromSlider(p)*100)}%</span>`).join("")}</span></span><output id="zoom-value" for="zoom">100%</output></label>`;
+  return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("playback.message455")}</strong><span class="zoom-scale"><input id="zoom" type="range" min="0" max="100" step="0.5" value="50" list="zoom-ticks"><datalist id="zoom-ticks">${ZOOM_TICKS.map(p=>`<option value="${p}"></option>`).join("")}</datalist><span class="zoom-tick-labels" aria-hidden="true">${ZOOM_TICKS.map(p=>`<span>${Math.round(zoomFromSlider(p)*100)}%</span>`).join("")}</span></span><output id="zoom-value" for="zoom">100%</output></label>`;
 }
 export function loopFieldsHTML() {
   return "";
@@ -47,13 +47,13 @@ export function playbackPreferenceFieldsHTML(
   return (
     settingsSwitch(
       restart,
-      t("portable-player.message442"),
-      t("portable-player.message443"),
+      t("playback.message442"),
+      t("playback.message443"),
     ) +
     settingsSwitch(
       countoff,
-      t("portable-player.message444"),
-      t("portable-player.message445"),
+      t("playback.message444"),
+      t("playback.message445"),
     ) +
     '<p id="playback-settings-status" class="subtle" role="status"></p>'
   );
@@ -71,8 +71,8 @@ export function screenSettingsHTML(
     titleOrderFieldsHTML() +
     zoomFieldHTML() +
     settingsSwitch("uniform-spacing", t("settings.uniformSpacing"), t("settings.uniformSpacingDescription")) +
-    settingsSwitch(ids.highlight, t("portable-player.message439"), t("main.message255"), true, { descriptionId: "note-highlight-description" }) +
-    `<div class="settings-group">${settingsSwitch(ids.fullscreen, t("portable-player.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
+    settingsSwitch(ids.highlight, t("playback.message439"), t("main.message255"), true, { descriptionId: "note-highlight-description" }) +
+    `<div class="settings-group">${settingsSwitch(ids.fullscreen, t("playback.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
   );
 }
 export type SettingsCategory = "screen" | "playback" | "score" | "info";
@@ -179,13 +179,13 @@ export function repeatBarHTML(ids: {
   summaryId: string;
   stopId: string;
 }) {
-  return `<section ${ids.repeat ? `id="${ids.repeat}"` : ""} class="repeat-controls" aria-label="${t("workspace.message549")}"><div class="repeat-actions">${playbackButton(ids.adjust, "repeat", t("icons.message067"))}${repeatControlsHTML(ids)}</div><div id="${ids.markers}" class="marker-slots" role="group" aria-label="${t("portable-player.message452")}"></div></section>`;
+  return `<section ${ids.repeat ? `id="${ids.repeat}"` : ""} class="repeat-controls" aria-label="${t("workspace.message549")}"><div class="repeat-actions">${playbackButton(ids.adjust, "repeat", t("icons.message067"))}${repeatControlsHTML(ids)}</div><div id="${ids.markers}" class="marker-slots" role="group" aria-label="${t("playback.message452")}"></div></section>`;
 }
 export function appInfoHTML(
   version: string,
   build: { source: string; builtAt: string },
 ) {
-  return `<section class="settings-group app-info"><p id="recording-tempo-info" class="subtle" hidden></p><dl><dt>${t("portable-player.message456")}</dt><dd id="app-version">${escapeHTML(version)} (${escapeHTML(build.source)})</dd><dt>${t("portable-player.message457")}</dt><dd id="app-built-at">${escapeHTML(formatDate(new Date(build.builtAt), { timeZone: "Asia/Seoul", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }))} KST</dd></dl></section>`;
+  return `<section class="settings-group app-info"><p id="recording-tempo-info" class="subtle" hidden></p><dl><dt>${t("playback.message456")}</dt><dd id="app-version">${escapeHTML(version)} (${escapeHTML(build.source)})</dd><dt>${t("playback.message457")}</dt><dd id="app-built-at">${escapeHTML(formatDate(new Date(build.builtAt), { timeZone: "Asia/Seoul", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }))} KST</dd></dl></section>`;
 }
 
 

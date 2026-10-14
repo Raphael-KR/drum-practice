@@ -10,7 +10,6 @@ import { displayPage } from "./score-pages";
 import { icon } from "./icons";
 import { songScores } from "./song-scores";
 import { openSettingsChild, selectEditorPane } from "./workspace";
-import { isPortable } from "./portable";
 import type { RecordData } from "./storage";
 import { escapeHTML } from "./html";
 export { escapeHTML } from "./html";
@@ -282,11 +281,6 @@ export function setupScoreManagement(h: Host) {
             i18nText("score-management.message494"),
             i18nText("score-management.message496"),
           ],
-          [
-            "html",
-            i18nText("score-management.message497"),
-            i18nText("score-management.message498"),
-          ],
         ]
           .map(
             ([v, l, s]) =>
@@ -294,7 +288,7 @@ export function setupScoreManagement(h: Host) {
           )
           .join(""),
       ) +
-      '</div><p id="html-export-note" class="subtle"></p><div class="management-footer"><span id="export-selection" role="status"></span><button id="export-selected" class="icon-button primary" aria-label="' +
+      '</div><div class="management-footer"><span id="export-selection" role="status"></span><button id="export-selected" class="icon-button primary" aria-label="' +
       i18nText("score-management.message499") +
       '">' +
       String(icon("export")) +
@@ -548,19 +542,6 @@ export function setupScoreManagement(h: Host) {
     full.hidden = replaceButton.hidden = !present;
     if (!r) return;
     $("export-song-name").textContent = r.song.title;
-    const html = out.querySelector<HTMLInputElement>('input[value="html"]')!;
-    html.disabled = !r.audio.size;
-    $("html-export-note").textContent = r.audio.size
-      ? i18nText("score-management.message523", {
-          value1: songScores(r)
-            .map((s) =>
-              s.format === "musicxml"
-                ? i18nText("term.MusicXML")
-                : i18nText("term.PDF"),
-            )
-            .join(" + "),
-        })
-      : i18nText("score-management.message524");
     const pdf = songScores(r).some((s) => s.format === "pdf");
     (out.querySelector('input[value="pdf"]') as HTMLInputElement).disabled =
       !pdf;
@@ -586,22 +567,6 @@ export function setupScoreManagement(h: Host) {
       e.textContent = line || "\u00a0";
       body.append(e);
     }
-  }
-  if (isPortable) {
-    $("open-score-settings").hidden = true;
-    $("score-settings").hidden = true;
-    for (const id of [
-      "library-button",
-      "welcome",
-      "library-dialog",
-      "new-dialog",
-      "editor-dialog",
-      "song-files-dialog",
-      "song-export-dialog",
-      "lyric-upload-dialog",
-      "full-lyrics-dialog",
-    ])
-      $(id).hidden = true;
   }
   refresh();
   installUIStandard("web", $("app"));

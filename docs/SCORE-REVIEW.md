@@ -23,7 +23,7 @@
 보기는 세 개의 라디오 버튼으로 표시한다. 기본 ‘바람과 언덕의 발라드’는 곡을 열 때 앱에 포함된 변환 MusicXML을 자동 연결한다. 기존 PDF·음원·마디 시간은 유지하고, 사용자 MusicXML이 이미 있으면 덮어쓰지 않는다. PDF SHA-256으로 원본 일치를 확인한다. 이 경로는 검토할 변환 결과를 제공하며 채보 정확성을 보증하지 않는다.
 
 앱 자료: public/demo/score.musicxml (미디어 정책에 따라 Git 제외).
-변환 작업 원본: /Users/raphael/.codex/worktrees/95fd/drum-practice/docs/experiments/musicxml/real-paradis-110-candidate.musicxml.
+변환 작업 원본: /Users/raphael/.codex/worktrees/95fd/drum-practice/data/reference/musicxml/real-paradis-110-candidate.musicxml.
 XML SHA-256: d5033d473bef0a63d2ded5f2e09234b168b7306d1872fdce9981d9864516f8f6.
 기존 QA 복사본보다 최신 메타정보가 포함된 14:47 산출물을 사용한다. PDF SHA-256: 33a98caa89daee7c5d9d56f272f73f0f8f6e9cb6526fe80af6c5f798807bcefd.
 

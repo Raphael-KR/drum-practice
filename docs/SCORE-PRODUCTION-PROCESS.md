@@ -22,7 +22,7 @@
 | 전체 SVG·연습 화면·자르기·캐시 | [SVG 출력 규칙](SVG-SCORE-RULES.md), [브라우저 공통 조판](BROWSER-MUSICXML-RENDERING.md) |
 | XML 정본·가사 음악적 위치·음원 연결 | [MusicXML 저장 계약](MUSICXML-CANONICAL.md) |
 | 새 드럼 음원 제작 시 라이브러리 선택 | [GarageBand 드럼킷 소개·선택 기준](GARAGEBAND-DRUM-KITS.md) |
-| 완성 파일·업데이트·구조 충돌 | [패키지 계약](SCORE-PACKAGE.md), [제작/재생 앱 경계](plans/EDITOR-PLAYER-SEPARATION.md) |
+| 완성 파일·업데이트·구조 충돌 | [패키지 계약](SCORE-PACKAGE.md), [제작/재생 앱 범위](../PRD.md#앱과-입력) |
 | 실패의 재현과 해결 | [문제 해결 기록](MUSICXML-TROUBLESHOOTING.md), [history](../history.md) |
 
 읽은 정본의 날짜·Git HEAD·이번 곡에 적용할 사용자 결정을 곡별 제작 문서에 남긴다. 문서 간 모순은 변환 정책의 확인 순서를 따른다. 이미 확정된 악기나 가사 정책을 사용자에게 다시 묻지 않는다.

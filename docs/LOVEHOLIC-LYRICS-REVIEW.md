@@ -54,7 +54,7 @@ Safari의 실제 저장 패키지 재읽기와 공통 preparePlaybackAssets/rend
 
 ## 기준과 과거 근거
 
-확정 매핑·변환 정책·[Apple 로컬 실행 계약](APPLE-LOCAL-WORKFLOW.md)을 읽었다. 과거 제작의 [가사 v2 기록](LYRICS-V2-REVIEW.md)과 `scripts/apple-local/align_syllables.py`, `docs/experiments/lyrics-v2/align-short.py`를 대조했다. 구간 첫 음절이 Whisper DTW 클립 시작에 붙는 현상은 당시에도 있었다. 과거 구절 앵커나 모델 정확도를 새 곡의 근거로 재사용하지 않는다.
+확정 매핑·변환 정책·[Apple 로컬 실행 계약](APPLE-LOCAL-WORKFLOW.md)을 읽었다. 과거 제작의 가사 v2 기록(보관본은 2026-10-13 사용자 요청으로 삭제)과 `scripts/apple-local/align_syllables.py`, `docs/experiments/lyrics-v2/align-short.py`를 대조했다. 구간 첫 음절이 Whisper DTW 클립 시작에 붙는 현상은 당시에도 있었다. 과거 구절 앵커나 모델 정확도를 새 곡의 근거로 재사용하지 않는다.
 
 원본 가사는 `printed-lyric-cues.json`의 25개 인쇄 행이다. PDF 행은 구절의 음악적 마디 기준 근처 검색 범위를 정하는 데만 사용한다. 행 시작 X좌표·마디 첫 박을 가창 시작으로 간주하지 않는다. 끝까지 없는 가사를 생성하거나 침묵의 인식 환각을 적용하지 않는다.
 

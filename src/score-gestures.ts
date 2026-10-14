@@ -31,9 +31,9 @@ export interface ScoreGestureController {
   dispose(): void;
 }
 
-const TAP_DELAY = 260;
-const DRAG_THRESHOLD = 8;
-const DOUBLE_TAP_DISTANCE = 28;
+const TAP_DELAY_MS = 260;
+export const SCORE_DRAG_THRESHOLD_PX = 8;
+const DOUBLE_TAP_DISTANCE_PX = 28;
 
 export function attachScoreGestures<T>(
   surface: HTMLElement,
@@ -92,7 +92,8 @@ export function attachScoreGestures<T>(
   }
 
   function down(event: PointerEvent) {
-    if (disposed || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (disposed || (event.pointerType === "mouse" && event.button !== 0))
+      return;
     pointers.add(event.pointerId);
     if (blocked || pointers.size > 1 || event.isPrimary === false) {
       blocked = true;
@@ -106,10 +107,13 @@ export function attachScoreGestures<T>(
     }
     callbacks.prepareAudio?.();
     const previous = pending;
-    const secondTap = Boolean(previous &&
-      Date.now() - previous.released <= TAP_DELAY &&
+    const secondTap = Boolean(
+      previous &&
+      Date.now() - previous.released <= TAP_DELAY_MS &&
       previous.pointerType === event.pointerType &&
-      Math.hypot(event.clientX - previous.x, event.clientY - previous.y) <= DOUBLE_TAP_DISTANCE);
+      Math.hypot(event.clientX - previous.x, event.clientY - previous.y) <=
+        DOUBLE_TAP_DISTANCE_PX,
+    );
     clearTap();
     active = {
       id: event.pointerId,
@@ -125,7 +129,12 @@ export function attachScoreGestures<T>(
 
   // A second finger outside the score must also cancel a gesture on the score.
   function outsideDown(event: PointerEvent) {
-    if (!active || surface.contains(event.target as Node) || event.pointerId === active.id) return;
+    if (
+      !active ||
+      surface.contains(event.target as Node) ||
+      event.pointerId === active.id
+    )
+      return;
     pointers.add(event.pointerId);
     blocked = true;
     cancelGesture();
@@ -136,13 +145,21 @@ export function attachScoreGestures<T>(
     const dx = event.clientX - active.x;
     const dy = event.clientY - active.y;
     if (active.mode === "tap") {
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < DRAG_THRESHOLD) return;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < SCORE_DRAG_THRESHOLD_PX)
+        return;
       active.mode = Math.abs(dx) > Math.abs(dy) ? "scrub" : "scroll";
-      if (active.mode === "scrub" && callbacks.horizontalEnabled?.() === false) {
+      if (
+        active.mode === "scrub" &&
+        callbacks.horizontalEnabled?.() === false
+      ) {
         active.mode = "scroll";
         return;
       }
-      if (active.mode === "scrub" && event.pointerType === "touch" && callbacks.nativeHorizontal?.()) {
+      if (
+        active.mode === "scrub" &&
+        event.pointerType === "touch" &&
+        callbacks.nativeHorizontal?.()
+      ) {
         active.mode = "scroll";
         return;
       }
@@ -175,9 +192,14 @@ export function attachScoreGestures<T>(
     }
     if (finished.mode === "scroll") return;
     // Browsers can coalesce pointermove events. A moved pointer is never a tap.
-    if (Math.hypot(event.clientX - finished.x, event.clientY - finished.y) >= DRAG_THRESHOLD) return;
+    if (
+      Math.hypot(event.clientX - finished.x, event.clientY - finished.y) >=
+      SCORE_DRAG_THRESHOLD_PX
+    )
+      return;
     if (finished.secondTap) {
-      if (!finished.wasPlaying && callbacks.pausedDoubleTap) callbacks.pausedDoubleTap(finished.target);
+      if (!finished.wasPlaying && callbacks.pausedDoubleTap)
+        callbacks.pausedDoubleTap(finished.target);
       else callbacks.seek(finished.target, true);
       return;
     }
@@ -186,8 +208,9 @@ export function attachScoreGestures<T>(
       if (pending?.timer !== timer) return;
       const tap = pending;
       pending = undefined;
-      if (!tap.wasPlaying && !callbacks.pausedTap?.(tap.target)) callbacks.seek(tap.target, false);
-    }, TAP_DELAY);
+      if (!tap.wasPlaying && !callbacks.pausedTap?.(tap.target))
+        callbacks.seek(tap.target, false);
+    }, TAP_DELAY_MS);
     pending = {
       x: finished.x,
       y: finished.y,
@@ -208,7 +231,8 @@ export function attachScoreGestures<T>(
   function lostCapture(event: PointerEvent) {
     // iPad transfers implicit capture from the touched note to this surface.
     // Its bubbling lostpointercapture is not a loss of our explicit capture.
-    if (event.target === surface && active?.id === event.pointerId) cancelGesture();
+    if (event.target === surface && active?.id === event.pointerId)
+      cancelGesture();
   }
 
   surface.addEventListener("pointerdown", down);
