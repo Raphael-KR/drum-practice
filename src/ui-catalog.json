@@ -700,6 +700,23 @@
       }
     },
     {
+      "id": "settings.audio",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "",
+        "player": "#open-audio-settings"
+      },
+      "name": {
+        "ko": "component.settings.audio.name",
+        "en": "Audio"
+      },
+      "accessible": {
+        "ko": "component.settings.audio.accessible",
+        "en": "Audio practice files"
+      }
+    },
+    {
       "id": "settings.info",
       "parent": "settings",
       "role": "",

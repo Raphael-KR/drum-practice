@@ -49,6 +49,7 @@
 | settings.screen | 화면 | 화면 | Display | settings |
 | settings.playback | 재생 | 재생 | Playback | settings |
 | settings.score | 악보 | 악보 | Score management | settings |
+| settings.audio | 내 음원 목록 | 내 음원 목록 사용자 설정 | Audio | settings |
 | settings.info | 정보 | 정보 | About | settings |
 | manage.edit | 편집 | 편집 | Edit | settings.score |
 | manage.files | 파일 | 파일 | Files | settings.score |

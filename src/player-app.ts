@@ -1,3 +1,6 @@
+import { installPracticeFileControls } from "./practice-file-controls";
+import { matchPracticeAudio, type PracticeFileEntry } from "./practice-file";
+import { checkAudioBeforeDecode } from "./audio-import-limits";
 import {
   practiceFileKind,
   readAudioPractice,
@@ -35,6 +38,7 @@ import {
   loadPracticeRecord,
   savePracticeState,
   savePracticeRecord,
+  addPracticeRecords,
   savePracticeCanonicalMetadata,
   importPracticeRecord,
 } from "./practice-library";
@@ -137,6 +141,25 @@ async function hasSameBundledContent(
   );
   return matches.every(Boolean);
 }
+async function audioPracticeRecords() {
+  return (await listPracticeRecords()).filter(record => !!record.song.audioPractice);
+}
+async function findPracticeAudio(entries: PracticeFileEntry[]) {
+  return matchPracticeAudio(entries, (await listPracticeRecords()).map(record => record.audio));
+}
+async function restorePracticeFile(records: RecordData[]) {
+  if (working) throw Error(t("practiceFile.working"));
+  working = true;
+  try {
+    for (const record of records)
+      await checkAudioBeforeDecode(new File([record.audio], record.song.audioName, {type: record.audio.type}));
+    // Validate and commit the complete batch before replacing the visible screen.
+    await addPracticeRecords(records);
+    await showLibrary();
+    const status = root.querySelector<HTMLElement>("#library-status");
+    if (status) status.textContent = t("practiceFile.restored", {count: records.length});
+  } finally { working = false; }
+}
 async function openRecord(id: string) {
   if (working) return;
   ++libraryEpoch;
@@ -237,6 +260,7 @@ async function openRecord(id: string) {
         .filter((v) => v.format !== (record.song.scoreFormat ?? "pdf"))
         .map((v) => ({ song: useScore(record, v).song, pages: v.pages })),
       initial: preferences(),
+      practiceFiles: {records: audioPracticeRecords, findAudio: findPracticeAudio, restore: restorePracticeFile},
       licenses: notices.entries
         .map((e) => `${e.name} ${e.version} · ${e.license}\n${e.text}`)
         .join("\n\n"),
@@ -371,8 +395,14 @@ export async function showLibrary() {
     const panel = document.createElement("section");
     panel.className = "tool-body settings-panel";
     panel.dataset.settingsPanel = "screen";
-    panel.innerHTML = `<h3>${t("settings.screenTitle")}</h3>${titleOrderFieldsHTML()}<p class="library-settings-status" role="status"></p>`;
+    panel.innerHTML = `<h3 class="settings-section-heading">${t("settings.screenTitle")}</h3>${titleOrderFieldsHTML()}<p class="library-settings-status" role="status"></p>`;
     dialog.append(panel);
+    const practiceFiles = document.createElement("section");
+    practiceFiles.className = "tool-body settings-panel";
+    practiceFiles.dataset.settingsPanel = "audio";
+    practiceFiles.innerHTML = `<h3 class="settings-section-heading">${t("component.settings.audio.name")}</h3>`;
+    dialog.append(practiceFiles);
+    installPracticeFileControls(practiceFiles, {records: audioPracticeRecords, findAudio: findPracticeAudio, restore: restorePracticeFile});
     const buttons = Array.from(
       panel.querySelectorAll<HTMLButtonElement>("[data-title-order]"),
     );
@@ -446,6 +476,9 @@ export async function showLibrary() {
   // Keep this render tied to its own container across asynchronous reads.
   const basicList = document.getElementById("basic-practice-records")!;
   const personalList = document.getElementById("personal-practice-records")!;
+  const audioList = document.getElementById("audio-practice-records")!;
+  const sectionLists = [basicList, personalList, audioList];
+  const audioIds = new Set<string>();
   const favoriteList = document.getElementById("favorite-practice-records")!;
   // Classify only current bundled basic exercises.
   const basicIds = new Set(
@@ -453,7 +486,8 @@ export async function showLibrary() {
       .filter((s) => "category" in s && s.category === "basic")
       .map((s) => s.id),
   );
-  const listFor = (id: string) => (basicIds.has(id) ? basicList : personalList);
+  const listFor = (id: string) =>
+    basicIds.has(id) ? basicList : audioIds.has(id) ? audioList : personalList;
   let favorites = new Set<string>();
   try {
     const stored: unknown = JSON.parse(
@@ -473,7 +507,7 @@ export async function showLibrary() {
     /* Invalid or unavailable preferences leave the score list usable. */
   }
   const sortFavorites = () => {
-    const cards = [favoriteList, basicList, personalList].flatMap((list) =>
+    const cards = [favoriteList, ...sectionLists].flatMap((list) =>
       Array.from(list.children),
     ) as HTMLElement[];
     cards.sort(
@@ -484,10 +518,8 @@ export async function showLibrary() {
       (favorites.has(id) ? favoriteList : listFor(id)).append(card);
     }
     favoriteList.hidden = !favoriteList.childElementCount;
-    basicList.closest<HTMLElement>("section")!.hidden =
-      !basicList.childElementCount;
-    personalList.closest<HTMLElement>("section")!.hidden =
-      !personalList.childElementCount;
+    for (const list of sectionLists)
+      list.closest<HTMLElement>("section")!.hidden = !list.childElementCount;
   };
   const appendCard = (id: string, card: HTMLElement) => {
     card.dataset.scoreId = id;
@@ -553,6 +585,7 @@ export async function showLibrary() {
     };
     item.querySelector(".practice-card-actions")!.append(remove);
     if (record.song.audioPractice) {
+      audioIds.add(record.song.id);
       item.classList.add("audio-practice-card");
       const setup = document.createElement("button");
       setup.textContent = setup.title = t("audioPractice.setup");
@@ -605,12 +638,12 @@ export async function showLibrary() {
   );
   basicList.append(...cards);
   let libraryOrder = 0;
-  for (const list of [basicList, personalList]) {
+  for (const list of sectionLists) {
     Array.from(list.children).forEach((card) => {
       (card as HTMLElement).dataset.libraryOrder = String(libraryOrder++);
     });
   }
-  const empty = !personalList.childElementCount;
+  const empty = !personalList.childElementCount && !audioList.childElementCount;
   sortFavorites();
   root.querySelector<HTMLElement>("#library-empty-hint")!.hidden = !empty;
   if (empty)

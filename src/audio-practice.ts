@@ -57,6 +57,7 @@ export function setAudioBarOne(song: Song, time: number): Song {
 /** Upgrade pre-tracking records once; retain user tags, media and practice state. */
 export async function ensureAudioBeatTracking(record: RecordData, progress?: (text:string)=>void): Promise<RecordData> {
   const a = record.song.audioPractice;
+  if (record.preserveAudioTiming) return record;
   if (!a || a.duration < 4 || a.duration > 1800) return record;
   if (a.beatTimes) {
     if(a.startAnalyzed || a.barOne)return record;

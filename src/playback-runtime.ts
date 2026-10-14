@@ -1,3 +1,4 @@
+import { installPracticeFileControls, type PracticeFileControlsOptions } from "./practice-file-controls";
 import { renderKeepingTopHeader } from "./top-edge-header";
 import type { RibbonAsset } from "./playback-assets";
 import appVersions from "./app-versions.json";
@@ -43,6 +44,7 @@ export interface PlaybackRuntimeOptions {
   licenses?: string;
   changed?: (song: Song, initial: PlaybackInitial) => void | Promise<void>;
   onLibrary?: () => void;
+  practiceFiles?: PracticeFileControlsOptions;
   onLoading?: (phase: "screen" | "audio") => void;
 }
 /** Blob-based playback host for the practice library app. */
@@ -150,6 +152,17 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     scores: variants,
     fail,
   });
+  if (s.audioPractice && options.practiceFiles) {
+    installPracticeFileControls(addSettings("audio", "audio-settings", "open-audio-settings"), {
+      ...options.practiceFiles,
+      records: async () => {
+        // Snapshot live state before awaiting IndexedDB; it can be newer than queued autosave.
+        const current = {song: structuredClone(s), audio: data.audio};
+        const records = await options.practiceFiles!.records();
+        return [...records.filter(record => record.song.id !== s.id), current];
+      },
+    });
+  }
   const open = (id: string) => {
     scoreGestures.cancel();
     $<HTMLDialogElement>(id + "-dialog").showModal();

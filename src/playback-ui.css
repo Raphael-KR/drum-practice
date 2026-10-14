@@ -1169,7 +1169,7 @@ button.primary:hover:not(:disabled) {
   border-color: var(--accent-hover);
   color: white;
 }
-#tempo-reset {
+.tempo-reference button {
   width: 100%;
   min-width: 0;
   white-space: pre-line;
@@ -2818,8 +2818,8 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   .drawer-playback .section-shortcuts span {font-size:11px;}
 }
 
-#tempo-reset {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
-#tempo-reset .tempo-original-bpm {font-size:14px;font-weight:500;white-space:nowrap;}
+.tempo-reference {display:grid;grid-template-rows:repeat(2,minmax(48px,1fr));gap:10px;min-width:0;}
+.tempo-reference button {white-space:nowrap;}
 
 /* Narrow tablet portrait: preserve the three dock groups in two rows. */
 @media (min-width:720px) and (max-width:899px) and (orientation:portrait) {
@@ -2889,3 +2889,11 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   .drawer-playback #practice:not(.score-review) > .playback-dock > .transport {flex:0 0 auto;}
   .drawer-playback #practice:not(.score-review) > .playback-dock > .playback-drawer {flex:1 0 auto;}
 }
+
+.settings-panel[data-settings-panel="audio"] { background: #fff5e5; }
+.practice-file-controls { min-width:0; }
+.practice-file-controls > p { margin:0; }
+.practice-file-controls > [data-practice-audio] { grid-column:1 / -1; justify-self:start; }
+.practice-file-status { grid-column:1 / -1; overflow-wrap:anywhere; }
+.practice-file-status:empty { display: none; }
+.practice-file-status.is-error { color: #b42318; font-weight: 600; }

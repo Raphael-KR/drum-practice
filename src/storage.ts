@@ -9,6 +9,8 @@ import {
   type StoredMedia,
 } from "./stored-media";
 export interface RecordData {
+  /** Explicitly restored audio timing must not be changed by automatic upgrades. */
+  preserveAudioTiming?: boolean;
   editDraft?: import("./edit-history").EditDraft;
   revisions?: import("./edit-history").SavedRevision[];
   canonicalXML?: string;

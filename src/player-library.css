@@ -228,7 +228,13 @@ body:not(.has-song) #app .editor-home button {
 .player-library #favorite-practice-records[hidden],
 .player-library .library-section[hidden] { display:none; }
 .library-settings-dialog { width:720px; max-width:calc(100vw - 32px); }
-.library-settings-dialog .settings-panel { margin-top:12px; }
+.library-settings-dialog .settings-panel {
+  margin-top:12px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#eaf2ff;
+}
 .library-settings-status { color:#b42318; }
 .library-settings-status:empty { display:none; }
 

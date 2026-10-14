@@ -785,12 +785,15 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       .map((bpm) => `<button title="${t("tooltip.tempo", {bpm})}" data-tempo="${bpm}">${bpm} BPM</button>`)
       .join("");
     get("tempo-reset").dataset.tempo = String(original);
-    get("tempo-reset").innerHTML = `<span>${t("tempo.original")}</span><span class="tempo-original-bpm">${h.song().bpm} BPM</span>`;
+    get("tempo-score").dataset.tempo = String(h.song().bpm);
+    get("tempo-score").textContent = `${h.song().bpm} BPM`;
+    get("tempo-score").title = t("tooltip.tempo", {bpm: h.song().bpm});
     sync();
     open("tempo");
   }
   action(ids.tempo, openTempo);
   action("tempo-reset", () => rate(h.song().bpm, true));
+  action("tempo-score", () => rate(h.song().bpm));
   listen(get("tempo-options"), "click", (e) => {
     const b = (e.target as Element).closest<HTMLElement>("[data-tempo]");
     if (b && h.ready()) run(() => rate(Number(b.dataset.tempo)));

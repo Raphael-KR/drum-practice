@@ -174,6 +174,18 @@ export function savePracticeRecord(record: RecordData): Promise<void> {
     });
   });
 }
+/** Restore the entire validated batch atomically. New IDs must never overwrite old records. */
+export function addPracticeRecords(records: RecordData[]): Promise<void> {
+  const copies = records.map(snapshot);
+  return queued(async () => {
+    const stored: Stored[] = [];
+    for (const copy of copies) stored.push(await encode(copy));
+    await change(tx => {
+      const store = tx.objectStore("songs");
+      for (const record of stored) store.add(record);
+    });
+  });
+}
 /** Metadata-only upgrade; never overwrite a concurrent edit or practice state. */
 export function savePracticeCanonicalMetadata(
   id: string,

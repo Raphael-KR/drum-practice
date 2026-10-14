@@ -9,7 +9,7 @@ import { playbackButton, repeatControlsHTML } from "./playback-ui";
 import { settingsSwitch } from "./settings-ui";
 import { componentName } from "./ui-standard";
 export function tempoFieldsHTML(id: string) {
-  return `<label class="tempo-number" title="${t("workspace.message544")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div id="tempo-status" role="status" aria-live="polite" aria-atomic="true"></div><div class="tempo-choices"><div id="tempo-options"></div><button id="tempo-reset" title="${t("workspace.message545")}">${t("workspace.message545")}</button></div>`;
+  return `<label class="tempo-number" title="${t("workspace.message544")}"><input id="${id}" type="text" inputmode="none" readonly role="slider" min="47" max="113" step="1" value="94" aria-label="${t("main.message208")}"><span>${t("term.BPM")}</span></label><div id="tempo-status" role="status" aria-live="polite" aria-atomic="true"></div><div class="tempo-choices"><div id="tempo-options"></div><div class="tempo-reference"><button id="tempo-reset" title="${t("workspace.message545")}">${t("tempo.original")}</button><button id="tempo-score"></button></div></div>`;
 }
 export function soundFieldsHTML() {
   return `<div class="playback-sound-fields">${[
@@ -75,7 +75,7 @@ export function screenSettingsHTML(
     `<div class="settings-group">${settingsSwitch(ids.fullscreen, t("playback.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
   );
 }
-export type SettingsCategory = "screen" | "playback" | "score" | "info";
+export type SettingsCategory = "screen" | "playback" | "score" | "audio" | "info";
 export function settingsFrameHTML() {
   return (
     dialogHeader(
@@ -111,7 +111,7 @@ export function settingsPanel(
     icon(
       category === "playback"
         ? "play"
-        : category === "score"
+        : (category === "score" || category === "audio")
           ? "library"
           : category,
     ),

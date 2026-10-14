@@ -43,6 +43,12 @@ export function libraryHTML(showEditor: boolean): string {
         </div>
         <div id="personal-practice-records" class="practice-records"></div>
       </section>
+      <section class="library-section" aria-labelledby="audio-library-title" hidden>
+        <div class="library-heading">
+          <h2 id="audio-library-title">${escapeHTML(t("library.myAudio"))}</h2>
+        </div>
+        <div id="audio-practice-records" class="practice-records"></div>
+      </section>
     </div>
   </main>`;
 }

@@ -7,12 +7,13 @@ import { mountPlaybackShell } from "./playback-shell";
 import { webPlaybackBindings } from "./playback-ui";
 import { componentName } from "./ui-standard";
 // Arrange existing controls without duplicating their state or event handlers.
-export type SettingsCategory = "screen" | "playback" | "score" | "info";
+export type SettingsCategory = "screen" | "playback" | "score" | "audio" | "info";
 const settingsTitles: Record<SettingsCategory, string> = {
   screen: componentName("settings.screen"),
   playback: componentName("settings.playback"),
   score: componentName("settings.score"),
   info: componentName("settings.info"),
+  audio: componentName("settings.audio"),
 };
 const SETTINGS_KEY = "drum-practice.settings-category";
 let lastCategory: SettingsCategory = "screen";

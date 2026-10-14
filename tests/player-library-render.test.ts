@@ -166,7 +166,7 @@ it("keeps basic exercises in their own section before and after import without r
   const basic = bundled.find(s => "category" in s && s.category === "basic")!;
   vi.mocked(listPracticeRecords).mockResolvedValue([]);
   await showLibrary();
-  expect([...document.querySelectorAll(".library-section h2")].map(h => h.textContent)).toEqual(["기본 연습곡", "내 악보 목록"]);
+  expect([...document.querySelectorAll(".library-section h2")].map(h => h.textContent)).toEqual(["기본 연습곡", "내 악보 목록", "내 음원 목록"]);
   const basicList = () => document.querySelector("#basic-practice-records")!;
   const personalList = () => document.querySelector("#personal-practice-records")!;
   expect(basicList().querySelector("h3")?.textContent).toBe(basic.title);
@@ -386,4 +386,53 @@ it('allows normal focus refresh again after the file picker is cancelled', async
  window.dispatchEvent(new Event('focus'));
  await vi.waitFor(()=>expect(document.querySelector('#package-file')).not.toBe(input));
  click.mockRestore();
+});
+
+
+it("separates audio-only records and restores audio favorites without duplicate cards", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  localStorage.removeItem("drum-practice:favorite-scores");
+  const score = { song: { id: "score-with-audio", title: "Score" }, audio: new Blob(["audio"]) };
+  const audio = { song: { id: "audio-only", title: "Audio", audioPractice: { duration: 5 } } };
+  vi.mocked(listPracticeRecords).mockResolvedValue([audio, score] as any);
+  await showLibrary();
+  const audioSection = () => document.querySelector<HTMLElement>('#audio-practice-records')!.closest('section')!;
+  const star = () => document.querySelector<HTMLButtonElement>('[data-score-id="audio-only"] .library-favorite')!;
+  expect(document.querySelector('#personal-practice-records [data-score-id="score-with-audio"]')).not.toBeNull();
+  expect(document.querySelector('#personal-practice-records [data-score-id="audio-only"]')).toBeNull();
+  expect(document.querySelector('#audio-practice-records [data-score-id="audio-only"]')).not.toBeNull();
+  expect(audioSection().hidden).toBe(false);
+  star().click();
+  expect(document.querySelector('#favorite-practice-records [data-score-id="audio-only"]')).not.toBeNull();
+  expect(document.querySelectorAll('[data-score-id="audio-only"]')).toHaveLength(1);
+  expect(audioSection().hidden).toBe(true);
+  await showLibrary();
+  expect(document.querySelector('#favorite-practice-records [data-score-id="audio-only"]')).not.toBeNull();
+  expect(audioSection().hidden).toBe(true);
+  star().click();
+  expect(document.querySelector('#audio-practice-records [data-score-id="audio-only"]')).not.toBeNull();
+  expect(audioSection().hidden).toBe(false);
+  vi.mocked(listPracticeRecords).mockResolvedValue([score] as any);
+  await showLibrary();
+  expect(audioSection().hidden).toBe(true);
+  localStorage.removeItem("drum-practice:favorite-scores");
+});
+
+it("does not show the empty import hint for an audio-only library, including favorites", async () => {
+  const { showLibrary } = await import("../src/player-app");
+  const { default: bundled } = await import("../src/bundled-scores.json");
+  const saved = bundled.splice(0);
+  vi.mocked(listPracticeRecords).mockResolvedValue([{song:{id:"only-audio", title:"Audio", audioPractice:{duration:5}}}] as any);
+  try {
+    await showLibrary();
+    expect(document.querySelector<HTMLElement>('#library-empty-hint')!.hidden).toBe(true);
+    document.querySelector<HTMLButtonElement>('#audio-practice-records .library-favorite')!.click();
+    await showLibrary();
+    expect(document.querySelector<HTMLElement>('#library-empty-hint')!.hidden).toBe(true);
+    expect(document.querySelector('#import-package')!.hasAttribute('aria-describedby')).toBe(false);
+  } finally {
+    bundled.push(...saved);
+    localStorage.removeItem("drum-practice:favorite-scores");
+    vi.mocked(listPracticeRecords).mockResolvedValue([]);
+  }
 });

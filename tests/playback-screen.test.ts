@@ -384,8 +384,8 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   await screen.rate(100);
   expect(song.settings.rate).toBeCloseTo(100 / 136.232);
   expect(document.getElementById(ids.tempoInput)!.getAttribute("aria-valuenow")).toBe("100");
-  expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡136 BPM");
-  expect(document.querySelector("#tempo-reset .tempo-original-bpm")!.textContent).toBe("136 BPM");
+  expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡");
+  expect(document.getElementById("tempo-score")!.textContent).toBe("136 BPM");
   click("tempo-reset");
   await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(1, true, expect.any(Function)));
   expect(song.bpm).toBe(136);
@@ -393,8 +393,10 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
   expect(document.getElementById(ids.tempo)!.textContent).toContain("136");
   expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("true");
-  await screen.rate(136);
-  expect(p.setRate).toHaveBeenLastCalledWith(136 / 136.232, false, expect.any(Function));
+  expect(document.getElementById("tempo-score")!.getAttribute("aria-pressed")).toBe("false");
+  click("tempo-score");
+  await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(136 / 136.232, false, expect.any(Function)));
+  expect(document.getElementById("tempo-score")!.getAttribute("aria-pressed")).toBe("true");
   expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("136");
   expect(document.getElementById("tempo-reset")!.getAttribute("aria-pressed")).toBe("false");
 });
