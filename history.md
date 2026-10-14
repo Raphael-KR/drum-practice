@@ -641,3 +641,4 @@ HTML 저장 버튼과 파일 내보내기의 HTML 옵션, portable/playback-expo
 - 검증: 사용자가 전체 테스트·빌드·공개 smoke 검사를 명시 허가했다. 기존 기능의 화면·조작 개선이므로 두 앱0.8.1 patch로 올린다.
 - 릴리스 검사 보완: 조정 메트로놈을 공통 playback-shell 조립 경로로 연결했다. 목록 UI 테스트에 새 중복 검사 API 모사·비동기 사전 검사 대기·저장 옵션 기대값을 반영했다. 가드 기준은 유지했다.
 - 최초 전체 검사11건 실패 중 빌드번호를 읽는 UI 검사는 빌드와의 동시 실행 영향을 확인했다. 빌드→테스트 순서로 분리한 최종121파일690테스트가 모두 통과했다. 타입·i18n·앱 분리/경계·공통 구조·배포 빌드 통과, 정적36파일 해시 일치. 빌드40bf3057fd34. 증거: `.tmp/release-0.8.1-{tests-final,build-final,site-build}.log`.
+- 발행 결과: 구현4e778a4 main push 완료. Sites 소스247b896fba2bccd20ecb2722ef14b4bfaaa64d4d, 저장 버전71, 배포appgdep_6acff0dd349081919fc2b71b839a0157 succeeded(2026-10-15 06:15:27 KST). 공개 읽기 smoke15항목 통과, `.tmp/release-0.8.1-smoke.json`. 세부 ID·결과는 docs/SITES-PUBLICATION.md에 기록했다. 별도 악보 제작 지침·범례 자료·로컬 캡처는 릴리스에서 제외하여 보존했다.
