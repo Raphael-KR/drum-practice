@@ -325,3 +325,5 @@ HTML 저장 버튼과 파일 내보내기의 HTML 옵션, portable/playback-expo
 
 - 구현12580ec main 커밋·push 완료. Sites 소스6d02ac48300cfe86d25b40adfae89a1d2c73bf13, 저장버전69. 최초 배포appgdep_6acfbac430b0819197f56cc5e6426927와 동일 버전 재배포appgdep_6acfbba6a3208191a85dc974999b7e68 모두 도구는succeeded.
 - 공개 smoke 실패: 02:28:48 KST 이전player-fKDC2EcG.js 응답, 신규player-DjONB00x.js/붉은 노을 패키지404. 배포 아카이브에 신규파일 존재·저장 소스/해시 일치·Worker404로그 확인. 공개 반영은 미확인으로 보존하고 추가 재배포/원복 없음. 증거 `.tmp/release-0.7.12-smoke.json`. iPad 새 악보 확인은 공개 반영 후 가능하다.
+
+- 후속 2026-10-15 02:31:34 KST: 사용자 “지금 v0.7.12 로 방금 올라왔어” 보고 후 공개 smoke15항목 통과. 신규HTML/번들/Worker/악보5개(붉은 노을 포함) 해시 일치 및 폐기API404 확인. 공개 반영 미확인 해소. 배포 응답 후 반영 지연을 관측했으며 정확한 내부 원인은 미확정이다. iPad 붉은 노을 청취 확인은 아직 별도다.
