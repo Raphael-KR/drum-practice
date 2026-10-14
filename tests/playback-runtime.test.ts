@@ -142,9 +142,17 @@ it("flush rejects a failed save and a later discrete change can retry", async ()
     .fn()
     .mockRejectedValueOnce(Error("quota"))
     .mockResolvedValue(undefined);
-  const runtime = await mountPlaybackRuntime({ ...options(), changed });
+  const o = options();
+  const runtime = await mountPlaybackRuntime({ ...o, changed });
+  const notice = o.root.querySelector("#status")!;
   await expect(runtime.flush()).rejects.toThrow("quota");
+  expect(notice.textContent).toBe("quota");
+  const player = state.host.player();
+  player.playing = true;
+  player.onstate();
+  expect(notice.textContent).toBe("quota");
   await expect(runtime.flush()).resolves.toBeUndefined();
+  expect(notice.textContent).toBe("");
   runtime.dispose();
   await runtime.flush();
 });
@@ -209,5 +217,35 @@ it("keeps a BFCache page usable and saves position, while final pagehide dispose
   await runtime.flush();
   expect(state.dispose).toHaveBeenCalledTimes(1);
   expect(o.root.innerHTML).toBe("<header></header>");
+  runtime.dispose();
+});
+
+it("separates conversion progress from score errors and clears playback errors on recovery", async () => {
+  vi.stubGlobal("URL", { revokeObjectURL: vi.fn() });
+  const o = options();
+  const runtime = await mountPlaybackRuntime(o);
+  const notice = o.root.querySelector("#stage > #status")!;
+  const player = state.host.player();
+  expect(notice.textContent).toBe("");
+  expect(notice.getAttribute("role")).toBe("alert");
+  player.onprogress("BPM 변환 42%");
+  expect(notice.textContent).toBe("");
+  expect(o.root.querySelector("#tempo-status")!.textContent).toBe("BPM 변환 42%");
+  player.onprogress("");
+  player.onerror("오디오가 중단되어 일시정지했습니다.");
+  expect(notice.textContent).toContain("일시정지");
+  const stageClick = vi.fn();
+  notice.parentElement!.addEventListener("click", stageClick);
+  notice.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  expect(stageClick).not.toHaveBeenCalled();
+  const stage = notice.parentElement!;
+  stage.scrollLeft = 1200;
+  stage.scrollTop = 117;
+  stage.dispatchEvent(new Event("scroll"));
+  expect((notice as HTMLElement).style.getPropertyValue("--notice-scroll-y")).toBe("117px");
+  expect((notice as HTMLElement).style.getPropertyValue("--notice-scroll-x")).toBe("1200px");
+  player.playing = true;
+  player.onstate();
+  expect(notice.textContent).toBe("");
   runtime.dispose();
 });

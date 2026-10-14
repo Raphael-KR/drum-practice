@@ -5,11 +5,7 @@ input::-webkit-inner-spin-button {
 .spacer {
   flex: 1;
 }
-#status {
-  font-size: 14px;
-  color: var(--muted);
-  min-height: 20px;
-}
+
 details {
   margin-top: 24px;
 }

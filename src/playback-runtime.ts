@@ -85,7 +85,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   document.body.classList.add("has-song");
   root.classList.toggle("audio-practice", !!s.audioPractice);
   renderKeepingTopHeader(root,
-    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML()}</section><p id="status" role="status">${i18nText("playback.message453")}</p></main>`);
+    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML('<p id="status" role="alert" aria-atomic="true"></p>')}</section></main>`);
   let management: ReturnType<typeof attachPracticeManagement> | undefined;
   const markerContent = document.createElement("div");
   markerContent.innerHTML = practiceMarkerHTML();
@@ -123,10 +123,23 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     appInfoHTML(appVersions.player.version, build) +
     `<details><summary>${i18nText("licenses.message083")}</summary><pre id="licenses"></pre></details>`;
   $("licenses").textContent = options.licenses ?? "";
-  const status = (v: string) => {
-    if (disposed) return;
-    $("status").textContent = v;
+  const noticeStage = $("stage");
+  const alignNotice = () => {
+    $("status").style.setProperty("--notice-scroll-x", `${noticeStage.scrollLeft}px`);
+    $("status").style.setProperty("--notice-scroll-y", `${noticeStage.scrollTop}px`);
   };
+  noticeStage.addEventListener("scroll", alignNotice);
+  let noticeSource = "";
+  const status = (message: string, source = "playback") => {
+    if (disposed || (!message && noticeSource !== source)) return;
+    noticeSource = message ? source : "";
+    $("status").textContent = message;
+    alignNotice();
+  };
+  // The notice can scroll long errors without selecting or starting a measure.
+  for (const event of ["pointerdown", "pointerup", "click", "dblclick", "touchstart", "touchmove", "wheel"]) {
+    $("status").addEventListener(event, (e) => e.stopPropagation());
+  }
   const fail = (e: unknown) => {
     status(e instanceof Error ? e.message : String(e));
   };
@@ -156,10 +169,13 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     };
     const save = async () => {
       await options.changed!(snapshot, preferences);
+      status("", "save");
     };
     // Serialize immutable snapshots. A failed write is reported but does not block a later retry.
     pending = pending.then(save, save);
-    void pending.catch(fail);
+    void pending.catch((error) =>
+      status(error instanceof Error ? error.message : String(error), "save"),
+    );
   }
   function positionChanged() {
     if (!options.changed || disposed || positionTimer !== undefined) return;
@@ -179,7 +195,10 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     };
     root.querySelector("header .actions")!.prepend(button);
   }
-  player.onprogress = status;
+  player.onerror = status;
+  player.onprogress = (message) => {
+    if (!disposed) $("tempo-status").textContent = message;
+  };
   const playback = createPlaybackScreen({
     root: $("app"),
     environment: "player",
@@ -205,7 +224,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
         noteHighlightEnabled = value;
         changed();
       },
-      report: status,
+      report: (message) => status(message, "display"),
     },
     ids: {
       ...playerPlaybackBindings,
@@ -247,7 +266,10 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     cancel: () => playback.cancel(),
     dispose: () => playback.dispose(),
   };
-  player.onstate = playback.onState;
+  player.onstate = () => {
+    if (player.playing) status("");
+    playback.onState();
+  };
   management = attachPracticeManagement({
     canonicalXML: () => options.canonicalXML,
     root,
@@ -362,6 +384,8 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     management?.dispose();
     player.onstate = () => {};
     player.onprogress = () => {};
+    player.onerror = () => {};
+    noticeStage.removeEventListener("scroll", alignNotice);
     player.pause();
     player.worker?.terminate();
     void player.ctx.close().catch(() => {});

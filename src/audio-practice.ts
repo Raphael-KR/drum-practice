@@ -125,8 +125,9 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
   try {
     const bytes = await file.arrayBuffer();
     const hash = await audioFileHash(bytes).catch(() => undefined);
-    const [buffer, cached] = await Promise.all([
+    const [buffer, cached, tags] = await Promise.all([
       context.decodeAudioData(bytes), hash && !options.force ? loadAudioAnalysis(hash) : undefined,
+      audioMetadata(file),
     ]);
     options.signal?.throwIfAborted();
     checkAudioFormat(buffer.duration,buffer.numberOfChannels);
@@ -135,7 +136,6 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
         (buffer.duration < 4 || buffer.duration > 1800 || validBeatTimes(cached.beatTimes,buffer.duration))) {
       analysis = cached;
     } else {
-      const metadata = await audioMetadata(file);
       const guess = estimatePracticeTempo(audioAnalysisSamples(buffer), buffer.sampleRate);
       const confident = guess.confidence >= .08 && Number.isFinite(guess.bpm);
       progress?.(t("audioPractice.tracking"));
@@ -144,7 +144,7 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
       const beatTimes = validBeatTimes(detected,buffer.duration) ? detected : undefined;
       if (confident && buffer.duration >= 4 && buffer.duration <= 1800 && !beatTimes)
         throw Error(t("audioPractice.trackingUnavailable"));
-      analysis = {analyzerVersion:ANALYZER_VERSION,sha256:hash || '',...metadata,
+      analysis = {analyzerVersion:ANALYZER_VERSION,sha256:hash || '',title:tags.title,artist:tags.artist,
         duration:buffer.duration,bpm:confident ? guess.bpm : 120,
         firstBeat:beatTimes?.[0] ?? (confident && guess.firstBeat < buffer.duration ? guess.firstBeat : 0),
         beats:4,denominator:4,confidence:guess.confidence,...(beatTimes ? {beatTimes} : {})};
@@ -152,9 +152,10 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
       if(hash && confident) await storeAudioAnalysis(analysis);
     }
     const {bpm,firstBeat,beats,denominator,beatTimes}=analysis;
-    const metadata={title:analysis.title || file.name.replace(/\.[^.]+$/, ''),artist:analysis.artist};
+    const metadata={title:tags.title || analysis.title || file.name.replace(/\.[^.]+$/, ''),artist:tags.artist || analysis.artist};
     const song: Song = {
-      version:1, id:uid(), ...metadata, bpm, firstBeat,
+      // Re-read tags even on cache hits so older caches need no beat reanalysis.
+      version:1, id:uid(), ...metadata, bpm:tags.bpm ?? bpm, firstBeat,
       audioPractice: {duration:buffer.duration, beats, denominator, peaks:waveformPeaks(buffer),...(beatTimes ? {beatTimes,followTempo:true} : {})},
       measures:beatTimes ? trackedAudioMeasures(buffer.duration,beatTimes) : audioMeasures(buffer.duration,bpm,firstBeat,beats,denominator), regions:[], lyrics:[], markers:[], loops:[],
       settings:defaults(), audioName:file.name, pdfName:"", pageCount:0,

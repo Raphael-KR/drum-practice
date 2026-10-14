@@ -36,6 +36,7 @@ export class Player {
   private cancelRender?: () => void;
   onstate = () => {};
   onprogress = (s: string) => {};
+  onerror = (message: string) => {};
   constructor(
     private preferences: () => PlaybackPreferences = () => ({
       restartMeasure: true,
@@ -56,7 +57,7 @@ export class Player {
     this.ctx.onstatechange = () => {
       if (this.playing && this.ctx.state !== "running") {
         this.pause();
-        this.onprogress(i18nText("audio-core.message001"));
+        this.onerror(i18nText("audio-core.message001"));
       }
     };
   }
@@ -209,7 +210,7 @@ export class Player {
     }
     song.settings.rate = rate;
     song.settings.tempoMode = mode;
-    report(i18nText("audio-core.message004"));
+    report("");
     return true;
   }
   async prepare() {
@@ -345,7 +346,7 @@ export class Player {
     let last = this.cycles.at(-1)!;
     if (this.loop && now > last.endAt + 0.1) {
       this.pause();
-      this.onprogress(i18nText("audio-core.message006"));
+      this.onerror(i18nText("audio-core.message006"));
       return;
     }
     if (this.loop && last.endAt < now + 1) {

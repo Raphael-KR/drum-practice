@@ -477,6 +477,7 @@ it.each(['complete','error','switch'])('prepares practice at 1x transactionally 
    expect(p.song.settings.tempoMode).toBe('original');expect(p.renderedMap).toBeUndefined();expect(p.rendered).toBe(p.original);
   } else {
    worker.onmessage({data:{left:new Float32Array(170000),right:new Float32Array(170000)}});await pending;
+   expect(report).toHaveBeenLastCalledWith('');
    expect(p.song.settings.tempoMode).toBe('practice');expect(p.renderedMap).toBeDefined();
    await p.play(true,false);const c=p.cycles[0];expect(c.countBeatSeconds).toBe(.5);
    (p.ctx as unknown as Context).currentTime=c.musicAt+.25;

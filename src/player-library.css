@@ -119,7 +119,7 @@ body:not(.has-song) #app .editor-home button {
 }
 
 /* Fit build metadata beneath the song title within the existing button-height bar. */
-@media (orientation:landscape) {
+@media (orientation:landscape), (min-width:900px) {
   .has-song #app header h1[data-player-build] {
     /* Center the title, not the title + 16px metadata group. Account for
        the header's 2px top / 6px bottom padding without changing its size. */

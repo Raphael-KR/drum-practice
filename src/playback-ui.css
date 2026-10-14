@@ -2254,6 +2254,33 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 @media (max-width:800px) {
  .drawer-playback [data-drawer-panel=loop] > .tool-body {grid-template-columns:1fr;gap:8px;}
 }
+/* Keep runtime errors inside the score viewport while the ribbon scrolls. */
+.drawer-playback .stage > #status {
+  position:absolute;
+  z-index:50;
+  left:calc(50% + var(--notice-scroll-x, 0px));
+  bottom:8px;
+  transform:translate(-50%, var(--notice-scroll-y, 0px));
+  box-sizing:border-box;
+  width:max-content;
+  max-width:calc(100% - 24px);
+  max-height:calc(100% - 16px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  margin:0;
+  padding:10px 16px;
+  border:2px solid #b42318;
+  border-radius:12px;
+  background:#fff1f0;
+  color:#9d2018;
+  box-shadow:0 3px 12px #651d1d33;
+  font-size:15px;
+  font-weight:600;
+  line-height:1.5;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  text-align:center;
+}
 .drawer-playback #status:empty {display:none;}
 .drawer-playback #practice.two-rows .ribbon {width:var(--fitted-row-width,100%);left:50%;translate:-50% 0;}
 .drawer-playback .drawer-range input[type=range] {min-height:44px;}
@@ -2794,8 +2821,8 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 #tempo-reset {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
 #tempo-reset .tempo-original-bpm {font-size:14px;font-weight:500;white-space:nowrap;}
 
-/* iPad mini portrait: preserve the three dock groups in two rows. */
-@media (min-width:720px) and (max-width:850px) and (orientation:portrait) {
+/* Narrow tablet portrait: preserve the three dock groups in two rows. */
+@media (min-width:720px) and (max-width:899px) and (orientation:portrait) {
   .drawer-playback .playback-dock .transport {
     grid-template-columns:max-content minmax(0,1fr);
     gap:10px 8px;
@@ -2820,4 +2847,37 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   #settings-dialog .volume-channel {
     grid-template-columns:5em minmax(0,1fr) 3.5em;
   }
+}
+
+/* Wide windows keep the landscape arrangement even when taller than wide.
+   Narrow tablet and phone rules above retain their separate control rows. */
+@media (min-width:900px) {
+  .has-song .playback-ui header {
+    display:flex;flex-wrap:nowrap;gap:12px;
+  }
+  .has-song .playback-ui header .brand {
+    display:flex;flex:1 1 auto;width:auto;min-width:0;gap:12px;
+  }
+  .has-song .playback-ui header .brand h1 {width:auto;min-width:0;}
+  .has-song .playback-ui header .actions {
+    display:flex;flex-wrap:nowrap;margin-left:auto;
+  }
+  .drawer-playback .playback-dock .transport {
+    grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);
+    column-gap:8px;row-gap:0;
+  }
+  .drawer-playback .dock-navigation {grid-column:1;grid-row:1;}
+  .drawer-playback .dock-play {grid-column:2;grid-row:1;margin-right:0;}
+  .drawer-playback .dock-play #home {position:absolute;right:calc(100% + 10px);}
+  .drawer-playback .dock-rewind {position:absolute;left:calc(100% + 6px);}
+  .drawer-playback .dock-repeat {grid-column:3;grid-row:1;justify-content:flex-end;}
+  .drawer-playback .playback-drawer {height:135.5px;}
+  .drawer-playback .section-shortcuts button {flex-direction:row;align-items:center;}
+}
+
+/* Keep all three groups clear at the narrow end of the wide layout. */
+@media (min-width:900px) and (max-width:1099px) {
+  .drawer-playback .playback-dock {--playback-control-size:44px;}
+  .drawer-playback .playback-dock .repeat-presets button {min-width:52px;font-size:14px;}
+  .drawer-playback .transport-rewind-number {width:44px;min-width:44px;height:44px;}
 }

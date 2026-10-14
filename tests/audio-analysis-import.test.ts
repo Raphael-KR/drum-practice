@@ -9,7 +9,7 @@ import {analyzeAudioBeats} from '../src/audio-beat-analysis';
 import {audioMetadata} from '../src/audio-metadata';
 import {loadAudioAnalysis,storeAudioAnalysis} from '../src/audio-analysis-cache';
 import {estimatePracticeTempo} from '../src/audio-tempo';
-beforeEach(()=>{vi.mocked(estimatePracticeTempo).mockReturnValue({bpm:120,firstBeat:.2,confidence:.8});vi.mocked(loadAudioAnalysis).mockResolvedValue(undefined);vi.mocked(analyzeAudioBeats).mockResolvedValue([.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]);});
+beforeEach(()=>{vi.mocked(audioMetadata).mockResolvedValue({title:'Tag title',artist:'Tag artist'});vi.mocked(estimatePracticeTempo).mockReturnValue({bpm:120,firstBeat:.2,confidence:.8});vi.mocked(loadAudioAnalysis).mockResolvedValue(undefined);vi.mocked(analyzeAudioBeats).mockResolvedValue([.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]);});
 afterEach(()=>{vi.unstubAllGlobals();vi.clearAllMocks();});
 function decoder(){
   vi.stubGlobal('AudioContext',class{
@@ -28,7 +28,7 @@ it('reuses device-cached timing and tags on the next import without reanalysis',
   vi.mocked(loadAudioAnalysis).mockResolvedValueOnce(stored);
   const second=await readAudioPractice(file);
   expect(second.song.bpm).toBe(first.song.bpm);expect(second.song.artist).toBe('Tag artist');
-  expect(estimatePracticeTempo).toHaveBeenCalledTimes(1);expect(audioMetadata).toHaveBeenCalledTimes(1);expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
+  expect(estimatePracticeTempo).toHaveBeenCalledTimes(1);expect(audioMetadata).toHaveBeenCalledTimes(2);expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
 });
 it('reanalyzes mismatched duration and uses filename fallback locally and does not cache uncertain tempo',async()=>{
   decoder();vi.mocked(loadAudioAnalysis).mockResolvedValue(undefined);
@@ -119,4 +119,20 @@ it('upgrades the start reference once without changing fixed-tempo preference or
  expect(next.song.audioPractice!.barOne).toBeUndefined();
  expect(analyzeAudioBeats).toHaveBeenCalledTimes(1);
  expect(await ensureAudioBeatTracking(next)).toBe(next);
+});
+
+it('uses tag BPM for the score while retaining analyzed beat timing and original speed, including old cache hits',async()=>{
+ decoder();
+ vi.mocked(audioMetadata).mockResolvedValue({title:'Tagged title',artist:'Tagged artist',bpm:136});
+ const first=await readAudioPractice(new File(['bytes'],'artist - song.mp3'));
+ const stored=vi.mocked(storeAudioAnalysis).mock.calls[0][0];
+ expect(first.song.bpm).toBe(136);expect(stored.bpm).toBe(120);
+ expect(first.song.audioPractice!.beatTimes).toEqual(stored.beatTimes);
+ expect(first.song.settings.rate).toBe(1);
+ // Old caches have only the analyzed BPM. Reading tags must not force beat analysis.
+ vi.mocked(loadAudioAnalysis).mockResolvedValue({...stored,title:'Old title',artist:'Old artist'});
+ const second=await readAudioPractice(new File(['bytes'],'artist - song.mp3'));
+ expect(second.song).toMatchObject({bpm:136,title:'Tagged title',artist:'Tagged artist'});
+ expect(second.song.audioPractice!.beatTimes).toEqual(stored.beatTimes);
+ expect(estimatePracticeTempo).toHaveBeenCalledTimes(1);expect(analyzeAudioBeats).toHaveBeenCalledTimes(1);
 });

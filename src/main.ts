@@ -540,6 +540,7 @@ function engine() {
   if (!player) {
     player = new Player(readPlaybackPreferences);
     player.onprogress = status;
+    player.onerror = status;
     player.onstate = () => playback.onState();
   }
   return player;
