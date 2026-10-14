@@ -8,6 +8,13 @@
       "when": 1791841860627,
       "tag": "0000_fluffy_hobgoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791975441703,
+      "tag": "0001_whole_doctor_faustus",
+      "breakpoints": true
     }
   ]
 }

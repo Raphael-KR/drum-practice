@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, writeFile, rm, readdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import {exportReviewedAnalysis} from './export-reviewed-analysis.mjs';
 const source = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const target = process.argv[2] ? resolve(process.argv[2]) : resolve(source, 'deployment/sites');
 if (target === source) throw new Error('Sites checkout must differ from source');
@@ -17,10 +18,11 @@ for(const entry of ['build','scripts','db','drizzle','index.html','package.json'
   await cp(resolve(source,'hosting',entry),resolve(target,entry),{recursive:true});
 await mkdir(resolve(target,'server'),{recursive:true});
 await mkdir(resolve(target,'src'),{recursive:true});
-for(const entry of ['audio-analysis-api.ts','audio-analysis-store.ts','audio-analysis-worker.ts'])
+for(const entry of ['audio-analysis-api.ts','audio-analysis-store.ts','audio-analysis-worker.ts','security-headers.ts','analysis-policy.ts','analysis-review-api.ts','approved-analysis.ts'])
   await cp(resolve(source,'server',entry),resolve(target,'server',entry));
 for(const entry of ['audio-analysis-contract.ts','audio-beat-grid.ts'])
   await cp(resolve(source,'src',entry),resolve(target,'src',entry));
+const approvedCount=exportReviewedAnalysis(source,target);
 delete manifest.static;manifest.d1='DB';manifest.r2=null;
 await writeFile(resolve(target,'.openai/hosting.json'),JSON.stringify(manifest,null,2)+'\n');
 await writeFile(resolve(target,'.gitignore'),'node_modules/\ndist/\n.wrangler/\n.sites-runtime/\n.env*\n*.log\n');
@@ -29,4 +31,4 @@ const digests=[];
 async function scan(dir='') {for(const e of await readdir(resolve(target,'player-assets',dir),{withFileTypes:true})) {const p=dir?`${dir}/${e.name}`:e.name;if(e.isDirectory()) await scan(p);else digests.push({path:p,sha256:createHash('sha256').update(await readFile(resolve(target,'player-assets',p))).digest('hex')});}}
 await scan();
 await writeFile(resolve(target,'source-parity.json'),JSON.stringify({canonicalProject:source,app:'player',version:JSON.parse(await readFile(resolve(source,'src/app-versions.json'),'utf8')).player.version,files:digests},null,2)+'\n');
-console.log(JSON.stringify({target,files:digests.length}));
+console.log(JSON.stringify({target,files:digests.length,approvedCount}));

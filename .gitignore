@@ -39,3 +39,8 @@ public/scores/
 
 # Production inputs retained when clearing experimental outputs.
 /data/production/
+
+# Shared dependency symlink for the hosting build tools.
+/hosting/node_modules
+# Local validation logs and screenshots.
+/.tmp/

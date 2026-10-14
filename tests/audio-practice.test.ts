@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import {afterEach, describe, expect, it, vi} from 'vitest';
+vi.mock('music-metadata',()=>({parseBlob:vi.fn(async()=>({format:{duration:10,numberOfChannels:2}}))}));
 import {audioAnalysisSamples, audioMeasures, practiceFileKind, readAudioPractice, retimeAudio, waveformPeaks} from '../src/audio-practice';
 import {defaults, validateSong, type Song} from '../src/model';
 import {importPracticeRecord, loadPracticeRecord, removePracticeRecord, savePracticeState} from '../src/practice-library';

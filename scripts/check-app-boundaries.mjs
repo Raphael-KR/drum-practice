@@ -8,3 +8,5 @@ for (const name of ['player-app','practice-library','score-package','playback-ru
 const editor=JSON.parse(fs.readFileSync(base+'editor-modules.json','utf8'));
 for(const name of ['main','workspace','score-package','playback-screen']) assert(editor.some(x=>x.endsWith('/src/'+name+'.ts')),'Missing editor module '+name);
 console.log('PASS: separate editor/player builds; player has common playback and MusicXML renderer/cache; no authoring or PDF renderer');
+
+assert(!modules.some(x=>x.endsWith('/src/analysis-review-ui.ts')), 'Public player includes local review UI');

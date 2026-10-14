@@ -3,7 +3,7 @@ export async function audioFileHash(bytes: ArrayBuffer): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2,'0')).join('');
 }
-const transient = new Set([408,429,500,502,503,504]);
+const transient = new Set([408,500,502,503,504]);
 /** Bounded retry for a slow connection; never retry a miss or a rejected payload. */
 async function requestAnalysis(hash:string, init:RequestInit, read:boolean):Promise<unknown> {
   for(let attempt=0;attempt<2;attempt++) {
@@ -19,7 +19,7 @@ async function requestAnalysis(hash:string, init:RequestInit, read:boolean):Prom
       }
       // Consume/cancel every response before retrying to release the connection.
       await response.body?.cancel();
-      if(!transient.has(response.status))return;
+      if(response.headers.has('Retry-After')||!transient.has(response.status))return;
     } catch { /* Timeout/network failure: one bounded retry, then local practice. */ }
     if(attempt===0)await new Promise(resolve=>setTimeout(resolve,250));
   }

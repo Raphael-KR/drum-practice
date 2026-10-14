@@ -1,4 +1,5 @@
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+vi.mock('../src/audio-import-limits',async original=>({...await original<typeof import('../src/audio-import-limits')>(),checkAudioBeforeDecode:vi.fn(async()=>{})}));
 vi.mock('../src/audio-beat-analysis',()=>({analyzeAudioBeats:vi.fn(async()=>undefined)}));
 vi.mock('../src/audio-metadata',()=>({audioMetadata:vi.fn(async()=>({title:'Tag title',artist:'Tag artist'}))}));
 vi.mock('../src/audio-analysis-cache',()=>({audioFileHash:vi.fn(async()=> 'a'.repeat(64)),loadAudioAnalysis:vi.fn(),storeAudioAnalysis:vi.fn(async()=>{})}));

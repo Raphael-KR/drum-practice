@@ -58,3 +58,10 @@ it('uses a normal bounded request for beat maps above the keepalive quota',async
  await storeAudioAnalysis(large);expect(fetch.mock.calls[0][1].keepalive).toBe(false);
  expect(new TextEncoder().encode(fetch.mock.calls[0][1].body).length).toBeLessThan(256*1024);
 });
+it('does not retry quota denials or queue-full responses',async()=>{
+ const fetch=vi.fn();vi.stubGlobal('fetch',fetch);
+ for(const status of [429,503]){
+  fetch.mockReset().mockResolvedValue(new Response('',{status,headers:{'Retry-After':'3600'}}));
+  await storeAudioAnalysis(entry);expect(fetch).toHaveBeenCalledTimes(1);
+ }
+});

@@ -29,6 +29,7 @@ export function libraryHTML(showEditor: boolean): string {
   <main class="library-main" aria-label="${escapeHTML(t("library.screenName"))}">
     <input type="file" id="package-file" accept="${AUDIO_FILE_ACCEPT}" hidden>
     <p id="library-status" role="status"></p>
+    ${showEditor ? `<button id="analysis-review" type="button" title="${escapeHTML(t("review.title"))}">${escapeHTML(t("review.loading"))}</button>` : ""}
     <div id="practice-records" class="library-sections">
       <div id="favorite-practice-records" class="practice-records" hidden></div>
       <section class="library-section" aria-labelledby="basic-library-title">

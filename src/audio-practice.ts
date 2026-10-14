@@ -8,6 +8,7 @@ import type { RecordData } from "./storage";
 import { audioMetadata } from "./audio-metadata";
 import {audioFileHash,loadAudioAnalysis,storeAudioAnalysis} from "./audio-analysis-cache";
 import {ANALYZER_VERSION,type AudioAnalysis} from "./audio-analysis-contract";
+import {AUDIO_DECODE_SAMPLE_RATE,checkAudioBeforeDecode,checkAudioFormat} from './audio-import-limits';
 
 // iOS maps audio/* to a movie picker. WebM can also resolve to video/webm.
 // Audio-only extensions let Safari open the Files document picker directly.
@@ -118,8 +119,9 @@ export function audioAnalysisSamples(buffer: AudioBuffer): Float32Array {
 }
 /** Audio bytes stay local; only a hash and bounded analysis metadata may be sent. */
 export async function readAudioPractice(file: File, progress?: (text:string)=>void, options:{force?:boolean;signal?:AbortSignal} = {}): Promise<RecordData> {
-  if (!file.size) throw Error(t("audioPractice.empty"));
-  const context = new AudioContext({sampleRate:32000});
+  await checkAudioBeforeDecode(file);
+  options.signal?.throwIfAborted();
+  const context = new AudioContext({sampleRate:AUDIO_DECODE_SAMPLE_RATE});
   try {
     const bytes = await file.arrayBuffer();
     const hash = await audioFileHash(bytes).catch(() => undefined);
@@ -127,6 +129,7 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
       context.decodeAudioData(bytes), hash && !options.force ? loadAudioAnalysis(hash) : undefined,
     ]);
     options.signal?.throwIfAborted();
+    checkAudioFormat(buffer.duration,buffer.numberOfChannels);
     let analysis: AudioAnalysis;
     if (cached && Math.abs(cached.duration - buffer.duration) < .1 &&
         (buffer.duration < 4 || buffer.duration > 1800 || validBeatTimes(cached.beatTimes,buffer.duration))) {
