@@ -322,3 +322,6 @@ HTML 저장 버튼과 파일 내보내기의 HTML 옵션, portable/playback-expo
 - 제외: 제작기 공개, 원본 미디어 폴더 전체 발행, 자유 엔딩 청취 확정, 무관한 제작 스킬·범례 산출물 변경.
 - 검증: 기존 사용자 허가된 검사·테스트·빌드·공개 smoke 범위 유지. 기존 연습 흐름 보완과 곡 추가이므로 patch다. iPad 청취는 사용자가 발행 후 확인 예정이다.
 - 릴리스 검사: 전체115파일640테스트, 타입/i18n/분리 빌드/앱 경계/공통 재생 구조/배포 빌드 통과. 정적36파일 대조 일치(악보5개 포함). 두 앱0.7.12, 소스 빌드115dee39d643. 기존 청크 크기 경고 유지. 로그 `.tmp/release-0.7.12-{tests,build,site-build}.log`.
+
+- 구현12580ec main 커밋·push 완료. Sites 소스6d02ac48300cfe86d25b40adfae89a1d2c73bf13, 저장버전69. 최초 배포appgdep_6acfbac430b0819197f56cc5e6426927와 동일 버전 재배포appgdep_6acfbba6a3208191a85dc974999b7e68 모두 도구는succeeded.
+- 공개 smoke 실패: 02:28:48 KST 이전player-fKDC2EcG.js 응답, 신규player-DjONB00x.js/붉은 노을 패키지404. 배포 아카이브에 신규파일 존재·저장 소스/해시 일치·Worker404로그 확인. 공개 반영은 미확인으로 보존하고 추가 재배포/원복 없음. 증거 `.tmp/release-0.7.12-smoke.json`. iPad 새 악보 확인은 공개 반영 후 가능하다.
