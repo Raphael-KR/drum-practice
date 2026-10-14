@@ -1,19 +1,23 @@
 // @vitest-environment jsdom
-import { it, expect, vi, beforeEach } from "vitest";
+import { it, expect, vi, beforeEach, afterEach } from "vitest";
 import { installHelp } from "../src/help";
 beforeEach(() => {
   document.body.innerHTML =
-    '<main id="app"><section id="practice"><div id="stage"></div><div class="transport"></div><div id="playback-drawer"></div></section><dialog id="settings-dialog"><div class="dialoghead">Settings</div><section>Fields</section></dialog></main>';
-  vi.stubGlobal(
-    "ResizeObserver",
-    class {
-      observe() {}
-      disconnect() {}
-    },
-  );
-  vi.spyOn(HTMLElement.prototype, "getClientRects").mockReturnValue([
-    { width: 200, height: 100 },
-  ] as unknown as DOMRectList);
+    '<main id="app"><header><div class="actions"></div></header><main class="library-main"><button id="import-package">음원 불러오기</button><button data-open>열기</button><button data-remove>삭제</button></main></main>';
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+    x: 100,
+    y: 100,
+    left: 100,
+    top: 100,
+    right: 200,
+    bottom: 144,
+    width: 100,
+    height: 44,
+    toJSON: () => ({}),
+  } as DOMRect);
+  HTMLElement.prototype.showPopover = function () {
+    this.dataset.popoverOpen = "true";
+  };
   HTMLDialogElement.prototype.showModal = function () {
     this.open = true;
   };
@@ -21,142 +25,245 @@ beforeEach(() => {
     this.open = false;
     this.dispatchEvent(new Event("close"));
   };
+  installHelp(document.querySelector("#app")!);
 });
-it("opens useful playback help, without a footer or placeholder, and restores focus", () => {
-  const root = document.querySelector<HTMLElement>("#app")!;
-  installHelp(root);
-  installHelp(root);
-  expect(root.querySelectorAll("#app-help-button")).toHaveLength(1);
-  root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
-  const d = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
-  expect(d.textContent).toContain("더블클릭");
-  expect(d.textContent).toContain("Space");
-  expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
-  expect(d.querySelector<HTMLElement>(".help-pages")!.hidden).toBe(true);
-  d.close();
-  expect(document.activeElement?.id).toBe("app-help-button");
-  expect(root.querySelector("#app-help-dialog")).toBeNull();
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
 });
-it("keeps the main help visible in its header while settings or the reader is open", async () => {
-  const root = document.querySelector<HTMLElement>("#app")!;
-  root.insertAdjacentHTML('afterbegin','<header><div class="actions"></div></header>');
-  root.insertAdjacentHTML('beforeend','<dialog class="score-reader-dialog"><div class="dialoghead"></div></dialog>');
-  installHelp(root);
-  await Promise.resolve();
-  const button=root.querySelector<HTMLButtonElement>('#app-help-button')!;
-  for (const modal of root.querySelectorAll<HTMLDialogElement>('dialog')) {
-    modal.showModal(); await Promise.resolve();
-    expect(button.parentElement).toBe(root.querySelector('header .actions'));
-    expect(button.hidden).toBe(false);
-    expect(modal.querySelector('#app-help-button')).toBeNull();
-    modal.close(); await Promise.resolve();
-    expect(button.parentElement).toBe(root.querySelector('header .actions'));
-  }
-});
-it("keeps playback help on one page on small screens", () => {
-  vi.stubGlobal("innerWidth", 390);
-  const root = document.querySelector<HTMLElement>("#app")!;
-  installHelp(root);
-  root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
-  const d = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
-  expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
-  expect(d.querySelector<HTMLElement>(".help-pages")!.hidden).toBe(true);
-  expect(d.querySelectorAll(".help-cards li")).toHaveLength(11);
-  expect(d.textContent).toContain("화면 꺼짐 방지");
-  d.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
-  expect(d.querySelectorAll(".help-cards section")).toHaveLength(3);
-  d.close();
-  vi.unstubAllGlobals();
-});
-it("includes all approved legend entries independently of contextual controls", () => {
-  const root = document.querySelector<HTMLElement>("#app")!;
-  root.innerHTML = "<section>Library</section>";
-  installHelp(root);
-  root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
+const guide = () => document.querySelector<HTMLElement>("#app-help-dialog")!;
+const open = () =>
+  document.querySelector<HTMLButtonElement>("#app-help-button")!.click();
+const close = () =>
+  guide().querySelector<HTMLButtonElement>(".close-button")!.click();
+const pointer = (target: Element, type: string, x = 0) => {
+  const e = new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    button: 0,
+    clientX: x,
+  });
+  Object.defineProperties(e, {
+    pointerId: { value: 1 },
+    isPrimary: { value: true },
+    pointerType: { value: "touch" },
+  });
+  target.dispatchEvent(e);
+};
+it("has one bottom instruction and no pages; common close stays at the help opener", () => {
+  open();
+  expect(guide().querySelector("h2")).toBeNull();
+  expect(guide().querySelector(".help-pages")).toBeNull();
+  expect(guide().textContent).toContain("길게 누르고 있으면");
   expect(
-    root.querySelector("#app-help-dialog .help-content .help-legend"),
-  ).toBeNull();
-  root.querySelector<HTMLButtonElement>(".help-legend-button")!.click();
-  const legend = root.querySelector<HTMLElement>(
-    "#app-legend-dialog .help-legend",
-  )!;
+    guide().querySelector(".close-button[data-common-icon]"),
+  ).not.toBeNull();
+  expect(guide().querySelector<HTMLElement>(".dialoghead")!.style.left).toBe(
+    "100px",
+  );
+  close();
+});
+it("focus moves one bubble between real controls without activation", () => {
+  const first = document.querySelector<HTMLButtonElement>("#import-package")!,
+    second = document.querySelector<HTMLButtonElement>("[data-remove]")!;
+  const action = vi.fn();
+  second.onclick = action;
+  open();
+  first.focus();
+  expect(guide().textContent).toContain("기기의 음원을 추가");
+  second.focus();
+  second.click();
+  expect(action).not.toHaveBeenCalled();
+  expect(guide().querySelectorAll(".help-bubble:not([hidden])")).toHaveLength(
+    1,
+  );
+  expect(guide().textContent).toContain("원본 파일은 유지");
+  expect(guide().textContent).not.toContain("기기의 음원을 추가");
+  expect(first.hasAttribute("aria-describedby")).toBe(false);
+  close();
+  expect(second.hasAttribute("aria-describedby")).toBe(false);
+  expect(document.activeElement?.id).toBe("app-help-button");
+  second.click();
+  expect(action).toHaveBeenCalledOnce();
+});
+it("preserves help in ordinary modals", async () => {
+  const modal = document.createElement("dialog");
+  modal.id = "audio-practice-setup";
+  modal.innerHTML = '<div class="dialoghead"></div><button data-first>여기를 첫박으로</button>';
+  document.body.append(modal); modal.showModal(); await Promise.resolve();
+  const help = modal.querySelector<HTMLButtonElement>("#app-help-button")!;
+  expect(help.hidden).toBe(false);
+  open(); expect(guide()).not.toBeNull();
+  close(); expect(modal.open).toBe(true);
+});
+it.each(["audio-duplicate-dialog", "discard-changes-dialog", "edit-exit-dialog"])("keeps help out of %s and restores the underlying modal help", async (id) => {
+  vi.useFakeTimers();
+  const modal = document.createElement("dialog");
+  modal.id = "settings-dialog";
+  modal.innerHTML = '<div class="dialoghead"></div>';
+  document.body.append(modal); modal.showModal(); await Promise.resolve();
+  const popup = document.createElement("dialog");
+  popup.id = id;
+  if (id === "audio-duplicate-dialog") popup.className = "confirmation-dialog";
+  popup.innerHTML = '<button title="수정한 내용을 유지합니다.">계속 수정</button>';
+  modal.append(popup); popup.showModal(); await Promise.resolve();
+  const help = document.querySelector<HTMLButtonElement>("#app-help-button")!;
+  expect(help.hidden).toBe(true);
+  expect(popup.querySelector("#app-help-button")).toBeNull();
+  open(); expect(guide()).toBeNull();
+  const target = popup.querySelector<HTMLButtonElement>("button")!;
+  pointer(target,"pointerdown"); vi.advanceTimersByTime(650);
+  expect(popup.querySelector("#control-hold-help")!.textContent).toContain("수정한 내용을 유지합니다.");
+  pointer(target,"pointerup"); expect(popup.querySelector("#control-hold-help")).toBeNull();
+  popup.close(); popup.remove(); await Promise.resolve();
+  expect(help.hidden).toBe(false);
+  expect(modal.querySelector(".dialoghead #app-help-button")).toBe(help);
+});
+it("keeps detailed backup advice on held popup controls", async () => {
+  vi.useFakeTimers();
+  const modal = document.createElement("dialog"); modal.id = "settings-dialog";
+  modal.innerHTML = '<div class="dialoghead"></div><button data-practice-save>백업</button><button data-practice-load>복원</button>';
+  document.querySelector("#app")!.append(modal); modal.showModal(); await Promise.resolve();
+  const save=modal.querySelector<HTMLButtonElement>("[data-practice-save]")!;
+  pointer(save,"pointerdown"); vi.advanceTimersByTime(650);
+  expect(modal.querySelector("#control-hold-help")!.textContent).toContain("사이트 데이터를 지우면");
+  pointer(save,"pointerup");
+  const load=modal.querySelector<HTMLButtonElement>("[data-practice-load]")!;
+  pointer(load,"pointerdown"); vi.advanceTimersByTime(650);
+  expect(modal.querySelector("#control-hold-help")!.textContent).toContain("재분석 없이");
+  pointer(load,"pointerup");
+});
+it("supports unlisted and dynamically created buttons using their accessible explanation", () => {
+  const target = document.createElement("button");
+  target.ariaLabel = "새로고침";
+  target.title = "최신 목록을 다시 읽습니다.";
+  document.querySelector("#app")!.append(target);
+  open();
+  target.focus();
+  expect(guide().textContent).toContain(target.title);
+  close();
+});
+it("shows a hint only while held and prevents the release click", () => {
+  vi.useFakeTimers();
+  const target = document.querySelector<HTMLButtonElement>("[data-remove]")!,
+    action = vi.fn();
+  target.onclick = action;
+  document.querySelector<HTMLButtonElement>("#import-package")!.focus();
+  pointer(target, "pointerdown");
+  target.focus();
+  vi.advanceTimersByTime(649);
+  expect(document.querySelector("#control-hold-help")).toBeNull();
+  vi.advanceTimersByTime(1);
+  expect(document.querySelector("#control-hold-help")!.textContent).toContain(
+    "원본 파일은 유지",
+  );
+  pointer(target, "pointerup");
+  expect(document.querySelector("#control-hold-help")).toBeNull();
+  target.click();
+  expect(action).not.toHaveBeenCalled();
+  pointer(target, "pointerdown");
+  pointer(target, "pointerup");
+  target.click();
+  expect(action).toHaveBeenCalledOnce();
+});
+it("moving, cancelling and scrolling prevent accidental hold hints", () => {
+  vi.useFakeTimers();
+  const target = document.querySelector<HTMLButtonElement>("[data-open]")!;
+  for (const cancel of [
+    () => pointer(target, "pointermove", 20),
+    () => pointer(target, "pointercancel"),
+    () => window.dispatchEvent(new Event("scroll")),
+  ]) {
+    pointer(target, "pointerdown");
+    cancel();
+    vi.advanceTimersByTime(800);
+    expect(document.querySelector("#control-hold-help")).toBeNull();
+  }
+  pointer(target, "pointerdown");
+  vi.advanceTimersByTime(650);
+  expect(document.querySelector("#control-hold-help")).not.toBeNull();
+  window.dispatchEvent(new Event("blur"));
+  expect(document.querySelector("#control-hold-help")).toBeNull();
+});
+it("opens approved drum symbols and returns to the same guide", () => {
+  open();
+  const surface = guide(),
+    button = surface.querySelector<HTMLButtonElement>(".help-legend-button")!;
+  button.click();
+  const legend =
+    document.querySelector<HTMLDialogElement>("#app-legend-dialog")!;
   expect(legend.querySelectorAll("dt")).toHaveLength(27);
-  const text = legend.textContent!;
-  for (const name of [
-    "크래시",
-    "하이햇 반열림",
-    "하이햇 열기",
-    "하이햇 닫기",
-    "오픈 하이햇",
-    "스네어 버즈 롤",
-    "왼발 베이스",
-    "손 지시",
-  ])
-    expect(text).toContain(name);
   expect(legend.querySelectorAll("svg")).toHaveLength(2);
-  for (const svg of legend.querySelectorAll("svg")) {
-    expect(svg.querySelectorAll("text.name")).toHaveLength(27);
-  }
-  const landscape = Array.from(legend.querySelectorAll(".legend-landscape text.name"), e => e.textContent);
-  const portrait = Array.from(legend.querySelectorAll(".legend-portrait text.name"), e => e.textContent);
-  expect(portrait).toEqual(landscape);
-  const ids = Array.from(legend.querySelectorAll("[id]"), e => e.id);
-  expect(new Set(ids).size).toBe(ids.length);
-  expect(legend.querySelectorAll("feDisplacementMap")).toHaveLength(2);
-  expect(legend.querySelectorAll("g[filter] text")).toHaveLength(0);
-  expect(root.querySelector("#app-legend-dialog h2")).toBeNull();
-  expect(text).toContain("위 첫째 덧줄의 ×. 원이 없습니다.");
-});
-
-it("returns from legend to the unchanged help and restores focus", () => {
-  const root = document.querySelector<HTMLElement>("#app")!;
-  installHelp(root);
-  root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
-  const help = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
-  const before = help.querySelector(".help-content")!.innerHTML;
-  const button = help.querySelector<HTMLButtonElement>(".help-legend-button")!;
-  button.click();
-  const legend = root.querySelector<HTMLDialogElement>("#app-legend-dialog")!;
-  expect(legend.open).toBe(true);
+  expect(legend.querySelector("h2")).toBeNull();
+  expect(legend.textContent).toContain("크로스 스틱");
   legend.close();
-  expect(help.open).toBe(true);
-  expect(help.querySelector(".help-content")!.innerHTML).toBe(before);
+  expect(guide()).toBe(surface);
   expect(document.activeElement).toBe(button);
-  button.click();
-  help.close();
-  expect(root.querySelector("#app-legend-dialog")).toBeNull();
+  close();
+});
+it("blocks keyboard actions on real controls in help mode but permits Tab", () => {
+  open();
+  const target = document.querySelector<HTMLButtonElement>("[data-open]")!;
+  target.focus();
+  for (const key of ["Enter", " ", "ArrowRight", "m"]) {
+    const e = new KeyboardEvent("keydown", {
+      key,
+      bubbles: true,
+      cancelable: true,
+    });
+    target.dispatchEvent(e);
+    expect(e.defaultPrevented).toBe(true);
+  }
+  const tab = new KeyboardEvent("keydown", {
+    key: "Tab",
+    bubbles: true,
+    cancelable: true,
+  });
+  target.dispatchEvent(tab);
+  expect(tab.defaultPrevented).toBe(false);
+  close();
 });
 
-it("closes the headerless legend by clicking the illustration or empty space", () => {
-  const root = document.querySelector<HTMLElement>("#app")!;
-  installHelp(root);
-  root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
-  const opener = root.querySelector<HTMLButtonElement>(".help-legend-button")!;
-  for (const target of ["svg text.name", null]) {
-    opener.click();
-    const modal = root.querySelector<HTMLDialogElement>("#app-legend-dialog")!;
-    expect(modal.querySelector(".dialoghead")).toBeNull();
-    (target ? modal.querySelector(target)! : modal).dispatchEvent(
-      new MouseEvent("click", { bubbles: true }),
+it("enables guarded backdrop dismissal only for ordinary modals and keeps help close separate", async () => {
+  const modal = document.createElement("dialog");
+  modal.innerHTML =
+    '<div class="dialoghead"><button class="close-button">닫기</button></div><button>내용</button>';
+  document.body.append(modal);
+  modal.showModal();
+  await Promise.resolve();
+  expect(modal.classList.contains("backdrop-dismissible")).toBe(true);
+  const cancel = vi.fn((e: Event) => e.preventDefault());
+  modal.addEventListener("cancel", cancel);
+  const tapOutside = () => {
+    pointer(modal, "pointerdown");
+    modal.dispatchEvent(
+      new MouseEvent("click", {
+        clientX: 0,
+        clientY: 0,
+        bubbles: true,
+        cancelable: true,
+      }),
     );
-    expect(root.querySelector("#app-legend-dialog")).toBeNull();
-    expect(document.activeElement).toBe(opener);
-    expect(
-      root.querySelector<HTMLDialogElement>("#app-help-dialog")!.open,
-    ).toBe(true);
-  }
-});
-it("explains library favorites, title order and local storage", () => {
-  const root = document.querySelector<HTMLElement>("#app")!;
-  root.innerHTML = '<header><div class="actions"></div></header><main class="library-main"></main>';
-  vi.stubGlobal("innerWidth", 1024);
-  vi.stubGlobal("innerHeight", 900);
-  installHelp(root);
-  root.querySelector<HTMLButtonElement>("#app-help-button")!.click();
-  const dialog = root.querySelector<HTMLDialogElement>("#app-help-dialog")!;
-  expect(dialog.querySelectorAll(".help-cards section")).toHaveLength(3);
-  for (const text of ["즐겨찾기", "맨 위", "제목 표시 순서", "자동 공유되지 않음", "새 파일로 교체"])
-    expect(dialog.textContent).toContain(text);
-  dialog.close();
-  vi.unstubAllGlobals();
+  };
+  open();
+  tapOutside();
+  expect(cancel).not.toHaveBeenCalled();
+  expect(guide()).not.toBeNull();
+  close();
+  tapOutside();
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(modal.open).toBe(true);
+  modal.removeEventListener("cancel", cancel);
+  pointer(modal.querySelector("button")!, "pointerdown");
+  modal.dispatchEvent(
+    new MouseEvent("click", { clientX: 0, clientY: 0, bubbles: true }),
+  );
+  expect(modal.open).toBe(true);
+  tapOutside();
+  expect(modal.open).toBe(false);
+  modal.remove();
+  await Promise.resolve();
+  expect(
+    document.querySelector("header .actions #app-help-button"),
+  ).not.toBeNull();
 });

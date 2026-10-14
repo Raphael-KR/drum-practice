@@ -1,6 +1,6 @@
 import {expect,it} from 'vitest';
-import {audioMeasures,followAudioTempo,retimeAudio} from '../src/audio-practice';
-import {beatEvents,beatTime,defaults,locate,makeCycle,validateSong,type Song} from '../src/model';
+import {audioMeasures,followAudioTempo,retimeAudio,setAudioBarOne} from '../src/audio-practice';
+import {beatEvents,beatTime,preludeCountBeats,defaults,locate,makeCycle,validateSong,type Song} from '../src/model';
 import {validAudioAnalysis} from '../src/audio-analysis-contract';
 const times=[.2,.7,1.18,1.64,2.08,2.50,2.90,3.28,3.64];
 const base=():Song=>({version:1,id:'tracked',title:'live',bpm:120,firstBeat:.2,audioName:'a.mp3',pdfName:'',pageCount:0,regions:[],lyrics:[],markers:[{id:'m',name:'m',time:1}],loops:[{id:'l',name:'l',start:1,end:3}],settings:defaults(),audioPractice:{duration:4.2,beats:4,denominator:4,peaks:[1],beatTimes:times},measures:audioMeasures(4.2,120,.2,4,4)});
@@ -22,7 +22,8 @@ it('can switch fixed/variable without losing user state and rejects corrupt timi
  expect(fixed.audioPractice!.followTempo).toBe(false);expect(fixed.measures[0].beatTimes).toBeUndefined();
  const restored=followAudioTempo(fixed);validateSong(restored);
  expect(restored.markers).toEqual(s.markers);expect(restored.loops).toEqual(s.loops);
- expect(beatEvents(restored,0,4.2)).toEqual(beatEvents(s,0,4.2));
+ expect(beatEvents(restored,0,4.2).map(b=>b.time)).toEqual(times);
+ expect(restored.measures[0].beats).toBe(3);
  for(const malformed of [[.2,.2,...times.slice(2)],[...times.slice(0,-1),9],[...times.slice(0,-1),NaN]]) {
   expect(()=>followAudioTempo({...s,audioPractice:{...s.audioPractice!,beatTimes:malformed}})).toThrow();
  }
@@ -32,4 +33,13 @@ it('accepts only bounded, matching, current-version cached beat maps',()=>{
  const hash='a'.repeat(64),a={analyzerVersion:4,sha256:hash,title:'t',artist:'a',bpm:120,duration:4.2,firstBeat:.2,beats:4,denominator:4,confidence:.8,beatTimes:times};
  expect(validAudioAnalysis(a,hash)).toBe(true);
  for(const change of [{analyzerVersion:3},{firstBeat:0},{beatTimes:[...times,Infinity]},{audio:'private'}])expect(validAudioAnalysis({...a,...change},hash)).toBe(false);
+});
+
+it('groups triple meter accents and count-in while rejecting mismatched saved measures',()=>{
+ const s=base();s.audioPractice!.beats=3;
+ const grouped=setAudioBarOne(followAudioTempo(s),times[3]);validateSong(grouped);
+ expect(beatEvents(grouped,0,4.2).filter(b=>b.accent).map(b=>b.time)).toEqual([times[3],times[6]]);
+ expect(preludeCountBeats(grouped)).toEqual(times.slice(0,3));
+ grouped.measures[1].denominator=8;
+ expect(()=>validateSong(grouped)).toThrow();
 });

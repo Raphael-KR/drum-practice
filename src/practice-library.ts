@@ -1,3 +1,4 @@
+import { audioFileHash } from "./audio-analysis-cache";
 import { openScoreDatabase, RETIRED_SCORE_ID } from "./score-database";
 import { t } from "./i18n";
 import { defaults, validateSong, type Song } from "./model";
@@ -174,10 +175,34 @@ export function savePracticeRecord(record: RecordData): Promise<void> {
     });
   });
 }
+export class DuplicatePracticeAudioError extends Error {
+  constructor() { super(t("audioPractice.duplicate")); this.name = "DuplicatePracticeAudioError"; }
+}
+/** Only standalone audio entries conflict; score packages remain independent. */
+export async function assertNewPracticeAudio(audio: Blob): Promise<void> {
+  await assertNewAudioBatch([audio]);
+}
+async function assertNewAudioBatch(incoming: Blob[]): Promise<void> {
+  if (!incoming.length) return;
+  const sizes = new Set(incoming.map(audio => audio.size));
+  const existing = await read<Stored[]>(store => store.getAll());
+  const hashes = new Set<string>();
+  for (const stored of existing) {
+    if (!stored.song.audioPractice) continue;
+    const audio = decode(stored).audio;
+    if (sizes.has(audio.size)) hashes.add(await audioFileHash(await audio.arrayBuffer()));
+  }
+  for (const audio of incoming) {
+    const hash = await audioFileHash(await audio.arrayBuffer());
+    if (hashes.has(hash)) throw new DuplicatePracticeAudioError();
+    hashes.add(hash);
+  }
+}
 /** Restore the entire validated batch atomically. New IDs must never overwrite old records. */
 export function addPracticeRecords(records: RecordData[]): Promise<void> {
   const copies = records.map(snapshot);
   return queued(async () => {
+    await assertNewAudioBatch(copies.filter(copy => !!copy.song.audioPractice).map(copy => copy.audio));
     const stored: Stored[] = [];
     for (const copy of copies) stored.push(await encode(copy));
     await change(tx => {
@@ -217,12 +242,14 @@ export function removePracticeRecord(id: string): Promise<void> {
 /** Reimport is a direct replacement. No backup or practice-state restoration. */
 export function importPracticeRecord(
   incoming: RecordData,
+  options: { allowDuplicateAudio?: boolean } = {},
 ): Promise<PracticeImportResult> {
   const copy = snapshot(incoming);
   // A newly imported score uses practice defaults, not the author's mix.
   const { musicVolume, clickVolume, click } = defaults();
   Object.assign(copy.song.settings, { musicVolume, clickVolume, click });
   return queued(async () => {
+    if (copy.song.audioPractice && !options.allowDuplicateAudio) await assertNewPracticeAudio(copy.audio);
     const stored = await encode(copy);
     let existed = false;
     let failure: unknown;

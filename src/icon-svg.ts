@@ -6,6 +6,7 @@ const paths: Record<string, string> = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.2"/>',
   check: '<path d="m4 12 5 5L20 6"/>',
   close: '<path d="m6 6 12 12M18 6 6 18"/>',
+  save: '<path d="M4 3h13l4 4v14H3V3ZM7 3v6h10V3M7 21v-8h10v8"/>',
   settings:
     '<path d="m10 3-.6 2.1-2 .9-2-.7-2 3.4 1.5 1.5-.2 2.2L3 14l2 3.4 2-.7 2 .9.6 2.1h4l.6-2.1 2-.9 2 .7 2-3.4-1.5-1.5.2-2.2L21 10l-2-3.4-2 .7-2-.9L14 3Z"/><circle cx="12" cy="11.5" r="3"/>',
   play: '<path d="m8 4 13 8-13 8Z" fill="currentColor" stroke="none"/>',

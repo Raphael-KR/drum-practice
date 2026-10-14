@@ -1,4 +1,4 @@
-import { createDialog } from "./dialog-ui";
+import { createDialog, createConfirmationDialog } from "./dialog-ui";
 import {
   EditHistory,
   retainRevision,
@@ -53,22 +53,17 @@ export function editorSession(host: SessionHost) {
   button(i18nText("editor-session.message031"), "✓", () => commit(false)).id =
     "edit-commit";
   dialog.querySelector(".editor-tabs")!.after(controls);
-  const confirmDialog = document.createElement("dialog");
-  confirmDialog.id = "edit-exit-dialog";
-  confirmDialog.className = "compact-dialog";
-  confirmDialog.innerHTML =
-    "<h2>" +
-    i18nText("editor-session.message032") +
-    "</h2><p>" +
-    i18nText("editor-session.message033") +
-    '</p><div class="form-footer"><button data-answer="discard" class="danger">' +
-    i18nText("editor-session.message034") +
-    '</button><button data-answer="continue" autofocus>' +
-    i18nText("editor-session.message035") +
-    '</button><button data-answer="save" class="primary">' +
-    i18nText("editor-session.message036") +
-    "</button></div>";
-  document.body.append(confirmDialog);
+  const confirmDialog = createConfirmationDialog({
+    id: "edit-exit-dialog",
+    label: i18nText("editor-session.message032"),
+    title: i18nText("editor-session.message032"),
+    message: i18nText("editor-session.message033"),
+    actions: [
+      { answer: "save", label: i18nText("editor-session.message036"), className: "primary" },
+      { answer: "discard", label: i18nText("editor-session.message034"), className: "danger" },
+      { answer: "continue", label: i18nText("editor-session.message035"), autofocus: true },
+    ],
+  });
   const versions = createDialog(
     "edit-versions-dialog",
     i18nText("editor-session.message030"),

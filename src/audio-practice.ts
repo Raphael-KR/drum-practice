@@ -42,9 +42,10 @@ export function retimeAudio(song: Song, bpm: number, firstBeat: number, beats: n
 export function followAudioTempo(song: Song): Song {
   const a=structuredClone(song.audioPractice);
   if(!a?.beatTimes || !validBeatTimes(a.beatTimes,a.duration))throw Error(t("audioPractice.trackingUnavailable"));
+  if (!Number.isFinite(song.bpm) || song.bpm < 20 || song.bpm > 300) throw Error(t("audioPractice.invalidTiming"));
   if(a.barOne)a.barOne.time=nearestAudioBeat(a.beatTimes,a.barOne.time);
-  return {...structuredClone(song), firstBeat:a.barOne?.time ?? a.beatTimes[0], measures:trackedAudioMeasures(a.duration,a.beatTimes,a.barOne?.time),
-    audioPractice:{...a,beats:4,denominator:4,followTempo:true},settings:{...song.settings,rate:1,tempoMode:"original"}};
+  return {...structuredClone(song), firstBeat:a.barOne?.time ?? a.beatTimes[0], measures:trackedAudioMeasures(a.duration,a.beatTimes,a.barOne?.time,a.beats,a.denominator),
+    audioPractice:{...a,followTempo:true},settings:{...song.settings,rate:1,tempoMode:"original"}};
 }
 /** Anchor only changes grouping; original media, beat map, markers and loops stay intact. */
 export function setAudioBarOne(song: Song, time: number): Song {

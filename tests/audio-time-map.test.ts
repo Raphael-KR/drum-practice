@@ -62,3 +62,12 @@ it("reports only completed intervals, averages four, and holds between beats and
   expect(currentAudioBpm(s, 2.5)).toBeCloseTo(240 / (2.5 - 0.7));
   expect(currentAudioBpm(s, 5)).toBe(currentAudioBpm(s, 3.64));
 });
+
+it('uses selected note values for practice timing and BPM without moving source beats',()=>{
+ const s=song();s.bpm=96;s.audioPractice!.beats=6;s.audioPractice!.denominator=8;
+ const adjusted=followAudioTempo(s);adjusted.settings.tempoMode='practice';
+ const map=audioTimeMap(adjusted,5)!;
+ beats.forEach((t,i)=>expect(mapTime(t,map.source,map.output)).toBeCloseTo(.2+i*60/96/2));
+ expect(adjusted.audioPractice!.beatTimes).toEqual(beats);
+ expect(currentAudioBpm(adjusted,.7)).toBeCloseTo(60);
+});

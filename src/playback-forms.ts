@@ -165,8 +165,8 @@ export function selectPlaybackSettings(
   heading.hidden = true;
 }
 
-export function metronomeControlHTML() {
-  return `<label class="metronome-toggle" title="${t("icons.message075")}"><input id="click" type="checkbox" checked aria-label="${t("icons.message076")}">${icon("metronome")}</label>`;
+export function metronomeControlHTML(options: {id?: string; name?: string; label?: string} = {}) {
+  return `<label class="metronome-toggle" title="${t("icons.message075")}"><input id="${escapeHTML(options.id ?? 'click')}" ${options.name ? `name="${escapeHTML(options.name)}"` : ''} type="checkbox" checked aria-label="${escapeHTML(options.label ?? t("icons.message076"))}">${icon("metronome")}</label>`;
 }
 export function playbackBrandHTML(titleId: string, tempoId: string) {
   return `<h1 id="${titleId}">${t("main.message097")}</h1><button id="${tempoId}" type="button" hidden disabled aria-haspopup="dialog" aria-label="${t("main.message211")}"><span id="original-tempo-value"></span></button>`;

@@ -7,7 +7,9 @@ vi.mock("../src/help", () => ({ installHelp: vi.fn() }));
 vi.mock("../src/playback-runtime", () => ({ mountPlaybackRuntime: vi.fn() }));
 vi.mock("../src/score-package", () => ({ readScorePackage: vi.fn() }));
 vi.mock("../src/playback-initial", () => ({ playbackInitial: {} }));
-vi.mock("../src/practice-library", () => ({
+vi.mock("../src/practice-library", async importOriginal => ({
+  ...await importOriginal<typeof import("../src/practice-library")>(),
+  assertNewPracticeAudio: vi.fn(async () => {}),
   listPracticeRecords: vi.fn(async () => []),
   removePracticeRecord: vi.fn(), loadPracticeRecord: vi.fn(),
   savePracticeState: vi.fn(), importPracticeRecord: vi.fn(),
@@ -323,7 +325,7 @@ it("imports analyzed audio directly without forcing a setup dialog and blocks du
   input.dispatchEvent(new Event('change'));input.dispatchEvent(new Event('change'));
   expect(input.disabled).toBe(true);
   expect(document.querySelector('#import-package')?.textContent).toContain('분석');
-  expect(readAudioPractice).toHaveBeenCalledTimes(reads+1);
+  await vi.waitFor(() => expect(readAudioPractice).toHaveBeenCalledTimes(reads+1));
   const record={song:{id:'automatic-audio',title:'Tagged title',artist:'Tagged artist',audioPractice:{duration:5,startAnalyzed:true,beatTimes:[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]}},pages:[],audio:new Blob(['mp3']),pdf:new Blob()};
   vi.mocked(loadPracticeRecord).mockResolvedValue(record as any);
   vi.mocked(importPracticeRecord).mockResolvedValue({status:'added',record} as any);
@@ -331,7 +333,7 @@ it("imports analyzed audio directly without forcing a setup dialog and blocks du
   await vi.waitFor(()=>expect(mountPlaybackRuntime).toHaveBeenCalledTimes(mounts+1));
   await vi.waitFor(()=>expect(document.querySelector('.score-loading')).toBeNull());
   expect(importPracticeRecord).toHaveBeenCalledTimes(saves+1);
-  expect(importPracticeRecord).toHaveBeenLastCalledWith(record);
+  expect(importPracticeRecord).toHaveBeenLastCalledWith(record, {allowDuplicateAudio:false});
   expect(setupAudioPractice).not.toHaveBeenCalled();
   expect(mountPlaybackRuntime).toHaveBeenLastCalledWith(expect.objectContaining({song:record.song}));
   await showLibrary();

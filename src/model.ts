@@ -189,8 +189,9 @@ export function preludeCountBeats(song: Song) {
   if (!song.audioPractice || !prelude?.audioPrelude) return [];
   const end = prelude.end;
   if (song.audioPractice.followTempo && song.audioPractice.beatTimes)
-    return song.audioPractice.beatTimes.filter(t => t < end - 1e-7).slice(-4);
-  return [4, 3, 2, 1].map(n => end - n * 60 / song.bpm).filter(t => t >= 0);
+    return song.audioPractice.beatTimes.filter(t => t < end - 1e-7).slice(-song.audioPractice.beats);
+  return Array.from({length: song.audioPractice.beats}, (_, i) => song.audioPractice!.beats - i)
+    .map(n => end - n * 60 / song.bpm * 4 / song.audioPractice!.denominator).filter(t => t >= 0);
 }
 export function xAtBeat(region: Region, m: Measure, beat: number) {
   const xs = region.beatXs;
@@ -305,15 +306,15 @@ export function validateSong(x: unknown): asserts x is Song {
         (a.barOne !== undefined && (!a.barOne || !finite(a.barOne.time) || a.barOne.time < 0 || a.barOne.time >= a.duration || !['manual','estimated'].includes(a.barOne.source))) ||
         (a.followTempo !== undefined && typeof a.followTempo !== 'boolean') ||
         (a.beatTimes !== undefined && !validBeatTimes(a.beatTimes,a.duration)) ||
-        (a.followTempo && (!a.beatTimes || a.beats !== 4 || a.denominator !== 4)) ||
+        (a.followTempo && !a.beatTimes) ||
         s.pageCount !== 0 || s.regions.length !== 0 || s.pdfName !== "" || s.scoreFormat !== undefined ||
         !s.measures.length || s.measures.length > 10000)
       throw Error(i18nText("audioPractice.invalidTiming"));
     if(a.followTempo) {
-      const expected=trackedAudioMeasures(a.duration,a.beatTimes!,a.barOne?.time);
+      const expected=trackedAudioMeasures(a.duration,a.beatTimes!,a.barOne?.time,a.beats,a.denominator);
       if(s.firstBeat!==(a.barOne?.time ?? a.beatTimes![0]) || s.measures.length!==expected.length || s.measures.some((m,i)=>{
         const e=expected[i];
-        return !m || !!m.audioPrelude!==!!e.audioPrelude || m.label!==e.label || m.start!==e.start || m.end!==e.end || m.beats!==e.beats || m.denominator!==4 ||
+        return !m || !!m.audioPrelude!==!!e.audioPrelude || m.label!==e.label || m.start!==e.start || m.end!==e.end || m.beats!==e.beats || m.denominator!==e.denominator ||
           !Array.isArray(m.beatTimes) || m.beatTimes.length!==e.beatTimes.length || m.beatTimes.some((t,b)=>t!==e.beatTimes[b]);
       }))throw Error(i18nText("audioPractice.invalidTiming"));
     } else if((a.barOne && (s.firstBeat!==a.barOne.time || (s.firstBeat>0 &&

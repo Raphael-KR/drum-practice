@@ -1376,12 +1376,14 @@ dialog::backdrop {
   background: #17352990;
 }
 .dialoghead {
+  gap: var(--dialog-control-gap, 10px);
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
 }
 dialog {
+  --dialog-control-gap: 10px;
   background: #f4f7fc;
   border-color: var(--line);
   padding: 18px;
@@ -2407,9 +2409,6 @@ body.has-song:has(.drawer-playback) {height:100dvh;overflow:hidden;}
 .drawer-playback .loop-slots > button {height:100%;min-height:0;padding:0 8px;font-size:16px;font-variant-numeric:tabular-nums;}
 .drawer-playback .loop-slots > button[aria-pressed=true] {background:var(--range-accent);color:white;}
 .drawer-playback .loop-slots > button.armed {background:var(--range-soft);border-color:var(--range-accent);color:var(--range-text);}
-.drawer-playback .loop-slot-menu {display:flex;gap:4px;min-width:0;min-height:0;}
-.drawer-playback .loop-slot-menu button {flex:1;min-width:0;min-height:0;height:100%;padding:0 4px;font-size:13px;}
-.drawer-playback .loop-slot-menu button:last-child {flex:0 0 28px;}
 .stage.range-selection-mode {touch-action:pan-x pan-y!important;scroll-snap-type:none!important;user-select:none;-webkit-user-select:none;}
 .stage .measure.range-selecting {background:var(--range-soft)!important;box-shadow:inset 0 0 0 2px var(--range-accent)!important;}
 
@@ -2739,12 +2738,12 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 .stage .measure.has-saved-loop { border-bottom: 3px solid var(--range-accent); }
 
 /* One orange palette for practice ranges, separate from red markers. */
-.loop-slots > button, .loop-slot-menu button {
+.loop-slots > button {
   border-color: var(--range-accent);
   color: var(--range-text);
 }
 .loop-slots > button.saved-range { background: linear-gradient(#fff8ec, #ffe5bd); }
-.loop-slots > button:hover:not(:disabled), .loop-slot-menu button:hover:not(:disabled) {
+.loop-slots > button:hover:not(:disabled) {
   background: var(--range-soft); border-color: var(--range-accent); color: var(--range-text);
 }
 .loop-slots > button[aria-pressed="true"], .loop-slots > button[aria-pressed="true"]:hover:not(:disabled) {
@@ -2897,3 +2896,18 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 .practice-file-status { grid-column:1 / -1; overflow-wrap:anywhere; }
 .practice-file-status:empty { display: none; }
 .practice-file-status.is-error { color: #b42318; font-weight: 600; }
+
+/* Compact confirmations share the app surface and button styles. */
+dialog.confirmation-dialog {
+  width: min(360px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 24px;
+  border-radius: 24px;
+  box-shadow: 0 16px 48px #14243d26;
+}
+.confirmation-dialog:focus { outline: none; }
+.confirmation-app-icon { display: block; margin-bottom: 24px; border-radius: 14px; box-shadow: 0 3px 8px #14243d1a; }
+.confirmation-body p { margin: 0; line-height: 1.65; white-space: pre-line; }
+.confirmation-title { display: block; margin-bottom: 8px; overflow-wrap: anywhere; }
+.confirmation-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dialog-control-gap, 10px); margin-top: 24px; }
+.confirmation-actions button { width: 100%; min-height: 48px; border-radius: 24px; font-weight: 600; }

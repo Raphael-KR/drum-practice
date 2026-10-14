@@ -71,7 +71,7 @@ header .actions #app-help-button {
   font-size: 20px;
   margin: 0;
 }
-#app-help-dialog button {
+#app-help-dialog button:not(.close-button) {
   min-width: 44px;
   min-height: 44px;
   border-radius: 12px;
@@ -414,3 +414,76 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(help-moda
 
 /* Full score/lyrics readers need only their close control. */
 #app-help-button[hidden] {display:none;}
+
+/* Contextual speech bubbles stay beside their actual controls. */
+#app-help-dialog.speech-help {background:#15243c24;}
+#app-help-dialog.speech-help .dialoghead {
+  z-index:3;
+  bottom:auto;right:auto;width:auto;max-width:none;padding:0;gap:0;
+  background:transparent;border:0;box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+#app-help-dialog.speech-help .help-content {
+  inset:0;width:100%;height:100%;max-height:none;padding:0;overflow:visible;
+  background:transparent;border-radius:0;pointer-events:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.speech-help .help-bubble {
+  position:absolute;box-sizing:border-box;margin:0!important;padding:14px 16px!important;
+  border:1px solid #b8cce8!important;border-radius:18px;background:#f9fbfff5;
+  box-shadow:0 4px 16px #24304420;overflow:auto;pointer-events:auto;
+}
+.speech-help .help-bubble[hidden] {display:none;}
+.speech-help .help-bubble h3 {font-size:16px;margin:0 0 5px;}
+.speech-help .help-bubble p {font-size:14px;line-height:1.55;}
+.speech-help .help-shortcuts {display:none;}
+#app-help-dialog.speech-help .help-pages {
+  position:absolute;right:12px;bottom:max(12px,env(safe-area-inset-bottom));
+  margin:0;padding:6px;gap:10px;border-radius:16px;background:#f4f7fcee;
+  border:1px solid #d5dfed;pointer-events:auto;
+  max-width:calc(100% - 24px);box-sizing:border-box;flex-wrap:wrap;justify-content:flex-end;
+}
+.speech-help .help-target {border:2px solid #4079dc;background:#ffffff15;}
+.help-tail {position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+.help-tail polygon {fill:#f9fbff;stroke:#b8cce8;stroke-width:1;}
+@media(max-width:640px) {
+  #app-help-dialog.speech-help .help-legend-button {margin:0;padding:0 10px;}
+}
+
+@media(max-width:640px) {
+  #app-help-dialog.speech-help .dialoghead {max-width:none;}
+  #app-help-dialog.speech-help .help-legend-button {font-size:14px;padding:0 8px;}
+  #app-help-dialog.speech-help .help-pages {gap:6px;padding:4px;font-size:14px;}
+}
+
+/* Modal help stays inside the active top layer so it can be clicked. */
+dialog .dialoghead > #app-help-button {position:static;flex:none;box-shadow:none;}
+dialog.backdrop-dismissible > .dialoghead .close-button {display:none;}
+#app-help-button[hidden] {display:none;}
+
+/* A single, non-modal guide: the real page stays focusable and scrollable. */
+#app-help-dialog.focus-help {pointer-events:none;}
+#app-help-dialog.focus-help .dialoghead {pointer-events:auto;}
+#app-help-dialog.focus-help .help-footer {
+  position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;border:1px solid #d5dfed;border-radius:18px;
+  background:#f4f7fcf5;box-shadow:0 3px 14px #24304420;pointer-events:auto;
+}
+.help-footer p {margin:0;font-size:14px;line-height:1.5;}
+#app-help-dialog.focus-help .help-legend-button {margin:0;flex:none;}
+#app-help-dialog.focus-help .help-footer [hidden] {display:none;}
+.hold-help {
+  position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;
+  box-sizing:border-box;margin:0;padding:0;border:0;background:transparent;
+  overflow:hidden;pointer-events:none;color:#243044;
+}
+.hold-help .help-bubble {pointer-events:none;}
+.speech-help .help-target[hidden] {display:none;}
+@media(max-width:480px) {
+  #app-help-dialog.focus-help .help-footer {align-items:flex-start;flex-direction:column;padding:10px;gap:8px;}
+  #app-help-dialog.focus-help .help-legend-button {align-self:flex-end;}
+}
+button, [role=button], .metronome-toggle {-webkit-touch-callout:none;}
+.speech-help .help-bubble h3 {color:#215bc0;}
+.speech-help .help-bubble p {margin:0;white-space:pre-line;word-break:keep-all;}

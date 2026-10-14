@@ -18,6 +18,10 @@ import {
   playbackPreferenceFieldsHTML,
   type SettingsCategory,
 } from "./playback-forms";
+/** Shared preview variant keeps the same metronome control as practice playback. */
+export function audioSetupMetronomeHTML() {
+  return metronomeControlHTML({id: "audio-setup-click", name: "click", label: t("audioPractice.click")});
+}
 export interface PlaybackShellOptions {
   ids: PlaybackBindings & {
     rewindButton: string;

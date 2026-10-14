@@ -1,6 +1,7 @@
+import { confirmDuplicateAudio } from "./audio-duplicate-dialog";
 import { installPracticeFileControls } from "./practice-file-controls";
 import { matchPracticeAudio, type PracticeFileEntry } from "./practice-file";
-import { checkAudioBeforeDecode } from "./audio-import-limits";
+import { checkAudioBeforeDecode, checkAudioFileSize } from "./audio-import-limits";
 import {
   practiceFileKind,
   readAudioPractice,
@@ -39,6 +40,8 @@ import {
   savePracticeState,
   savePracticeRecord,
   addPracticeRecords,
+  assertNewPracticeAudio,
+  DuplicatePracticeAudioError,
   savePracticeCanonicalMetadata,
   importPracticeRecord,
 } from "./practice-library";
@@ -303,6 +306,7 @@ async function importFile(file: File, ownsLock = false) {
   try {
     const kind = practiceFileKind(file);
     let record: RecordData;
+    let allowDuplicateAudio = false;
     if (kind === "audio") {
       stage = t("audioPractice.loading");
       const button = root.querySelector<HTMLButtonElement>("#import-package");
@@ -310,12 +314,27 @@ async function importFile(file: File, ownsLock = false) {
         button.disabled = true;
         button.textContent = stage;
       }
+      checkAudioFileSize(file);
+      try {
+        await assertNewPracticeAudio(file);
+      } catch (error) {
+        if (!(error instanceof DuplicatePracticeAudioError)) throw error;
+        if (!(await confirmDuplicateAudio(file.name))) return;
+        allowDuplicateAudio = true;
+      }
       record = await readAudioPractice(file, (text) => {
         if (button) button.textContent = text;
       });
     } else record = await readScorePackage(file);
     stage = t("library.stageSave");
-    await importPracticeRecord(record);
+    try {
+      await importPracticeRecord(record, { allowDuplicateAudio });
+    } catch (error) {
+      // Another import may finish while this file is being analyzed.
+      if (!(error instanceof DuplicatePracticeAudioError)) throw error;
+      if (!(await confirmDuplicateAudio(file.name))) return;
+      await importPracticeRecord(record, { allowDuplicateAudio: true });
+    }
     if (epoch !== importEpoch) return;
     stage = t("library.stageList");
     await showLibrary();
@@ -337,6 +356,7 @@ async function importFile(file: File, ownsLock = false) {
 }
 function bundledButton(score: (typeof bundledScores)[number]) {
   const button = document.createElement("button");
+  button.dataset.scoreDownload = "";
   button.textContent = t("separation.loadBundled");
   button.title = t("library.tipDownload");
   button.onclick = async () => {
@@ -569,6 +589,7 @@ export async function showLibrary() {
       void openRecord(record.song.id);
     });
     const remove = document.createElement("button");
+    remove.dataset.remove = "";
     remove.textContent = t("separation.remove");
     remove.title = t("library.tipRemove");
     remove.onclick = async () => {
@@ -588,6 +609,7 @@ export async function showLibrary() {
       audioIds.add(record.song.id);
       item.classList.add("audio-practice-card");
       const setup = document.createElement("button");
+      setup.dataset.audioSetup = "";
       setup.textContent = setup.title = t("audioPractice.setup");
       setup.onclick = async () => {
         if (working) return;

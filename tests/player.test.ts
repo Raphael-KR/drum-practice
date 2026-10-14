@@ -235,12 +235,14 @@ it("keeps the louder music click under its volume control and the count-in indep
     p.pulse(3, false, true);
     const count = ctx.nodes.at(-1)!;
     expect(count.buffer).toBeDefined();
-    expect(count.connections).toEqual([ctx.destination]);
+    expect(count.connections).toEqual([p.countOff]);
+    expect(p.countOff.gain.value).toBe(1);
     expect(count.started).toEqual([3]);
 
     // Both audible music and click enter the same bounded output path.
     const musicMix = (p.music as unknown as Node).connections[0];
     expect((p.click as unknown as Node).connections[0]).toBe(musicMix);
+    expect((p.countOff as unknown as Node).connections[0]).toBe(musicMix);
     expect(musicMix.connections).toEqual(ctx.shapers);
     expect(ctx.shapers[0].connections).toEqual([ctx.destination]);
   } finally {

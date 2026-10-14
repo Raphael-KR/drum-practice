@@ -17,6 +17,7 @@ export class Player {
   ctx: AudioContext;
   music: GainNode;
   click: GainNode;
+  countOff: GainNode;
   original?: AudioBuffer;
   rendered?: AudioBuffer;
   renderRate = 1;
@@ -47,11 +48,13 @@ export class Player {
     this.music = this.ctx.createGain();
     this.click = this.ctx.createGain();
     const mix = this.ctx.createGain();
+    this.countOff = this.ctx.createGain();
     const limiter = this.ctx.createWaveShaper();
     mix.gain.value = MIX_INPUT_GAIN;
     limiter.curve = createMixLimiterCurve();
     this.music.connect(mix);
     this.click.connect(mix);
+    this.countOff.connect(mix);
     mix.connect(limiter);
     limiter.connect(this.ctx.destination);
     this.ctx.onstatechange = () => {
@@ -321,7 +324,7 @@ export class Player {
       }
       const source = this.ctx.createBufferSource();
       source.buffer = this.stickSound;
-      source.connect(this.ctx.destination);
+      source.connect(this.countOff);
       this.track(source);
       source.start(at);
       return;

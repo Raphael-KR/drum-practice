@@ -5,7 +5,6 @@ import { SCORE_DRAG_THRESHOLD_PX } from "./score-gestures";
 
 export const LOOP_SLOT_COUNT = 9;
 const LEGACY_LOOP_SLOT_COUNT = 12;
-const SLOT_MENU_HOLD_MS = 550;
 const HIT_TEST_EDGE_INSET_PX = 2;
 const HIT_TEST_HEADER_INSET_PX = 30;
 const RANGE_END_INSET_SECONDS = 0.001;
@@ -77,9 +76,6 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
   let touch:
     | { id: number; index: number; x: number; y: number; moved: boolean }
     | undefined;
-  let menu: number | undefined;
-  let press: ReturnType<typeof setTimeout> | undefined,
-    suppressClick = false;
   const cleanups: (() => void)[] = [];
   const listen = (
     el: EventTarget,
@@ -126,13 +122,6 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
       const measure = h.song().measures[keyboardStart!].label;
       return `<button data-loop-slot="${slot}" class="armed" title="${esc(t("ranges.keyboardHint", { measure }))}" aria-live="polite">${esc(t("ranges.keyboardEnd", { measure }))}</button>`;
     }
-    if (menu === slot) {
-      return `<div class="loop-slot-menu">
-        <button title="${t("ranges.replace")}" data-replace="${slot}">${t("ranges.replace")}</button>
-        <button title="${t("ranges.delete")}" data-delete="${slot}">${t("ranges.delete")}</button>
-        <button data-dismiss title="${t("ranges.close")}" aria-label="${t("ranges.close")}">×</button>
-      </div>`;
-    }
     const selecting = armed === slot;
     let label: string;
     if (selecting) {
@@ -174,7 +163,6 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
     touch = undefined;
     touchStart = undefined;
     armed = undefined;
-    menu = undefined;
     keyboardStart = undefined;
     if (pointer !== undefined && stage.hasPointerCapture?.(pointer))
       stage.releasePointerCapture(pointer);
@@ -238,9 +226,7 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
   }
   function saveRange(a: number, b: number) {
     if (armed === undefined) return;
-    const old = savedLoopSlots(h.song())[armed];
-    // Explicit replacement keeps its identity; keyboard registration creates a new one.
-    commitRange(armed, measureLoop(h.song(), a, b, old?.id));
+    commitRange(armed, measureLoop(h.song(), a, b));
     render();
   }
   listen(
@@ -343,25 +329,8 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
       true,
     );
   listen(grid, "click", ((e: MouseEvent) => {
-    if (suppressClick) {
-      suppressClick = false;
-      return;
-    }
     const el = (e.target as Element).closest<HTMLElement>("button");
     if (!el) return;
-    if (el.hasAttribute("data-dismiss")) {
-      menu = undefined;
-      render();
-      return;
-    }
-    if (el.dataset.replace !== undefined) {
-      arm(Number(el.dataset.replace));
-      return;
-    }
-    if (el.dataset.delete !== undefined) {
-      removeSlot(Number(el.dataset.delete));
-      return;
-    }
     if (el.dataset.loopSlot === undefined) return;
     const slot = Number(el.dataset.loopSlot);
     if (armed === slot) {
@@ -383,34 +352,6 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
         render();
       }
     }
-  }) as EventListener);
-  listen(grid, "pointerdown", ((e: PointerEvent) => {
-    suppressClick = false;
-    const el = (e.target as Element).closest<HTMLElement>("[data-loop-slot]");
-    if (!el || !savedLoopSlots(h.song())[Number(el.dataset.loopSlot)]) return;
-    const slot = Number(el.dataset.loopSlot);
-    press = setTimeout(() => {
-      press = undefined;
-      suppressClick = true;
-      cancel();
-      menu = slot;
-      render();
-    }, SLOT_MENU_HOLD_MS);
-  }) as EventListener);
-  const clearPress = () => {
-    if (press) clearTimeout(press);
-    press = undefined;
-  };
-  for (const type of ["pointerup", "pointercancel", "pointerleave"])
-    listen(grid, type, clearPress);
-  listen(grid, "contextmenu", ((e: Event) => {
-    const el = (e.target as Element).closest<HTMLElement>("[data-loop-slot]");
-    if (!el || !savedLoopSlots(h.song())[Number(el.dataset.loopSlot)]) return;
-    e.preventDefault();
-    clearPress();
-    cancel();
-    menu = Number(el.dataset.loopSlot);
-    render();
   }) as EventListener);
   function endpoint(index: number) {
     if (!h.ready() || !h.song().measures[index]) return;
@@ -452,29 +393,12 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
       }
       if (
         e.key === "Escape" &&
-        (armed !== undefined ||
-          menu !== undefined ||
-          keyboardStart !== undefined)
+        (armed !== undefined || keyboardStart !== undefined)
       ) {
         e.preventDefault();
         e.stopImmediatePropagation();
         cancel();
         render();
-      }
-      if (
-        e.key === "F10" &&
-        e.shiftKey &&
-        grid.contains(document.activeElement)
-      ) {
-        const el = document.activeElement as HTMLElement;
-        if (
-          el.dataset.loopSlot !== undefined &&
-          savedLoopSlots(h.song())[Number(el.dataset.loopSlot)]
-        ) {
-          e.preventDefault();
-          menu = Number(el.dataset.loopSlot);
-          render();
-        }
       }
     }) as EventListener,
     true,
@@ -521,7 +445,6 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
       grid.querySelector<HTMLElement>("button")?.focus();
     },
     dispose() {
-      clearPress();
       cancel();
       cleanups.forEach((f) => f());
     },

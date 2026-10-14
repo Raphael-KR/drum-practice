@@ -49,7 +49,7 @@
 | settings.screen | 화면 | 화면 | Display | settings |
 | settings.playback | 재생 | 재생 | Playback | settings |
 | settings.score | 악보 | 악보 | Score management | settings |
-| settings.audio | 내 음원 목록 | 내 음원 목록 사용자 설정 | Audio | settings |
+| settings.audio | 백업 | 사용자 설정 백업·복원 | Audio | settings |
 | settings.info | 정보 | 정보 | About | settings |
 | manage.edit | 편집 | 편집 | Edit | settings.score |
 | manage.files | 파일 | 파일 | Files | settings.score |
@@ -61,3 +61,8 @@
 | export.selected | 선택한 파일 내보내기 | 선택한 파일 내보내기 | Export selected files | file.export |
 | lyrics.all | 전체 가사 보기 | 전체 가사 보기 | All lyrics | settings.score |
 | score.pdf | PDF 전체 악보 보기 | PDF 전체 악보 보기 | Full PDF score | settings.score |
+
+### 확인 팝업과 제목줄 간격 (2026-10-15)
+- `src/dialog-ui.ts`의 `createConfirmationDialog`가 중복 추가·미저장 변경·제작기 종료 확인의 공통 구조다. 앱 아이콘 → 제목/설명 → 세로 전체 폭 버튼 순서이며 (?)와 (X)를 추가하지 않는다.
+- 기존 중복 추가 팝업의 360px 폭, 24px 패딩·모서리, 64px 앱 아이콘, 48px 이상 버튼을 재사용한다.
+- `--dialog-control-gap: 10px`을 모달 제목줄·제목줄 버튼 그룹·확인 버튼 그룹에 공통 적용한다. 주 실행 버튼은 파란색이며, 안전한 버튼의 기본 포커스는 유지한다.

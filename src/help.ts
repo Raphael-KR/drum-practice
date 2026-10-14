@@ -1,12 +1,21 @@
 import { showDialogFromButton } from "./dialog-transition";
 import { scoreLegendHelp } from "./help-legend";
-import { createDialog } from "./dialog-ui";
+import { createDialog, dialogHeader, closeDialogOnBackdrop } from "./dialog-ui";
 import { t } from "./i18n";
-import { helpItems } from "./help-content";
+import { createHelpBubble } from "./help-bubble";
+import {
+  helpControl,
+  helpControlAnchor,
+  describeHelpControl,
+} from "./help-controls";
+import { bindHelpHold } from "./help-hold";
 
-/** Shared contextual help, including modal/top-layer and fullscreen surfaces. */
+let disposeHelp: (() => void) | undefined;
+/** A transparent top-layer guide leaves real controls focusable without executing them. */
 export function installHelp(root: HTMLElement) {
   if (root.querySelector("#app-help-button")) return;
+  disposeHelp?.();
+  const abort = new AbortController();
   const button = document.createElement("button");
   button.id = "app-help-button";
   button.type = "button";
@@ -14,88 +23,207 @@ export function installHelp(root: HTMLElement) {
   button.title = button.ariaLabel = t("help.title");
   button.setAttribute("aria-haspopup", "dialog");
   root.append(button);
-  let help: HTMLDialogElement | undefined;
-  const activeDialog = () => {
-    const focused =
-      document.activeElement?.closest<HTMLDialogElement>("dialog[open]");
-    if (focused && focused !== help && root.contains(focused)) return focused;
-    return [...root.querySelectorAll<HTMLDialogElement>("dialog[open]")]
-      .filter((d) => d !== help)
+  let surface: HTMLElement | undefined,
+    selected: HTMLElement | undefined,
+    context: HTMLElement | undefined;
+  let bubble: ReturnType<typeof createHelpBubble> | undefined;
+  let legend: HTMLDialogElement | undefined;
+  let oldDescription: string | null = null;
+  let hint: HTMLElement | undefined;
+  let held: HTMLElement | undefined;
+  let heldDescription: string | null = null;
+  const dismissible = new Map<HTMLDialogElement, () => void>();
+  const activeDialog = () =>
+    [...document.querySelectorAll<HTMLDialogElement>("dialog[open]")]
+      .filter((d) => d !== legend)
       .at(-1);
+  const isConfirmation = (dialog?: HTMLDialogElement) =>
+    !!dialog?.matches(".confirmation-dialog,#discard-changes-dialog,#edit-exit-dialog,[role=alertdialog]");
+  const belongs = (target: HTMLElement) =>
+    root.contains(target) || !!target.closest("dialog[open]");
+  const targetFor = (event: Event) => {
+    const control = helpControl(event.target);
+    return control &&
+      belongs(control) &&
+      !control.closest("#app-help-dialog,#app-legend-dialog,#control-hold-help")
+      ? control
+      : undefined;
   };
+  const restoreDescription = (
+    target: HTMLElement | undefined,
+    value: string | null,
+  ) => {
+    if (!target) return;
+    if (value === null) target.removeAttribute("aria-describedby");
+    else target.setAttribute("aria-describedby", value);
+  };
+  const describe = (target: HTMLElement) => {
+    const old = target.getAttribute("aria-describedby");
+    target.setAttribute(
+      "aria-describedby",
+      [old, "active-control-help"].filter(Boolean).join(" "),
+    );
+    return old;
+  };
+  const hideHold = () => {
+    restoreDescription(held, heldDescription);
+    held = undefined;
+    hint?.remove();
+    hint = undefined;
+  };
+  const unbindHold = bindHelpHold({
+    target: targetFor,
+    enabled: () => !surface && !legend,
+    show: (target) => {
+      hideHold();
+      held = target;
+      heldDescription = describe(target);
+      hint = document.createElement("div");
+      hint.id = "control-hold-help";
+      hint.className = "speech-help hold-help";
+      hint.setAttribute("popover", "manual");
+      (target.closest("dialog[open]") || root).append(hint);
+      hint.showPopover();
+      createHelpBubble(hint).show(
+        helpControlAnchor(target),
+        describeHelpControl(target),
+      );
+    },
+    hide: hideHold,
+  });
   const relocate = () => {
     if (!button.isConnected) {
-      observer.disconnect();
-      if (help?.open) help.close();
+      const home = root.isConnected && root.querySelector("header .actions");
+      if (home) home.append(button);
+      else {
+        disposeHelp?.();
+        return;
+      }
+    }
+    if (surface) return;
+    const modal = activeDialog();
+    const popup = isConfirmation(modal);
+    const parent = modal && !popup && !modal.classList.contains("score-reader-dialog")
+      ? modal.querySelector(".dialoghead") || modal
+      : undefined;
+    const destination = parent || root.querySelector("header .actions") || root;
+    if (button.parentElement !== destination) destination.append(button);
+    button.hidden = popup;
+    for (const [dialog, dispose] of dismissible) {
+      if (!dialog.isConnected) {
+        dispose();
+        dismissible.delete(dialog);
+      }
+    }
+    if (modal && !modal.classList.contains("score-reader-dialog") && !dismissible.has(modal)) {
+      const focusWasClose =
+        modal.contains(document.activeElement) &&
+        document.activeElement?.classList.contains("close-button");
+      modal.classList.add("backdrop-dismissible");
+      dismissible.set(modal, closeDialogOnBackdrop(modal));
+      if (focusWasClose) {
+        const first = modal.querySelector<HTMLElement>('button:not(.close-button),input:not([type="hidden"]),select,textarea');
+        (popup ? first || modal : button).focus({ preventScroll: true });
+      }
+    }
+  };
+  const close = () => {
+    if (!surface) return;
+    legend?.close();
+    restoreDescription(selected, oldDescription);
+    selected = undefined;
+    surface.remove();
+    surface = undefined;
+    bubble = undefined;
+    context = undefined;
+    button.setAttribute("aria-expanded", "false");
+    relocate();
+    button.focus({ preventScroll: true });
+  };
+  const paint = () => {
+    if (!surface) return;
+    if (context && !context.isConnected) {
+      close();
       return;
     }
-    if (help?.open) return;
-    const modal = activeDialog();
-    const keepInHeader = modal?.id === "settings-dialog" || modal?.classList.contains("score-reader-dialog");
-    const parent = (!keepInHeader && modal) || root.querySelector("header .actions") || root;
-    if (button.parentElement !== parent) parent.append(button);
+    const header = surface.querySelector<HTMLElement>(".dialoghead")!;
+    const r = button.getBoundingClientRect();
+    header.style.left = `${Math.max(0, Math.min(innerWidth - 48, r.left))}px`;
+    header.style.top = `${Math.max(0, Math.min(innerHeight - 48, r.top))}px`;
+    const footer = surface.querySelector<HTMLElement>(".help-footer")!;
+    const stage =
+      !context && root.querySelector<HTMLElement>("#practice #stage");
+    const scoreRect = stage && stage.getBoundingClientRect();
+    if (scoreRect && scoreRect.width > 0 && scoreRect.height > 0) {
+      // Keep the guide inside the score, just above the transport controls.
+      footer.style.left = `${Math.max(12, scoreRect.left + 12)}px`;
+      footer.style.right = `${Math.max(12, innerWidth - scoreRect.right + 12)}px`;
+      footer.style.bottom = `${Math.max(12, innerHeight - scoreRect.bottom + 8)}px`;
+    } else {
+      footer.style.left = footer.style.right = footer.style.bottom = "";
+    }
+    if (selected) {
+      const cr = header.getBoundingClientRect();
+      const fr = footer.getBoundingClientRect();
+      bubble?.show(
+        helpControlAnchor(selected),
+        describeHelpControl(selected),
+        12,
+        [cr, fr].map((rect) => ({
+          x: rect.left,
+          y: rect.top,
+          width: rect.width,
+          height: rect.height,
+        })),
+      );
+    }
   };
-  const observer = new MutationObserver(relocate);
-  observer.observe(root, {
-    subtree: true,
-    childList: true,
-    attributes: true,
-    attributeFilter: ["open"],
-  });
+  const select = (control: HTMLElement) => {
+    if (
+      !surface ||
+      control === button ||
+      !belongs(control) ||
+      control.closest("#app-help-dialog,#app-legend-dialog")
+    )
+      return;
+    if (context && !context.contains(control)) return;
+    if (selected !== control) {
+      restoreDescription(selected, oldDescription);
+      selected = control;
+      oldDescription = describe(control);
+    }
+    paint();
+  };
   button.onclick = () => {
-    if (help) return;
-    const context = activeDialog();
-    const items = helpItems(context).filter((i) => {
-      const el = (context || root).querySelector(i.target);
-      return el && el.getClientRects().length;
-    });
-    help = createDialog(
-      "app-help-dialog",
-      t("help.title"),
-      "context-help",
-      root,
-    );
-    const dialog = help;
-    const compactPlayback = !context && !!root.querySelector("#practice")?.getClientRects().length;
-    if (compactPlayback) dialog.classList.add("compact-playback-help");
-    dialog.addEventListener("keydown", (e) => e.stopPropagation());
-    const layout = document.createElement("div");
-    layout.className = "help-content";
-    const marks = document.createElement("div");
-    marks.className = "help-marks";
-    marks.ariaHidden = "true";
-    const cards = document.createElement("div");
-    cards.className = "help-cards";
-    cards.setAttribute("aria-live", "polite");
-    const shortcuts = document.createElement("p");
-    shortcuts.className = "help-shortcuts";
-    shortcuts.textContent = t(
-      !context && root.querySelector("#practice")?.getClientRects().length
-        ? "help.playKeys"
-        : "help.closeKey",
-    );
-    const nav = document.createElement("nav");
-    nav.className = "help-pages";
-    nav.ariaLabel = t("help.pages");
-    const prev = document.createElement("button"),
-      next = document.createElement("button"),
-      count = document.createElement("span");
-    prev.textContent = "←";
-    next.textContent = "→";
-    prev.ariaLabel = prev.title = t("help.previous");
-    next.ariaLabel = next.title = t("help.next");
-    nav.append(prev, count, next);
-    layout.append(cards, shortcuts, nav);
+    if (surface || isConfirmation(activeDialog())) return;
+    hideHold();
+    context = activeDialog();
+    surface = document.createElement("div");
+    surface.id = "app-help-dialog";
+    surface.className = "speech-help focus-help";
+    surface.setAttribute("popover", "manual");
+    surface.setAttribute("role", "dialog");
+    surface.ariaLabel = t("help.title");
+    surface.innerHTML = dialogHeader(t("help.title"));
+    surface.querySelector("h2")?.remove();
+    surface.querySelector<HTMLButtonElement>(".close-button")!.onclick = close;
+    const footer = document.createElement("div");
+    footer.className = "help-footer";
+    const instruction = document.createElement("p");
+    instruction.textContent = t("help.holdHint");
     const legendButton = document.createElement("button");
-    legendButton.hidden = root.classList.contains("audio-practice");
-    legendButton.type = "button";
     legendButton.className = "help-legend-button";
+    legendButton.type = "button";
     legendButton.textContent = t("help.legend.button");
     legendButton.title = t("help.legend.title");
     legendButton.setAttribute("aria-haspopup", "dialog");
-    const header = dialog.querySelector(".dialoghead")!;
-    header.insertBefore(legendButton, header.querySelector("button"));
-    let legend: HTMLDialogElement | undefined;
+    legendButton.hidden = root.classList.contains("audio-practice");
+    footer.append(instruction, legendButton);
+    surface.append(footer);
+    bubble = createHelpBubble(surface);
+    (context || root).append(surface);
+    surface.showPopover();
+    button.setAttribute("aria-expanded", "true");
     legendButton.onclick = () => {
       if (legend) return;
       legend = createDialog(
@@ -113,7 +241,7 @@ export function installHelp(root: HTMLElement) {
         () => {
           modal.remove();
           legend = undefined;
-          if (dialog.open) legendButton.focus({ preventScroll: true });
+          if (surface) legendButton.focus({ preventScroll: true });
         },
         { once: true },
       );
@@ -129,99 +257,98 @@ export function installHelp(root: HTMLElement) {
         }
       });
     };
-    dialog.append(marks, layout);
-    let page = 0,
-      perPage = items.length || 1;
-    const paint = () => {
-      perPage = !compactPlayback && (innerWidth < 640 || innerHeight < 560) ? 1 : items.length || 1;
-      const pages = Math.max(1, Math.ceil(items.length / perPage));
-      page = Math.min(page, pages - 1);
-      cards.replaceChildren();
-      marks.replaceChildren();
-      items.slice(page * perPage, (page + 1) * perPage).forEach((item, j) => {
-        const number = page * perPage + j + 1;
-        const card = document.createElement("section"),
-          title = document.createElement("h3"),
-          body = document.createElement("ul");
-        title.textContent = `${number}. ${t(item.title)}`;
-        for (const line of t(item.body).split("\n")) {
-          const entry = document.createElement("li");
-          entry.textContent = line;
-          body.append(entry);
-        }
-        card.append(title, body);
-        cards.append(card);
-        const el = (context || root).querySelector(item.target);
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        const mark = document.createElement("div");
-        mark.className = "help-target";
-        mark.style.cssText = `left:${Math.max(0, rect.left)}px;top:${Math.max(0, rect.top)}px;width:${Math.min(rect.right, innerWidth) - Math.max(0, rect.left)}px;height:${Math.min(rect.bottom, innerHeight) - Math.max(0, rect.top)}px`;
-        const badge = document.createElement("span");
-        badge.textContent = String(number);
-        mark.append(badge);
-        marks.append(mark);
-      });
-      nav.hidden = pages === 1;
-      count.textContent = `${page + 1} / ${pages}`;
-      prev.disabled = page === 0;
-      next.disabled = page === pages - 1;
-    };
-    const move = (delta: number) => {
-      page = Math.max(
-        0,
-        Math.min(Math.ceil(items.length / perPage) - 1, page + delta),
-      );
-      paint();
-    };
-    prev.onclick = () => move(-1);
-    next.onclick = () => move(1);
-    dialog.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-        e.preventDefault();
-        move(e.key === "ArrowLeft" ? -1 : 1);
+    paint();
+    surface
+      .querySelector<HTMLButtonElement>(".close-button")!
+      .focus({ preventScroll: true });
+  };
+  const listen = (type: string, fn: EventListener) =>
+    window.addEventListener(type, fn, { capture: true, signal: abort.signal });
+  const owned = (event: Event) =>
+    event.target instanceof Node &&
+    (!!surface?.contains(event.target) ||
+      root.contains(event.target) ||
+      !!(event.target as Element).closest?.("dialog[open]"));
+  const guideEvent = (event: Event) =>
+    !!surface &&
+    !legend &&
+    owned(event) &&
+    !(event.target instanceof Node && surface.contains(event.target));
+  listen("focusin", (event) => {
+    if (guideEvent(event)) {
+      const target = targetFor(event);
+      if (target) select(target);
+    }
+  });
+  listen("pointerover", (event) => {
+    if (guideEvent(event) && (event as PointerEvent).pointerType !== "touch") {
+      const target = targetFor(event);
+      if (target) select(target);
+    }
+  });
+  for (const type of [
+    "pointerdown",
+    "pointerup",
+    "click",
+    "dblclick",
+    "contextmenu",
+  ])
+    listen(type, (event) => {
+      if (!guideEvent(event)) return;
+      const target = targetFor(event);
+      if (target) {
+        select(target);
+        if (type === "pointerdown") target.focus({ preventScroll: true });
       }
+      // Scroll gestures retain their default, while actual controls cannot activate in help mode.
+      if (type !== "pointerdown" || target) event.preventDefault();
+      event.stopImmediatePropagation();
     });
-    let start: { x: number; y: number } | undefined;
-    layout.addEventListener("pointerdown", (e) => {
-      start = { x: e.clientX, y: e.clientY };
+  listen("keydown", (event) => {
+    if (!surface || legend || !owned(event)) return;
+    const e = event as KeyboardEvent;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      close();
+      return;
+    }
+    if (surface.contains(e.target as Node)) return;
+    if (e.key === "Tab") return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  });
+  for (const type of ["resize", "scroll"])
+    listen(type, () => {
+      hideHold();
+      paint();
     });
-    layout.addEventListener("pointerup", (e) => {
-      if (
-        start &&
-        Math.abs(e.clientX - start.x) > 60 &&
-        Math.abs(e.clientY - start.y) < 40
-      )
-        move(e.clientX < start.x ? 1 : -1);
-      start = undefined;
-    });
-    layout.addEventListener("pointercancel", () => {
-      start = undefined;
-    });
-    const resize = new ResizeObserver(paint);
-    resize.observe(context || root);
-    const scroll = (event: Event) => {
-      if (!(event.target instanceof Node) || !dialog.contains(event.target))
-        paint();
-    };
-    window.addEventListener("resize", paint);
-    window.addEventListener("scroll", scroll, true);
-    dialog.addEventListener(
-      "close",
-      () => {
-        if (legend?.open) legend.close();
-        resize.disconnect();
-        window.removeEventListener("resize", paint);
-        window.removeEventListener("scroll", scroll, true);
-        dialog.remove();
-        help = undefined;
-        relocate();
-        button.focus({ preventScroll: true });
-      },
-      { once: true },
-    );
-    showDialogFromButton(dialog, button, paint);
+  const observer = new MutationObserver(() => {
+    if (held && !held.isConnected) hideHold();
+    relocate();
+    if (surface && selected && !selected.isConnected) {
+      restoreDescription(selected, oldDescription);
+      selected = undefined;
+      bubble?.hide();
+    }
+  });
+  observer.observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["open"],
+  });
+  disposeHelp = () => {
+    disposeHelp = undefined;
+    observer.disconnect();
+    for (const [modal, dispose] of dismissible) {
+      dispose();
+      modal.classList.remove("backdrop-dismissible");
+    }
+    unbindHold();
+    abort.abort();
+    close();
+    button.remove();
   };
   relocate();
 }

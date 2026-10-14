@@ -12,7 +12,7 @@ export function originalTempoMode(song: Song) {
 export function recordingBeatGrid(song: Song) {
   if (song.audioPractice) {
     const times = song.audioPractice.followTempo ? song.audioPractice.beatTimes : undefined;
-    return times ? {source: times, quarters: times.map((_, i) => i)} : undefined;
+    return times ? {source: times, quarters: times.map((_, i) => i * 4 / song.audioPractice!.denominator)} : undefined;
   }
   if (!song.measures.some(m => m.beatTimes)) return;
   const source: number[] = [], quarters: number[] = [];
