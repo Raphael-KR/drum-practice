@@ -258,3 +258,4 @@ HTML 저장 버튼과 파일 내보내기의 HTML 옵션, portable/playback-expo
 - 제외: 제작기 공개, 별도 악보/내보내기 산출물 커밋, 원본 미디어 업로드.
 - 검증: 기존 승인된 테스트·빌드·공개 읽기 smoke 범위로 수행. 기존 0.7 기능 보완이므로 patch 선택.
 - 발행 검사: 빌드/회귀 병렬 실행 중 빌드번호 교체로 UI 4건 실패. 코드 추가 변경 없이 UI 25건 재검사와 전체 114파일636테스트 순차 실행 모두 통과. 타입/i18n/분리 빌드/배포 빌드/공통 구조 통과. 배포 정적35파일 일치. 소스 빌드 e57edec37e40. 로그 `.tmp/release-0.7.10-{tests-final,build,site-build}.log`.
+- 완료: 구현 dd0a37f main push. Sites67 / 소스 c699689d936e452cdca88aebcfcec63c15a688f4 / 배포 appgdep_6acf9b17d9808191a45035b89f628863 succeeded (2026-10-15 00:09:35 KST). 공개 읽기 smoke14항목 통과. 공개 실기기 청취는 미실행. https://drum-practice-studio.dgkma.chatgpt.site
