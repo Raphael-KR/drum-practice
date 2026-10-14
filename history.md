@@ -211,3 +211,9 @@ HTML 저장 버튼과 파일 내보내기의 HTML 옵션, portable/playback-expo
 - 검증: 기존 전체114파일632테스트 증거를 유지하고 최종 버전의 집중 검사·두 앱/배포 빌드·공개 HTTP/DB 읽기 확인. 사용자 삭제·발행·검사 허가에 따라 진행한다.
 - 발행 전 공개 DB에서 audio_analysis, audio_analysis_pending, audio_analysis_limits 세 테이블 존재를 확인했다.
 - 최종 버전 검증: 집중5파일18테스트, 타입/i18n/두 앱 빌드·경계, 배포 Worker 빌드와 정적35파일 일치 통과. 소스 빌드8953d8732f2a. 이전 전체114파일632테스트 이후 실행 코드 변경은 버전 정보뿐이다. 기존 대형 청크 경고 유지.
+
+## 2026-10-14 — 0.7.9 커밋·push·발행 및 공개 분석자료 삭제 완료
+- 정본935c965 main push, Sites 소스a1ede96a93248c1319d1d576d2530912ca1d504b push 및 Sites66 발행 완료. 배포appgdep_6acf91075fc48191b4f0e7a0ba080183 succeeded, 23:26:37 KST. 두 앱0.7.9 / 빌드8953d8732f2a, editor는 로컬 전용.
+- 공개 DB 삭제 전3개 분석 테이블 존재, 0002 적용 후 tables=[] 및 생략0개 확인. 이전 분석·검토대기·요청제한 자료가 활성 DB에서 제거됐다. DB 리소스/마이그레이션 이력은 유지하며 앱 코드에는 DB 사용 경로가 없다.
+- 공개 HTTP smoke14항목 통과: HTML3경로 보안 헤더/새 번들, 주요 자산4개·서버악보4개 HTTP200/해시 일치, 폐기 API3경로404. 실제 기기에서 음원 재생/청취는 이번 발행에서 반복하지 않았다.
+- 현재 설계·발행 상태를 APP-VERSIONS/AUDIO-PRACTICE/SITE-SECURITY-HARDENING/SITES-PUBLICATION 문서에 반영. 사용자 범례이미지와 exports는 보존하고 커밋에서 제외했다.
