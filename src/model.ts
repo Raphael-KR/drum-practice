@@ -13,7 +13,7 @@ export interface Region {
 }
 export interface Measure {
   audioPrelude?: boolean;
-  /** Audio-only observed beat positions; score measures retain uniform timing. */
+  /** Recording beat positions, one per notated beat; absent means uniform timing. */
   beatTimes?: number[];
   id: string;
   regionId: string;
@@ -150,11 +150,26 @@ export function beatTime(m: Measure, beat: number) {
   }
   return m.start + ((m.end - m.start) * beat) / m.beats;
 }
+export function validMeasureBeatTimes(m: Pick<Measure, "beats" | "start" | "end" | "beatTimes">) {
+  const times = m.beatTimes;
+  return times === undefined || (Array.isArray(times) && times.length === m.beats &&
+    times[0] === m.start && times.every((time, i) => Number.isFinite(time) &&
+      time >= m.start && time < m.end && (i === 0 || time > times[i - 1])));
+}
+/** Preserve the relative recording tempo when an editor changes a measure boundary. */
+export function setMeasureTiming(m: Measure, start: number, end: number) {
+  if (m.beatTimes) m.beatTimes = m.beatTimes.map(time =>
+    start + (time - m.start) / (m.end - m.start) * (end - start));
+  m.start = start;
+  m.end = end;
+}
 export function reflow(song: Song) {
   let t = song.firstBeat;
   for (const m of song.measures) {
     m.start = t;
     m.end = t + (((m.beats * 60) / song.bpm) * 4) / m.denominator;
+    // Explicit uniform-tempo editing replaces the recording grid.
+    delete m.beatTimes;
     t = m.end;
   }
 }
@@ -354,7 +369,8 @@ export function validateSong(x: unknown): asserts x is Song {
   for (const m of s.measures) {
     if (
       !m ||
-      (!s.audioPractice && (m.beatTimes !== undefined || m.audioPrelude !== undefined)) ||
+      (!s.audioPractice && m.audioPrelude !== undefined) ||
+      !validMeasureBeatTimes(m) ||
       typeof m.id !== "string" ||
       (s.audioPractice ? m.regionId !== "" : !ids.has(m.regionId)) ||
       mids.has(m.id) ||

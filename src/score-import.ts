@@ -18,6 +18,7 @@ export function applyXMLTiming(song: Song, parsed: XMLScore) {
     m.denominator = xml.denominator;
     m.start = at;
     m.end = at + (((xml.beats * 60) / bpm) * 4) / xml.denominator;
+    delete m.beatTimes;
     at = m.end;
   });
 }

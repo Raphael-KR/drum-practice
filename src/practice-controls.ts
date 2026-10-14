@@ -1,5 +1,5 @@
 import { t as i18nText } from "./i18n";
-import { clamp, locate, type Measure, type Song } from "./model";
+import { beatTime, clamp, locate, type Measure, type Song } from "./model";
 
 /** Inclusive measure range for the current bar and equally many neighbours. */
 export function centeredRange(
@@ -41,7 +41,7 @@ export function scrubTime(
     return Math.min(duration, song.measures.at(-1)!.end);
   const index = Math.floor(coordinate),
     m = song.measures[index];
-  return clamp(m.start + (m.end - m.start) * (coordinate - index), 0, duration);
+  return clamp(beatTime(m, m.beats * (coordinate - index)), 0, duration);
 }
 
 export function loopMeasureRange(song: Song, start: number, end: number) {

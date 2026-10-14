@@ -661,6 +661,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function originalAudioBpm() {
     const song = h.song();
+    if (song.measures.some(m => m.beatTimes)) return song.bpm;
     const recording = readRecordingTempo(h.canonicalXML?.());
     return recording?.scoreBpm === song.bpm ? recording.bpmEstimate : song.bpm;
   }

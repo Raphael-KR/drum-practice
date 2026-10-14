@@ -1,5 +1,5 @@
 import { t as i18nText } from "./i18n";
-import { beatTime, locate, type Song, type Lyric, type Measure } from "./model";
+import { beatTime, measureBeatAt, locate, type Song, type Lyric, type Measure } from "./model";
 export interface GridPoint {
   measureId: string;
   tick: number;
@@ -11,10 +11,7 @@ export function nearestQuarterBeat(song: Song, time: number) {
     | { measure: Measure; tick: number; time: number; distance: number }
     | undefined;
   for (const measure of song.measures) {
-    const raw =
-      ((time - measure.start) / (measure.end - measure.start)) *
-      measure.beats *
-      4;
+    const raw = measureBeatAt(measure, time) * 4;
     const tick = Math.max(0, Math.min(measure.beats * 4, Math.round(raw)));
     const candidate = beatTime(measure, tick / 4),
       distance = Math.abs(time - candidate);

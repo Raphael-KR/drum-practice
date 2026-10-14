@@ -47,7 +47,8 @@
 - 버전 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_8869cdbcf33081919f71b3c52a73b43d`.
 - 배포 ID: `appgdep_6acf9f7b27908191a3d90a203c5c7a43` — succeeded, 2026-10-15 00:28:22 KST.
 - 전체114파일636테스트, 타입/i18n/분리 빌드/공통 구조/배포 빌드 통과. 정적 자산35파일 일치.
-- 공개 읽기 smoke14항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/분석·변환 Worker4파일 및 악보4개 SHA-256 일치, 폐기 API3경로404. iPad 실기기 확인은 사용자 진행 예정.
+- 공개 읽기 smoke14항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/분석·변환 Worker4파일 및 악보4개 SHA-256 일치, 폐기 API3경로404.
+- 2026-10-15 사용자 iPad 실기기 확인: 하단 버튼 크기가 개선되었고 정상 동작한다고 보고했다. 이번 하단 버튼판 개선 범위의 확인이며 [검증 현황](acceptance.md)에 별도 기록했다.
 - 증거: `.tmp/release-0.7.11-{tests,build,site-build}.log`, `.tmp/release-0.7.11-smoke.json`.
 
 ## 이전 발행 — 0.7.10

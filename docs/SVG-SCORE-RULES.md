@@ -82,6 +82,9 @@
 | R/L 스티킹 | 해당 타격마다 R 또는 L 하나. 저장은 words, 출력은 줄기 중앙 X·줄기/머리 중 높은 위치보다9 SVG 단위 위. 16px serif, 중앙 정렬 |
 | 스티킹 대상 연결 | divisions, backup, forward, offset, voice로 정확한 타격에 연결. 하나의 타격에 서로 다른 R/L을 쌓지 않음 |
 | 실험용 문구 | `R words`, `R other-technical` 같은 진단 설명을 악보에 표시하지 않음 |
+| 연속 연음 숫자 | 반복 묶음마다 숫자를 유지한다. OSMD `TupletNumberLimitConsecutiveRepetitions=false`를 모든 조판 경로에 적용하며 일반 텍스트로 대체하지 않는다. |
+
+2026-10-15: 붉은 노을131마디의 세 번째 셋잇단음표 숫자 숨김을 수정한다. 캐시 정책은 `v22-all-tuplet-numbers`로 갱신하여 과거 숨김 결과를 재사용하지 않는다.
 
 고스트·스티킹 대상 식별용 임시 색은 렌더링 후 원래 색으로 되돌린다. 대상 머리를 찾지 못하면 조용히 생략하지 않고 오류를 보고한다.
 

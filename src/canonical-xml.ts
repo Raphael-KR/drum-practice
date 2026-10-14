@@ -1,5 +1,5 @@
 import { t as i18nText } from "./i18n";
-import { validateMeasureLyrics, type Song, type Lyric, type MeasureLyric } from "./model";
+import { validMeasureBeatTimes, validateMeasureLyrics, type Song, type Lyric, type MeasureLyric } from "./model";
 import type { RecordData } from "./storage";
 import { migrateLyricPositions, projectLyrics } from "./lyric-score";
 const PART = "DrumPracticeLyrics",
@@ -48,6 +48,7 @@ interface Manifest {
     denominator: number;
     start: number;
     end: number;
+    beatTimes?: number[];
     occurrence: number;
   }[];
   lyrics: { voice: string; id: string; confirmed: boolean }[];
@@ -90,6 +91,8 @@ export function writeCanonical(
   base?: string,
   audioSHA256?: string,
 ): string {
+  if (s.measures.some(m => !validMeasureBeatTimes(m)))
+    throw Error(i18nText("model.message385"));
   validateMeasureLyrics(s.measureLyrics, new Set(s.measures.map(m => m.id)));
   migrateLyricPositions(s);
   const d = parse(
@@ -259,13 +262,14 @@ export function writeCanonical(
     audioName: s.audioName,
     audioSHA256: audioSHA256 || old?.audioSHA256,
     measures: s.measures.map(
-      ({ id, label, beats, denominator, start, end }) => ({
+      ({ id, label, beats, denominator, start, end, beatTimes }) => ({
         id,
         label,
         beats,
         denominator,
         start,
         end,
+        ...(beatTimes ? {beatTimes: [...beatTimes]} : {}),
         occurrence: 1,
       }),
     ),
@@ -290,19 +294,21 @@ export function readCanonical(text: string, s: Song): void {
     throw Error(i18nText("canonical-xml.message016"));
   if (
     data.measures.length !== s.measures.length ||
-    data.measures.some((m, i) => m.id !== s.measures[i].id)
+    data.measures.some((m, i) => m.id !== s.measures[i].id || !validMeasureBeatTimes(m))
   )
     throw Error(i18nText("canonical-xml.message017"));
   Object.assign(s, metadataFromXML(text));
-  data.measures.forEach((m, i) =>
+  data.measures.forEach((m, i) => {
+    delete s.measures[i].beatTimes;
     Object.assign(s.measures[i], {
       label: m.label,
       beats: m.beats,
       denominator: m.denominator,
       start: m.start,
       end: m.end,
-    }),
-  );
+      ...(m.beatTimes ? {beatTimes: [...m.beatTimes]} : {}),
+    });
+  });
   const part = kids(d.documentElement, "part").find(
     (p) => p.id === data.partId,
   );

@@ -346,6 +346,7 @@ async function renderMusicXMLPass(
     osmd.EngravingRules.StemWidth = 0.1;
     osmd.EngravingRules.RenderMultipleRestMeasures = false;
     osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures = false;
+    osmd.EngravingRules.TupletNumberLimitConsecutiveRepetitions = false;
     const renderDocument = parsed.document.cloneNode(true) as Document;
     // Suppress textual BPM labels only in the engraving copy; keep tempo data.
     for (const words of renderDocument.querySelectorAll(

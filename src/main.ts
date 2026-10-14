@@ -141,6 +141,7 @@ import {
   defaults,
   locate,
   reflow,
+  setMeasureTiming,
   uid,
   validateSong,
   type Region,
@@ -1541,6 +1542,8 @@ action("apply-measure", () =>
   edit((s) => {
     const m = s.measures[selected];
     if (!m) throw Error(i18nText("main.message304"));
+    setMeasureTiming(m, num("measure-start"), num("measure-end"));
+    if (m.beats !== num("measure-beats")) delete m.beatTimes;
     Object.assign(m, {
       label: val("measure-label").value,
       beats: num("measure-beats"),
@@ -1574,11 +1577,14 @@ action("anchor-now", () => {
     const delta = t - m.start;
     if (selected && t <= s.measures[selected - 1].start)
       throw Error(i18nText("main.message307"));
-    if (selected) s.measures[selected - 1].end = t;
+    if (selected) {
+      const previous = s.measures[selected - 1];
+      setMeasureTiming(previous, previous.start, t);
+    }
     else s.firstBeat = t;
     for (let i = selected; i < s.measures.length; i++) {
-      s.measures[i].start += delta;
-      s.measures[i].end += delta;
+      const next = s.measures[i];
+      setMeasureTiming(next, next.start + delta, next.end + delta);
     }
   });
 });
@@ -1614,8 +1620,10 @@ action("split", () =>
     r.beatXs = [];
     s.regions.push(right);
     const end = m.end;
-    m.end = (m.start + end) / 2;
+    const times = m.beatTimes;
+    m.end = beatTime(m, m.beats / 2);
     m.beats /= 2;
+    if (times) m.beatTimes = times.slice(0, m.beats);
     s.measures.splice(selected + 1, 0, {
       ...m,
       id: uid(),
@@ -1623,6 +1631,7 @@ action("split", () =>
       label: m.label + "b",
       start: m.end,
       end,
+      ...(times ? {beatTimes: times.slice(m.beats)} : {}),
     });
   }),
 );
@@ -1642,6 +1651,10 @@ action("merge", () =>
     r.w = Math.max(r.x + r.w, z.x + z.w) - Math.min(r.x, z.x);
     r.x = Math.min(r.x, z.x);
     r.beatXs = [];
+    if (a.beatTimes || b.beatTimes) a.beatTimes = [
+      ...Array.from({length: a.beats}, (_, i) => beatTime(a, i)),
+      ...Array.from({length: b.beats}, (_, i) => beatTime(b, i)),
+    ];
     a.beats += b.beats;
     a.end = b.end;
     s.measures.splice(selected + 1, 1);
