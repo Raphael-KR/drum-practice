@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import {audioAnalysisPlugin} from "./server/audio-analysis-vite";
 import ko from "./src/locales/ko.json";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 export default defineConfig(({ mode }) => {
@@ -19,7 +18,16 @@ export default defineConfig(({ mode }) => {
         }
       : {}),
     plugins: [
-      audioAnalysisPlugin(),
+      {
+        name: "static-app-no-api",
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (!req.url?.startsWith("/api/")) return next();
+            res.statusCode = 404;
+            res.end("Not found");
+          });
+        },
+      },
       {
         name: "localized-document-title",
         transformIndexHtml(html) {

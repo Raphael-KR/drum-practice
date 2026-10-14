@@ -117,7 +117,7 @@ export function audioAnalysisSamples(buffer: AudioBuffer): Float32Array {
   }
   return samples;
 }
-/** Audio bytes stay local; only a hash and bounded analysis metadata may be sent. */
+/** Audio, identity and beat analysis stay in this browser. */
 export async function readAudioPractice(file: File, progress?: (text:string)=>void, options:{force?:boolean;signal?:AbortSignal} = {}): Promise<RecordData> {
   await checkAudioBeforeDecode(file);
   options.signal?.throwIfAborted();
@@ -135,7 +135,7 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
         (buffer.duration < 4 || buffer.duration > 1800 || validBeatTimes(cached.beatTimes,buffer.duration))) {
       analysis = cached;
     } else {
-      const metadata = await audioMetadata(file, false);
+      const metadata = await audioMetadata(file);
       const guess = estimatePracticeTempo(audioAnalysisSamples(buffer), buffer.sampleRate);
       const confident = guess.confidence >= .08 && Number.isFinite(guess.bpm);
       progress?.(t("audioPractice.tracking"));
@@ -148,8 +148,8 @@ export async function readAudioPractice(file: File, progress?: (text:string)=>vo
         duration:buffer.duration,bpm:confident ? guess.bpm : 120,
         firstBeat:beatTimes?.[0] ?? (confident && guess.firstBeat < buffer.duration ? guess.firstBeat : 0),
         beats:4,denominator:4,confidence:guess.confidence,...(beatTimes ? {beatTimes} : {})};
-      // Best-effort metadata-only write. Never hold up playback for the server.
-      if(hash && confident) void storeAudioAnalysis(analysis);
+      // Complete the local cache transaction before allowing an immediate reimport.
+      if(hash && confident) await storeAudioAnalysis(analysis);
     }
     const {bpm,firstBeat,beats,denominator,beatTimes}=analysis;
     const metadata={title:analysis.title || file.name.replace(/\.[^.]+$/, ''),artist:analysis.artist};

@@ -15,6 +15,13 @@
       "when": 1791975441703,
       "tag": "0001_whole_doctor_faustus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791986899868,
+      "tag": "0002_regular_jetstream",
+      "breakpoints": true
     }
   ]
 }

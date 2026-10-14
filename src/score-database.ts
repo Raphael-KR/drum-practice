@@ -38,6 +38,7 @@ function connect(name: string, version?: number): Promise<IDBDatabase> {
       // User removed playback recovery copies. Schema upgrade deletes all old copies.
       if (db.objectStoreNames.contains("archives")) db.deleteObjectStore("archives");
       if (name === SCORE_DATABASE) {
+        if (!db.objectStoreNames.contains("audioAnalyses")) db.createObjectStore("audioAnalyses", { keyPath: "sha256" });
         if (!db.objectStoreNames.contains("migrations")) db.createObjectStore("migrations");
       }
     };
@@ -61,7 +62,7 @@ function values(db: IDBDatabase, store: string): Promise<any[]> {
   });
 }
 export async function openScoreDatabase(): Promise<IDBDatabase> {
-  const db = await connect(SCORE_DATABASE, 3);
+  const db = await connect(SCORE_DATABASE, 4);
   try {
     const migrated = await new Promise((resolve, reject) => {
       const r = db.transaction("migrations").objectStore("migrations").get(MIGRATION);

@@ -354,8 +354,6 @@ export async function showLibrary() {
   root.className = "player-library";
   renderKeepingTopHeader(root, libraryHTML(import.meta.env.DEV));
   if(import.meta.env.DEV){
-    const review=root.querySelector<HTMLButtonElement>('#analysis-review');
-    if(review)void import('./analysis-review-ui').then(module=>module.installAnalysisReview(review)).catch(()=>{review.textContent=t('review.unavailable');});
   }
   showBuildLabel();
   root

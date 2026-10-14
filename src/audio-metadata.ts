@@ -20,7 +20,7 @@ export function resolveAudioMetadata(filename: string, tags: Partial<TrackMetada
   if(filePair)return {...filePair,artist:artist || filePair.artist};
   return {title:includeUnstructuredFilename ? clean(filename.replace(/\.[^.]+$/,'')).slice(0,300) : '',artist:artist.slice(0,300)};
 }
-/** Only resolved track fields may leave the device; raw filename/path never does. */
+/** Read embedded tags and filename locally, without a remote lookup. */
 export async function audioMetadata(file: File, includeUnstructuredFilename = true): Promise<TrackMetadata> {
   try {
     const {parseBlob} = await import('music-metadata');

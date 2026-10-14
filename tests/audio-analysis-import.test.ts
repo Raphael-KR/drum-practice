@@ -17,7 +17,7 @@ function decoder(){
     async close(){}
   });
 }
-it('reuses server timing and tags on the next import without reanalysis',async()=>{
+it('reuses device-cached timing and tags on the next import without reanalysis',async()=>{
   decoder();vi.mocked(loadAudioAnalysis).mockResolvedValueOnce(undefined);
   const file=new File(['audio bytes'],'private filename.mp3');
   const first=await readAudioPractice(file);
@@ -30,7 +30,7 @@ it('reuses server timing and tags on the next import without reanalysis',async()
   expect(second.song.bpm).toBe(first.song.bpm);expect(second.song.artist).toBe('Tag artist');
   expect(estimatePracticeTempo).toHaveBeenCalledTimes(1);expect(audioMetadata).toHaveBeenCalledTimes(1);expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
 });
-it('reanalyzes mismatched duration and never sends fallback filenames or uncertain tempo',async()=>{
+it('reanalyzes mismatched duration and uses filename fallback locally and does not cache uncertain tempo',async()=>{
   decoder();vi.mocked(loadAudioAnalysis).mockResolvedValue(undefined);
   vi.mocked(audioMetadata).mockResolvedValue({title:'',artist:''});
   const first=await readAudioPractice(new File(['bytes'],'private.mp3'));
@@ -63,7 +63,7 @@ it('imports and reuses the whole beat map; explicit reanalysis preserves persona
 it('upgrades an old fixed-tempo record once, preserving identity, user tags and target tempo',async()=>{
  decoder();const first=await readAudioPractice(new File(['bytes'],'test.mp3'));
  delete first.song.audioPractice!.beatTimes;delete first.song.audioPractice!.followTempo;
- // Reconstruct the pre-tracking shape, as held by pre-0.8 imports.
+ // Reconstruct the pre-tracking shape, as held by pre-tracking imports.
  first.song.measures=(await import('../src/audio-practice')).audioMeasures(10,111,.2,4,4);
  first.song.bpm=111;first.song.title='User title';first.song.artist='User artist';
  first.song.markers=[{id:'m',name:'M',time:2}];first.song.loops=[{id:'l',name:'L',start:1,end:3}];
@@ -99,7 +99,7 @@ it('keeps restored practice speed within the supported range after a large tempo
  expect(next.song.settings.rate).toBe(.5);
  expect(next.song.audioPractice!.followTempo).toBe(true);
 });
-it('preserves a manual bar-one reference through reanalysis and never includes it in the shared cache',async()=>{
+it('preserves a manual bar-one reference through reanalysis and never includes it in the automatic cache',async()=>{
  decoder();const first=await readAudioPractice(new File(['bytes'],'live.mp3'));
  const {setAudioBarOne}=await import('../src/audio-practice');
  first.song=setAudioBarOne(first.song,1.7);

@@ -12,7 +12,7 @@ it("upgrades both v2 databases, deletes all recovery copies and preserves live s
  (await openScoreDatabase()).close();
  for(const name of ["drum-practice","drum-practice-player"]){
  const db=await new Promise<IDBDatabase>(resolve=>{const r=indexedDB.open(name);r.onsuccess=()=>resolve(r.result);});
- expect(db.version).toBe(3);expect(db.objectStoreNames.contains("archives")).toBe(false);
+ expect(db.version).toBe(name === "drum-practice" ? 4 : 3);expect(db.objectStoreNames.contains("archives")).toBe(false);
  const rows=await new Promise<any[]>(resolve=>{const r=db.transaction("songs").objectStore("songs").getAll();r.onsuccess=()=>resolve(r.result);});expect(rows).toEqual([live]);db.close();
  }
  (await openScoreDatabase()).close();

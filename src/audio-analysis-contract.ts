@@ -1,6 +1,5 @@
 import {validBeatTimes} from "./audio-beat-grid";
 export const ANALYZER_VERSION = 4;
-export const ANALYSIS_PATH = '/api/audio-analysis/v4/';
 export interface AudioAnalysis {
   analyzerVersion: number;
   sha256: string;
@@ -14,7 +13,6 @@ export interface AudioAnalysis {
   confidence: number;
   beatTimes?: number[];
 }
-export const MAX_ANALYSIS_BYTES = 256 * 1024;
 const keys = ['analyzerVersion','sha256','title','artist','duration','bpm','firstBeat','beats','denominator','confidence'];
 export const isAudioHash = (hash: string) => /^[a-f0-9]{64}$/.test(hash);
 export function validAudioAnalysis(value: unknown, hash: string): value is AudioAnalysis {

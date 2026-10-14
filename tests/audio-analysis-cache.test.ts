@@ -1,67 +1,48 @@
-import {afterEach,expect,it,vi} from 'vitest';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {IDBFactory} from 'fake-indexeddb';
 import {audioFileHash,loadAudioAnalysis,storeAudioAnalysis} from '../src/audio-analysis-cache';
 import {validAudioAnalysis,type AudioAnalysis} from '../src/audio-analysis-contract';
+import {openScoreDatabase} from '../src/score-database';
 const hash='a'.repeat(64);
-export const entry:AudioAnalysis={analyzerVersion:4,sha256:hash,title:'곡',artist:'가수',duration:10,bpm:120,firstBeat:.2,beats:4,denominator:4,confidence:.8};
-afterEach(()=>{vi.unstubAllGlobals();vi.restoreAllMocks();vi.useRealTimers();});
-it('hashes exact bytes and rejects incompatible or private extra fields',async()=>{
-  expect(await audioFileHash(new TextEncoder().encode('abc').buffer)).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
-  expect(validAudioAnalysis(entry,hash)).toBe(true);
-  for(const change of [{audio:'base64'},{filename:'private.mp3'},{analyzerVersion:1},{analyzerVersion:2},{bpm:NaN},{firstBeat:10},{confidence:0},{title:'a'.repeat(301)}])
-    expect(validAudioAnalysis({...entry,...change},hash)).toBe(false);
+const entry:AudioAnalysis={analyzerVersion:4,sha256:hash,title:'Local title',artist:'Artist',duration:10,bpm:120,firstBeat:.2,beats:4,denominator:4,confidence:.8,beatTimes:[.2,.7,1.2,1.7,2.2,2.7,3.2,3.7]};
+beforeEach(()=>{vi.stubGlobal('indexedDB',new IDBFactory());vi.stubGlobal('fetch',vi.fn(()=>{throw Error('Network forbidden');}));});
+afterEach(()=>{vi.unstubAllGlobals();vi.restoreAllMocks();});
+it('hashes exact file bytes and validates version and beat map',async()=>{
+ expect(await audioFileHash(new TextEncoder().encode('abc').buffer)).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+ expect(validAudioAnalysis(entry,hash)).toBe(true);
+ for(const change of [{analyzerVersion:3},{bpm:NaN},{firstBeat:10},{confidence:0},{beatTimes:[1,0]}])expect(validAudioAnalysis({...entry,...change},hash)).toBe(false);
 });
-it('reads matching JSON only and fails open for unavailable or invalid cache',async()=>{
-  const fetch=vi.fn();vi.stubGlobal('fetch',fetch);
-  fetch.mockResolvedValueOnce(Response.json(entry));expect(await loadAudioAnalysis(hash)).toEqual(entry);
-  for(const response of [new Response('missing',{status:404}),new Response('<html>'),new Response('{',{headers:{'content-type':'application/json'}}),Response.json({...entry,sha256:'b'.repeat(64)}),Response.json({...entry,analyzerVersion:2,bpm:80})]) {
-    fetch.mockResolvedValueOnce(response);expect(await loadAudioAnalysis(hash)).toBeUndefined();
-  }
-  fetch.mockRejectedValue(new DOMException('timeout','TimeoutError'));expect(await loadAudioAnalysis(hash)).toBeUndefined();
+it('persists tags and beat times across database connections without any request',async()=>{
+ expect(await loadAudioAnalysis(hash)).toBeUndefined();
+ await storeAudioAnalysis(entry);
+ expect(await loadAudioAnalysis(hash)).toEqual(entry);
+ expect(await loadAudioAnalysis('b'.repeat(64))).toBeUndefined();
+ expect(fetch).not.toHaveBeenCalled();
 });
-it('sends metadata JSON only without credentials and tolerates write failures',async()=>{
-  const fetch=vi.fn().mockRejectedValue(new Error('offline'));vi.stubGlobal('fetch',fetch);
-  await expect(storeAudioAnalysis(entry)).resolves.toBeUndefined();
-  const [url,options]=fetch.mock.calls[0];expect(url.endsWith(hash)).toBe(true);
-  expect(options.credentials).toBe('omit');expect(options.method).toBe('PUT');
-  expect(JSON.parse(options.body)).toEqual(entry);
-  await storeAudioAnalysis({...entry,confidence:0});expect(fetch).toHaveBeenCalledTimes(2);
+it('reanalyzed data replaces the cached value; invalid or outdated data is not reused',async()=>{
+ await storeAudioAnalysis(entry);
+ await storeAudioAnalysis({...entry,bpm:125});
+ expect((await loadAudioAnalysis(hash))?.bpm).toBe(125);
+ await storeAudioAnalysis({...entry,bpm:NaN});
+ expect((await loadAudioAnalysis(hash))?.bpm).toBe(125);
+ const db=await openScoreDatabase();
+ await new Promise<void>((resolve,reject)=>{const tx=db.transaction('audioAnalyses','readwrite');tx.objectStore('audioAnalyses').put({...entry,analyzerVersion:3});tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});db.close();
+ expect(await loadAudioAnalysis(hash)).toBeUndefined();
+ expect(fetch).not.toHaveBeenCalled();
 });
-
-it('retries a temporary failure once but never retries a missing or invalid entry',async()=>{
-  const fetch=vi.fn().mockResolvedValueOnce(new Response('busy',{status:503})).mockResolvedValueOnce(Response.json(entry));vi.stubGlobal('fetch',fetch);
-  expect(await loadAudioAnalysis(hash)).toEqual(entry);expect(fetch).toHaveBeenCalledTimes(2);
-  fetch.mockClear().mockResolvedValue(new Response('missing',{status:404}));
-  expect(await loadAudioAnalysis(hash)).toBeUndefined();expect(fetch).toHaveBeenCalledTimes(1);
+it('storage denial does not fall back to a server or prevent local analysis',async()=>{
+ vi.stubGlobal('indexedDB',{open(){throw new DOMException('Denied','SecurityError');}});
+ expect(await loadAudioAnalysis(hash)).toBeUndefined();
+ await expect(storeAudioAnalysis(entry)).resolves.toBeUndefined();
+ expect(fetch).not.toHaveBeenCalled();
 });
-it('allows a 2-second lookup, which exceeded the old 1.5-second deadline',async()=>{
-  vi.useFakeTimers();
-  vi.spyOn(AbortSignal,'timeout').mockImplementation(ms=>{const c=new AbortController();setTimeout(()=>c.abort(new DOMException('timeout','TimeoutError')),ms);return c.signal;});
-  try {
-    const fetch=vi.fn<typeof globalThis.fetch>((_,init)=>new Promise<Response>((resolve,reject)=>{
-      init?.signal?.addEventListener('abort',()=>reject(init.signal?.reason),{once:true});
-      setTimeout(()=>resolve(Response.json(entry)),2000);
-    }));vi.stubGlobal('fetch',fetch);
-    const result=loadAudioAnalysis(hash);await vi.advanceTimersByTimeAsync(2000);
-    expect(await result).toEqual(entry);expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch.mock.calls[0][1]?.signal?.aborted).toBe(false);
-  } finally { vi.useRealTimers(); }
-});
-it('retries a dropped write and preserves the metadata-only keepalive payload',async()=>{
-  const fetch=vi.fn().mockRejectedValueOnce(new TypeError('network')).mockResolvedValueOnce(Response.json({stored:true}));vi.stubGlobal('fetch',fetch);
-  await storeAudioAnalysis(entry);expect(fetch).toHaveBeenCalledTimes(2);
-  expect(fetch.mock.calls[1][1].keepalive).toBe(true);expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual(entry);
-});
-it('uses a normal bounded request for beat maps above the keepalive quota',async()=>{
- const fetch=vi.fn().mockResolvedValue(Response.json({stored:true}));vi.stubGlobal('fetch',fetch);
- const large={...entry,duration:10001,firstBeat:0,beatTimes:Array.from({length:20000},(_,i)=>i*.5)};
- expect(validAudioAnalysis(large,hash)).toBe(true);
- await storeAudioAnalysis(large);expect(fetch.mock.calls[0][1].keepalive).toBe(false);
- expect(new TextEncoder().encode(fetch.mock.calls[0][1].body).length).toBeLessThan(256*1024);
-});
-it('does not retry quota denials or queue-full responses',async()=>{
- const fetch=vi.fn();vi.stubGlobal('fetch',fetch);
- for(const status of [429,503]){
-  fetch.mockReset().mockResolvedValue(new Response('',{status,headers:{'Retry-After':'3600'}}));
-  await storeAudioAnalysis(entry);expect(fetch).toHaveBeenCalledTimes(1);
- }
+it('upgrades the existing library without changing songs or migration markers',async()=>{
+ const db=await new Promise<IDBDatabase>((resolve,reject)=>{const r=indexedDB.open('drum-practice',3);r.onupgradeneeded=()=>{r.result.createObjectStore('songs',{keyPath:'song.id'});r.result.createObjectStore('migrations');};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+ const record={song:{id:'keep',title:'My score'},audio:'owned bytes'};
+ await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['songs','migrations'],'readwrite');tx.objectStore('songs').put(record);tx.objectStore('migrations').put(true,'player-library-v1');tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});db.close();
+ await storeAudioAnalysis(entry);
+ const next=await openScoreDatabase();
+ const saved=await new Promise(resolve=>{const r=next.transaction('songs').objectStore('songs').get('keep');r.onsuccess=()=>resolve(r.result);});
+ expect(saved).toEqual(record);expect(next.version).toBe(4);next.close();
+ expect(await loadAudioAnalysis(hash)).toEqual(entry);
 });
