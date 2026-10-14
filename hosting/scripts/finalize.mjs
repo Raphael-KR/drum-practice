@@ -1,4 +1,4 @@
-import {cp,readFile,readdir} from 'node:fs/promises';
+import {cp,readFile,readdir,rm} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 // Preserve the canonical player build byte-for-byte. Vite builds only the API Worker.
 await cp('player-assets','dist/client',{recursive:true});
@@ -12,4 +12,6 @@ if(!worker.includes('audio_analysis')) throw Error('Missing analysis API');
 const manifest=JSON.parse(await readFile('dist/.openai/hosting.json','utf8'));
 if(manifest.static || manifest.d1!=='DB' || manifest.r2) throw Error('Invalid metadata-only hosting configuration');
 if(!(await readdir('dist/.openai/drizzle')).some(f=>f.endsWith('.sql'))) throw Error('Missing migration');
-console.log(`PASS: Worker/D1 and ${parity.files.length} unchanged player assets; no audio upload binding`);
+// Force document requests through the Worker, where CSP/frame headers are set.
+for(const entry of ['index.html','player.html'])await rm(`dist/client/${entry}`);
+console.log(`PASS: Worker/D1 and ${parity.files.length} matching player files (HTML delivered by Worker); no audio upload binding`);

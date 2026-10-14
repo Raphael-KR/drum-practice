@@ -8,6 +8,7 @@ import { secureResponse } from "./security-headers";
 import { approvedHashes, reviewTokenHash } from "./approved-analysis";
 import { reviewAPI } from "./analysis-review-api";
 import { REVIEW_PATH } from "./analysis-policy";
+import { playerDocument } from "./player-document";
 const approved = new Set(approvedHashes);
 export default {
   async fetch(
@@ -41,7 +42,14 @@ export default {
         }),
         request,
       );
-    if (url.pathname === "/") url.pathname = "/index.html";
+    // Sites can serve matching static files before invoking the Worker.
+    // HTML entrypoints are embedded here and omitted from deployed static files.
+    if (["/", "/index.html", "/player.html"].includes(url.pathname)) {
+      return secureResponse(new Response(playerDocument || "Player build unavailable", {
+        status: playerDocument ? 200 : 503,
+        headers: {"Content-Type":"text/html; charset=utf-8", "Cache-Control":"no-cache"},
+      }), request);
+    }
     return secureResponse(
       await env.ASSETS.fetch(new Request(url, request)),
       request,

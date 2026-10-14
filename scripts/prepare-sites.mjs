@@ -23,6 +23,8 @@ for(const entry of ['audio-analysis-api.ts','audio-analysis-store.ts','audio-ana
 for(const entry of ['audio-analysis-contract.ts','audio-beat-grid.ts'])
   await cp(resolve(source,'src',entry),resolve(target,'src',entry));
 const approvedCount=exportReviewedAnalysis(source,target);
+const playerDocument=await readFile(resolve(source,'dist/player/player.html'),'utf8');
+await writeFile(resolve(target,'server/player-document.ts'),`// Generated HTML response; kept out of public static routing.\nexport const playerDocument=${JSON.stringify(playerDocument)};\n`);
 delete manifest.static;manifest.d1='DB';manifest.r2=null;
 await writeFile(resolve(target,'.openai/hosting.json'),JSON.stringify(manifest,null,2)+'\n');
 await writeFile(resolve(target,'.gitignore'),'node_modules/\ndist/\n.wrangler/\n.sites-runtime/\n.env*\n*.log\n');

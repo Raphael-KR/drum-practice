@@ -114,7 +114,7 @@ it("Worker migrates pending storage, never serves it publicly, and wraps asset r
     expect((await worker.fetch(put(value), env)).status).toBe(202);
     expect((await worker.fetch(new Request(url), env)).status).toBe(404);
     const asset = await worker.fetch(
-      new Request("https://local/player.html"),
+      new Request("https://local/icons/app.svg"),
       env,
     );
     expect(await asset.text()).toBe("assets");
