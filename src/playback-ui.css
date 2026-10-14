@@ -2881,3 +2881,11 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   .drawer-playback .playback-dock .repeat-presets button {min-width:52px;font-size:14px;}
   .drawer-playback .transport-rewind-number {width:44px;min-width:44px;height:44px;}
 }
+
+/* Tablet and desktop: give unused height to the three shortcut/range rows.
+   Keep each breakpoint's existing board height as its non-shrinking basis. */
+@media (min-width:720px) {
+  .drawer-playback #practice:not(.score-review) > .playback-dock {flex:1 0 auto;}
+  .drawer-playback #practice:not(.score-review) > .playback-dock > .transport {flex:0 0 auto;}
+  .drawer-playback #practice:not(.score-review) > .playback-dock > .playback-drawer {flex:1 0 auto;}
+}
