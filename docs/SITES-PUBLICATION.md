@@ -40,7 +40,7 @@
 
 개발 DB는 `data/runtime/audio-analysis.sqlite`에 있다. 공개 D1로 자동 복사하지 않는다. 브라우저의 기존 보관함은 로컬 주소와 공개 주소 사이에 자동 이전되지 않는다.
 
-## 최근 확인된 발행 — 0.7.7
+## 이전 발행 — 0.7.7
 
 기록 시점: 2026-10-14 KST. 아래는 해당 릴리스의 확인 결과이며 문서를 읽을 때마다 운영 상태를 새로 측정한 결과가 아니다.
 
@@ -69,7 +69,7 @@ hosting/deployment/sites의 `node_modules`, Sites의 `dist`, `player-assets`, �
 
 배포 파일을 checkout 외부 경로의 심볼릭 링크로 대체하지 않는다. Git에는 링크 대상의 내용이 함께 저장되지 않으므로 공개 빌드의 입력을 보장할 수 없다. hosting은 설정 원본이며 별도 의존성을 상시 설치할 필요가 없다. 배포 의존성은 실제 빌드를 수행하는 deployment/sites에 필요할 때 설치한다.
 
-## 다음 발행에 포함할 분석정보 검토 경계 (2026-10-14, 미발행)
+## 분석정보 검토 경계 (0.7.8, 2026-10-14 발행)
 
 - `hosting/drizzle/0001_whole_doctor_faustus.sql`이 대기/요청 제한 테이블과 인덱스를 추가한다. 기존 분석 테이블은 삭제하지 않지만 새 공개 API의 승인 원천으로 사용하지 않는다.
 - `prepare-sites.mjs`는 `scripts/export-reviewed-analysis.mjs`로 로컬 `audio_analysis_approved`만 정적 JSON/해시 인덱스로 내보낸다. 미승인/기존 캐시를 자동 승격하지 않는다.
@@ -81,3 +81,15 @@ hosting/deployment/sites의 `node_modules`, Sites의 `dist`, `player-assets`, �
 ### HTML 보안 헤더 전달
 
 Sites 공개 자산 우선 라우팅 때문에 run_worker_first 설정만으로 홈페이지 헤더 적용을 보장하지 못했다. 준비 스크립트는 빌드한 player HTML을 `server/player-document.ts`로 포함하고, finalize는 해시 대조 후 `dist/client/index.html`과 `player.html`을 제외한다. 두 문서와 `/`는 Worker가 반환한다. 나머지 정적 자산은 기존 바이트를 유지한다.
+
+## 최근 확인된 발행 — 0.7.8
+
+- 정본 구현 `f6c529b`, 공개 HTML 응답 보완 `afc7f7a`: main push 완료.
+- 공통 앱 버전 0.7.8, 소스 빌드 `3ef76af78a19`. player만 공개.
+- Sites 소스 `756eadcbeb02d37f9e5d94ba19c21b7475a94b1a`, 저장 버전 65.
+- 배포 `appgdep_6acf68ef88e08191ab5be50030fea556`: succeeded, 2026-10-14T11:35:32.773583Z / 20:35:32 KST.
+- 아카이브 SHA-256 `70715fb4354a9a96dfb39bdeef272da3e7644691603de00b90382bc8fe21a2a6`.
+- 최초 Sites64에서 정적 홈페이지 헤더 누락을 발견했다. HTML 진입점은 Worker 응답으로 옮기고 Sites65에 보완 발행했다. 과거 Site를 되돌리지 않았다.
+- 공개 smoke: 홈 200, 홈페이지 nosniff/X-Frame-Options/CSP/HSTS 확인, JS/CSS/박 분석/변환 Worker 4파일 SHA-256 일치. 없는/미승인 분석정보 404, 인증 없는 검토 API 404. 로컬 검토 API의 remoteAvailable=true 및 후보 3건 확인. 공개 데이터 쓰기/음원 업로드/실제 후보 승인·반려 없음.
+- 전체 117파일647테스트, 최종 응답 경로 보완 집중 3파일12테스트, 타입/i18n/분리 빌드/앱 경계/공통 구조/배포 빌드 통과. root/배포 npm audit 0건. 청크 크기/Node localStorage 경고 유지.
+- 승인된 공용 분석정보는 아직 0건이다. 로컬에서 검토·승인 후 다음 발행에 포함한다. 기존 기기 보관 음원은 유지한다. 실기기 청취·공개 부하/공격 시험은 하지 않았다.

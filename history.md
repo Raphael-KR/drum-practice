@@ -176,3 +176,11 @@ HTML 저장 버튼과 파일 내보내기의 HTML 옵션, portable/playback-expo
 - 첫 공개 발행: 정본 f6c529b 및 Sites 소스 4f966b5c67b40774bf4535c5d5659e32db9da7ef, Sites64/배포 appgdep_6acf67e3ae888191b5e0bc07591aae44 succeeded. 공개 API 보안 헤더와 로컬 검토 서버 연결은 확인했지만 홈페이지 정적 응답에는 보안 헤더가 없었다. 빌드의 run_worker_first=true와 공개 자산 우선 경로가 달랐다.
 - 보완: /, /index.html, /player.html의 HTML을 Worker에 포함하고 발행 정적 파일에서는 진입 HTML 2개를 제외하여 문서 응답에 보안 헤더를 적용한다. JS/CSS 등 자산은 정적 전달을 유지한다. 최초 smoke 스크립트의 Worker 파일명 선택 오류도 실제 산출물 이름으로 정정했다.
 - 보완 검증: 타입·두 앱 빌드/경계, API/Worker/헤더 3파일12테스트, 배포 빌드 통과. 소스 빌드 3ef76af78a19. 로컬 검토 API에서 remoteAvailable=true, 후보 3건 확인. 사용자 후보를 승인/반려하지 않았다.
+
+## 2026-10-14 — 0.7.8 최종 커밋·push·발행 완료
+
+- 정본 f6c529b(보안·검토 릴리스), afc7f7a(공개 HTML 응답 보완)를 main에 push했다. 버전 0.7.8 / 최종 소스 빌드 3ef76af78a19.
+- Sites 소스 756eadcbeb02d37f9e5d94ba19c21b7475a94b1a, Sites65, 배포 appgdep_6acf68ef88e08191ab5be50030fea556 succeeded. 완료 2026-10-14 20:35:32 KST. 기존 공개 범위와 D1 연결 유지, editor는 미발행.
+- 공개 홈 200, 홈페이지 보안 헤더 적용 확인. 주요 JS/CSS/박 분석/변환 Worker 4파일 해시 일치. 미승인 분석정보 404, 인증 없는 검토 API 404. 로컬 검토의 서버 연결 true 및 대기 3건 확인. 승인 스냅샷은 0건이며 실제 사용자 자료를 승인/반려하지 않았다.
+- 최초 smoke의 파일명 선택 실수는 실제 산출물 목록으로 정정했고, 실제 홈페이지 헤더 누락은 코드 수정·검증·재발행으로 해결했다. 검사 결과를 무시하거나 Site를 롤백하지 않았다.
+- 최종 상태는 docs/APP-VERSIONS.md, docs/SITES-PUBLICATION.md, docs/SITE-SECURITY-HARDENING.md에 반영했다. 사용자 소유 범례 이미지·exports는 Git에서 제외하고 보존했다.

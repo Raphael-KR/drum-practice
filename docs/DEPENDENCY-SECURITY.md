@@ -65,3 +65,7 @@ npm audit fix --force가 제안한 Drizzle 0.18.1 역행은 적용하지 않았�
 - [undici BalancedPool TLS 설정 누락](https://github.com/nodejs/undici/security/advisories/GHSA-w293-vg96-wgc3)
 - [sharp librsvg 취약점](https://github.com/lovell/sharp/security/advisories/GHSA-wq5f-xc86-pv6w)
 - [source-map-js indexed map DoS](https://github.com/advisories/GHSA-68fv-2mgg-jv7q)
+
+## 운영 반영
+
+2026-10-14 공통 앱 0.7.8 / Sites65에 의존성 보강을 포함해 발행했다. 발행 시 root 및 배포 npm audit 0건을 재확인했다. 배포·공개 확인은 SITES-PUBLICATION.md를 따른다.
