@@ -37,8 +37,6 @@ export function installHelp(root: HTMLElement) {
     [...document.querySelectorAll<HTMLDialogElement>("dialog[open]")]
       .filter((d) => d !== legend)
       .at(-1);
-  const isConfirmation = (dialog?: HTMLDialogElement) =>
-    !!dialog?.matches(".confirmation-dialog,#discard-changes-dialog,#edit-exit-dialog,[role=alertdialog]");
   const belongs = (target: HTMLElement) =>
     root.contains(target) || !!target.closest("dialog[open]");
   const targetFor = (event: Event) => {
@@ -102,13 +100,9 @@ export function installHelp(root: HTMLElement) {
     }
     if (surface) return;
     const modal = activeDialog();
-    const popup = isConfirmation(modal);
-    const parent = modal && !popup && !modal.classList.contains("score-reader-dialog")
-      ? modal.querySelector(".dialoghead") || modal
-      : undefined;
-    const destination = parent || root.querySelector("header .actions") || root;
+    const destination = root.querySelector("header .actions") || root;
     if (button.parentElement !== destination) destination.append(button);
-    button.hidden = popup;
+    button.hidden = !!modal;
     for (const [dialog, dispose] of dismissible) {
       if (!dialog.isConnected) {
         dispose();
@@ -116,15 +110,8 @@ export function installHelp(root: HTMLElement) {
       }
     }
     if (modal && !modal.classList.contains("score-reader-dialog") && !dismissible.has(modal)) {
-      const focusWasClose =
-        modal.contains(document.activeElement) &&
-        document.activeElement?.classList.contains("close-button");
       modal.classList.add("backdrop-dismissible");
       dismissible.set(modal, closeDialogOnBackdrop(modal));
-      if (focusWasClose) {
-        const first = modal.querySelector<HTMLElement>('button:not(.close-button),input:not([type="hidden"]),select,textarea');
-        (popup ? first || modal : button).focus({ preventScroll: true });
-      }
     }
   };
   const close = () => {
@@ -195,7 +182,7 @@ export function installHelp(root: HTMLElement) {
     paint();
   };
   button.onclick = () => {
-    if (surface || isConfirmation(activeDialog())) return;
+    if (surface || activeDialog()) return;
     hideHold();
     context = activeDialog();
     surface = document.createElement("div");
@@ -233,7 +220,7 @@ export function installHelp(root: HTMLElement) {
         root,
       );
       const modal = legend;
-      modal.querySelector(".dialoghead")?.remove();
+      modal.querySelector(".dialoghead h2")?.remove();
       modal.append(scoreLegendHelp());
       modal.addEventListener("keydown", (e) => e.stopPropagation());
       modal.addEventListener(
@@ -248,6 +235,7 @@ export function installHelp(root: HTMLElement) {
       const closeLegend = showDialogFromButton(modal, legendButton);
       modal.addEventListener("click", (event) => {
         event.stopPropagation();
+        if ((event.target as Element).closest(".close-button")) return;
         closeLegend();
       });
       modal.addEventListener("keydown", (event) => {

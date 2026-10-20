@@ -2,6 +2,15 @@ import { iconButtonHTML } from "./icon-button";
 import { icon } from "./icon-svg";
 import { t } from "./i18n";
 import { escapeHTML as escape } from "./html";
+function dialogCloseButton(closeId = "") {
+  return iconButtonHTML(
+    closeId,
+    icon("close"),
+    t("editor-session.message042"),
+    "",
+    "close-button",
+  );
+}
 export function dialogHeader(
   title: string,
   closeId = "",
@@ -9,13 +18,7 @@ export function dialogHeader(
   headingId = "",
   actions = "",
 ) {
-  const close = iconButtonHTML(
-    closeId,
-    icon("close"),
-    t("editor-session.message042"),
-    "",
-    "close-button",
-  );
+  const close = dialogCloseButton(closeId);
   return `<div class="dialoghead"><h2${headingId ? ` id="${escape(headingId)}"` : ""}>${escape(title)}</h2>${actions}${targetId ? close.replace("<button ", `<button data-close="${escape(targetId)}" `) : close}</div>`;
 }
 export function createDialog(
@@ -30,7 +33,7 @@ export function createDialog(
   d.className = className;
   d.setAttribute("aria-label", title);
   d.innerHTML = dialogHeader(title, closeId, id);
-  d.querySelector("button")!.onclick = () => d.close();
+  d.querySelector("button")!.onclick = () => requestDialogCancel(d);
   parent.append(d);
   return d;
 }
@@ -61,6 +64,11 @@ export function createConfirmationDialog(options: {
   appIcon.src = `${import.meta.env.BASE_URL}icons/icon-192.png`;
   appIcon.alt = "";
   appIcon.width = appIcon.height = 64;
+  const heading = document.createElement("div");
+  heading.className = "confirmation-heading";
+  heading.innerHTML = dialogCloseButton();
+  heading.querySelector<HTMLButtonElement>(".close-button")!.onclick = () => requestDialogCancel(d);
+  heading.prepend(appIcon);
   const message = document.createElement("p");
   message.id = `${options.id}-message`;
   const title = document.createElement("strong");
@@ -80,7 +88,7 @@ export function createConfirmationDialog(options: {
     button.autofocus = !!action.autofocus;
     actions.append(button);
   }
-  body.append(appIcon, message, actions);
+  body.append(heading, message, actions);
   d.append(body);
   (options.parent || document.body).append(d);
   return d;

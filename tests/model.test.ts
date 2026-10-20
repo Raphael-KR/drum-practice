@@ -98,6 +98,7 @@ describe("actual score timeline", () => {
   it("rejects malformed imports and overlapping timing", () => {
     for (const change of [
       (s: Song) => (s.settings.rate = NaN),
+      (s: Song) => (s.settings.rate = 68 / 136.232),
       (s: Song) => (s.regions[0].x = -1),
       (s: Song) => (s.measures[1].start = 0),
       (s: Song) => (s.lyrics[0].end = -1),

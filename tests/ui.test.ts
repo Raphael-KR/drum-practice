@@ -259,9 +259,9 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
     expect(s.originalTitle).toBe("Original title saved from toolbar");
     expect(s.composer).toBe("Composer saved from toolbar");
     expect(s.measures[0].start).toBe(before);
-  });
+  }, { timeout: 5000 });
 });
-it("groups screen, playback, score management and app info in settings", () => {
+it("groups screen, playback, score management and app info in settings", async () => {
   for (const dialog of document.querySelectorAll<HTMLDialogElement>("dialog[open]")) dialog.close();
   click("open-settings-dialog");
   expect((document.getElementById("settings-dialog") as HTMLDialogElement).open).toBe(true);
@@ -300,7 +300,9 @@ it("groups screen, playback, score management and app info in settings", () => {
   (document.getElementById("editor-dialog") as HTMLDialogElement).close();
   // The unified editor keeps its session while navigating settings. Resolve
   // any pending exit explicitly before exercising playback below.
-  (document.querySelector('#edit-exit-dialog [data-answer="discard"]') as HTMLButtonElement)?.click();
+  const discard = document.querySelector<HTMLButtonElement>('#edit-exit-dialog [data-answer="discard"]')!;
+  discard.click();
+  await vi.waitFor(() => expect(discard.disabled).toBe(false), { timeout: 5000 });
 });
 it("returns to earlier measures and stops at the first measure", () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
@@ -395,8 +397,8 @@ it("offers tempo presets and previews single-BPM dragging until release", async 
   expect(document.querySelectorAll('#tempo-dialog [data-tempo="94"]')).toHaveLength(2);
   expect(document.getElementById("tempo-score")!.textContent).toBe("94 BPM");
   expect(document.getElementById("tempo-reset")).not.toBeNull();
-  (document.querySelector('[data-tempo="75"]') as HTMLButtonElement).click();
-  await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(75 / 94));
+  (document.querySelector('[data-tempo="76"]') as HTMLButtonElement).click();
+  await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(76 / 94));
   const input = document.getElementById("rate") as HTMLInputElement;
   input.setPointerCapture = () => {};
   input.hasPointerCapture = () => false;
@@ -407,21 +409,21 @@ it("offers tempo presets and previews single-BPM dragging until release", async 
   };
   pointer("pointerdown", 100);
   pointer("pointermove", 116);
-  expect(input.value).toBe("77");
-  expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(75 / 94);
+  expect(input.value).toBe("78");
+  expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(76 / 94);
   pointer("pointerup", 116);
-  await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(77 / 94));
+  await vi.waitFor(async () => expect((await allRecords()).find(r => r.song.id === "real-paradis")!.song.settings.rate).toBeCloseTo(78 / 94));
   pointer("pointerdown", 100);
   pointer("pointermove", 84);
-  expect(input.value).toBe("75");
+  expect(input.value).toBe("76");
   pointer("pointercancel", 84);
-  expect(input.value).toBe("77");
+  expect(input.value).toBe("78");
   pointer("pointerdown", 100);
   pointer("pointerup", 100);
-  expect(input.value).toBe("77");
+  expect(input.value).toBe("78");
   pointer("pointerdown", 100);
   pointer("pointerup", 100);
-  expect(input.value).toBe("77");
+  expect(input.value).toBe("78");
   click("tempo-reset");
   await vi.waitFor(() => expect(input.value).toBe("94"));
   (document.getElementById("tempo-dialog") as HTMLDialogElement).close();

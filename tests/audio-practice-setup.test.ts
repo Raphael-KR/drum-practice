@@ -43,7 +43,7 @@ it('cancel leaves original grouping intact and bad typed time shows an error',as
  document.querySelector('form')!.dispatchEvent(new Event('submit',{cancelable:true}));
  expect(document.querySelector('.audio-error')!.textContent).not.toBe('');
  document.querySelector<HTMLButtonElement>('.dialoghead .close-button')!.click();
- document.querySelector<HTMLButtonElement>('#discard-changes-dialog [data-answer=keep]')!.click();
+ document.querySelector<HTMLButtonElement>('#discard-changes-dialog .close-button')!.click();
  await Promise.resolve();
  expect(first.value).toBe('22');
  document.querySelector<HTMLButtonElement>('.dialoghead .close-button')!.click();

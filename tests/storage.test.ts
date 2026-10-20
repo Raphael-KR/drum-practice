@@ -20,10 +20,13 @@ it("round-trips blobs, edited syllables, markers, loops and 81% rate", async () 
   expect(got.song).toEqual(song);
   expect(await got.audio.text()).toBe("audio");
   // Repeated settings saves must own the media bytes after every DB close/reopen.
-  for (let i = 0; i < 3; i++) {
+  const rates = [0.81, 69 / 136.232, 0.5];
+  for (let i = 0; i < rates.length; i++) {
     const reopened = (await allRecords()).find((r) => r.song.id === song.id)!;
     reopened.song.settings.position = i;
+    reopened.song.settings.rate = rates[i];
     await saveRecord(reopened);
+    expect((await allRecords()).find(r => r.song.id === song.id)!.song.settings.rate).toBe(rates[i]);
   }
   const reopened = (await allRecords()).find((r) => r.song.id === song.id)!;
   expect(await reopened.pages[0].text()).toBe("page");

@@ -666,8 +666,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     return recording?.scoreBpm === song.bpm ? recording.bpmEstimate : song.bpm;
   }
   function minimumPracticeBpm() {
-    // Match the rounded 50% preset instead of clamping it to a fractional BPM.
-    return Math.round(originalAudioBpm() * 0.5);
+    // Keep integer BPM presets at or above the supported 0.5 playback rate.
+    return Math.ceil(originalAudioBpm() * 0.5);
   }
   async function rate(bpm: number, original = false) {
     if (!available()) return;
@@ -784,7 +784,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const original = originalAudioBpm();
     get("tempo-options").innerHTML = [
       ...new Set(
-        [0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map((f) => Math.round(original * f)),
+        [0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map((f) => Math.ceil(original * f)),
       ),
     ]
       .map((bpm) => `<button title="${t("tooltip.tempo", {bpm})}" data-tempo="${bpm}">${bpm} BPM</button>`)

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { it, expect, vi, beforeEach, afterEach } from "vitest";
 import { installHelp } from "../src/help";
+import { createDialog } from "../src/dialog-ui";
 beforeEach(() => {
   document.body.innerHTML =
     '<main id="app"><header><div class="actions"></div></header><main class="library-main"><button id="import-package">음원 불러오기</button><button data-open>열기</button><button data-remove>삭제</button></main></main>';
@@ -86,17 +87,22 @@ it("focus moves one bubble between real controls without activation", () => {
   second.click();
   expect(action).toHaveBeenCalledOnce();
 });
-it("preserves help in ordinary modals", async () => {
-  const modal = document.createElement("dialog");
-  modal.id = "audio-practice-setup";
-  modal.innerHTML = '<div class="dialoghead"></div><button data-first>여기를 첫박으로</button>';
-  document.body.append(modal); modal.showModal(); await Promise.resolve();
-  const help = modal.querySelector<HTMLButtonElement>("#app-help-button")!;
+it("keeps only the common close in ordinary modals and restores main help after closing", async () => {
+  const modal = createDialog("audio-practice-setup", "조정", "audio-setup");
+  modal.showModal(); await Promise.resolve();
+  const help = document.querySelector<HTMLButtonElement>("#app-help-button")!;
+  const closeButton = modal.querySelector<HTMLButtonElement>(".close-button[data-common-icon]")!;
+  closeButton.focus();
+  await Promise.resolve();
+  expect(document.activeElement).toBe(closeButton);
+  expect(modal.querySelector("#app-help-button")).toBeNull();
+  expect(help.hidden).toBe(true);
+  open(); expect(guide()).toBeNull();
+  closeButton.click(); await Promise.resolve();
+  expect(modal.open).toBe(false);
   expect(help.hidden).toBe(false);
-  open(); expect(guide()).not.toBeNull();
-  close(); expect(modal.open).toBe(true);
 });
-it.each(["audio-duplicate-dialog", "discard-changes-dialog", "edit-exit-dialog"])("keeps help out of %s and restores the underlying modal help", async (id) => {
+it.each(["audio-duplicate-dialog", "discard-changes-dialog", "edit-exit-dialog"])("keeps help out of %s and its underlying modal while preserving held explanations", async (id) => {
   vi.useFakeTimers();
   const modal = document.createElement("dialog");
   modal.id = "settings-dialog";
@@ -116,8 +122,10 @@ it.each(["audio-duplicate-dialog", "discard-changes-dialog", "edit-exit-dialog"]
   expect(popup.querySelector("#control-hold-help")!.textContent).toContain("수정한 내용을 유지합니다.");
   pointer(target,"pointerup"); expect(popup.querySelector("#control-hold-help")).toBeNull();
   popup.close(); popup.remove(); await Promise.resolve();
+  expect(help.hidden).toBe(true);
+  expect(modal.querySelector("#app-help-button")).toBeNull();
+  modal.close(); await Promise.resolve();
   expect(help.hidden).toBe(false);
-  expect(modal.querySelector(".dialoghead #app-help-button")).toBe(help);
 });
 it("keeps detailed backup advice on held popup controls", async () => {
   vi.useFakeTimers();
@@ -193,10 +201,11 @@ it("opens approved drum symbols and returns to the same guide", () => {
   const legend =
     document.querySelector<HTMLDialogElement>("#app-legend-dialog")!;
   expect(legend.querySelectorAll("dt")).toHaveLength(27);
-  expect(legend.querySelectorAll("svg")).toHaveLength(2);
+  expect(legend.querySelectorAll(".help-legend svg")).toHaveLength(2);
   expect(legend.querySelector("h2")).toBeNull();
+  expect(legend.querySelector(".close-button")).not.toBeNull();
   expect(legend.textContent).toContain("크로스 스틱");
-  legend.close();
+  legend.querySelector<HTMLButtonElement>(".close-button")!.click();
   expect(guide()).toBe(surface);
   expect(document.activeElement).toBe(button);
   close();
@@ -224,11 +233,8 @@ it("blocks keyboard actions on real controls in help mode but permits Tab", () =
   close();
 });
 
-it("enables guarded backdrop dismissal only for ordinary modals and keeps help close separate", async () => {
-  const modal = document.createElement("dialog");
-  modal.innerHTML =
-    '<div class="dialoghead"><button class="close-button">닫기</button></div><button>내용</button>';
-  document.body.append(modal);
+it("keeps common close and backdrop dismissal on the same guarded cancellation path", async () => {
+  const modal = createDialog("settings-dialog", "설정", "");
   modal.showModal();
   await Promise.resolve();
   expect(modal.classList.contains("backdrop-dismissible")).toBe(true);
@@ -246,12 +252,12 @@ it("enables guarded backdrop dismissal only for ordinary modals and keeps help c
     );
   };
   open();
-  tapOutside();
-  expect(cancel).not.toHaveBeenCalled();
-  expect(guide()).not.toBeNull();
-  close();
-  tapOutside();
+  expect(guide()).toBeNull();
+  modal.querySelector<HTMLButtonElement>(".close-button")!.click();
   expect(cancel).toHaveBeenCalledOnce();
+  expect(modal.open).toBe(true);
+  tapOutside();
+  expect(cancel).toHaveBeenCalledTimes(2);
   expect(modal.open).toBe(true);
   modal.removeEventListener("cancel", cancel);
   pointer(modal.querySelector("button")!, "pointerdown");

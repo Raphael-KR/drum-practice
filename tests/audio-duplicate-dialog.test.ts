@@ -14,8 +14,9 @@ it("shows a literal filename and explicit Add/Cancel actions", async () => {
   expect(dialog.textContent).toContain('<img src=x>.mp3이미 내 음원 목록에 있습니다.\n중복으로 추가하시겠습니까?');
   expect(dialog.querySelector("p img")).toBeNull();
   expect(dialog.getAttribute("aria-label")).toBe("중복 추가");
-  expect(dialog.querySelector("h2, .close-button")).toBeNull();
-  expect([...dialog.querySelectorAll("button")].map(button => button.textContent)).toEqual(["추가", "취소"]);
+  expect(dialog.querySelector("h2")).toBeNull();
+  expect(dialog.querySelector(".close-button[data-common-icon]")).not.toBeNull();
+  expect([...dialog.querySelectorAll("[data-answer]")].map(button => button.textContent)).toEqual(["추가", "취소"]);
   expect(document.activeElement).toBe(dialog);
   dialog.querySelector<HTMLButtonElement>('[data-answer="yes"]')!.click();
   expect(await result).toBe(true);
@@ -29,5 +30,10 @@ it("cancels without adding", async () => {
 it("treats Escape's native close as cancellation", async () => {
   const result = confirmDuplicateAudio("song.mp3");
   document.querySelector<HTMLDialogElement>("dialog")!.close();
+  expect(await result).toBe(false);
+});
+it("treats the common X as cancellation without adding", async () => {
+  const result = confirmDuplicateAudio("song.mp3");
+  document.querySelector<HTMLButtonElement>(".close-button")!.click();
   expect(await result).toBe(false);
 });

@@ -3,6 +3,7 @@ import { beforeEach, afterEach, it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import type { Player } from "../src/audio-core";
 import type { Song, Loop } from "../src/model";
+import { validateSong } from "../src/model";
 import { createPlaybackScreen } from "../src/playback-screen";
 import {
   webPlaybackBindings,
@@ -384,6 +385,8 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   await screen.rate(100);
   expect(song.settings.rate).toBeCloseTo(100 / 136.232);
   expect(document.getElementById(ids.tempoInput)!.getAttribute("aria-valuenow")).toBe("100");
+  expect([...document.querySelectorAll<HTMLButtonElement>("#tempo-options [data-tempo]")].map(button => Number(button.dataset.tempo)))
+    .toEqual([69, 82, 89, 96, 103, 109, 116, 123, 130]);
   for (const preset of document.querySelectorAll<HTMLButtonElement>("#tempo-options [data-tempo]")) {
     const bpm = Number(preset.dataset.tempo);
     expect(Number.isInteger(bpm)).toBe(true);
@@ -392,11 +395,14 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
     expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe(String(bpm));
     expect(document.getElementById("original-tempo-value")!.textContent).toBe(`= ${bpm}`);
     expect(preset.getAttribute("aria-pressed")).toBe("true");
+    expect(song.settings.rate).toBeGreaterThanOrEqual(0.5);
+    expect(() => validateSong(song)).not.toThrow();
   }
-  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).min).toBe("68");
+  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).min).toBe("69");
   await screen.rate(1);
-  expect(song.settings.rate).toBeCloseTo(68 / 136.232);
-  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("68");
+  expect(song.settings.rate).toBeCloseTo(69 / 136.232);
+  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("69");
+  expect(() => validateSong(song)).not.toThrow();
   expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡");
   expect(document.getElementById("tempo-score")!.textContent).toBe("136 BPM");
   click("tempo-reset");
