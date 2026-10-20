@@ -510,7 +510,9 @@ export function setupScoreManagement(h: Host) {
       "folder",
       "library-backup-restore",
     );
-  $("backup-dialog").append(backup);
+  // Library backup is available even with no score open; legacy per-score
+  // controls in backup-dialog remain hidden.
+  $("score-settings").append(backup);
   const restore = document.createElement("input");
   restore.type = "file";
   restore.accept = ".zip";

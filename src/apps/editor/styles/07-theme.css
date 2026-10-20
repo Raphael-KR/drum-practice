@@ -10,6 +10,11 @@
   --selected-control-surface: linear-gradient(#fffaf5, #fff0e2 55%, #ffe0c2);
   --ink: #412f24;
   --muted: #80634f;
+  --build-label-color: var(--muted);
+  --library-link-color: var(--accent);
+  --library-link-hover: var(--accent-soft);
+  --library-link-border: var(--line);
+  --library-link-focus: var(--accent);
   --line: #e9cfb9;
   --border: #e9cfb9;
 }

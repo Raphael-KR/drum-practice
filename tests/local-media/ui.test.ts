@@ -290,6 +290,16 @@ it("groups screen, playback, score management and app info in settings", async (
   expect(document.getElementById("auto-fullscreen")!.closest("#screen-dialog")).not.toBeNull();
   click("open-score-settings");
   expect(document.getElementById("backup-dialog")!.closest<HTMLElement>("[data-settings-panel]")!.hidden).toBe(false);
+  const libraryBackup = document.getElementById("library-backup") as HTMLDetailsElement;
+  libraryBackup.open = true;
+  for (const id of ["library-backup-export", "library-backup-restore"]) {
+    const button = document.getElementById(id)!;
+    expect(button.closest("#score-settings")).not.toBeNull();
+    expect(button.closest("[hidden]")).toBeNull();
+  }
+  // Exposing library backup must not expose obsolete per-score controls.
+  expect(document.getElementById("backup-dialog")!.hidden).toBe(true);
+  libraryBackup.open = false;
   expect(document.getElementById("screen-dialog")!.hidden).toBe(false);
   click("open-score-settings");
   expect(document.getElementById("edit-button")!.closest<HTMLElement>("[data-settings-panel]")!.hidden).toBe(false);

@@ -54,4 +54,6 @@ DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·
 
 목록 카드와 즐겨찾기/제목 순서 표시는 `modules/library/library-presentation.ts`, 두 홈 화면의 크기·간격은 `modules/library/player-library.css`를 공유한다. 동작 버튼은 각 앱이 제공한다. 공통 색상 변수는 `shared/styles/controls.css`, 제작기의 오렌지 팔레트는 `apps/editor/styles/07-theme.css`에 정의한다.
 
-제작기의 ‘내 악보 목록’은 재생 중지·현재 기록 저장·재생 자원 해제 후 공통 홈으로 돌아간다. 별도 목록 모달은 제거했다. 삭제는 홈 카드, 전체 백업/복원은 기존 설정의 백업 영역, 패키지 가져오기는 새 곡 준비 창을 사용한다.
+제작기의 ‘내 악보 목록’은 재생 중지·현재 기록 저장·재생 자원 해제 후 공통 홈으로 돌아간다. 별도 목록 모달은 제거했다. 삭제는 홈 카드, 전체 백업/복원은 설정의 악보 영역 안 `library-backup`, 패키지 가져오기는 새 곡 준비 창을 사용한다. 전체 백업은 곡을 열지 않아도 접근할 수 있으며, 숨겨진 구형 개별 곡 도구(`backup-dialog`)와 분리한다.
+
+목록 상단바는 `library-header-actions` 안에 주 작업(`library-import`), 앱 전환(`library-app-link`), 공통 컨트롤(`library-common-actions`)을 배치한다. 제작기도 기존 새로고침·설정·도움말 컨트롤을 사용하며 공방 예약만 연습실에 둔다. 모양·간격은 공통 목록 CSS, 색상은 앱별 변수로 결정한다.

@@ -32,12 +32,6 @@ export function arrangeIcons() {
       i18nText("icons.message054"),
       i18nText("icons.message054"),
     ],
-    [
-      "welcome-new",
-      "plus",
-      i18nText("editorHome.new"),
-      i18nText("editorHome.new"),
-    ],
     ["library-button", "library", i18nText("icons.message054")],
     ["open-settings-dialog", "settings", i18nText("icons.message059")],
     [

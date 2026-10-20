@@ -860,8 +860,10 @@ body {
 .welcome.editor-home { max-width:none; margin:24px auto; padding:0; border:0; background:transparent; }
 .editor-home-empty { padding:32px 24px; background:white; border:1px solid var(--line); border-radius:20px; }
 .editor-player-link { font-weight:600; color:var(--accent); padding:12px; white-space:nowrap; }
-body:not(.has-song) #app > header .actions > button:not(#welcome-new),
+/* Home shares reload/settings/help with the player; score-only controls stay hidden. */
+body:not(.has-song) #app > header .actions > button:not(#header-reload):not(#open-settings-dialog):not(#app-help-button),
 body:not(.has-song) #app > header .actions > .metronome-toggle { display:none; }
+body.has-song .editor-home-action { display:none; }
 
 
 /* Desktop score authoring: full-width table, independent of the tablet player. */

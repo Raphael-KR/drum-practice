@@ -10,13 +10,13 @@ const BOOKING_URL =
 /** Library markup only. Loading, event handlers and render epochs belong to player-app. */
 export function libraryHTML(showEditor: boolean): string {
   const editorLink = showEditor
-    ? `<a class="library-booking library-editor" title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>`
+    ? `<a class="library-app-link library-editor" title="${escapeHTML(t("separation.openEditor"))}" href="./editor.html">${escapeHTML(t("separation.openEditor"))}</a>`
     : "";
   return `<header class="library-header">
     <h1>${escapeHTML(t("separation.appTitle"))}</h1>
     <div class="library-header-actions">
       <div class="library-import">
-        <button id="import-package" class="primary" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("audioPractice.import"))}</button>
+        <button id="import-package" class="primary library-primary-action" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("audioPractice.import"))}</button>
         <p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p>
       </div>
       <a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="${escapeHTML(BOOKING_URL)}" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>

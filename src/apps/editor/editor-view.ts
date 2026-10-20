@@ -9,15 +9,15 @@ import { scoreStageHTML } from "../../modules/playback/playback-ui";
 
 export function editorHTML() {
   return (
-    '\n<header class="library-header"><div class="brand"></div><div class="actions library-header-actions"><button id="welcome-new" class="primary">' +
+    '\n<header class="library-header"><div class="brand"></div><div class="library-header-actions"><div class="library-import editor-home-action"><button id="welcome-new" class="primary library-primary-action">' +
     i18nText("editorHome.new") +
-    '</button><button id="library-button">' +
+    '</button></div><a class="editor-player-link library-app-link library-editor" href="/player.html">' +
+    i18nText("editorHome.playerLink") +
+    '</a><div class="actions library-common-actions"><button id="library-button">' +
     i18nText("icons.message054") +
     '</button><button id="edit-button" hidden>' +
     i18nText("main.message099") +
-    '</button><a class="editor-player-link" href="/player.html">' +
-    i18nText("editorHome.playerLink") +
-    '</a></div></header>\n<main class="library-main"><section class="welcome editor-home" id="welcome"><div id="editor-home-list" class="library-sections" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
+    '</button></div></div></header>\n<main class="library-main"><section class="welcome editor-home" id="welcome"><div id="editor-home-list" class="library-sections" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
     i18nText("main.message112") +
     '</button></div></div>\n<div id="review-tools" hidden><span id="review-message">' +
     i18nText("main.message113") +
