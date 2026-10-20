@@ -1,4 +1,5 @@
 ## 2026-10-21 — 공통 0.8.6 릴리스
+- 발행 결과: 구현 `04198d1` main push, Sites 버전76·배포 `appgdep_6ad7be2f12f88191a1582f46d98383c2` succeeded(04:17:19 KST), 공개 읽기 smoke15항목 통과. 상세 식별자와 증거는 `docs/operations/SITES-PUBLICATION.md`에 기록했다.
 - 목표: 공통화 부수 변경 4건과 목록 소제목·상단바 개선을 릴리스한다.
 - 범위: 두 앱 버전 0.8.6, 정본 main 커밋·push, 기존 Sites의 player 발행.
 - 단계 선택: 신규 사용자 흐름 없이 기존 화면·백업 접근을 보완하므로 patch다.
