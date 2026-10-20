@@ -16,8 +16,8 @@ __pycache__/
 *.pyc
 
 # Generated once per build; embedded in app bundles.
-src/build-info.generated.json
-src/third-party.generated.json
+src/generated/build-info.generated.json
+src/generated/third-party.generated.json
 
 
 

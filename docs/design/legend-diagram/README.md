@@ -2,7 +2,7 @@
 
 사용자 요청: 모든 범례를 오선 위에 그리고 연결선으로 명칭과 설명을 붙인다.
 
-- 정본: docs/SCORE-MUSICXML-OSMD-MAPPING.md 확정 범례 27개.
+- 정본: docs/score-production/SCORE-MUSICXML-OSMD-MAPPING.md 확정 범례 27개.
 - 결과: common-legend.svg(벡터), common-legend.png(2400px 미리보기).
 - 하이햇·심벌 9 / 드럼·킥 9 / 주법·손 지시 9. 하이햇 스플래시는 첫 그룹으로 배치.
 - 실제 악보 변경이 아닌 도움말 배치 시안. 앱·Sites에는 아직 적용하지 않음.

@@ -1,0 +1,99 @@
+import { locate, beatTime, measureBeatAt, uid, type Song, type Loop } from "../../model/model";
+import { centeredRange, loopMeasureRange } from "./practice-controls";
+import { t } from "../../shared/i18n/i18n";
+export function repeatPreset(
+  s: Song,
+  time: number,
+  duration: number,
+  radius: number,
+  center?: number,
+) {
+  const range = centeredRange(
+    s.measures,
+    center ?? locate(s, time).index,
+    radius,
+    duration,
+  );
+  if (range.end <= range.start) throw Error(t("main.message267"));
+  return {
+    center: range.center,
+    loop: {
+      id: uid(),
+      name: t("main.message266", {
+        value1: range.first + 1,
+        value2: range.last + 1,
+      }),
+      start: range.start,
+      end: range.end,
+    },
+  };
+}
+export function repeatFields(s: Song, l: Pick<Loop, "start" | "end">) {
+  const a = locate(s, l.start),
+    range = loopMeasureRange(s, l.start, l.end),
+    last = s.measures[range.last];
+  const endBeat = measureBeatAt(last, l.end);
+  return {
+    startMeasure: a.index + 1,
+    endMeasure: range.last + 1,
+    startBeat: Number((a.beat + 1).toFixed(4)),
+    endBeat: Number((endBeat + 1).toFixed(4)),
+    precise:
+      Math.abs(l.start - a.measure.start) > 1e-5 ||
+      Math.abs(l.end - last.end) > 1e-5,
+  };
+}
+export function fillRepeatFields(
+  root: HTMLElement,
+  s: Song,
+  l: Pick<Loop, "start" | "end">,
+) {
+  const f = repeatFields(s, l);
+  for (const [id, value] of [
+    ["loop-a", f.startMeasure],
+    ["loop-b", f.endMeasure],
+    ["loop-ab", f.startBeat],
+    ["loop-bb", f.endBeat],
+  ] as const)
+    (root.querySelector(`#${id}`) as HTMLInputElement).value = String(value);
+  return f;
+}
+export function repeatPoint(
+  s: Song,
+  measure: number,
+  beat: number | undefined,
+  end: boolean,
+) {
+  const m = s.measures[measure - 1];
+  if (!Number.isInteger(measure) || !m) throw Error(t("main.message261"));
+  if (beat === undefined) return end ? m.end : m.start;
+  if (!Number.isFinite(beat) || beat < 1 || beat > m.beats + 1)
+    throw Error(t("main.message262"));
+  return beatTime(m, beat - 1);
+}
+export function updateRepeatControls(
+  root: HTMLElement,
+  s: Song,
+  loop: Loop | undefined,
+  radius: number | undefined,
+  bindings: {
+    summary: string;
+    stop: string;
+    adjust: string;
+    attribute: string;
+  },
+  presets: ReadonlyMap<number, Loop> = new Map(),
+) {
+  const toggle = root.querySelector<HTMLElement>(`#${bindings.adjust}`);
+  toggle?.classList.toggle("primary", !!loop);
+  toggle?.setAttribute("aria-pressed", String(!!loop));
+  root.querySelectorAll<HTMLElement>(`[${bindings.attribute}]`).forEach((b) => {
+    const active =
+      !!loop && Number(b.getAttribute(bindings.attribute)) === radius;
+    const saved = presets.get(Number(b.getAttribute(bindings.attribute))) ?? (active ? loop : undefined);
+    const range = saved && loopMeasureRange(s, saved.start, saved.end);
+    b.textContent = range ? `${range.first + 1}~${range.last + 1}` : t("workspace.message550", {radius: Number(b.getAttribute(bindings.attribute))});
+    b.classList.toggle("primary", active);
+    b.setAttribute("aria-pressed", String(active));
+  });
+}

@@ -1,0 +1,294 @@
+// @vitest-environment jsdom
+import { it, expect, vi } from "vitest";
+import {
+  beginPlaybackScrub,
+  movePlaybackScrub,
+  finishPlaybackScrub,
+  validLoop,
+  changePlaybackLoop,
+  installPlaybackKeys,
+  installPlaybackWheel,
+} from "../../src/modules/playback/playback-actions";
+import { createDialog, closeDialogOnBackdrop } from "../../src/shared/ui/dialog-ui";
+import { renderScoreRows } from "../../src/modules/playback/playback-layout";
+import type { Song } from "../../src/model/model";
+const player = () => ({
+  playing: true,
+  duration: 100,
+  position: 5,
+  loop: { id: "l", name: "loop", start: 2, end: 8 },
+  current() {
+    return this.position;
+  },
+  pause() {
+    this.playing = false;
+  },
+  seek(t: number) {
+    this.position = t;
+  },
+  play: vi.fn(async () => {}),
+});
+it("cancel restores time, loop and repeat selection without resuming", () => {
+  const p = player(),
+    snapshot = beginPlaybackScrub(p, { center: 3, radius: 2 }),
+    restore = vi.fn();
+  p.position = 40;
+  p.loop = { id: "x", name: "x", start: 30, end: 50 };
+  finishPlaybackScrub(p, snapshot, true, restore, vi.fn());
+  expect(p.position).toBe(5);
+  expect(p.loop.id).toBe("l");
+  expect(p.playing).toBe(false);
+  expect(restore).toHaveBeenCalledWith({ center: 3, radius: 2 });
+  expect(p.play).not.toHaveBeenCalled();
+});
+it("loop transition preserves an in-range position and resumes once", () => {
+  const p = player(),
+    update = vi.fn();
+  changePlaybackLoop(
+    p,
+    { id: "n", name: "n", start: 4, end: 9 },
+    true,
+    update,
+    vi.fn(),
+  );
+  expect(p.position).toBe(5);
+  expect(update).toHaveBeenCalledOnce();
+  expect(p.play).toHaveBeenCalledOnce();
+  expect(validLoop(1, 1.1, 10)).toBe(false);
+  expect(validLoop(NaN, 3, 10)).toBe(false);
+  expect(validLoop(1, 10.005, 10)).toBe(true);
+});
+it("keyboard ignores held Space and editing fields on every host", () => {
+  document.body.innerHTML = "<input />";
+  const toggle = vi.fn();
+  const dispose = installPlaybackKeys({
+    ready: () => true,
+    cancel: vi.fn(),
+    toggle,
+    mark: vi.fn(),
+    step: vi.fn(),
+  });
+  document.dispatchEvent(
+    new KeyboardEvent("keydown", { code: "Space", key: " ", repeat: true }),
+  );
+  document
+    .querySelector("input")!
+    .dispatchEvent(
+      new KeyboardEvent("keydown", { code: "Space", key: " ", bubbles: true }),
+    );
+  expect(toggle).not.toHaveBeenCalled();
+  document.dispatchEvent(
+    new KeyboardEvent("keydown", { code: "Space", key: " " }),
+  );
+  expect(toggle).toHaveBeenCalledOnce();
+  dispose();
+});
+it("wheel normalizes line units and preserves paused rows native scrolling", () => {
+  document.body.innerHTML = '<div id="stage"></div>';
+  const stage = document.querySelector<HTMLElement>("div")!;
+  let view = "ribbon";
+  const dispose = installPlaybackWheel(stage, {
+    ready: () => true,
+    playing: () => false,
+    view: () => view,
+    cancel: vi.fn(),
+    browse: vi.fn(),
+    scrub: vi.fn(),
+  });
+  stage.dispatchEvent(
+    new WheelEvent("wheel", { deltaY: 2, deltaMode: 1, cancelable: true }),
+  );
+  expect(stage.scrollLeft).toBe(32);
+  view = "rows";
+  const event = new WheelEvent("wheel", { deltaY: 10, cancelable: true });
+  stage.dispatchEvent(event);
+  expect(event.defaultPrevented).toBe(false);
+  dispose();
+});
+it("dialog does not close when a drag starts inside and ends outside", () => {
+  document.body.innerHTML = "";
+  const d = createDialog("test", "Title", "tool-dialog");
+  d.close = vi.fn();
+  d.getBoundingClientRect = () =>
+    ({ left: 10, right: 100, top: 10, bottom: 100 }) as DOMRect;
+  closeDialogOnBackdrop(d);
+  d.dispatchEvent(new MouseEvent("pointerdown", { clientX: 30, clientY: 30 }));
+  d.dispatchEvent(new MouseEvent("click", { clientX: 120, clientY: 120 }));
+  expect(d.close).not.toHaveBeenCalled();
+  d.dispatchEvent(
+    new MouseEvent("pointerdown", { clientX: 120, clientY: 120 }),
+  );
+  d.dispatchEvent(new MouseEvent("click", { clientX: 120, clientY: 120 }));
+  expect(d.close).toHaveBeenCalledOnce();
+  d.remove();
+});
+it("paused row frames preserve browsing and resize rebuilds all measures", () => {
+  document.body.innerHTML = '<div id="stage"><div id="ribbon"></div></div>';
+  const stage = document.getElementById("stage")!,
+    ribbon = document.getElementById("ribbon")!;
+  Object.defineProperty(stage, "clientWidth", {
+    value: 800,
+    configurable: true,
+  });
+  const state = {
+    rowWindow: -1,
+    pausedBrowseIndex: -1,
+    renderedBrowseWidth: NaN,
+    playbackRowOrigin: 0,
+  };
+  const h = {
+    stage,
+    ribbon,
+    song: () => ({ measures: Array.from({ length: 9 }, () => ({})) }) as Song,
+    playing: false,
+    scrubbing: false,
+    resume: false,
+    measureHTML: (_: unknown, i: number, w: number) =>
+      `<div data-index="${i}" style="width:${w}px"></div>`,
+    layoutLyrics: vi.fn(),
+  };
+  renderScoreRows(h, state, 0);
+  expect(ribbon.querySelectorAll(".browse-row")).toHaveLength(3);
+  stage.scrollTop = 400;
+  renderScoreRows(h, state, 0);
+  expect(stage.scrollTop).toBe(400);
+  expect(h.layoutLyrics).toHaveBeenCalledOnce();
+  Object.defineProperty(stage, "clientWidth", { value: 400 });
+  renderScoreRows(h, state, 0);
+  expect(h.layoutLyrics).toHaveBeenCalledTimes(2);
+});
+it.each([8, 9, 12, 123])('keeps the last row below the preceding row for %i measures', length => {
+ const stage=document.createElement('div'), ribbon=document.createElement('div');stage.append(ribbon);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({measures:Array.from({length},()=>({}))}) as Song,playing:true,scrubbing:false,resume:false,cellWidth:100,
+ measureHTML:(_:unknown,i:number)=>`<div data-index="${i}"></div>`,layoutLyrics:vi.fn()};
+ renderScoreRows(h,state,length-1);
+ const first=(Math.ceil(length/4)-2)*4;
+ expect([...ribbon.querySelectorAll<HTMLElement>("[data-index]")].map(e=>Number(e.dataset.index))).toEqual(Array.from({length:length-first},(_,i)=>first+i));
+ h.playing=false;
+ renderScoreRows(h,state,length-1);
+ const rows=[...ribbon.querySelectorAll<HTMLElement>('.browse-row')];
+ rows.forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+ state.pausedBrowseIndex=-1;
+ renderScoreRows(h,state,length-1);
+ expect(stage.scrollTop).toBe((rows.length-2)*200);
+});
+
+it.each([
+ {index:5, top:0},
+ {index:13, top:2},
+ {index:8, top:2},
+ {index:23, top:4},
+])("pause restores chronological rows and keeps the active slot at $index", ({index,top}) => {
+ const stage=document.createElement('div'), ribbon=document.createElement('div');stage.append(ribbon);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({measures:Array.from({length:24},()=>({}))}) as Song,playing:true,scrubbing:false,resume:false,cellWidth:100,
+ measureHTML:(_:unknown,i:number)=>`<div data-index="${i}"></div>`,layoutLyrics:()=>{
+   [...ribbon.querySelectorAll('.browse-row')].forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+ }};
+ renderScoreRows(h,state,index);
+ h.playing=false;
+ renderScoreRows(h,state,index);
+ expect(stage.classList.contains('paused-score-scroll')).toBe(true);
+ const rowStarts=[...ribbon.querySelectorAll('.browse-row')].map(e=>Number(e.querySelector<HTMLElement>('[data-index]')!.dataset.index));
+ expect(rowStarts).toEqual([0,4,8,12,16,20]);
+ expect(stage.scrollTop).toBe(top*200);
+ renderScoreRows(h,state,index);
+ expect(stage.scrollTop).toBe(top*200);
+ stage.scrollTop=350;
+ renderScoreRows(h,state,index);
+ expect(stage.scrollTop).toBe(350);
+});
+
+
+it.each([false, true])('preserves four slots before an incomplete final row (uniform %s)', uniformSpacing => {
+ const stage=document.createElement('div'), ribbon=document.createElement('div');stage.append(ribbon);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({scoreFormat:'musicxml',settings:{uniformSpacing},measures:Array.from({length:123},()=>({}))}) as Song,
+ playing:true,scrubbing:false,resume:false,cellWidth:100,
+ measureHTML:(_:unknown,i:number)=>`<div class="measure" data-index="${i}"></div>`,layoutLyrics:()=>{
+ [...ribbon.querySelectorAll('.browse-row')].forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+ }};
+ renderScoreRows(h,state,115);
+ renderScoreRows(h,state,116);
+ expect([...ribbon.querySelectorAll<HTMLElement>('.measure')].map(e=>e.dataset.index ?? 'empty')).toEqual(['120','121','122','empty','116','117','118','119']);
+ h.playing=false;
+ renderScoreRows(h,state,116);
+ expect(stage.scrollTop).toBe(28*200);
+});
+it("handles vertical arrows only in rows and leaves numeric editing and dialogs alone", () => {
+  document.body.innerHTML = '<input><dialog></dialog>';
+  let rows = true;
+  const rowStep = vi.fn(), step = vi.fn();
+  const dispose = installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark:vi.fn(),step,rows:()=>rows,rowStep});
+  const down = new KeyboardEvent('keydown',{key:'ArrowDown',cancelable:true});document.dispatchEvent(down);
+  expect(down.defaultPrevented).toBe(true);expect(rowStep).toHaveBeenLastCalledWith(1);
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowUp',repeat:true}));
+  expect(rowStep).toHaveBeenLastCalledWith(-1);
+  const calls = rowStep.mock.calls.length;
+  document.querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
+  document.querySelector('dialog')!.setAttribute('open','');
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown'}));
+  expect(rowStep).toHaveBeenCalledTimes(calls);
+  document.querySelector('dialog')!.removeAttribute('open');rows=false;
+  const ribbon = new KeyboardEvent('keydown',{key:'ArrowDown',cancelable:true});document.dispatchEvent(ribbon);
+  expect(ribbon.defaultPrevented).toBe(false);expect(rowStep).toHaveBeenCalledTimes(calls);
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'}));expect(step).toHaveBeenLastCalledWith(1);
+  dispose();
+});
+it.each([
+ {key:'m',code:'KeyM'},
+ {key:'M',code:'KeyM',shiftKey:true},
+ {key:'ㅡ',code:'KeyM'},
+ {key:'Process',code:'KeyM',isComposing:true},
+ {key:'ㅡ',code:''},
+])('M marker shortcut accepts Latin and Korean input: $key/$code',event=>{
+ document.body.innerHTML='';const mark=vi.fn();
+ const dispose=installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark,step:vi.fn()});
+ const e=new KeyboardEvent('keydown',{...event,cancelable:true});document.dispatchEvent(e);
+ expect(mark).toHaveBeenCalledOnce();expect(e.defaultPrevented).toBe(true);
+ document.dispatchEvent(new KeyboardEvent('keydown',{...event,repeat:true}));expect(mark).toHaveBeenCalledOnce();
+ dispose();
+});
+it('leaves M typing in editable fields and open dialogs unchanged',()=>{
+ document.body.innerHTML='<input><textarea></textarea><div contenteditable="true"></div><dialog></dialog>';
+ const mark=vi.fn();const dispose=installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark,step:vi.fn()});
+ for(const target of document.querySelectorAll('input,textarea,[contenteditable]')){
+  const e=new KeyboardEvent('keydown',{key:'ㅡ',code:'KeyM',isComposing:true,bubbles:true,cancelable:true});target.dispatchEvent(e);expect(e.defaultPrevented).toBe(false);
+ }
+ document.querySelector('dialog')!.setAttribute('open','');document.dispatchEvent(new KeyboardEvent('keydown',{key:'M',code:'KeyM'}));expect(mark).not.toHaveBeenCalled();dispose();
+});
+it('does not turn modified browser shortcuts into marker toggles',()=>{
+ document.body.innerHTML='';const mark=vi.fn();const dispose=installPlaybackKeys({ready:()=>true,cancel:vi.fn(),toggle:vi.fn(),mark,step:vi.fn()});
+ for(const modifier of ['ctrlKey','altKey','metaKey']){const e=new KeyboardEvent('keydown',{key:'m',code:'KeyM',[modifier]:true,cancelable:true});document.dispatchEvent(e);expect(e.defaultPrevented).toBe(false);}
+ expect(mark).not.toHaveBeenCalled();dispose();
+});
+it('keeps the paused two-row viewport fixed when selection moves between its visible rows',()=>{
+ const stage=document.createElement('div'),ribbon=document.createElement('div');stage.append(ribbon);
+ Object.defineProperty(stage,'clientWidth',{value:800});
+ stage.getBoundingClientRect=()=>({top:0,bottom:400,height:400} as DOMRect);
+ const state={rowWindow:-1,pausedBrowseIndex:-1,renderedBrowseWidth:NaN,playbackRowOrigin:0};
+ const h={stage,ribbon,song:()=>({measures:Array.from({length:24},()=>({}))}) as Song,playing:false,scrubbing:false,resume:false,
+ measureHTML:(_:unknown,i:number)=>`<div data-index="${i}"></div>`,layoutLyrics:()=>{
+  [...ribbon.querySelectorAll<HTMLElement>('.browse-row')].forEach((row,i)=>Object.defineProperty(row,'offsetTop',{value:28+i*200}));
+  [...ribbon.querySelectorAll<HTMLElement>('[data-index]')].forEach(el=>el.getBoundingClientRect=()=>{const top=28+Math.floor(Number(el.dataset.index)/4)*200-stage.scrollTop;return {top,bottom:top+172,height:172} as DOMRect;});
+ }};
+ renderScoreRows(h,state,1);expect(stage.scrollTop).toBe(0);
+ renderScoreRows(h,state,5);expect(stage.scrollTop).toBe(0);
+ renderScoreRows(h,state,1);expect(stage.scrollTop).toBe(0);
+ renderScoreRows(h,state,9);expect(stage.scrollTop).toBe(200);
+ renderScoreRows(h,state,13);expect(stage.scrollTop).toBe(400);
+ renderScoreRows(h,state,9);expect(stage.scrollTop).toBe(400);
+ renderScoreRows(h,state,5);expect(stage.scrollTop).toBe(200);
+});
+
+it.each([false, true])('waveform drag pans without seeking, including playing gestures (%s)', resume => {
+ const p=player();p.playing=resume;
+ const state=beginPlaybackScrub(p, undefined);
+ const stage=document.createElement('div'),seek=vi.fn();
+ const song={settings:{view:'ribbon'},audioPractice:{duration:100}} as Song;
+ movePlaybackScrub({song,stage,state,panStart:400,widths:[],duration:100,seek},-120);
+ expect(stage.scrollLeft).toBe(520);expect(seek).not.toHaveBeenCalled();expect(p.current()).toBe(5);
+ finishPlaybackScrub(p,state,false,vi.fn(),vi.fn());
+ expect(p.play).toHaveBeenCalledTimes(resume ? 1 : 0);expect(p.current()).toBe(5);
+});

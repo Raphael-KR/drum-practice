@@ -36,7 +36,7 @@
 - 마커는 5개, 구간은 9개다. 구간은 시작 마디 순서로 정렬하고 가득 차면 가장 오래 등록한 구간을 교체한다.
 - 구간은 Enter 두 번, 더블클릭 두 번, 또는 빈 슬롯을 누른 뒤 시작·끝 마디를 클릭/터치해 등록한다. 드래그는 구간 등록에 사용하지 않는다.
 - 새 곡의 기본값은 음악 50%, 메트로놈 100%, 메트로놈 켜짐이다. 저장된 사용자 설정은 유지한다.
-- 연주 전 구간과 1마디 기준, 카운트오프는 [음원 연습](docs/AUDIO-PRACTICE.md)과 [설정 정책](docs/SETTINGS-PLAYBACK.md)을 따른다.
+- 연주 전 구간과 1마디 기준, 카운트오프는 [음원 연습](docs/product/AUDIO-PRACTICE.md)과 [설정 정책](docs/product/SETTINGS-PLAYBACK.md)을 따른다.
 
 ## 기기와 저장
 
@@ -46,18 +46,18 @@ iPhone은 세로 레이아웃을 기준으로 하고 iPad mini와 데스크톱 �
 
 ## 정본과 수용 상태
 
-- UI·도움말: [UX 원칙](docs/UX-PRINCIPLES.md), [공통 화면 목록](docs/plans/PLAYBACK-SCREEN-INVENTORY.md)
-- 악보 입력: [MusicXML 정본](docs/MUSICXML-CANONICAL.md), [표기 매핑](docs/SCORE-MUSICXML-OSMD-MAPPING.md)
-- 화면 출력: [SVG 규칙](docs/SVG-SCORE-RULES.md)
-- 전달 파일: [악보 패키지](docs/SCORE-PACKAGE.md)
-- 검증과 발행: [검증 현황](docs/acceptance.md), [Sites 발행](docs/SITES-PUBLICATION.md)
+- UI·도움말: [UX 원칙](docs/product/UX-PRINCIPLES.md), [공통 화면 목록](docs/plans/PLAYBACK-SCREEN-INVENTORY.md)
+- 악보 입력: [MusicXML 정본](docs/architecture/MUSICXML-CANONICAL.md), [표기 매핑](docs/score-production/SCORE-MUSICXML-OSMD-MAPPING.md)
+- 화면 출력: [SVG 규칙](docs/architecture/SVG-SCORE-RULES.md)
+- 전달 파일: [악보 패키지](docs/architecture/SCORE-PACKAGE.md)
+- 검증과 발행: [검증 현황](docs/operations/acceptance.md), [Sites 발행](docs/operations/SITES-PUBLICATION.md)
 
 0.7.x는 음원 연습 기능 안정화 단계다. 구현·자동 검사·Safari 검증·실기기 청취·공개 배포는 별도 상태로 기록한다. 과거의 미검증 항목을 일괄 완료하거나 1.0 수용 완료로 간주하지 않는다.
 
 ### 음원 분석의 기기 내부 처리 (2026-10-14 최신 결정)
 
-기기 음원의 곡명·가수·박자 분석과 해시 기반 재사용은 기기에서만 처리한다. 서버 분석 저장·조회·익명 등록·검토/승인 기능과 자료는 폐기한다. `.drumscore` 서버 다운로드는 유지한다. 구현·집중/전체 검사·앱/배포 빌드가 이번 완료 조건이며 공개 반영은 다음 명시적 발행 요청 때 수행한다. 상세 저장 계약은 `docs/AUDIO-PRACTICE.md`를 따른다.
+기기 음원의 곡명·가수·박자 분석과 해시 기반 재사용은 기기에서만 처리한다. 서버 분석 저장·조회·익명 등록·검토/승인 기능과 자료는 폐기한다. `.drumscore` 서버 다운로드는 유지한다. 구현·집중/전체 검사·앱/배포 빌드가 이번 완료 조건이며 공개 반영은 다음 명시적 발행 요청 때 수행한다. 상세 저장 계약은 `docs/product/AUDIO-PRACTICE.md`를 따른다.
 
 ### 음원 연습 정보 파일 (2026-10-15)
 
-설정에서 내 음원 목록 전체의 분석·수동 보정·마커·구간·곡별 설정을 JSON 파일로 저장하고 원본 음원을 연결하여 복원한다. 서버 전송과 재분석 없이 새 항목으로 일괄 추가한다. 상세 계약과 검증은 [연습 파일](docs/PRACTICE-FILE.md)을 따른다.
+설정에서 내 음원 목록 전체의 분석·수동 보정·마커·구간·곡별 설정을 JSON 파일로 저장하고 원본 음원을 연결하여 복원한다. 서버 전송과 재분석 없이 새 항목으로 일괄 추가한다. 상세 계약과 검증은 [연습 파일](docs/architecture/PRACTICE-FILE.md)을 따른다.

@@ -1,0 +1,191 @@
+
+/* One library card per song; only stored content types are shown. */
+.song-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+.song-card-heading {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.song-card-title {
+  border: 0;
+  background: transparent;
+  color: var(--ink, #243248);
+  padding: 8px 0;
+  text-align: left;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.song-card-types,
+.song-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.score-type {
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.score-type-pdf {
+  background: #ebe1f4;
+  color: #5b4371;
+}
+.score-type-musicxml {
+  background: #f6e0e8;
+  color: #713e53;
+}
+.score-type-lyrics {
+  background: #d7e6fb;
+  color: #315980;
+}
+.score-type:hover {
+  filter: brightness(0.96);
+}
+.score-type:focus-visible {
+  outline: 3px solid #3f74d4;
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  .song-card-heading {
+    flex-basis: 100%;
+  }
+  .song-card-actions {
+    margin-left: auto;
+  }
+}
+
+/* Same musical window, PDF above and SVG below. */
+#review-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+#review-tools[hidden],
+#review-canvas[hidden] {
+  display: none;
+}
+#review-message {
+  flex: 1;
+  font-size: 13px;
+}
+#review-tools button {
+  min-height: 40px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+.score-review #ribbon,
+.score-review #playhead-status {
+  display: none !important;
+}
+#review-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#screen-dialog #view[hidden] {
+  display: none;
+}
+#review-help {
+  flex-basis: 100%;
+}
+#review-help p {
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+/* Keep the position label clear of the centered play button on iPad portrait. */
+
+/* Touch practice workspace: transport stays available, secondary tools live in Settings. */
+.touch-workspace .quick-section {
+  flex: none;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  gap: 5px;
+}
+.touch-workspace .quick-section:has(.quick-markers:empty) {
+  display: none;
+}
+.touch-workspace .quick-title {
+  align-items: center;
+}
+.touch-workspace .quick-title > button {
+  min-height: 36px;
+  padding: 3px 8px;
+  gap: 5px;
+}
+.touch-workspace .quick-title .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+.touch-workspace .quick-title .icon-caption {
+  font-size: 12px;
+}
+#loop-dialog #loop-name {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* Repeat boundaries are separate from the moving played-through tint. */
+
+/* Group song editing and transport preferences without exposing old categories. */
+.settings-panel .score-management-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+.score-management-group > h4,
+.score-management-group > p {
+  flex-basis: 100%;
+  margin: 0;
+}
+.score-management-group > .icon-button {
+  padding: 10px 14px;
+  gap: 7px;
+}
+.score-management-group .icon-caption {
+  font-size: 14px;
+}
+
+.license-section {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.license-section details {
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.license-section summary {
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.license-section pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  max-height: 320px;
+  overflow: auto;
+}
+.license-section a {
+  display: inline-block;
+  padding: 10px 0;
+  color: var(--accent);
+}
+
+/* Repeat controls stay on the left; fixed marker slots stay on the right. */

@@ -7,28 +7,30 @@
 | 문서 | 용도 |
 | --- | --- |
 | [프로젝트 README](../README.md) | 실행 주소·명령·앱 역할 |
-| [UX 원칙](UX-PRINCIPLES.md) | 승인된 UI와 도움말 기준 |
-| [음원 연습](AUDIO-PRACTICE.md) | 자동 곡 정보·박자·서버 캐시·연주 시작·카운트오프 |
-| [설정과 재생](SETTINGS-PLAYBACK.md) | 기본값·설정 범위·BPM·재개 정책 |
-| [마커 슬롯](MARKER-SLOTS.md) | 5개 슬롯과 추가/삭제 동작 |
+| [프로젝트 구조](architecture/PROJECT-STRUCTURE.md) | 앱·기능·저장·공통 계층과 의존 규칙 |
+| [검사 실행 방법](operations/TESTING.md) | 전체·휴대 가능한 검사·로컬 자료 준비 |
+| [UX 원칙](product/UX-PRINCIPLES.md) | 승인된 UI와 도움말 기준 |
+| [음원 연습](product/AUDIO-PRACTICE.md) | 자동 곡 정보·박자·로컬 캐시·연주 시작·카운트오프 |
+| [설정과 재생](product/SETTINGS-PLAYBACK.md) | 기본값·설정 범위·BPM·재개 정책 |
+| [마커 슬롯](product/MARKER-SLOTS.md) | 5개 슬롯과 추가/삭제 동작 |
 | [공통 화면 목록](plans/PLAYBACK-SCREEN-INVENTORY.md) | 코드 검사에서 사용하는 화면·컴포넌트 ID |
-| [UI 컴포넌트](UI-COMPONENTS.md) | 소스에서 생성하는 컴포넌트 목록 |
-| [앱 버전](APP-VERSIONS.md) | 현재 버전·증가 기준·과거 번호 정정 |
-| [검증 현황](acceptance.md) | 최근 릴리스 근거와 미확인 범위 |
-| [Sites 발행](SITES-PUBLICATION.md) | player 전용 발행 절차·최근 배포 |
-| [iPad 시뮬레이터](IPAD-SIMULATOR.md) | 지정 기기와 검증 환경 |
-| [Apple 로컬 활용](APPLE-LOCAL-WORKFLOW.md) | STT/AFM 실행·검증 계약 |
-| [다국어](I18N.md) | 번역 키 관리 |
-| [오픈소스 고지](OPEN-SOURCE-NOTICES.md) | 의존성 라이선스 |
+| [UI 컴포넌트](product/UI-COMPONENTS.md) | 소스에서 생성하는 컴포넌트 목록 |
+| [앱 버전](operations/APP-VERSIONS.md) | 현재 버전·증가 기준·과거 번호 정정 |
+| [검증 현황](operations/acceptance.md) | 최근 릴리스 근거와 미확인 범위 |
+| [Sites 발행](operations/SITES-PUBLICATION.md) | player 전용 발행 절차·최근 배포 |
+| [iPad 시뮬레이터](operations/IPAD-SIMULATOR.md) | 지정 기기와 검증 환경 |
+| [Apple 로컬 활용](operations/APPLE-LOCAL-WORKFLOW.md) | STT/AFM 실행·검증 계약 |
+| [다국어](architecture/I18N.md) | 번역 키 관리 |
+| [오픈소스 고지](operations/OPEN-SOURCE-NOTICES.md) | 의존성 라이선스 |
 
 ## 악보 제작·표시 정본
 
-1. [제작 프로세스](SCORE-PRODUCTION-PROCESS.md)에서 입력·원본·검증 순서를 확인한다.
-2. 변환은 [변환 정책](MUSICXML-CONVERSION-POLICY.md), 표기는 [MusicXML/OSMD 매핑](SCORE-MUSICXML-OSMD-MAPPING.md)을 따른다.
-3. 저장은 [MusicXML 정본](MUSICXML-CANONICAL.md), 출력은 [SVG 규칙](SVG-SCORE-RULES.md), 인계는 [악보 패키지](SCORE-PACKAGE.md)를 따른다.
-4. 문제 해결은 [변환 문제 기록](MUSICXML-TROUBLESHOOTING.md), 드럼킷 선택은 [GarageBand 드럼킷](GARAGEBAND-DRUM-KITS.md)을 확인한다.
+1. [제작 프로세스](score-production/SCORE-PRODUCTION-PROCESS.md)에서 입력·원본·검증 순서를 확인한다.
+2. 변환은 [변환 정책](score-production/MUSICXML-CONVERSION-POLICY.md), 표기는 [MusicXML/OSMD 매핑](score-production/SCORE-MUSICXML-OSMD-MAPPING.md)을 따른다.
+3. 저장은 [MusicXML 정본](architecture/MUSICXML-CANONICAL.md), 출력은 [SVG 규칙](architecture/SVG-SCORE-RULES.md), 인계는 [악보 패키지](architecture/SCORE-PACKAGE.md)를 따른다.
+4. 문제 해결은 [변환 문제 기록](score-production/MUSICXML-TROUBLESHOOTING.md), 드럼킷 선택은 [GarageBand 드럼킷](score-production/GARAGEBAND-DRUM-KITS.md)을 확인한다.
 
-2026-10-13 실험 자료를 삭제했다. 최신 제작 원본은 `data/production/`, 변환 입력·MusicXML 스키마·회귀 검사 입력은 `data/reference/`에 보존했다. 곡별 제작 문서는 유지한다. 예: [시작전 손풀기](PREPLAY-WARMUP-PRODUCTION.md), [탐탐 무빙](TOM-MOVING-PRODUCTION.md), [Loveholic](LOVEHOLIC-CONVERSION.md), [바람과 언덕의 발라드](MUSICXML-CONVERSION.md).
+2026-10-13 실험 자료를 삭제했다. 최신 제작 원본은 `data/production/`, 변환 입력·MusicXML 스키마·회귀 검사 입력은 `data/reference/`에 보존했다. 곡별 제작 문서는 유지한다. 예: [시작전 손풀기](score-production/PREPLAY-WARMUP-PRODUCTION.md), [탐탐 무빙](score-production/TOM-MOVING-PRODUCTION.md), [Loveholic](score-production/LOVEHOLIC-CONVERSION.md), [바람과 언덕의 발라드](score-production/MUSICXML-CONVERSION.md).
 
 ## 기록 유지 규칙
 

@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import ko from "./src/locales/ko.json";
+import ko from "./src/shared/i18n/locales/ko.json";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 export default defineConfig(({ mode }) => {
   const separate = mode === "editor" || mode === "player";
@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
             for (const name of ["apple-touch-icon.png", "apple-touch-icon-180.png", "favicon.ico", "favicon-32.png", "icon-192.png"])
               this.emitFile({type: "asset", fileName: `icons/${name}`, source: readFileSync(`public/icons/${name}`)});
             const scores = JSON.parse(
-              readFileSync("src/bundled-scores.json", "utf8"),
+              readFileSync("src/content/bundled-scores.json", "utf8"),
             );
             for (const score of scores)
               this.emitFile({

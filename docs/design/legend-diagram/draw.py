@@ -4,7 +4,7 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 root=Path(__file__).resolve().parents[3]
-labels=json.loads((root/'src/locales/ko.json').read_text())
+labels=json.loads((root/'src/shared/i18n/locales/ko.json').read_text())
 font=TTFont(sys.argv[1]); glyphs=font.getGlyphSet(); cmap=font.getBestCmap()
 def glyph(cp,x,y,size=40):
     pen=SVGPathPen(glyphs);glyphs[cmap[cp]].draw(pen)

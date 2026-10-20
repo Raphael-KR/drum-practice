@@ -48,10 +48,10 @@
 
 ## 재발 방지
 
-- `scripts/check-playback-architecture.mjs`: 각 호스트의 단일 mount와 핵심 재생 연산의 공통 소유권, 목록 항목, 호스트 의존 금지를 검사한다.
-- `scripts/check-common-components.mjs`: 공통 폼·바이너리 인코더·아이콘 소유권을 검사한다.
-- `scripts/check-app-boundaries.mjs`: 별도 editor/player 빌드에서 제작 코드 유입 여부를 검사한다.
-- `tests/playback-screen.test.ts`: web/player 연결로 재생·탐색·구간·설정 동작을 검사한다.
+- `scripts/checks/check-playback-architecture.mjs`: 각 호스트의 단일 mount와 핵심 재생 연산의 공통 소유권, 목록 항목, 호스트 의존 금지를 검사한다.
+- `scripts/checks/check-common-components.mjs`: 공통 폼·바이너리 인코더·아이콘 소유권을 검사한다.
+- `scripts/checks/check-app-boundaries.mjs`: 별도 editor/player 빌드에서 제작 코드 유입 여부를 검사한다.
+- `tests/local-media/playback-screen.test.ts`: web/player 연결로 재생·탐색·구간·설정 동작을 검사한다.
 - `record-serialization.ts`는 제작 ZIP 백업에 필요한 데이터 직렬화만 담당한다. HTML 셸·실행기·내장 Worker 생성은 지원하지 않는다.
 
 자동 검사는 실기기 음질·터치·OS 권한 검증을 대신하지 않는다.

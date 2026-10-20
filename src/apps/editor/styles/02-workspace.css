@@ -1,0 +1,419 @@
+
+/* Landscape practice workspace. Score scale is independent of empty stage space. */
+input[type="checkbox"],
+progress {
+  accent-color: var(--accent);
+}
+.statusline {
+  margin-bottom: 8px;
+  min-height: 44px;
+}
+.now {
+  font-size: 24px;
+}
+.beatbadge {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 5px 14px;
+}
+.seekrow {
+  flex: none;
+  height: 62px;
+  margin: 0;
+  padding-top: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.seek-control {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+#seek {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  cursor: ew-resize;
+  touch-action: none;
+}
+#seek::-webkit-slider-thumb {
+  width: 28px;
+  height: 28px;
+}
+#seek-position {
+  position: absolute;
+  bottom: 40px;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: 14px;
+  box-shadow: 0 3px 12px #24334b25;
+}
+#seek-position:after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: calc(50% - 5px);
+  border: 5px solid transparent;
+  border-top-color: var(--accent);
+}
+.practice-dock {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 12px;
+  margin-top: auto;
+}
+.practice-dock button {
+  padding: 9px 6px;
+  min-height: 52px;
+  background: var(--accent-soft);
+  border-color: #cbdaf5;
+  color: #315da9;
+  font-weight: 600;
+}
+.tool-body #alignment-note {
+  width: 100%;
+}
+.editor-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+#editor-dialog {
+  width: calc(100vw - 32px);
+  height: calc(100dvh - 32px);
+  max-height: none;
+  overflow: hidden;
+}
+#editor-score {
+  height: calc(100% - 112px);
+  grid-template-columns: minmax(280px, 1fr) minmax(400px, 1.1fr);
+  gap: 16px;
+}
+#editor-score > section {
+  min-height: 0;
+}
+#editor-score > section:first-child {
+  display: flex;
+  flex-direction: column;
+}
+#editor-score .pagebox {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #e9eef6;
+  margin-bottom: 8px;
+}
+#editor-score canvas {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+#editor-score h3 {
+  margin: 0 0 8px;
+}
+#editor-score p {
+  margin: 6px 0;
+  font-size: 12px;
+}
+#editor-score .flex {
+  gap: 6px;
+}
+#editor-score button {
+  padding: 8px;
+}
+#editor-score label {
+  margin: 3px 0;
+  gap: 4px;
+}
+#editor-score input[type="number"] {
+  width: 88px;
+}
+#editor-score .flex + .flex {
+  margin-top: 6px;
+}
+#editor-lyrics .scroll {
+  max-height: calc(100dvh - 285px);
+}
+#editor-lyrics h3 {
+  margin: 0;
+}
+#editor-lyrics p {
+  margin: 8px 0;
+}
+#editor-lyrics input {
+  min-height: 44px !important;
+}
+@media (min-width: 900px) and (max-height: 800px) {
+  .practice-dock {
+    padding-top: 8px;
+  }
+  .practice-dock button {
+    min-height: 44px;
+  }
+  .statusline {
+    margin-bottom: 4px;
+  }
+  #editor-score p {
+    font-size: 11px;
+  }
+}
+@media (max-width: 899px) {
+  .practice-dock {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  #editor-dialog {
+    overflow: auto;
+  }
+  #editor-score {
+    height: auto;
+    grid-template-columns: 1fr;
+  }
+  #editor-score .pagebox {
+    height: 280px;
+    flex: auto;
+  }
+}
+
+.quick-section {
+  flex: 1;
+  min-height: 82px;
+  max-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 0 0;
+}
+.quick-title {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+}
+.quick-markers {
+  display: flex;
+  gap: 8px;
+}
+.quick-markers button {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px;
+}
+.quick-markers small {
+  display: block;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.practice-dock {
+  margin-top: auto;
+}
+.tag {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+#editor-lyrics .scroll {
+  max-height: none;
+  overflow: visible;
+}
+#original-dialog {
+  height: calc(100dvh - 32px);
+  overflow: hidden;
+}
+#page-original {
+  height: calc(100% - 58px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#page-original img {
+  width: auto;
+  max-width: 100%;
+  height: calc(100% - 58px);
+  object-fit: contain;
+}
+.two-rows .quick-section {
+  display: none;
+}
+@media (min-width: 900px) and (max-height: 800px) {
+  .quick-section {
+    min-height: 76px;
+    gap: 4px;
+    padding-top: 6px;
+  }
+  .quick-markers button {
+    padding: 6px;
+  }
+}
+
+#seek {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+#seek::-webkit-slider-runnable-track {
+  height: 6px;
+  background: #cbdaf1;
+  border-radius: 3px;
+}
+#seek::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 28px;
+  width: 28px;
+  margin-top: -11px;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 1px 5px #24334b44;
+}
+#seek::-moz-range-track {
+  height: 6px;
+  background: #cbdaf1;
+  border-radius: 3px;
+}
+#seek::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (min-width: 900px) and (max-height: 800px) {
+  .two-rows .statusline {
+    min-height: 36px;
+  }
+  .two-rows .beatbadge {
+    font-size: 18px;
+  }
+  .two-rows .seekrow {
+    height: 48px;
+    padding-top: 3px;
+  }
+}
+#seek {
+  border: 0;
+}
+/* Icon-only controls need the same minimum target width as text buttons. */
+
+.work-log {
+  width: 100%;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.work-log h3 {
+  margin: 0 0 4px;
+}
+.work-log p {
+  margin: 0 0 6px;
+}
+.work-log #busy {
+  padding: 8px 10px;
+  min-height: 0;
+  color: var(--muted);
+  background: var(--accent-soft);
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.error-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid #bf5b37;
+  background: #fff2e9;
+  color: #853c23;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.error-notice:hover {
+  background: #ffe6d6;
+}
+.error-notice strong,
+.error-notice > span:last-child {
+  flex: none;
+}
+#error-message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.statusline > .error-notice {
+  flex: 1;
+  order: 1;
+}
+.statusline > .flex:last-of-type {
+  order: 2;
+}
+.dialoghead > .error-notice {
+  flex: 1;
+  margin-left: 12px;
+}
+main > .error-notice {
+  flex: none;
+  width: 100%;
+}
+
+/* Leave room for Safari’s native fullscreen exit control. */
+:root:fullscreen header {
+  padding-left: max(88px, env(safe-area-inset-left));
+}
+
+/* Keep the live beat beside its measure, above the score image. */
+.statusline:has(> .error-notice[hidden]) {
+  min-height: 0;
+  padding: 0;
+}
+
+/* Meter belongs to every measure, even while another measure is playing. */
+
+/* Tint the printed white paper as well as lyrics without fading black notation. */
+.practice-dock button.is-on {
+  background: var(--accent);
+  color: white;
+}
+#library-dialog #new-button {
+  margin-left: auto;
+}
+#library-dialog .dialoghead {
+  gap: 12px;
+}
+
+/* Equal side tracks keep play centered regardless of control widths. */
+.welcome-lead {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Position reporting stays between rewind and the centered play control. */
+.lyric-grid-controls {
+  display: flex;
+  gap: 4px;
+}
+.lyric-grid-controls select {
+  min-height: 44px;
+  max-width: 110px;
+  padding: 4px;
+}
