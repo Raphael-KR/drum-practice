@@ -13,6 +13,14 @@ select,
 textarea {
   font: inherit;
 }
+/* Keep a held control available for help without Safari selecting its label. */
+button,
+[role="button"],
+.metronome-toggle {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
 button,
 select,
 input[type="number"],

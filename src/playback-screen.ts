@@ -665,6 +665,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const recording = readRecordingTempo(h.canonicalXML?.());
     return recording?.scoreBpm === song.bpm ? recording.bpmEstimate : song.bpm;
   }
+  function minimumPracticeBpm() {
+    // Match the rounded 50% preset instead of clamping it to a fractional BPM.
+    return Math.round(originalAudioBpm() * 0.5);
+  }
   async function rate(bpm: number, original = false) {
     if (!available()) return;
     h.setBusy(true);
@@ -676,7 +680,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     };
     try {
       if (!Number.isFinite(bpm) || bpm <= 0) throw Error(t("main.message248"));
-      await h.player().setRate(original ? 1 : clamp(bpm / originalAudioBpm(), 0.5, 1.2), original, report);
+      const baseBpm = originalAudioBpm();
+      await h.player().setRate(original ? 1 : clamp(bpm / baseBpm, minimumPracticeBpm() / baseBpm, 1.2), original, report);
       if (original) liveBpm = currentAudioBpm(h.song(), h.player().current());
       h.changed();
     } catch (error) {
@@ -706,7 +711,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     tempo.title = t("main.message211");
     const v = input(ids.tempoInput);
     v.value = String(bpm);
-    v.min = String(Math.ceil(originalAudioBpm() * 0.5));
+    v.min = String(minimumPracticeBpm());
     v.max = String(Math.floor(originalAudioBpm() * 1.2));
     for (const [key, value] of [
       ["now", v.value],
@@ -792,14 +797,24 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     open("tempo");
   }
   action(ids.tempo, openTempo);
-  action("tempo-reset", () => rate(h.song().bpm, true));
-  action("tempo-score", () => rate(h.song().bpm));
+  function applyTempoInput(original = false) {
+    const value = input(ids.tempoInput);
+    value.setAttribute("aria-valuenow", value.value);
+    return rate(Number(value.value), original);
+  }
+  function selectTempo(bpm: number, original = false) {
+    if (!available()) return;
+    input(ids.tempoInput).value = String(bpm);
+    return applyTempoInput(original);
+  }
+  action("tempo-reset", () => selectTempo(h.song().bpm, true));
+  action("tempo-score", () => selectTempo(h.song().bpm));
   listen(get("tempo-options"), "click", (e) => {
     const b = (e.target as Element).closest<HTMLElement>("[data-tempo]");
-    if (b && h.ready()) run(() => rate(Number(b.dataset.tempo)));
+    if (b && h.ready()) run(() => selectTempo(Number(b.dataset.tempo)));
   });
   listen(input(ids.tempoInput), "change", () =>
-    run(() => rate(Number(input(ids.tempoInput).value))),
+    run(() => applyTempoInput()),
   );
   action("play", toggle);
   action("home", () => seek(0));

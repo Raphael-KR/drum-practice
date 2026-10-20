@@ -484,6 +484,5 @@ dialog.backdrop-dismissible > .dialoghead .close-button {display:none;}
   #app-help-dialog.focus-help .help-footer {align-items:flex-start;flex-direction:column;padding:10px;gap:8px;}
   #app-help-dialog.focus-help .help-legend-button {align-self:flex-end;}
 }
-button, [role=button], .metronome-toggle {-webkit-touch-callout:none;}
 .speech-help .help-bubble h3 {color:#215bc0;}
 .speech-help .help-bubble p {margin:0;white-space:pre-line;word-break:keep-all;}

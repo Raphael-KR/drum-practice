@@ -384,6 +384,19 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   await screen.rate(100);
   expect(song.settings.rate).toBeCloseTo(100 / 136.232);
   expect(document.getElementById(ids.tempoInput)!.getAttribute("aria-valuenow")).toBe("100");
+  for (const preset of document.querySelectorAll<HTMLButtonElement>("#tempo-options [data-tempo]")) {
+    const bpm = Number(preset.dataset.tempo);
+    expect(Number.isInteger(bpm)).toBe(true);
+    preset.click();
+    await vi.waitFor(() => expect(p.setRate).toHaveBeenLastCalledWith(bpm / 136.232, false, expect.any(Function)));
+    expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe(String(bpm));
+    expect(document.getElementById("original-tempo-value")!.textContent).toBe(`= ${bpm}`);
+    expect(preset.getAttribute("aria-pressed")).toBe("true");
+  }
+  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).min).toBe("68");
+  await screen.rate(1);
+  expect(song.settings.rate).toBeCloseTo(68 / 136.232);
+  expect((document.getElementById(ids.tempoInput) as HTMLInputElement).value).toBe("68");
   expect(document.getElementById("tempo-reset")!.textContent).toBe("원곡");
   expect(document.getElementById("tempo-score")!.textContent).toBe("136 BPM");
   click("tempo-reset");
@@ -580,8 +593,44 @@ it('waveform native touch scrolling and inertia preserve playback position and s
  expect(p.position).toBe(3.2);expect(seek).not.toHaveBeenCalled();
 });
 
+for (const environment of ["web", "player"] as const) {
+  for (const source of ["preset", "score", "original", "input"] as const) {
+    it(`${environment}: ${source} updates the dialog BPM before conversion and the header after conversion`, async () => {
+      const { screen, p, song, root, ids, input, click } = mount(environment);
+      await screen.rate(song.bpm * 0.8);
+      click(ids.tempo);
+      const header = () => root.querySelector("#original-tempo-value")!.textContent;
+      const previousHeader = header();
+      const previousRate = song.settings.rate;
+      const commitRate = p.setRate.getMockImplementation()!;
+      let finish!: () => void;
+      const pending = new Promise<void>(resolve => { finish = resolve; });
+      p.setRate.mockImplementationOnce(async (...args) => {
+        await pending;
+        await commitRate(...args);
+      });
+      const preset = root.querySelector<HTMLButtonElement>("#tempo-options [data-tempo]")!;
+      const target = source === "preset" ? Number(preset.dataset.tempo)
+        : source === "input" ? song.bpm * 0.7 : song.bpm;
+      if (source === "preset") preset.click();
+      else if (source === "input") {
+        input(ids.tempoInput).value = String(target);
+        input(ids.tempoInput).dispatchEvent(new Event("change"));
+      } else click(source === "score" ? "tempo-score" : "tempo-reset");
+      expect(input(ids.tempoInput).value).toBe(String(target));
+      expect(input(ids.tempoInput).getAttribute("aria-valuenow")).toBe(String(target));
+      expect(header()).toBe(previousHeader);
+      expect(song.settings.rate).toBe(previousRate);
+      expect(p.setRate).toHaveBeenLastCalledWith(target / song.bpm, source === "original", expect.any(Function));
+      finish();
+      await vi.waitFor(() => expect(header()).toBe(`= ${source === "original" ? target.toFixed(1) : target}`));
+      expect(input(ids.tempoInput).value).toBe(String(target));
+    });
+  }
+}
+
 for (const environment of ["web", "player"] as const) it(`${environment}: BPM conversion reports inside the tempo dialog and recovers after failure`, async () => {
-  const { screen, p, root } = mount(environment);
+  const { screen, p, root, ids, input, click } = mount(environment);
   const notice = root.querySelector<HTMLElement>("#tempo-status")!;
   p.setRate.mockImplementationOnce(async (_rate, _original, report) => {
     report!("BPM 변환 42%");
@@ -597,4 +646,14 @@ for (const environment of ["web", "player"] as const) it(`${environment}: BPM co
   await screen.rate(90);
   expect(notice.classList.contains("error")).toBe(false);
   expect(notice.textContent).toBe("준비되었습니다.");
+  click(ids.tempo);
+  const previousBpm = input(ids.tempoInput).value;
+  const previousHeader = root.querySelector("#original-tempo-value")!.textContent;
+  p.setRate.mockRejectedValueOnce(Error("변환 실패"));
+  const preset = root.querySelector<HTMLButtonElement>("#tempo-options [data-tempo]")!;
+  preset.click();
+  expect(input(ids.tempoInput).value).toBe(preset.dataset.tempo);
+  await vi.waitFor(() => expect(notice.classList.contains("error")).toBe(true));
+  expect(input(ids.tempoInput).value).toBe(previousBpm);
+  expect(root.querySelector("#original-tempo-value")!.textContent).toBe(previousHeader);
 });
