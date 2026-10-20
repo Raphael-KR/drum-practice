@@ -1,4 +1,5 @@
 ## 2026-10-21 — 공통0.8.5 릴리스
+- 발행 결과: 구현 `771f621` main push, Sites75 배포 `appgdep_6ad7b66410288191a30ede5bf08b69c0` succeeded(03:44:03 KST). 배포 정적36파일 일치 및 공개 읽기 smoke15항목 통과. 상세는 `docs/operations/SITES-PUBLICATION.md`.
 - 목표: 누적된 공통 목록·제작기 UI·PDF 검수 수정의 버전을 올리고 커밋·push·공개 발행한다.
 - 범위: 두 앱0.8.5, 정본 main과 기존 Sites 프로젝트의 player 배포.
 - 완료 조건: 전체 회귀·분리 빌드·배포 자산 일치, 원격 커밋 일치, 발행 succeeded 및 공개 읽기 smoke 확인.
