@@ -666,3 +666,4 @@ HTML 저장 버튼과 파일 내보내기의 HTML 옵션, portable/playback-expo
 - 제외: 별도 악보 제작 지침·범례 자료·exports 및 원본 미디어. 기존 변경을 보존한다.
 - 검증: 로컬 dry-test 및 기존 승인된 읽기 전용 공개 smoke 범위. 실제 iPad 청취·터치와 구분한다.
 - 릴리스 검사: 전체 드럼 회귀·타입/i18n·두 앱 분리 빌드·앱 경계·공통 구조·배포 빌드 통과. 정본/사본/Worker 정적36파일 SHA-256 일치. 빌드ad1018df458e. 증거: `.tmp/release-0.8.2-{tests,build,site-build}.log`.
+- 발행 완료: 전체121파일698테스트 통과. 구현1217c34 main push, Sites 소스9de147b8ed9df4498074dd9c4286a8a9b972a122, 저장 버전72, 배포appgdep_6ad79184bba08191af94a2a8f4d70e45 succeeded(2026-10-21 01:06:46 KST). 공개 읽기 smoke15항목 통과. 세부 근거 docs/SITES-PUBLICATION.md와 `.tmp/release-0.8.2-smoke.json`. 실제 iPad 터치·청취 재검증은 별도이며 관련 없는 악보 제작 변경은 보존했다.
