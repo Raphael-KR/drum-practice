@@ -1,0 +1,322 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1360" viewBox="0 0 1800 1360">
+<rect width="1800" height="1360" fill="#f4f7fc"/>
+<style>text{font-family:"Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif;fill:#24344c}.name{font-size:21px;font-weight:700}.desc{font-size:16px;fill:#53657e}</style>
+<rect x="24" y="16" width="568" height="1328" rx="18" fill="white"/>
+<text x="46" y="53" font-size="23" font-weight="700">하이햇 · 심벌</text>
+<g transform="translate(40 63)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 65) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 65V32" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 61H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="61" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">기본 하이햇</text><text class="desc" x="196" y="76">제5칸 · 닫힌 하이햇</text></g>
+<g transform="translate(40 204)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M124 125C56 125 0 69 0 0C0 -69 56 -125 124 -125C193 -125 249 -69 249 0C249 69 193 125 124 125ZM181 78 125 21 68 78C84 89 103 96 124 96C146 96 165 89 181 78ZM220 0C220 -21 214 -41 203 -57L145 1L202 58C213 42 220 21 220 0ZM28 0C28 22 35 42 48 58L105 1L47 -58C34 -42 28 -21 28 0ZM66 -77 125 -19 182 -77C166 -89 146 -96 124 -96C103 -96 83 -89 66 -77Z" transform="translate(57 65) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 65V32" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 61H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="61" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">오픈 하이햇</text><text class="desc" x="196" y="76">제5칸 · 원 안의 ×</text></g>
+<g transform="translate(40 345)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 70) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 70V37" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 66H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="66" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">라이드</text><text class="desc" x="196" y="76">제5선 · ×</text></g>
+<g transform="translate(40 486)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M293 -125 144 125 0 -125Z" transform="translate(57 70) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 70V37" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 66H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="66" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">라이드 벨</text><text class="desc" x="196" y="76">제5선 · 채운 삼각형</text></g>
+<g transform="translate(40 627)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M49 60H82" stroke="#53657e"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 60) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 60V27" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 56H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="56" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">크래시</text><text class="desc" x="196" y="76">위 첫째 덧줄 · ×, 원 없음</text></g>
+<g transform="translate(40 768)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M49 60H82" stroke="#53657e"/>
+<path d="M124 125C56 125 0 69 0 0C0 -69 56 -125 124 -125C193 -125 249 -69 249 0C249 69 193 125 124 125ZM181 78 125 21 68 78C84 89 103 96 124 96C146 96 165 89 181 78ZM220 0C220 -21 214 -41 203 -57L145 1L202 58C213 42 220 21 220 0ZM28 0C28 22 35 42 48 58L105 1L47 -58C34 -42 28 -21 28 0ZM66 -77 125 -19 182 -77C166 -89 146 -96 124 -96C103 -96 83 -89 66 -77Z" transform="translate(57 60) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 60V27" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 56H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="56" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">차이나</text><text class="desc" x="196" y="76">위 첫째 덧줄 · 원 안의 ×</text></g>
+<g transform="translate(40 909)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M49 60H82" stroke="#53657e"/>
+<path d="M141 141C138 141 134 139 133 137L2 7C1 5 0 3 0 1C0 -1 1 -4 2 -5L135 -139C136 -140 139 -141 141 -141C143 -141 146 -140 147 -139L280 -5C281 -4 282 -1 282 1C282 3 281 5 280 7L149 137C148 139 144 141 141 141ZM141 101 241 1 141 -98 41 1Z" transform="translate(57 60) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 60V27" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 56H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="56" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">스플래시</text><text class="desc" x="196" y="76">위 첫째 덧줄 · 빈 마름모</text></g>
+<g transform="translate(40 1050)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M49 60H82" stroke="#53657e"/>
+<path d="M293 -125 144 125 0 -125Z" transform="translate(57 60) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 60V27" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 56H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="56" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">카우벨</text><text class="desc" x="196" y="76">위 첫째 덧줄 · 채운 삼각형</text></g>
+<g transform="translate(40 1191)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M124 125C56 125 0 69 0 0C0 -69 56 -125 124 -125C193 -125 249 -69 249 0C249 69 193 125 124 125ZM181 78 125 21 68 78C84 89 103 96 124 96C146 96 165 89 181 78ZM220 0C220 -21 214 -41 203 -57L145 1L202 58C213 42 220 21 220 0ZM28 0C28 22 35 42 48 58L105 1L47 -58C34 -42 28 -21 28 0ZM66 -77 125 -19 182 -77C166 -89 146 -96 124 -96C103 -96 83 -89 66 -77Z" transform="translate(57 115) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 115V82" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 111H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="111" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">하이햇 스플래시</text><text class="desc" x="196" y="76">아래 첫째 덧칸 · 원 안의 ×</text></g>
+<rect x="616" y="16" width="568" height="1328" rx="18" fill="white"/>
+<text x="638" y="53" font-size="23" font-weight="700">드럼 · 킥</text>
+<g transform="translate(632 63)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 85) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 85V52" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 81H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="81" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">스네어</text><text class="desc" x="196" y="76">제3칸</text></g>
+<g transform="translate(632 204)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 75) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 75V42" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 71H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="71" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">탐 1</text><text class="desc" x="196" y="76">제4칸</text></g>
+<g transform="translate(632 345)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 80) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 80V47" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 76H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="76" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">탐 2</text><text class="desc" x="196" y="76">제4선</text></g>
+<g transform="translate(632 486)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 90) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 90V57" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 86H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="86" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">탐 3</text><text class="desc" x="196" y="76">제3선</text></g>
+<g transform="translate(632 627)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 95) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 95V62" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 91H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="91" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">탐 4 / 플로어 탐</text><text class="desc" x="196" y="76">제2칸 · 같은 악기의 두 이름</text></g>
+<g transform="translate(632 768)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 100) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 100V67" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 96H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="96" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">탐 5</text><text class="desc" x="196" y="76">제2선</text></g>
+<g transform="translate(632 909)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 105) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 105V72" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 101H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="101" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">오른발 베이스 / 싱글 킥</text><text class="desc" x="196" y="76">제1칸 · 싱글 킥 기본 위치</text></g>
+<g transform="translate(632 1050)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 110) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 110V77" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 106H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="106" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">왼발 베이스</text><text class="desc" x="196" y="76">제1선 · 더블 킥에서 추가</text></g>
+<g transform="translate(632 1191)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 115) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 115V82" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 111H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="111" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">풋 하이햇</text><text class="desc" x="196" y="76">아래 첫째 덧칸 · ×</text></g>
+<rect x="1208" y="16" width="568" height="1328" rx="18" fill="white"/>
+<text x="1230" y="53" font-size="23" font-weight="700">주법 · 손 지시</text>
+<g transform="translate(1224 63)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 65) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 65V32" stroke="#142136" stroke-width="1.1"/>
+<circle cx="63" cy="21" r="5" fill="none" stroke="#142136" stroke-width="1.3"/>
+<path d="M75 21H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="75" cy="21" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">하이햇 열기</text><text class="desc" x="196" y="76">음표 위 ○ · 하이햇을 열기</text></g>
+<g transform="translate(1224 204)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 65) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 65V32" stroke="#142136" stroke-width="1.1"/>
+<path d="M58 21h10m-5 -5v10" stroke="#142136" stroke-width="1.3"/>
+<path d="M75 21H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="75" cy="21" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">하이햇 닫기</text><text class="desc" x="196" y="76">음표 위 ＋ · 하이햇을 닫기</text></g>
+<g transform="translate(1224 345)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 65) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 65V32" stroke="#142136" stroke-width="1.1"/>
+<path d="M143 286C64 286 0 222 0 143C0 64 64 0 143 0C222 0 286 64 286 143C286 222 222 286 143 286ZM253 159H159V253C208 246 246 207 253 159ZM127 253V159H33C40 207 79 246 127 253ZM33 127H127V33C79 40 40 78 33 127ZM159 33V127H253C246 78 208 40 159 33Z" transform="translate(58 27) scale(0.052 -0.052)" fill="#142136"/>
+<path d="M75 21H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="75" cy="21" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">하이햇 반열림</text><text class="desc" x="196" y="76">음표 위 ⊕ · 반쯤 열어 연주</text></g>
+<g transform="translate(1224 486)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 85) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 85V52" stroke="#142136" stroke-width="1.1"/>
+<path d="M74 81H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="81" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">크로스 스틱 / 림 클릭</text><text class="desc" x="196" y="76">제3칸 × · 림 클릭</text></g>
+<g transform="translate(1224 627)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 85) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 85V52" stroke="#142136" stroke-width="1.1"/>
+<text x="51" y="90" font-size="21">(</text><text x="70" y="90" font-size="21">)</text>
+<path d="M74 81H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="81" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">고스트 노트</text><text class="desc" x="196" y="76">음표머리의 괄호 · 약하게 연주</text></g>
+<g transform="translate(1224 768)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M49 60H82" stroke="#53657e"/>
+<path d="M285 -99 166 0 285 100C288 102 290 107 290 111C290 119 283 125 277 125C275 125 272 124 270 123L144 18L20 123C18 124 15 125 12 125C5 125 0 118 0 112C0 108 2 103 5 100L124 0L5 -99C1 -102 0 -106 0 -110C0 -118 5 -125 13 -125C16 -125 18 -124 20 -122L144 -17L270 -122C272 -124 275 -125 277 -125C285 -125 290 -117 290 -111C290 -106 288 -102 285 -99Z" transform="translate(57 60) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 60V27" stroke="#142136" stroke-width="1.1"/>
+<circle cx="63" cy="18" r="2.7" fill="#142136"/>
+<path d="M74 18H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="74" cy="18" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">초크 크래시</text><text class="desc" x="196" y="76">× 위 점 · 타격 후 소리를 끊기</text></g>
+<g transform="translate(1224 909)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 85) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 85V52" stroke="#142136" stroke-width="1.1"/>
+<path d="M150 153V278L-150 215V90ZM150 91 -150 29V-96L150 -34ZM150 -93 -150 -155V-280L150 -218Z" transform="translate(68 66) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M82 65H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="82" cy="65" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">스네어 더블 스트로크</text><text class="desc" x="196" y="76">기둥의 세 빗금 · 더블 스트로크</text></g>
+<g transform="translate(1224 1050)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 85) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 85V52" stroke="#142136" stroke-width="1.1"/>
+<path d="M156 -116V-67H-64L156 67V116H-155V67H61L-155 -67V-116Z" transform="translate(68 66) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M82 65H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="82" cy="65" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">스네어 버즈 롤</text><text class="desc" x="196" y="76">스틱을 튀겨 만든 지속음</text></g>
+<g transform="translate(1224 1191)">
+<path d="M0 136H536" stroke="#e8edf5"/>
+<path d="M6 70H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 80H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 90H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 100H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M6 110H143" stroke="#8693a6" stroke-width="0.85"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(57 85) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M68 85V52" stroke="#142136" stroke-width="1.1"/>
+<path d="M97 -125C186 -125 295 -43 295 42C295 93 255 125 198 125C88 125 0 44 0 -42C0 -94 43 -125 97 -125Z" transform="translate(105 85) scale(0.04 -0.04)" fill="#142136"/>
+<path d="M116 85V52" stroke="#142136" stroke-width="1.1"/>
+<text x="56" y="38" font-size="17" font-weight="700">R</text><text x="104" y="38" font-size="17" font-weight="700">L</text>
+<path d="M123 33H153L171 51H190" fill="none" stroke="#648dca" stroke-width="1.1"/><circle cx="123" cy="33" r="2" fill="#648dca"/>
+<text class="name" x="196" y="49">손 지시</text><text class="desc" x="196" y="76">각 타격 위 R / L · 오른손 / 왼손</text></g>
+</svg>
