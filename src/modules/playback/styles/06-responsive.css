@@ -24,7 +24,7 @@
 }
 
 /* Borderless playback regions retain their distinct original surface colors. */
-.has-song .drawer-playback {background:#f4f7fc;}
+.has-song .drawer-playback {background:var(--surface);}
 .has-song .drawer-playback header,
 .drawer-playback #practice > .stage,
 .drawer-playback .playback-dock .transport,
@@ -47,7 +47,7 @@
   padding:0;
 }
 .has-song .drawer-playback header {
-  background:#b8d4f5;
+  background:var(--header-surface);
   padding-top:8px;
   padding-left:max(12px, env(safe-area-inset-left, 0px));
   padding-right:max(12px, env(safe-area-inset-right, 0px));
@@ -90,7 +90,7 @@ body.has-song:has(.drawer-playback),
 .has-song .drawer-playback header {touch-action:pan-y;}
 
 /* The root supplies the browser backdrop; the white body stays distinct when pulled. */
-:root:has(.drawer-playback) {background:#b8d4f5;}
+:root:has(.drawer-playback) {background:var(--header-surface);}
 body.has-song:has(.drawer-playback) {background:#fff;}
 
 /* Match the alumni site's opaque, top-edge sticky header for Safari tint sampling. */
@@ -99,7 +99,7 @@ body.has-song:has(.drawer-playback) {background:#fff;}
   top:0;
   z-index:40;
   padding-top:calc(2px + env(safe-area-inset-top, 0px));
-  background:#b8d4f5;
+  background:var(--header-surface);
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
 }
@@ -233,7 +233,7 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 }
 .score-reader-dialog > .dialoghead {
   position:relative;top:auto;margin:0;padding:14px 18px;flex:none;
-  border-bottom:1px solid var(--line);background:#f4f7fc;
+  border-bottom:1px solid var(--line);background:var(--surface);
 }
 .score-reader-dialog > .score-reader-pages {
   flex:1;min-height:0;overflow:auto;padding:0 18px 18px;
@@ -277,7 +277,7 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 .segmented-control > button:last-child { border-radius:0 var(--segment-radius) var(--segment-radius) 0; }
 .segmented-control > button[aria-pressed="true"] {
   z-index:1; color:var(--segment-accent); border-color:var(--segment-accent);
-  background:linear-gradient(#f8fbff, #e9f2ff 55%, #d4e4fa);
+  background:var(--selected-control-surface);
   box-shadow:inset 0 0 0 1px var(--segment-accent), inset 0 3px 2px #fff, inset 0 -3px 4px #315d9324;
 }
 @media (hover:hover) {
@@ -330,7 +330,7 @@ body.has-song:has(.drawer-playback) {background:#fff;}
     font-size:18px; line-height:26px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
-  .has-song #app.playback-ui header h1[data-player-build]::after {display:none;}
+  .has-song #app.playback-ui header h1[data-app-build]::after {display:none;}
   .has-song .playback-ui header .actions {
     grid-column:1 / -1; grid-row:2;
     justify-self:end; display:flex; flex-wrap:nowrap;
@@ -445,9 +445,11 @@ body.has-song:has(.drawer-playback) {background:#fff;}
 /* Tablet and desktop: give unused height to the three shortcut/range rows.
    Keep each breakpoint's existing board height as its non-shrinking basis. */
 @media (min-width:720px) {
-  .drawer-playback #practice:not(.score-review) > .playback-dock {flex:1 0 auto;}
-  .drawer-playback #practice:not(.score-review) > .playback-dock > .transport {flex:0 0 auto;}
-  .drawer-playback #practice:not(.score-review) > .playback-dock > .playback-drawer {flex:1 0 auto;}
+  /* Match the comparison canvas's minimum render height before sharing space. */
+  .drawer-playback #practice.score-review > .stage {min-height:220px;}
+  .drawer-playback #practice > .playback-dock {flex:1 0 auto;}
+  .drawer-playback #practice > .playback-dock > .transport {flex:0 0 auto;}
+  .drawer-playback #practice > .playback-dock > .playback-drawer {flex:1 0 auto;}
 }
 
 .settings-panel[data-settings-panel="audio"] { background: #fff5e5; }

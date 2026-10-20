@@ -63,19 +63,34 @@ export class ScoreReview {
       ),
     );
     const analyze = (expected?: number[][]) =>
-      this.pair.map((score, row) =>
-        score.measures.map((m) => {
+      this.pair.map((score, row) => {
+        const staffs = new Map<string, { top: number; gap: number }>();
+        return score.measures.map((m) => {
           const r = score.regions.find((r) => r.id === m.regionId)!,
             image = this.images[row][r.page];
+          // A dense beam can hide staff lines in one PDF measure. Detect the
+          // whole printed system, as the PDF practice layout does, and share
+          // that geometry between its measures. Keep SVG crops independent.
+          const key = score.format === "pdf" ? `${r.page}:${r.y}:${r.h}` : r.id;
+          const cached = staffs.get(key);
+          if (cached) return cached;
+          const regions = score.format === "pdf"
+            ? score.regions.filter(other =>
+              other.page === r.page &&
+              Math.abs(other.y - r.y) < 1e-6 &&
+              Math.abs(other.h - r.h) < 1e-6)
+            : [r];
+          const left = Math.min(...regions.map(other => other.x));
+          const width = Math.max(...regions.map(other => other.x + other.w)) - left;
           const c = document.createElement("canvas");
-          c.width = Math.max(1, Math.round(r.w * image.naturalWidth));
+          c.width = Math.max(1, Math.round(width * image.naturalWidth));
           c.height = Math.max(1, Math.round(r.h * image.naturalHeight));
           const ctx = c.getContext("2d", { willReadFrequently: true })!;
           ctx.drawImage(
             image,
-            r.x * image.naturalWidth,
+            left * image.naturalWidth,
             r.y * image.naturalHeight,
-            r.w * image.naturalWidth,
+            width * image.naturalWidth,
             r.h * image.naturalHeight,
             0,
             0,
@@ -88,17 +103,29 @@ export class ScoreReview {
             c.height,
             expected?.[row][r.page],
           );
-          if (!staff)
-            throw Error(
-              i18nText("score-review.message534", {
+          if (!staff) {
+            const message = i18nText("score-review.message534", {
                 value1: row ? i18nText("term.SVG") : i18nText("term.PDF"),
                 value2: m.id,
-              }),
-            );
+              });
+            try {
+              console.error(message, {
+                format: score.format, measureId: m.id, page: r.page + 1,
+                crop: { x: left, y: r.y, w: width, h: r.h },
+                pixels: { width: c.width, height: c.height },
+                regionCount: regions.length,
+                expectedGap: expected?.[row][r.page] ?? null,
+                detectedStaff: null,
+              });
+            } catch { /* Preserve the detection error if logging fails. */ }
+            throw Error(message);
+          }
           const ratio = (r.h * image.naturalHeight) / c.height;
-          return { top: staff.top * ratio, gap: staff.gap * ratio };
-        }),
-      );
+          const result = { top: staff.top * ratio, gap: staff.gap * ratio };
+          staffs.set(key, result);
+          return result;
+        });
+      });
     const initial = analyze();
     const expected = this.pair.map((score, row) =>
       score.pages.map((_, page) => {

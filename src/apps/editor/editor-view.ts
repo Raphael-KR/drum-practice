@@ -9,19 +9,15 @@ import { scoreStageHTML } from "../../modules/playback/playback-ui";
 
 export function editorHTML() {
   return (
-    '\n<header><div class="brand"></div><div class="actions"><button id="library-button">' +
+    '\n<header class="library-header"><div class="brand"></div><div class="actions library-header-actions"><button id="welcome-new" class="primary">' +
+    i18nText("editorHome.new") +
+    '</button><button id="library-button">' +
     i18nText("icons.message054") +
     '</button><button id="edit-button" hidden>' +
     i18nText("main.message099") +
     '</button><a class="editor-player-link" href="/player.html">' +
     i18nText("editorHome.playerLink") +
-    '</a></div></header>\n<main><section class="welcome editor-home" id="welcome"><div class="editor-home-heading library-heading"><h2>' +
-    i18nText("editorHome.listTitle") +
-    '</h2><button class="primary" id="welcome-new">' +
-    i18nText("editorHome.new") +
-    '</button></div><div id="editor-home-list" class="practice-records" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button><p class="subtle">' +
-    i18nText("main.message106") +
-    '</p></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
+    '</a></div></header>\n<main class="library-main"><section class="welcome editor-home" id="welcome"><div id="editor-home-list" class="library-sections" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
     i18nText("main.message112") +
     '</button></div></div>\n<div id="review-tools" hidden><span id="review-message">' +
     i18nText("main.message113") +
@@ -56,15 +52,7 @@ export function editorHTML() {
     i18nText("main.message151") +
     '</p><p class="subtle" id="alignment-note">' +
     i18nText("main.message152") +
-    '</p></section></main>\n<dialog id="library-dialog">' +
-    dialogHeader(
-      i18nText("icons.message054"),
-      "",
-      "library-dialog",
-      "",
-      '<button id="new-button">' + i18nText("main.message153") + "</button>",
-    ) +
-    '<div id="library-list"></div></dialog>\n<dialog id="new-dialog">' +
+    '</p></section></main>\n<dialog id="new-dialog">' +
     dialogHeader(i18nText("main.message154"), "", "new-dialog", "") +
     "<p>" +
     i18nText("main.message155") +

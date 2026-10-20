@@ -35,9 +35,12 @@ for (const [host, binding] of [
   it(`${host}: same shell, unique controls, authoring slots retained`, () => {
     document.body.innerHTML =
       '<div id="app"><header><div class="brand"></div><div class="actions"></div></header><main><section id="practice"><div id="stage"></div></section></main></div>';
-    const markerContent = document.createElement("div"),
-      loopExtra = document.createElement("input");
-    loopExtra.value = "preserved";
+    const markerContent = document.createElement(host === "web" ? "section" : "div"),
+      loopExtra = document.createElement(host === "web" ? "section" : "div");
+    if (host === "web") markerContent.className = loopExtra.className = "panel";
+    const retainedInput = document.createElement("input");
+    retainedInput.value = "preserved";
+    loopExtra.append(retainedInput);
     const open = vi.fn();
     mountPlaybackShell(document.querySelector("#app")!, {
       ids: {
@@ -53,7 +56,7 @@ for (const [host, binding] of [
       select: vi.fn(),
       openSettings: open,
       markerContent,
-      loopExtra: host === "web" ? loopExtra : undefined,
+      loopExtra,
     });
     expect(document.querySelector("#score-gesture-hint")).toBeNull();
     const ids = [...document.querySelectorAll("[id]")].map((e) => e.id);
@@ -64,10 +67,9 @@ for (const [host, binding] of [
     expect(document.querySelector("#practice .repeat-controls")).not.toBeNull();
     (document.querySelector("#settings") as HTMLElement).click();
     expect(open).toHaveBeenCalledOnce();
-    if (host === "web")
-      expect(document.querySelector("#loop-dialog")!.contains(loopExtra)).toBe(
-        true,
-      );
+    expect(document.querySelector("#loop-dialog .playback-panel-content")).toBe(loopExtra);
+    expect(document.querySelector("#marker-dialog .playback-panel-content")).toBe(markerContent);
+    expect(retainedInput.value).toBe("preserved");
   });
 it("icon updates preserve the button identity and handler; escape captions", () => {
   document.body.innerHTML = '<button id="example"></button>';

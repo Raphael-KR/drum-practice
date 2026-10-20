@@ -1,5 +1,6 @@
 import appVersions from "../../app-versions.json";
 import buildInfo from "../../generated/build-info.generated.json";
+import { showAppBuildLabel } from "../../shared/ui/app-build-label";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { licenseSection } from "../../shared/ui/licenses";
 import { appInfoHTML, selectPlaybackSettings } from "../../modules/playback/playback-forms";
@@ -114,6 +115,7 @@ export function arrangeWorkspace() {
       markerContent: markers as HTMLElement,
     },
   );
+  showAppBuildLabel(el("app"), appVersions.editor.version, buildInfo.source);
   screenBody.insertAdjacentHTML(
     "beforeend",
     '<div id="review-help"><p id="review-availability"></p><button id="review-add-score">' +

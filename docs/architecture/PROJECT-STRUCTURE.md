@@ -30,6 +30,10 @@ HTML 주소는 `index.html`, `editor.html`, `player.html`을 유지한다. `src/
 
 제작기와 연습실은 서로 import하지 않는다. 앱은 공통 모듈을 조립하며, 재생 화면의 소유자는 `playback-screen.ts` 하나다. 분리한 BPM 모듈은 같은 host와 이벤트 등록·해제 경로를 사용한다.
 
+섹션·반복 구간 버튼판의 콘텐츠는 `playback-shell.ts`가 `playback-panel-content` 클래스로 연결한다. 호스트가 전달한 태그(`section`/`div`)에 레이아웃을 의존하지 않는다. 제작기 PDF 검수도 공통 dock의 3행·높이 배분 규칙을 따르며, 비교 캔버스는 렌더러의 최소 높이 220px을 확보한다.
+
+악보 목록 구성은 `modules/library/score-catalog.ts`가 소유한다. 저장 자료와 번들 카탈로그를 ID로 합쳐 기본 연습곡·내 악보·음원으로 분류하고 기본 연습곡 순서와 구획 제목/구조를 공유한다. 연습실과 제작기 홈은 이 결과를 사용하며, 제작기는 음원 전용 항목을 제외한다. 저장된 악보는 수정본을 사용하고, 미저장 번들은 제작기에서 다운로드·패키지 검증·저장 후 편집한다. DB 이름·스키마·저장 형식은 바꾸지 않는다.
+
 model은 앱·UI·저장 구현에 의존하지 않는다. 기존 오류 문구를 위한 i18n 의존만 유지한다. shared는 음악 기능 모듈을 참조하지 않는다. 모듈별 named export를 직접 사용하며 전체를 모은 barrel을 추가하지 않는다.
 
 모듈 간 기존 협력 경로는 [이동표의 경계](../plans/RESTRUCTURING-MAP.md#경계)에 명시한다. 저장 계층이 필요한 순수 악보·미디어 계약을 사용하는 기존 관계는 유지한다. 모든 계층을 새 추상화로 재작성한 구조는 아니다.
@@ -47,3 +51,7 @@ DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·
 `scripts/checks/source-files.mjs`가 src 전체를 재귀 탐색한다. 공통 UI, i18n, 재생 소유권, app/model/shared 경계를 검사하며 두 앱 빌드 뒤 player 번들의 제작 기능 유입을 차단한다.
 
 기존 121개 테스트 파일은 unit·integration·local-media로 분류했다. 로컬 미디어가 없으면 필요한 검사가 실패하며 조용히 건너뛰지 않는다. 자세한 자산 목록과 실행 조건은 [검사 문서](../operations/TESTING.md)를 따른다.
+
+목록 카드와 즐겨찾기/제목 순서 표시는 `modules/library/library-presentation.ts`, 두 홈 화면의 크기·간격은 `modules/library/player-library.css`를 공유한다. 동작 버튼은 각 앱이 제공한다. 공통 색상 변수는 `shared/styles/controls.css`, 제작기의 오렌지 팔레트는 `apps/editor/styles/07-theme.css`에 정의한다.
+
+제작기의 ‘내 악보 목록’은 재생 중지·현재 기록 저장·재생 자원 해제 후 공통 홈으로 돌아간다. 별도 목록 모달은 제거했다. 삭제는 홈 카드, 전체 백업/복원은 기존 설정의 백업 영역, 패키지 가져오기는 새 곡 준비 창을 사용한다.

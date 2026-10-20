@@ -1,0 +1,21 @@
+/* Editor-only palette. Layout and control behavior remain shared with the player. */
+:root {
+  --accent: #b9510c;
+  --accent-hover: #963e07;
+  --accent-soft: #fff0e2;
+  --accent-soft-hover: #ffe0c2;
+  --header-surface: #f5c79d;
+  --surface: #fff8f1;
+  --panel-surface: #ffeddb;
+  --selected-control-surface: linear-gradient(#fffaf5, #fff0e2 55%, #ffe0c2);
+  --ink: #412f24;
+  --muted: #80634f;
+  --line: #e9cfb9;
+  --border: #e9cfb9;
+}
+.drawer-playback {
+  --dock-surface: #f2e9df;
+  --dock-edge: #dcc8b5;
+  --drawer-surface: #f6e2cb;
+  --drawer-edge: #cda57e;
+}

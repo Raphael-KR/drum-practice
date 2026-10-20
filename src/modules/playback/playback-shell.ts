@@ -97,7 +97,12 @@ export function mountPlaybackShell(
   };
   panel("tempo", t("main.message208"), tempoFieldsHTML(ids.tempoInput));
   const loop = panel("loop", t("icons.message067"), loopFieldsHTML());
-  if (options.loopExtra) loop.append(options.loopExtra);
+  // Hosts may supply a section or a div; both use the shared board layout.
+  if (options.loopExtra) {
+    options.loopExtra.classList.add("playback-panel-content");
+    loop.append(options.loopExtra);
+  }
+  options.markerContent.classList.add("playback-panel-content");
   panel("marker", t("icons.message069"), "").append(options.markerContent);
   // The settings frame includes its own shared heading.
   const template = document.createElement("template");

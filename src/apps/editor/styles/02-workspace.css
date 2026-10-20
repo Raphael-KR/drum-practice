@@ -394,13 +394,6 @@ main > .error-notice {
   background: var(--accent);
   color: white;
 }
-#library-dialog #new-button {
-  margin-left: auto;
-}
-#library-dialog .dialoghead {
-  gap: 12px;
-}
-
 /* Equal side tracks keep play centered regardless of control widths. */
 .welcome-lead {
   font-size: 20px;

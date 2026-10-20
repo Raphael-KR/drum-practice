@@ -39,12 +39,6 @@ export function arrangeIcons() {
       i18nText("editorHome.new"),
     ],
     ["library-button", "library", i18nText("icons.message054")],
-    [
-      "new-button",
-      "plus",
-      i18nText("icons.message056"),
-      i18nText("icons.message056"),
-    ],
     ["open-settings-dialog", "settings", i18nText("icons.message059")],
     [
       "quick-add-marker",

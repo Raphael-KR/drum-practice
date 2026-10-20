@@ -1,3 +1,5 @@
+import { libraryCardHTML, libraryPresentation, syncCardTitleOrder } from "../../modules/library/library-presentation";
+import { scoreCatalog } from "../../modules/library/score-catalog";
 import { confirmDuplicateAudio } from "../../modules/audio/audio-duplicate-dialog";
 import { installPracticeFileControls } from "../../modules/library/practice-file-controls";
 import { matchPracticeAudio, type PracticeFileEntry } from "../../modules/library/practice-file";
@@ -9,14 +11,12 @@ import {
 } from "../../modules/audio/audio-practice";
 import { libraryHTML } from "./player-library-view";
 import { setupAudioPractice } from "../../modules/audio/audio-practice-setup";
-import { RETIRED_SCORE_ID } from "../../platform/storage/score-database";
 import { titleOrderFieldsHTML } from "../../modules/playback/playback-forms";
 import { recordingTempoUpgrade } from "../../content/recording-tempo";
 import { readTitleOrder, saveTitleOrder, type TitleOrder } from "../../modules/library/song-title";
 import { downloadScore } from "../../modules/library/download-score";
 import { beginLoadTiming, recordLoadTiming } from "../../platform/browser/load-timing";
 import { icon } from "../../shared/ui/icon-svg";
-import { setIconButton } from "../../shared/ui/icon-button";
 import { installLandscapeKeyboardGuard } from "../../platform/browser/landscape-keyboard";
 import { renderKeepingTopHeader } from "../../shared/ui/top-edge-header";
 import "../../modules/help/help.css";
@@ -28,6 +28,7 @@ import "../../modules/library/player-library.css";
 import "../../modules/audio/audio-practice.css";
 import { t } from "../../shared/i18n/i18n";
 import appVersions from "../../app-versions.json";
+import { showAppBuildLabel } from "../../shared/ui/app-build-label";
 import buildInfo from "../../generated/build-info.generated.json";
 import bundledScores from "../../content/bundled-scores.json";
 import notices from "../../generated/third-party.generated.json";
@@ -52,16 +53,14 @@ import { createDialog } from "../../shared/ui/dialog-ui";
 import type { RecordData } from "../../model/record";
 
 const PLAYER_PREFERENCES_KEY = "drum-player-preferences";
-const FAVORITES_KEY = "drum-practice:favorite-scores";
+
 
 const root = document.getElementById("app")!;
 const removeKeyboardGuard = installLandscapeKeyboardGuard();
 if (import.meta.hot) import.meta.hot.dispose(removeKeyboardGuard);
 let session: Awaited<ReturnType<typeof mountPlaybackRuntime>> | undefined;
 function showBuildLabel() {
-  const title = root.querySelector<HTMLElement>("header h1");
-  if (title)
-    title.dataset.playerBuild = `v${appVersions.player.version} · build ${buildInfo.source.slice(0, 8)}`;
+  showAppBuildLabel(root, appVersions.player.version, buildInfo.source);
 }
 let working = false;
 let filePickerOpen = false;
@@ -109,12 +108,6 @@ function downloadLabel(percent: number | null): string {
   return percent === null
     ? t("library.downloading")
     : t("library.downloadPercent", { percent });
-}
-function syncCardTitleOrder(heading: Element) {
-  const title = heading.querySelector("h3");
-  const artist = heading.querySelector("p");
-  if (title && artist)
-    heading.prepend(readTitleOrder() === "artist-first" ? artist : title);
 }
 /** Compare bundled content without discarding saved practice state for an unchanged score. */
 async function hasSameBundledContent(
@@ -498,93 +491,24 @@ export async function showLibrary() {
   const personalList = document.getElementById("personal-practice-records")!;
   const audioList = document.getElementById("audio-practice-records")!;
   const sectionLists = [basicList, personalList, audioList];
-  const audioIds = new Set<string>();
   const favoriteList = document.getElementById("favorite-practice-records")!;
-  // Classify only current bundled basic exercises.
-  const basicIds = new Set(
-    bundledScores
-      .filter((s) => "category" in s && s.category === "basic")
-      .map((s) => s.id),
-  );
-  const listFor = (id: string) =>
-    basicIds.has(id) ? basicList : audioIds.has(id) ? audioList : personalList;
-  let favorites = new Set<string>();
-  try {
-    const stored: unknown = JSON.parse(
-      localStorage.getItem(FAVORITES_KEY) || "[]",
-    );
-    if (Array.isArray(stored)) {
-      favorites = new Set(
-        stored.filter(
-          (id): id is string =>
-            typeof id === "string" && id !== RETIRED_SCORE_ID,
-        ),
-      );
-      if (stored.includes(RETIRED_SCORE_ID))
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites]));
-    }
-  } catch {
-    /* Invalid or unavailable preferences leave the score list usable. */
-  }
-  const sortFavorites = () => {
-    const cards = [favoriteList, ...sectionLists].flatMap((list) =>
-      Array.from(list.children),
-    ) as HTMLElement[];
-    cards.sort(
-      (a, b) => Number(a.dataset.libraryOrder) - Number(b.dataset.libraryOrder),
-    );
-    for (const card of cards) {
-      const id = card.dataset.scoreId!;
-      (favorites.has(id) ? favoriteList : listFor(id)).append(card);
-    }
-    favoriteList.hidden = !favoriteList.childElementCount;
-    for (const list of sectionLists)
-      list.closest<HTMLElement>("section")!.hidden = !list.childElementCount;
-  };
-  const appendCard = (id: string, card: HTMLElement) => {
-    card.dataset.scoreId = id;
-    const heading = card.querySelector(".practice-card-title");
-    if (heading) syncCardTitleOrder(heading);
-    card.querySelectorAll<HTMLElement>("h3, p").forEach((text) => {
-      text.title = text.textContent || "";
-    });
-    const favorite = document.createElement("button");
-    favorite.type = "button";
-    favorite.className = "library-favorite";
-    const refreshFavorite = () => {
-      setIconButton(
-        favorite,
-        icon("star"),
-        t(favorites.has(id) ? "library.removeFavorite" : "library.addFavorite"),
-      );
-      favorite.setAttribute("aria-pressed", String(favorites.has(id)));
-    };
-    refreshFavorite();
-    favorite.onclick = () => {
-      const next = new Set(favorites);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      try {
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify([...next]));
-        favorites = next;
-        refreshFavorite();
-        sortFavorites();
-        favorite.focus({ preventScroll: true });
-      } catch (error) {
-        report(error);
-      }
-    };
-    card.prepend(favorite);
-    listFor(id).append(card);
-  };
-  const records = (await listPracticeRecords()).filter(
-    (record) => record.song.id !== RETIRED_SCORE_ID,
-  );
+  const records = await listPracticeRecords();
   if (epoch !== libraryEpoch) return;
-  for (const record of records) {
-    const item = document.createElement("article");
-    item.className = "practice-card";
-    item.innerHTML = `<div class="practice-card-title"><h3>${escapeHTML(record.song.title)}</h3><p>${escapeHTML(record.song.artist || "")}</p></div><div class="practice-card-actions"><button class="primary" data-open title="${escapeHTML(t("library.tipOpen"))}">${escapeHTML(t("separation.open"))}</button></div>`;
+  const catalog = scoreCatalog(records);
+  const { appendCard, sortFavorites } = libraryPresentation(catalog, sectionLists, favoriteList, report);
+  for (const entry of catalog) {
+    const record = entry.record;
+    if (!record) {
+      const template = document.createElement("template");
+      template.innerHTML = libraryCardHTML(entry);
+      const item = template.content.firstElementChild as HTMLElement;
+      item.querySelector(".practice-card-actions")!.append(bundledButton(entry.bundled!));
+      appendCard(entry.id, item);
+      continue;
+    }
+    const template = document.createElement("template");
+    template.innerHTML = libraryCardHTML(entry, `<button class="primary" data-open title="${escapeHTML(t("library.tipOpen"))}">${escapeHTML(t("separation.open"))}</button>`);
+    const item = template.content.firstElementChild as HTMLElement;
     item.querySelector("[data-open]")!.addEventListener("click", () => {
       void openRecord(record.song.id);
     });
@@ -606,7 +530,6 @@ export async function showLibrary() {
     };
     item.querySelector(".practice-card-actions")!.append(remove);
     if (record.song.audioPractice) {
-      audioIds.add(record.song.id);
       item.classList.add("audio-practice-card");
       const setup = document.createElement("button");
       setup.dataset.audioSetup = "";
@@ -636,29 +559,6 @@ export async function showLibrary() {
     }
     appendCard(record.song.id, item);
   }
-  const live = new Set(records.map((r) => r.song.id));
-  for (const score of bundledScores.filter((s) => !live.has(s.id))) {
-    const item = document.createElement("article");
-    item.className = "practice-card";
-    const title = document.createElement("h3");
-    title.textContent = score.title;
-    const button = bundledButton(score);
-    const heading = document.createElement("div");
-    heading.className = "practice-card-title";
-    heading.append(title);
-    item.append(heading, button);
-    appendCard(score.id, item);
-  }
-
-  // Catalog order is stable even when stored records are read in a different order.
-  const order = new Map(bundledScores.map((score, index) => [score.id, index]));
-  const cards = Array.from(basicList.children) as HTMLElement[];
-  cards.sort(
-    (a, b) =>
-      (order.get(a.dataset.scoreId!) ?? Infinity) -
-      (order.get(b.dataset.scoreId!) ?? Infinity),
-  );
-  basicList.append(...cards);
   let libraryOrder = 0;
   for (const list of sectionLists) {
     Array.from(list.children).forEach((card) => {

@@ -1,5 +1,4 @@
-.player-library,
-body:not(.has-song) #app:has(.editor-home) {
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) {
   font-size: 18px;
   max-width: 1120px;
   margin: auto;
@@ -13,8 +12,7 @@ body:not(.has-song) #app:has(.editor-home) {
   gap: 20px;
   flex-wrap: wrap;
 }
-.library-header h1,
-body:not(.has-song) #app:has(.editor-home) > header .brand {
+.library-header h1 > header .brand {
   margin: 0;
   font-size: 28px;
 }
@@ -65,8 +63,7 @@ body:not(.has-song) #app:has(.editor-home) > header .brand {
   overflow-wrap: anywhere;
 }
 @media (max-width: 600px) {
-  .player-library,
-body:not(.has-song) #app:has(.editor-home) {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) {
     padding: 16px;
   }
   .practice-card {
@@ -75,57 +72,48 @@ body:not(.has-song) #app:has(.editor-home) {
   }
 }
 
-/* Both library entry screens use the same spacing and card typography. */
-body:not(.has-song) #app:has(.editor-home) > main {
-  padding:32px 0;
-  display:block;
-}
-body:not(.has-song) #app .welcome.editor-home {
-  margin:0; padding:0; max-width:none;
-}
-.editor-home .practice-records { margin-top:60px; }
-.editor-home .practice-card p { font-size:18px; }
+/* Editor keeps its playback shell; home uses the shared library header and body. */
+body:not(.has-song) #app:has(.editor-home) > main { display:block; }
+body:not(.has-song) #app .welcome.editor-home { margin:0; padding:0; max-width:none; }
+body:not(.has-song) #app:has(.editor-home) > header .brand { width:auto; }
+body:not(.has-song) #app #row-view-toggle { display:none; }
+body.has-song #welcome-new { display:none; }
+body:not(.has-song) #app #busy:empty { display:none; }
 body:not(.has-song) #app:has(.editor-home) > header .editor-player-link {
-  padding:0; font-size:18px;
-}
-body:not(.has-song) #app:has(.editor-home) > header .brand h1 {
-  font-size:28px; margin:0; line-height:normal;
-}
-body:not(.has-song) #app .editor-home button {
-  min-height:44px;
+  font-size:15px; font-weight:600; color:var(--accent);
 }
 
 /* Always visible in screenshots, independent of the changing song title. */
-#app header h1[data-player-build]::after {
-  content:attr(data-player-build);
+#app header h1[data-app-build]::after {
+  content:attr(data-app-build);
   display:inline;
   margin-left:10px;
   font-size:12px;
   line-height:16px;
   font-weight:500;
-  color:#3d526e;
+  color:var(--muted);
   letter-spacing:0;
 }
 
 /* The first screen supplies Safari's persistent top-edge color before any tap. */
-.player-library { padding-top:0; }
-.player-library > .library-header {
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) { padding-top:0; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) > .library-header {
   position:sticky; top:0; z-index:40;
   max-width:none;
   margin-inline:calc(50% - 50vw);
   padding:16px;
-  background:#b8d4f5;
+  background:var(--header-surface);
   border-bottom:1px solid #cbd6e7;
 }
 
 /* Fit build metadata beneath the song title within the existing button-height bar. */
 @media (orientation:landscape), (min-width:900px) {
-  .has-song #app header h1[data-player-build] {
+  .has-song #app header h1[data-app-build] {
     /* Center the title, not the title + 16px metadata group. Account for
        the header's 2px top / 6px bottom padding without changing its size. */
     transform:translateY(10px);
   }
-  .has-song #app header h1[data-player-build]::after {
+  .has-song #app header h1[data-app-build]::after {
     display:block;
     margin-left:0;
   }
@@ -177,56 +165,56 @@ body:not(.has-song) #app .editor-home button {
 
 .practice-card .icon-button[aria-busy="true"] { width: auto; min-width: 44px; padding-inline: 12px; }
 
-/* Compact, continuously scrolling score selection; editor cards stay unchanged. */
-.player-library { max-width:none; padding-inline:16px; }
-.player-library .library-main { padding:20px 0; }
-.player-library .library-header { gap:12px; }
-.player-library .library-header h1 { font-size:24px; }
-.player-library .library-header-actions { gap:8px; }
-.player-library .library-import { position:relative; }
-.player-library #import-package { min-height:48px; padding:0 14px; font-size:15px; }
-.player-library .library-empty-hint { max-width:240px; font-size:12px; }
-.player-library .library-sections { gap:24px; }
-.player-library .library-heading { margin-bottom:10px; }
-.player-library .library-heading h2 { font-size:18px; }
-.player-library .practice-records { gap:6px; }
-.player-library .practice-card {
+/* One compact library layout for both hosts. App-specific actions occupy the same slots. */
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) { max-width:none; padding-inline:16px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-main { padding:20px 0; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-header { gap:12px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-header h1 { font-size:24px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-header-actions { gap:8px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-import { position:relative; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) #import-package { min-height:48px; padding:0 14px; font-size:15px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-empty-hint { max-width:240px; font-size:12px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-sections { gap:24px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-heading { margin-bottom:10px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-heading h2 { font-size:18px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-records { gap:6px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card {
   padding:6px 12px; gap:16px; border-radius:10px; min-width:0;
 }
-.player-library .practice-card-title {
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-title {
   display:flex; align-items:baseline; gap:12px; min-width:0; flex:1;
 }
-.player-library .practice-card h3 {
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card h3 {
   margin:0; font-size:16px; line-height:1.4; min-width:0;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.player-library .practice-card p {
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card p {
   font-size:14px; line-height:1.4; min-width:0;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.player-library .practice-card p:empty { display:none; }
-.player-library .practice-card-actions { gap:6px; flex:none; }
-.player-library .practice-card button { min-height:44px; padding:6px 12px; font-size:15px; }
-.player-library .practice-card .icon-button { width:44px; min-width:44px; min-height:44px; padding:8px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card p:empty { display:none; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-actions { gap:6px; flex:none; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card button { min-height:44px; padding:6px 12px; font-size:15px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card .icon-button { width:44px; min-width:44px; min-height:44px; padding:8px; }
 @media (max-width:600px) {
-  .player-library .practice-card { flex-direction:column; align-items:stretch; gap:6px; padding:8px 10px; }
-  .player-library .practice-card-actions { justify-content:flex-end; }
-  .player-library .practice-card-title { flex:auto; }
-  .player-library .practice-card > button { align-self:flex-end; }
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card { flex-direction:column; align-items:stretch; gap:6px; padding:8px 10px; }
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-actions { justify-content:flex-end; }
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-title { flex:auto; }
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card > button { align-self:flex-end; }
 }
 
-.player-library .practice-card { display:grid; grid-template-columns:44px minmax(0,1fr) auto; gap:10px; }
-.player-library .library-favorite { color:#697b93; border-color:transparent; background:transparent; }
-.player-library .library-favorite:hover { background:#fff5d6; color:#926000; }
-.player-library .library-favorite[aria-pressed="true"] { color:#946200; background:#fff4cc; }
-.player-library .library-favorite[aria-pressed="true"] svg { fill:#ffd45c; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card { display:grid; grid-template-columns:44px minmax(0,1fr) auto; gap:10px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-favorite { color:#697b93; border-color:transparent; background:transparent; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-favorite:hover { background:#fff5d6; color:#926000; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-favorite[aria-pressed="true"] { color:#946200; background:#fff4cc; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-favorite[aria-pressed="true"] svg { fill:#ffd45c; }
 @media (max-width:600px) {
-  .player-library .practice-card { grid-template-columns:44px minmax(0,1fr); gap:6px; }
-  .player-library .practice-card > .practice-card-actions,
-  .player-library .practice-card > button:not(.library-favorite) { grid-column:2; justify-self:end; }
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card { grid-template-columns:44px minmax(0,1fr); gap:6px; }
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card > .practice-card-actions,
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card > button:not(.library-favorite) { grid-column:2; justify-self:end; }
 }
-.player-library #favorite-practice-records[hidden],
-.player-library .library-section[hidden] { display:none; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) #favorite-practice-records[hidden],
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-section[hidden] { display:none; }
 .library-settings-dialog { width:720px; max-width:calc(100vw - 32px); }
 .library-settings-dialog .settings-panel,
 .audio-setup .audio-setup-panel {
@@ -234,25 +222,25 @@ body:not(.has-song) #app .editor-home button {
   padding:18px;
   border:1px solid var(--line);
   border-radius:14px;
-  background:#eaf2ff;
+  background:var(--panel-surface);
 }
 .library-settings-status { color:#b42318; }
 .library-settings-status:empty { display:none; }
 
 /* Phone library: booking + shared controls, then local editor + audio import. */
 @media (max-width:480px) and (orientation:portrait) {
-  .player-library .library-header-actions {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-header-actions {
     display:grid;
     grid-template-columns:minmax(0,1fr) max-content;
     width:100%;
     margin-left:0;
   }
-  .player-library .library-import {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-import {
     grid-column:2;
     grid-row:2;
     justify-self:end;
   }
-  .player-library .library-header-actions > .library-booking {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-header-actions > .library-booking {
     grid-column:1;
     grid-row:1;
     justify-self:start;
@@ -261,12 +249,12 @@ body:not(.has-song) #app .editor-home button {
     padding-inline:8px;
     text-align:center;
   }
-  .player-library .library-common-actions {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-common-actions {
     grid-column:2;
     grid-row:1;
     justify-self:end;
   }
-  .player-library .library-header-actions > .library-editor {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-header-actions > .library-editor {
     grid-column:1;
     grid-row:2;
     justify-self:start;
@@ -275,7 +263,7 @@ body:not(.has-song) #app .editor-home button {
 
 /* Phone portrait: two metadata lines, then favorite + actions. */
 @media (max-width:480px) and (orientation:portrait) {
-  .player-library .practice-card-title {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-title {
     grid-column:1 / -1;
     grid-row:1;
     display:grid;
@@ -283,23 +271,35 @@ body:not(.has-song) #app .editor-home button {
     align-items:baseline;
     gap:2px 8px;
   }
-  .player-library .practice-card-title > h3,
-  .player-library .practice-card-title > p { grid-column:1; }
-  .player-library .practice-card-title > .audio-type {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-title > h3,
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-title > p { grid-column:1; }
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card-title > .audio-type {
     grid-column:2;
     grid-row:1 / span 2;
     align-self:center;
   }
-  .player-library .practice-card > .library-favorite {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card > .library-favorite {
     grid-column:1;
     grid-row:2;
     align-self:center;
     justify-self:start;
   }
-  .player-library .practice-card > .practice-card-actions,
-  .player-library .practice-card > button:not(.library-favorite) {
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card > .practice-card-actions,
+  :is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card > button:not(.library-favorite) {
     grid-column:2;
     grid-row:2;
     align-self:center;
   }
 }
+
+/* Both screens fill the viewport; the header alone carries the stronger tint. */
+body:not(.has-song) { background:var(--surface); }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) { min-height:100dvh; background:var(--surface); padding-top:0; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) > header .brand h1 { font-size:24px; margin:0; line-height:normal; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .library-heading h2 { font-size:18px; margin:0; line-height:1.4; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) #welcome-new { min-height:48px; padding:0 14px; font-size:15px; }
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-records[hidden] { display:none; }
+
+body:not(.has-song) #app #welcome-new { display:inline-flex; align-items:center; gap:6px; }
+
+:is(.player-library, body:not(.has-song) #app:has(.editor-home)) .practice-card:not(:has(.library-favorite)) { grid-template-columns:minmax(0,1fr) auto; }

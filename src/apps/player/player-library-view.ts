@@ -1,3 +1,4 @@
+import { librarySectionHTML } from "../../modules/library/score-catalog";
 import { AUDIO_FILE_ACCEPT } from "../../modules/audio/audio-practice";
 import { escapeHTML } from "../../shared/ui/html";
 import { icon } from "../../shared/ui/icon-svg";
@@ -31,24 +32,9 @@ export function libraryHTML(showEditor: boolean): string {
     <p id="library-status" role="status"></p>
     <div id="practice-records" class="library-sections">
       <div id="favorite-practice-records" class="practice-records" hidden></div>
-      <section class="library-section" aria-labelledby="basic-library-title">
-        <div class="library-heading">
-          <h2 id="basic-library-title">${escapeHTML(t("library.basicExercise"))}</h2>
-        </div>
-        <div id="basic-practice-records" class="practice-records"></div>
-      </section>
-      <section class="library-section" aria-labelledby="personal-library-title">
-        <div class="library-heading">
-          <h2 id="personal-library-title">${escapeHTML(t("separation.library"))}</h2>
-        </div>
-        <div id="personal-practice-records" class="practice-records"></div>
-      </section>
-      <section class="library-section" aria-labelledby="audio-library-title" hidden>
-        <div class="library-heading">
-          <h2 id="audio-library-title">${escapeHTML(t("library.myAudio"))}</h2>
-        </div>
-        <div id="audio-practice-records" class="practice-records"></div>
-      </section>
+      ${librarySectionHTML("basic", "basic-practice-records", "basic-library-title")}
+      ${librarySectionHTML("personal", "personal-practice-records", "personal-library-title")}
+      ${librarySectionHTML("audio", "audio-practice-records", "audio-library-title", "", true)}
     </div>
   </main>`;
 }

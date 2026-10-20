@@ -35,7 +35,7 @@
   margin: 0 0 4px;
   font-size: 18px;
 }
-.settings-panel[data-settings-panel="screen"] { background: #eaf2ff; }
+.settings-panel[data-settings-panel="screen"] { background: var(--panel-surface); }
 .settings-panel[data-settings-panel="playback"] { background: #eaf7ef; }
 .settings-panel[data-settings-panel="score"] { background: #fff5e5; }
 .settings-panel[data-settings-panel="info"] { background: #f2edfa; }

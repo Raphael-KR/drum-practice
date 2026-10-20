@@ -1,22 +1,18 @@
 
 /* Shared visual baseline: scoped to app dialogs and musical asset types. */
-.asset-musicxml,
-.score-type-musicxml {
+.asset-musicxml {
   background: var(--xml-bg);
   color: var(--xml-fg);
 }
-.asset-pdf,
-.score-type-pdf {
+.asset-pdf {
   background: var(--pdf-bg);
   color: var(--pdf-fg);
 }
-.asset-lyrics,
-.score-type-lyrics {
+.asset-lyrics {
   background: var(--lyrics-bg);
   color: var(--lyrics-fg);
 }
-.asset-audio,
-.score-type-audio {
+.asset-audio {
   background: var(--audio-bg);
   color: var(--audio-fg);
 }

@@ -109,16 +109,16 @@ it("shows the app name and score library action on the home screen", async () =>
   expect(document.getElementById('view-description')!.textContent).toContain('두 줄');
   set('view','ribbon'); document.getElementById('view')!.dispatchEvent(new Event('change'));
   expect(document.getElementById("song-title")!.textContent).toBe("악보제작기");
-  expect(document.querySelector("#welcome h2")!.textContent).toBe("제작 중인 악보");
+  await vi.waitFor(() => expect(document.querySelector("#welcome h2")!.textContent).toBe("기본 연습곡"));
   expect(document.getElementById("original-tempo")!.hidden).toBe(true);
   expect(document.getElementById("demo-button")!.hidden).toBe(true);
   expect(document.getElementById("welcome-new")!.textContent).toContain("새 악보 만들기");
   expect(document.querySelector(".editor-player-link")!.getAttribute("href")).toBe("/player.html");
-  await vi.waitFor(() => expect(document.getElementById("editor-home-list")!.textContent).toContain("아직 제작 중인 악보가 없습니다"));
+  await vi.waitFor(() => expect(document.getElementById("editor-home-list")!.textContent).toContain("악보 불러오기"));
   expect(document.querySelector("#welcome-library svg")!.innerHTML).toBe(document.querySelector("#library-button svg")!.innerHTML);
   click("welcome-library");
-  await vi.waitFor(() => expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(true));
-  (document.getElementById("library-dialog") as HTMLDialogElement).close();
+  await vi.waitFor(() => expect(document.getElementById("welcome")!.hidden).toBe(false));
+  expect(document.getElementById("library-dialog")).toBeNull();
 });
 it("loads demo, exposes fixed range slots and applies the selected BPM", async () => {
   click("demo-button");
@@ -572,11 +572,11 @@ it("browses all paused rows vertically without seeking, then restores playback f
 });
 it("prepares a distinct second song through the file form without code edits", async () => {
   click("library-button");
-  await vi.waitFor(() => expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(true));
+  await vi.waitFor(() => expect(document.getElementById("welcome")!.hidden).toBe(false));
   expect(document.getElementById("library-button")!.getAttribute("aria-label")).toBe("내 악보 목록");
-  expect(document.getElementById("new-button")!.closest("dialog")!.id).toBe("library-dialog");
-  click("new-button");
-  expect(document.getElementById("library-dialog")!.hasAttribute("open")).toBe(false);
+  expect(document.getElementById("welcome-new")!.closest("header")).not.toBeNull();
+  click("welcome-new");
+  expect(document.getElementById("new-dialog")!.hasAttribute("open")).toBe(true);
   set("new-title", "독립 두 번째 곡");
   set("new-bpm", "100");
   set("new-lyrics", "새로운 가사");
@@ -629,18 +629,33 @@ it("edits lyric starts and duration in musical units without free-time controls"
   click('edit-commit');
   await vi.waitFor(async()=>{const r=(await allRecords()).find(r=>r.song.title==='독립 두 번째 곡')!;expect(r.song.lyrics[0].scorePosition!.durationQuarters).toBe(.5);expect(r.canonicalXML).toContain('DrumPracticeLyrics');});
 });
-it('lists one card per song and only the content types actually saved',async()=>{
-  for(const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]'))d.close();
+it('returns from playback to the shared list and reopens a saved score',async()=>{
+  for(const d of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) d.close();
   click('library-button');
-  await vi.waitFor(()=>expect((document.getElementById('library-dialog') as HTMLDialogElement).open).toBe(true));
+  await vi.waitFor(()=>expect(document.body.classList.contains('has-song')).toBe(false));
+  expect(document.getElementById('library-dialog')).toBeNull();
+  expect(document.getElementById('practice')!.hidden).toBe(true);
+  expect(document.getElementById('welcome')!.hidden).toBe(false);
   const records=await allRecords();
-  expect(document.querySelectorAll('.song-card')).toHaveLength(records.length);
-  const cards=[...document.querySelectorAll('.song-card')];
-  for(const [i,r] of records.entries()) {
-    expect(cards[i].querySelector('.score-type-pdf')).not.toBeNull();
-    expect(cards[i].querySelector('.score-type-musicxml')).toBeNull();
-    expect(!!cards[i].querySelector('.score-type-lyrics')).toBe(r.song.lyrics.length>0||!!r.song.lyricText);
+  await vi.waitFor(()=>expect(document.querySelectorAll('#editor-home-list [data-editor-remove]')).toHaveLength(records.length));
+  for(const r of records) expect(document.querySelectorAll(`#editor-home-list [data-score-id="${r.song.id}"]`)).toHaveLength(1);
+  const saved=records.find(r=>r.song.title==='독립 두 번째 곡')!;
+  let exposedHomeWithPlaybackLayout = false;
+  const transition = new MutationObserver(() => {
+    if (!document.getElementById('welcome')!.hidden && document.body.classList.contains('has-song'))
+      exposedHomeWithPlaybackLayout = true;
+  });
+  transition.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class', 'hidden'] });
+  try {
+    document.querySelector<HTMLButtonElement>(`[data-score-id="${saved.song.id}"] [data-editor-open]`)!.click();
+    await vi.waitFor(()=>expect((document.getElementById('editor-dialog') as HTMLDialogElement).open).toBe(true));
+    expect(exposedHomeWithPlaybackLayout).toBe(false);
+    expect(document.getElementById('welcome')!.hidden).toBe(true);
+    expect(document.body.classList.contains('has-song')).toBe(true);
+  } finally {
+    transition.disconnect();
   }
+  (document.getElementById('editor-dialog') as HTMLDialogElement).close();
 });
 
 it('dismisses settings only for an outside gesture and uses icon close controls', () => {

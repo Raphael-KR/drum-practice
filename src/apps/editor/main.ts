@@ -18,7 +18,6 @@ import type { RecordData } from "../../model/record";
 import "../../modules/help/help.css";
 import { attachBundledScore,repairBundledMetadata } from "../../modules/library/bundled-score";
 import { exportLibrary,importLibrary,preferenceKeys } from "../../modules/library/library-backup";
-import "../../modules/library/player-library.css";
 import { chooseRecent,rememberScore } from "../../modules/library/recent-score";
 import { createScorePackage,readScorePackage } from "../../modules/library/score-package";
 import { preferPDF,savePreferPDF,scorePreference } from "../../modules/library/score-preference";
@@ -100,6 +99,7 @@ import { setupScoreManagement } from "./score-management";
 import { reviewPair } from "./score-review";
 import { mountSectionEditor,writeSections } from "./section-editor";
 import "./style.css";
+import "../../modules/library/player-library.css";
 import {
 arrangeWorkspace,
 openSettingsChild,
@@ -440,7 +440,6 @@ async function activate(r: RecordData) {
     if (record) await saveRecord(session?.forStorage() || record);
     session?.reset();
     record = r;
-    document.body.classList.add("has-song");
 
     // Materialize persisted blobs before image decoding; Safari may not load
     // an object URL backed directly by an IndexedDB blob after a reload.
@@ -468,7 +467,9 @@ async function activate(r: RecordData) {
         { cause },
       );
     }
+    // Switch layout and visible screen together after asynchronous media loading.
     $("welcome").hidden = true;
+    document.body.classList.add("has-song");
     $("practice").hidden = false;
     $("edit-button").hidden = false;
     songControlsAvailable(true);
@@ -639,7 +640,7 @@ document.addEventListener(
   "click",
   (e) => {
     if (
-      (e.target as Element).closest("#demo-button, #library-list [data-open]")
+      (e.target as Element).closest("#demo-button, #editor-home-list [data-editor-open]")
     )
       requestScoreFullscreen();
   },
@@ -729,35 +730,36 @@ for (const b of document.querySelectorAll<HTMLElement>("[data-close]"))
     ].includes(b.dataset.close!)
   )
     b.onclick = () => $<HTMLDialogElement>(b.dataset.close!).close();
-const editorLibrary = createEditorLibrary({persist, activate, openEditor, error, action, hasRecord: () => !!record,
- openReplace: () => replaceDialog.showModal(),
- clearActive(deleting) {
-      if (record?.song.id === deleting) {
-        engine().pause();
-        clearTimeout(saveTimer);
-        record = undefined;
-        releasePlaybackAssets({urls, ribbon:ribbonAssets});
-        ribbonAssets.clear();
-        urls = [];
-        $("practice").hidden = true;
-        $("welcome").hidden = false;
-        $("song-title").textContent = i18nText("separation.editorTitle");
-        document.title = i18nText("separation.editorTitle");
-        $("original-tempo").hidden = true;
-        $("edit-button").hidden = true;
-        document.body.classList.remove("has-song");
-        songControlsAvailable(false);
-      }
- }
-});
+async function showEditorHome() {
+  engine().pause();
+  clearTimeout(saveTimer);
+  await persist();
+  scoreGestures.cancel();
+  playback.reset();
+  session?.reset();
+  record = undefined;
+  releasePlaybackAssets({urls, ribbon:ribbonAssets});
+  ribbonAssets.clear();
+  urls = [];
+  for (const dialog of document.querySelectorAll<HTMLDialogElement>("dialog[open]")) dialog.close();
+  $("practice").hidden = true;
+  $("welcome").hidden = false;
+  $("song-title").textContent = i18nText("separation.editorTitle");
+  document.title = i18nText("separation.editorTitle");
+  $("original-tempo").hidden = true;
+  $("edit-button").hidden = true;
+  document.body.classList.remove("has-song");
+  songControlsAvailable(false);
+  management?.refresh();
+  status("");
+}
+const editorLibrary = createEditorLibrary({showHome: showEditorHome, activate, openEditor, error, action});
 const openLibrary = () => editorLibrary.open();
 const refreshRecentScore = () => editorLibrary.refreshRecent();
 function openNew() {
   engine().pause();
-  $<HTMLDialogElement>("library-dialog").close();
   $<HTMLDialogElement>("new-dialog").showModal();
 }
-action("new-button", openNew);
 action("welcome-new", openNew);
 action("demo-button", async () => {
   status(i18nText("main.message290"));
@@ -1543,7 +1545,7 @@ management = setupScoreManagement({
   },
 });
 
-// Both entry points share one package-import path. The authoring database remains
+// New-score entry uses one package-import path. The authoring database remains
 // the existing library; an existing identity is never silently overwritten.
 const packageInput = document.createElement("input");
 packageInput.type = "file";
@@ -1552,7 +1554,6 @@ packageInput.hidden = true;
 packageInput.id = "authoring-package-file";
 document.body.append(packageInput);
 for (const [host, id] of [
-  ["library-dialog", "library-package-import"],
   ["new-dialog", "new-package-import"],
 ]) {
   const button = document.createElement("button");
@@ -1579,8 +1580,7 @@ packageInput.onchange = async () => {
     }
     await saveRecord(imported);
     await activate(imported);
-    for (const id of ["new-dialog", "library-dialog"])
-      $<HTMLDialogElement>(id).close();
+    $<HTMLDialogElement>("new-dialog").close();
     tell(i18nText("separation.saved"));
   } catch (e) {
     error(e);

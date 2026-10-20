@@ -132,6 +132,10 @@ textarea:focus-visible {
   }
 }
 :root {
+  --header-surface: #b8d4f5;
+  --surface: #f4f7fc;
+  --panel-surface: #eaf2ff;
+  --selected-control-surface: linear-gradient(#f8fbff, #e9f2ff 55%, #d4e4fa);
   --accent: #3f74d4;
   --accent-hover: #315faf;
   --accent-soft: #edf3ff;
@@ -140,7 +144,7 @@ textarea:focus-visible {
   --muted: #64748b;
   --line: #d4dfef;
   color: var(--ink);
-  background: #f4f7fc;
+  background: var(--surface);
 }
 button,
 input,

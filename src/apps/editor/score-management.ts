@@ -510,7 +510,7 @@ export function setupScoreManagement(h: Host) {
       "folder",
       "library-backup-restore",
     );
-  $("library-dialog").append(backup);
+  $("backup-dialog").append(backup);
   const restore = document.createElement("input");
   restore.type = "file";
   restore.accept = ".zip";

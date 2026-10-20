@@ -289,7 +289,7 @@ dialog::backdrop {
 }
 dialog {
   --dialog-control-gap: 10px;
-  background: #f4f7fc;
+  background: var(--surface);
   border-color: var(--line);
   padding: 18px;
 }
