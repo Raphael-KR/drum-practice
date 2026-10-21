@@ -1,5 +1,5 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
-import { validateSong, type Song, type Region } from "../../model/model";
+import { validateSong } from "../../model/model";
 import type { RecordData } from "../../model/record";
 export type { ScoreFormat, ScoreVariant } from "../../model/record";
 import type { ScoreVariant } from "../../model/record";

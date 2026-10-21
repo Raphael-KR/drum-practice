@@ -1,3 +1,6 @@
+import type { Song } from "../../model/model";
+// Migration only reads song identity and copies the rest of each stored record unchanged.
+type MigrationRecord = { song: Pick<Song, "id"> };
 import { t } from "../../shared/i18n/i18n";
 /** Both local apps own one score library on the same origin. */
 export const SCORE_DATABASE = "drum-practice";
@@ -70,7 +73,7 @@ function connect(name: string, version?: number): Promise<IDBDatabase> {
     };
   });
 }
-function values(db: IDBDatabase, store: string): Promise<any[]> {
+function values(db: IDBDatabase, store: string): Promise<MigrationRecord[]> {
   if (!db.objectStoreNames.contains(store)) return Promise.resolve([]);
   return new Promise((resolve, reject) => {
     const request = db.transaction(store).objectStore(store).getAll();
@@ -100,7 +103,7 @@ export async function openScoreDatabase(): Promise<IDBDatabase> {
       return db;
     }
     const legacy = await connect("drum-practice-player", 3);
-    let songs: any[];
+    let songs: MigrationRecord[];
     try {
       await purgeRetiredScore(legacy);
       songs = await values(legacy, "songs");

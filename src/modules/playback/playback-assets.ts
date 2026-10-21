@@ -69,7 +69,7 @@ export async function preparePlaybackAssets(
   };
   try {
     pages = await Promise.all(pages.map(displayPage));
-    let timeline: any;
+    let timeline: import("../score/ribbon-timeline").RibbonTimeline | undefined;
     let nativeStaffs = options.nativeStaffs;
     if (allowRibbon && song.scoreFormat === "musicxml" && pages[0]) {
       const source = await displayPage(pages[0]);
@@ -81,22 +81,24 @@ export async function preparePlaybackAssets(
         `metadata[data-ribbon-timeline="${RIBBON_TIMELINE_VERSION}"]`,
       );
       if (metadata) {
-        timeline = JSON.parse(metadata.textContent || "{}");
-        validateRibbonTimeline(timeline, song.measures.length);
+        const parsed: unknown = JSON.parse(metadata.textContent || "{}");
+        validateRibbonTimeline(parsed, song.measures.length);
+        timeline = parsed;
         metadata.remove();
         pages[0] = new Blob([new XMLSerializer().serializeToString(doc)], {
           type: "image/svg+xml",
         });
+        const printStaffs = timeline.printStaffs;
         if (
-          Array.isArray(timeline.printStaffs) &&
-          timeline.printStaffs.length === song.regions.length &&
-          timeline.printStaffs.every(
+          Array.isArray(printStaffs) &&
+          printStaffs.length === song.regions.length &&
+          printStaffs.every(
             (s: StaffPosition) =>
               Number.isFinite(s.top) && Number.isFinite(s.gap) && s.gap > 0,
           )
         )
           nativeStaffs = new Map(
-            song.regions.map((r, i) => [r.id, timeline.printStaffs[i]]),
+            song.regions.map((r, i) => [r.id, printStaffs[i]]),
           );
       }
     }

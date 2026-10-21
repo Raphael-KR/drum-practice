@@ -40,7 +40,7 @@ const validBpm = (value: unknown): value is number =>
 function filenameMetadata(filename: string) {
   const stem = filename.replace(/\.[^.]+$/, "");
   const tempo =
-    /(?:^|[\s_([{\-])(?:BPM\s*[:=]?\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*BPM)(?:\s*[)\]}])?(?=$|[\s_)\]}\-])/i.exec(
+    /(?:^|[\s_([{-])(?:BPM\s*[:=]?\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*BPM)(?:\s*[)\]}])?(?=$|[\s_)\]}-])/i.exec(
       stem,
     );
   const value = tempo ? Number(tempo[1] ?? tempo[2]) : undefined;

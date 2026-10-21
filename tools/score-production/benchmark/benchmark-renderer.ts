@@ -1,10 +1,51 @@
+interface BenchmarkSample {
+  backend: string;
+  round: number;
+  parseMs: number;
+  loadMs: number;
+  renderMs: number;
+  encodeMs: number;
+  generateMs: number;
+  bytes: number;
+  gzipBytes: number;
+  saveMs: number;
+  readMs: number;
+  decodeMs: number;
+  displayMs: number;
+  reopenMs: number;
+  pages: number;
+  dimensions: number[][];
+  measures: number;
+  regions: { page: number; x: number; y: number; w: number; h: number }[];
+  svgElements: number;
+  frames: {
+    count: number;
+    medianMs: number;
+    p95Ms: number;
+    maxMs: number;
+    over25ms: number;
+    hidden: boolean;
+  };
+}
+interface BenchmarkReport {
+  run: string;
+  userAgent: string;
+  dpr: number;
+  viewport: number[];
+  osmd: string;
+  samples: BenchmarkSample[];
+  errors: string[];
+  xmlBytes?: number;
+  xmlSHA256?: string;
+  complete?: boolean;
+}
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { parseMusicXML } from "../../../src/modules/score/musicxml";
 const mode = new URLSearchParams(location.search).get("run") || "desktop";
 const status = document.getElementById("status")!,
   host = document.getElementById("host")!,
   stage = document.getElementById("stage")!;
-const report: any = {
+const report: BenchmarkReport = {
   run: mode,
   userAgent: navigator.userAgent,
   dpr: devicePixelRatio,
@@ -59,11 +100,13 @@ async function stored(blobs: Blob[]) {
     });
     const save = performance.now() - t;
     t = performance.now();
-    const got = await new Promise<any[]>((r, j) => {
-      const q = db.transaction("pages").objectStore("pages").get("score");
-      q.onsuccess = () => r(q.result);
-      q.onerror = () => j(q.error);
-    });
+    const got = await new Promise<{ data: ArrayBuffer; type: string }[]>(
+      (r, j) => {
+        const q = db.transaction("pages").objectStore("pages").get("score");
+        q.onsuccess = () => r(q.result);
+        q.onerror = () => j(q.error);
+      },
+    );
     const pages = got.map((b) => new Blob([b.data], { type: b.type }));
     return { saveMs: save, readMs: performance.now() - t, pages };
   } finally {
@@ -194,8 +237,8 @@ async function run(backend: "canvas" | "svg", round: number, xml: string) {
   cursor.id = "cursor";
   stage.append(cursor);
   const intervals: number[] = [];
-  let last = await frame(),
-    begin = last;
+  let last = await frame();
+  const begin = last;
   while (last - begin < 6000) {
     const now = await frame();
     intervals.push(now - last);
@@ -257,7 +300,13 @@ async function run(backend: "canvas" | "svg", round: number, xml: string) {
     report.complete = true;
     status.textContent = "비교 완료 — 결과를 저장했습니다.";
     document.getElementById("result")!.textContent = JSON.stringify(
-      report.samples.map(({ regions, ...s }: any) => s),
+      report.samples.map((sample) => {
+        const summary: Omit<BenchmarkSample, "regions"> & {
+          regions?: BenchmarkSample["regions"];
+        } = { ...sample };
+        delete summary.regions;
+        return summary;
+      }),
       null,
       2,
     );

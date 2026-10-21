@@ -47,7 +47,7 @@ it("undo/redo and saved revisions preserve old state and cap at ten", () => {
   const old = h.undo(r)!;
   expect(old.song.title).not.toBe("changed");
   expect(h.redo(old)!.song.title).toBe("changed");
-  let versions: any[] = [];
+  let versions: Parameters<typeof retainRevision>[0] = [];
   for (let i = 0; i < 12; i++) {
     r.song.title = String(i);
     versions = retainRevision(versions, r);

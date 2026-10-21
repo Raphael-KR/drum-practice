@@ -9,7 +9,7 @@ import { escapeHTML as esc } from "../../shared/ui/html";
 import { locate, type Song, type Loop } from "../../model/model";
 import type { createPlaybackScreen } from "./playback-screen";
 
-export function practiceLoopHTML(heading = false) {
+export function practiceLoopHTML() {
   return `<div id="loop-slots" class="loop-slots" role="group" aria-label="${t("ranges.saved")}"></div>`;
 }
 export function practiceMarkerHTML(heading = false) {
@@ -32,7 +32,6 @@ interface Options {
 /** Named practice items belong to playback, including the author's preview. */
 export function attachPracticeManagement(h: Options) {
   const get = (id: string) => h.root.querySelector<HTMLElement>(`#${id}`)!;
-  const input = (id: string) => get(id) as HTMLInputElement;
   const dispose: (() => void)[] = [];
   const listen = (id: string, run: (event: MouseEvent) => void) => {
     const element = get(id);

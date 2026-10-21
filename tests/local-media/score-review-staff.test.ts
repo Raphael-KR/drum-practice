@@ -32,7 +32,7 @@ function canvasEnvironment() {
       const draw = ctx.drawImage.bind(ctx);
       ctx.drawImage = ((image: { native: unknown }, ...coords: number[]) => {
         crops.push(coords);
-        (draw as Function)(image.native, ...coords);
+        (draw as (...args: unknown[]) => void)(image.native, ...coords);
       }) as unknown as typeof ctx.drawImage;
       return canvas;
     },

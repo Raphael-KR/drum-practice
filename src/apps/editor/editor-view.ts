@@ -35,7 +35,7 @@ export function editorHTML() {
     i18nText("main.message117") +
     '" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>\n' +
     '<div class="panels"><section class="panel">' +
-    practiceLoopHTML(true) +
+    practiceLoopHTML() +
     '</section><section class="panel">' +
     practiceMarkerHTML(true) +
     "<details><summary>" +

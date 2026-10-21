@@ -56,7 +56,9 @@ async function collect(root) {
         if (manifest && JSON.parse(manifest).name === name) break;
         const parent = dirname(dependencyRoot);
         if (parent === dependencyRoot)
-          throw Error(`Cannot locate license package: ${name}`);
+          throw Error(`Cannot locate license package: ${name}`, {
+            cause: error,
+          });
         dependencyRoot = parent;
       }
     }

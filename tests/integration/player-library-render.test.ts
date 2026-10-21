@@ -1,3 +1,6 @@
+import type { RecordData } from "../../src/model/record";
+import type { PracticeImportResult } from "../../src/platform/storage/practice-library";
+type MountedRuntime = Awaited<ReturnType<typeof mountPlaybackRuntime>>;
 // @vitest-environment jsdom
 import { expect, it, vi } from "vitest";
 vi.mock("../../src/platform/browser/landscape-keyboard", () => ({
@@ -67,9 +70,9 @@ it("ignores stale list reads when focus refreshes overlap", async () => {
   await showLibrary();
   const record = {
     song: { id: "test-score", title: "One score", artist: "Artist" },
-  } as any;
-  const first = deferred<any[]>();
-  const second = deferred<any[]>();
+  } as unknown as RecordData;
+  const first = deferred<RecordData[]>();
+  const second = deferred<RecordData[]>();
   vi.mocked(listPracticeRecords)
     .mockReturnValueOnce(first.promise)
     .mockReturnValueOnce(second.promise);
@@ -90,11 +93,11 @@ it("shows loading immediately, keeps it through mounting, and clears it on succe
   const { showLibrary } = await import("../../src/apps/player/player-app");
   vi.mocked(listPracticeRecords).mockResolvedValue([
     { song: { id: "test-score", title: "One score" } },
-  ] as any);
+  ] as unknown as RecordData[]);
   await showLibrary();
-  const pending = deferred<any>();
+  const pending = deferred<RecordData>();
   vi.mocked(loadPracticeRecord).mockReturnValueOnce(pending.promise);
-  const mounted = deferred<any>();
+  const mounted = deferred<MountedRuntime>();
   vi.mocked(mountPlaybackRuntime).mockReturnValueOnce(mounted.promise);
   document.querySelector<HTMLButtonElement>("[data-open]")!.click();
   expect(document.querySelector(".score-loading")?.textContent).toContain(
@@ -106,7 +109,7 @@ it("shows loading immediately, keeps it through mounting, and clears it on succe
   pending.resolve({
     song: { id: "test-score", title: "One score" },
     pages: [],
-  });
+  } as unknown as RecordData);
   await vi.waitFor(() => expect(mountPlaybackRuntime).toHaveBeenCalled());
   const options = vi.mocked(mountPlaybackRuntime).mock.calls.at(-1)![0];
   expect(document.querySelector(".score-loading")?.textContent).toContain(
@@ -220,7 +223,7 @@ it("clears previous errors on retry, reports package/storage causes and stays si
 
   vi.mocked(readScorePackage).mockResolvedValue({
     song: { id: "test" },
-  } as any);
+  } as unknown as RecordData);
   vi.mocked(importPracticeRecord).mockRejectedValueOnce(
     new DOMException("Storage full", "QuotaExceededError"),
   );
@@ -232,7 +235,7 @@ it("clears previous errors on retry, reports package/storage causes and stays si
 
   vi.mocked(importPracticeRecord).mockResolvedValueOnce({
     status: "added",
-  } as any);
+  } as unknown as PracticeImportResult);
   button.click();
   await vi.waitFor(() => expect(button.disabled).toBe(false));
   expect(status().textContent).toBe("");
@@ -263,10 +266,10 @@ it("keeps basic exercises in their own section before and after import without r
 
   const basicRecord = {
     song: { id: basic.id, title: "Saved basic", artist: "Teacher" },
-  } as any;
+  } as unknown as RecordData;
   const personalRecord = {
     song: { id: "my-own-score", title: "My own score" },
-  } as any;
+  } as unknown as RecordData;
   vi.mocked(listPracticeRecords).mockResolvedValue([
     basicRecord,
     personalRecord,
@@ -309,10 +312,10 @@ it("hides retired 16-bar records without affecting unrelated same-title scores",
   const basic = bundled.find((s) => s.id === "tom-moving-video-v2")!;
   const legacy = {
     song: { id: "tom-moving-original-v1", title: basic.title },
-  } as any;
+  } as unknown as RecordData;
   const unrelated = {
     song: { id: "personal-tom-study", title: basic.title },
-  } as any;
+  } as unknown as RecordData;
   vi.mocked(listPracticeRecords).mockResolvedValue([legacy, unrelated]);
   await showLibrary();
   expect(
@@ -341,7 +344,7 @@ it("hides retired 16-bar records without affecting unrelated same-title scores",
 it("keeps the warmup first with saved and bundled scores and offers no old 16-bar download", async () => {
   const { showLibrary } = await import("../../src/apps/player/player-app");
   const record = (id: string, title: string) =>
-    ({ song: { id, title } }) as any;
+    ({ song: { id, title } }) as unknown as RecordData;
   vi.mocked(listPracticeRecords).mockResolvedValue([
     record("tom-moving-video-v2", "Tom"),
     record("preplay-hand-warmup-v1", "시작전 손플기"),
@@ -369,7 +372,7 @@ it("persists favorites and restores the original order when unstarred", async ()
   vi.mocked(listPracticeRecords).mockResolvedValue([
     { song: { id: "favorite-a", title: "A", artist: "Artist" } },
     { song: { id: "favorite-b", title: "B", artist: "Artist" } },
-  ] as any);
+  ] as unknown as RecordData[]);
   const { showLibrary } = await import("../../src/apps/player/player-app");
   await showLibrary();
   const button = () =>
@@ -421,7 +424,7 @@ it("uses the shared title order for library metadata", async () => {
   const { showLibrary } = await import("../../src/apps/player/player-app");
   vi.mocked(listPracticeRecords).mockResolvedValue([
     { song: { id: "title-order", title: "Song", artist: "Artist" } },
-  ] as any);
+  ] as unknown as RecordData[]);
   try {
     saveTitleOrder("artist-first");
     await showLibrary();
@@ -456,7 +459,7 @@ it("changes the shared title preference from library settings without rebuilding
   const { showLibrary } = await import("../../src/apps/player/player-app");
   vi.mocked(listPracticeRecords).mockResolvedValue([
     { song: { id: "settings-score", title: "Song", artist: "Artist" } },
-  ] as any);
+  ] as unknown as RecordData[]);
   await showLibrary();
   const card = document.querySelector('[data-score-id="settings-score"]')!;
   document.querySelector<HTMLButtonElement>("#library-settings")!.click();
@@ -482,14 +485,14 @@ it("opens a basic exercise from the current supplied package without an update c
     pages: [],
     pdf: new Blob(["old"]),
     audio: new Blob(["old"]),
-  } as any;
+  } as unknown as RecordData;
   const next = {
     song: { id: old.song.id, title: "Current" },
     canonicalXML: "<current/>",
     pages: [],
     pdf: new Blob(["new"]),
     audio: new Blob(["new"]),
-  } as any;
+  } as unknown as RecordData;
   vi.mocked(listPracticeRecords).mockResolvedValue([old]);
   vi.mocked(loadPracticeRecord).mockResolvedValue(old);
   vi.mocked(downloadScore).mockResolvedValue(new Blob(["package"]));
@@ -500,7 +503,10 @@ it("opens a basic exercise from the current supplied package without an update c
   });
   vi.mocked(mountPlaybackRuntime).mockImplementation(async () => {
     document.body.dataset.ready = "true";
-    return { flush: async () => {}, dispose: () => {} } as any;
+    return {
+      flush: async () => {},
+      dispose: () => {},
+    } as unknown as MountedRuntime;
   });
   await showLibrary();
   expect(
@@ -527,7 +533,7 @@ it("imports analyzed audio directly without forcing a setup dialog and blocks du
     await import("../../src/modules/audio/audio-practice");
   const { setupAudioPractice } =
     await import("../../src/modules/audio/audio-practice-setup");
-  const pending = deferred<any>();
+  const pending = deferred<RecordData>();
   vi.mocked(readAudioPractice).mockReturnValueOnce(pending.promise);
   vi.mocked(listPracticeRecords).mockResolvedValue([]);
   await showLibrary();
@@ -562,12 +568,14 @@ it("imports analyzed audio directly without forcing a setup dialog and blocks du
     audio: new Blob(["mp3"]),
     pdf: new Blob(),
   };
-  vi.mocked(loadPracticeRecord).mockResolvedValue(record as any);
+  vi.mocked(loadPracticeRecord).mockResolvedValue(
+    record as unknown as RecordData,
+  );
   vi.mocked(importPracticeRecord).mockResolvedValue({
     status: "added",
     record,
-  } as any);
-  pending.resolve(record);
+  } as unknown as PracticeImportResult);
+  pending.resolve(record as unknown as RecordData);
   await vi.waitFor(() =>
     expect(mountPlaybackRuntime).toHaveBeenCalledTimes(mounts + 1),
   );
@@ -606,7 +614,7 @@ it("releases the audio import lock after decode or storage failure so the user c
   );
   vi.mocked(readAudioPractice).mockResolvedValueOnce({
     song: { id: "audio-failed" },
-  } as any);
+  } as unknown as RecordData);
   vi.mocked(importPracticeRecord).mockRejectedValueOnce(
     new DOMException("Storage full", "QuotaExceededError"),
   );
@@ -675,7 +683,10 @@ it("separates audio-only records and restores audio favorites without duplicate 
   const audio = {
     song: { id: "audio-only", title: "Audio", audioPractice: { duration: 5 } },
   };
-  vi.mocked(listPracticeRecords).mockResolvedValue([audio, score] as any);
+  vi.mocked(listPracticeRecords).mockResolvedValue([
+    audio,
+    score,
+  ] as unknown as RecordData[]);
   await showLibrary();
   const audioSection = () =>
     document
@@ -725,7 +736,9 @@ it("separates audio-only records and restores audio favorites without duplicate 
     ),
   ).not.toBeNull();
   expect(audioSection().hidden).toBe(false);
-  vi.mocked(listPracticeRecords).mockResolvedValue([score] as any);
+  vi.mocked(listPracticeRecords).mockResolvedValue([
+    score,
+  ] as unknown as RecordData[]);
   await showLibrary();
   expect(audioSection().hidden).toBe(true);
   localStorage.removeItem("drum-practice:favorite-scores");
@@ -744,7 +757,7 @@ it("does not show the empty import hint for an audio-only library, including fav
         audioPractice: { duration: 5 },
       },
     },
-  ] as any);
+  ] as unknown as RecordData[]);
   try {
     await showLibrary();
     expect(

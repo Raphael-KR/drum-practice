@@ -13,6 +13,19 @@
 
 `pretest`, `pretest:drum`, `pretest:portable`, `pretest:local-media`가 라이선스와 빌드번호를 생성한다. `npx vitest`를 직접 사용할 때는 먼저 `npm run pretest`를 실행한다. 타입만 검사할 때도 새 checkout에서는 생성 파일이 필요하다.
 
+## ESLint
+
+`eslint.config.mjs`의 flat config를 사용한다. ESLint 10과 typescript-eslint 8의 `recommended` 규칙을 JS·TS에 적용하며, 타입 정보를 사용하는 추가 규칙은 아직 켜지 않았다. 타입 검사는 기존 `tsc --noEmit`이 맡는다. 설정 방식은 [typescript-eslint 공식 안내](https://typescript-eslint.io/getting-started/)를 따른다.
+
+- `npm run lint`: 전체 검사. 오류 또는 경고가 있으면 실패한다.
+- `npm run lint:fix`: 자동 수정 가능한 항목을 수정한 뒤 같은 기준으로 검사한다. 실행 후 diff를 검토한다.
+- 범위: 두 앱의 `src/`, `tests/`, `server/`, `scripts/`, JS 제작 도구, `hosting/`와 루트 설정 파일. 생성 파일·외부 의존성·미디어·배포 사본·실험 출력은 제외한다. HTML 내부 스크립트와 Python은 이 검사 대상이 아니다.
+- 환경: 앱은 browser, 서버·개발 도구는 Node.js, 테스트는 Node.js와 DOM이다. MusicXML 제작 도구는 `page.evaluate()` 콜백을 포함하므로 browser 전역도 허용한다.
+- Prettier: 마지막에 `eslint-config-prettier`를 적용해 서식 규칙 충돌을 막는다. ESLint 명령이 Prettier를 실행하는 것은 아니다.
+- 규칙: 미사용 변수, 명시적 `any`, 재할당 없는 `let`, 빈 블록 등을 권장 규칙 그대로 검사한다. 사용되지 않는 `eslint-disable`도 오류로 처리한다. 기존 지적 사항을 숨기는 baseline이나 일괄 규칙 해제는 두지 않는다.
+
+도입 시점(2026-10-21)에 확인한 172오류는 후속 코드 정리에서 모두 수정했다. 권장 규칙·검사 범위는 유지했고 억제 주석이나 baseline은 추가하지 않았다. 최신 검증은 329파일 0오류·0경고, 타입 검사, 123파일720테스트, 두 앱 빌드 통과다. 별도 제작 벤치마크 도구도 독립 타입 검사를 통과했다. 빌드 명령에 lint를 자동 연결하지 않았으므로 필요할 때 `npm run lint`를 별도로 실행한다. 상세 로컬 결과는 `.tmp/eslint-cleanup-final.json`, `.tmp/eslint-cleanup-{tests,build}.log`, `.tmp/eslint-benchmark-types.log`다.
+
 ## 로컬 자료
 
 원본 미디어는 Git에 넣거나 자동 다운로드하지 않는다. 기존 자료 보관처에서 아래 경로로 준비한다. `node scripts/checks/check-local-assets.mjs`는 누락 경로를 출력하고 실패한다. 존재 검사는 내용 검증을 대신하지 않는다.

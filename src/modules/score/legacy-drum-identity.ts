@@ -4,15 +4,18 @@ export function repairLegacyDrumIdentity(doc: Document) {
     'miscellaneous-field[name="drum-practice:source-provenance"]',
   )?.textContent;
   if (!raw) return;
-  let provenance: any;
+  let provenance: unknown;
   try {
     provenance = JSON.parse(raw);
   } catch {
     return;
   }
   if (
+    !provenance ||
+    typeof provenance !== "object" ||
+    !("pdf_sha256" in provenance) ||
     provenance.pdf_sha256 !==
-    "003e2b2a6db24c34f5d37847940098a34bcd368956ded94f0dd0f8b9541b8625"
+      "003e2b2a6db24c34f5d37847940098a34bcd368956ded94f0dd0f8b9541b8625"
   )
     return;
   const instrument = doc.querySelector('score-instrument[id="P1-hh-open"]');

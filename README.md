@@ -35,10 +35,13 @@ npm run dev
 `src/`가 개발 정본입니다. 생성 HTML이나 Sites 사본을 직접 고치지 않습니다.
 
 ```sh
+npm run lint
 npm run test:drum
 npm run build:apps
 npm run check:playback
 ```
+
+ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `npm run lint:fix`는 자동 수정 가능한 ESLint 항목을 수정합니다. 설정 범위와 기존 지적 사항은 [개발 검사](docs/operations/TESTING.md#eslint)를 참고합니다.
 
 분리 빌드는 `dist/editor/`, `dist/player/`를 생성합니다. 공개 대상은 **player만**이며 발행 절차는 [Sites 발행](docs/operations/SITES-PUBLICATION.md)을 따릅니다. 검사 범위는 이 프로젝트의 `tests/`로 한정합니다. `npm run test:portable`은 로컬 악보 없이 실행하며, 전체 `test:drum`은 로컬 자료를 포함합니다. [검사·자산 준비](docs/operations/TESTING.md)를 따릅니다.
 

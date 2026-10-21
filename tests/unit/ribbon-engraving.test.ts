@@ -37,7 +37,9 @@ it("budgets the densest subdivision and grace modifiers across the entire song",
       ],
     },
   };
-  const s = ribbonSpacing(osmd);
+  const s = ribbonSpacing(
+    osmd as unknown as Parameters<typeof ribbonSpacing>[0],
+  );
   expect(s.offset).toBeGreaterThanOrEqual(49);
   expect(s.quarter * 0.125).toBeGreaterThanOrEqual(s.offset + 16 + 4);
 });
@@ -80,16 +82,18 @@ it("moves shared native tick contexts once, preserves grace association and uses
   };
   const calculator = { calculateMeasureXLayout: () => 1 };
   installRibbonEngraving(
-    { GraphicSheet: { GetCalculator: calculator } },
+    { GraphicSheet: { GetCalculator: calculator } } as unknown as Parameters<
+      typeof installRibbonEngraving
+    >[0],
     { quarter: 160, offset: 24 },
   );
-  (calculator.calculateMeasureXLayout as any)([g]);
-  (g.formatVoices as any)(800, g);
+  (calculator.calculateMeasureXLayout as (row: (typeof g)[]) => number)([g]);
+  (g.formatVoices as (width: number, parent: typeof g) => void)(800, g);
   expect(formatCount).toBe(1);
   expect(width).toBe(80);
   expect(note.getAbsoluteX() - 50).toBe(24 + 1.5 * 160);
   // Repeated layout/skyline passes cannot accumulate offsets.
-  (g.formatVoices as any)(800, g);
+  (g.formatVoices as (width: number, parent: typeof g) => void)(800, g);
   expect(note.getAbsoluteX() - 50).toBe(264);
 });
 
@@ -127,7 +131,9 @@ it("does not charge an interior ornament as every measure's leading margin", () 
       ],
     },
   };
-  const s = ribbonSpacing(osmd);
+  const s = ribbonSpacing(
+    osmd as unknown as Parameters<typeof ribbonSpacing>[0],
+  );
   expect(s.offset).toBe(8);
   expect(s.quarter).toBe(112);
 });
@@ -165,11 +171,13 @@ it("re-spaces a short measure into a uniform row cell before engraving, without 
   };
   const calculator = { calculateMeasureXLayout: () => 1 };
   installRibbonEngraving(
-    { GraphicSheet: { GetCalculator: calculator } },
+    { GraphicSheet: { GetCalculator: calculator } } as unknown as Parameters<
+      typeof installRibbonEngraving
+    >[0],
     { quarter: 100, offset: 8, uniformQuarters: 4 },
   );
-  (calculator.calculateMeasureXLayout as any)([m]);
-  (m.formatVoices as any)(400, m);
+  (calculator.calculateMeasureXLayout as (row: (typeof m)[]) => number)([m]);
+  (m.formatVoices as (width: number, parent: typeof m) => void)(400, m);
   expect(width).toBe(40);
   expect(x).toBeCloseTo(8 + (2 * 100 * 4) / 3);
 });
@@ -226,7 +234,9 @@ it("engraves sparse and dense bars on identical fixed grid coordinates without s
     dense = bar(Array.from({ length: 32 }, (_, i) => i / 8));
   const calc = { calculateMeasureXLayout: () => 0 };
   installRibbonEngraving(
-    { GraphicSheet: { GetCalculator: calc } },
+    { GraphicSheet: { GetCalculator: calc } } as unknown as Parameters<
+      typeof installRibbonEngraving
+    >[0],
     {
       quarter: 200,
       offset: 8,
@@ -236,8 +246,8 @@ it("engraves sparse and dense bars on identical fixed grid coordinates without s
     },
   );
   for (const b of [sparse, dense]) {
-    (calc.calculateMeasureXLayout as any)([b.g]);
-    (b.g.formatVoices as any)(320, b.g);
+    (calc.calculateMeasureXLayout as (row: (typeof b.g)[]) => number)([b.g]);
+    (b.g.formatVoices as (width: number, parent: typeof b.g) => void)(320, b.g);
     expect(b.width).toBe(32);
   }
   expect(sparse.xs).toEqual([

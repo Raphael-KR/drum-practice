@@ -41,7 +41,7 @@ function setup() {
   document.body.innerHTML = editorHTML();
   const h = {
     showHome: vi.fn(async () => {}),
-    activate: vi.fn(async (_record: RecordData) => {}),
+    activate: vi.fn<(record: RecordData) => Promise<void>>(async () => {}),
     openEditor: vi.fn(async () => {}),
     error: vi.fn(),
     action: vi.fn(),

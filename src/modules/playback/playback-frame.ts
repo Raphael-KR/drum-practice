@@ -42,7 +42,7 @@ export function timeAtScroll(
   position: (i: number, b: number, w: number) => number,
 ) {
   if (!offsets.length || !widths.length) return undefined;
-  let i = Math.max(
+  const i = Math.max(
     0,
     offsets.findIndex((_, j) => j === offsets.length - 1 || x < offsets[j + 1]),
   );

@@ -50,14 +50,14 @@ export function migrateLyricPositions(s: Song) {
         l.grid && !l.freeTiming
           ? l.grid
           : { measureId: nearest.measure.id, tick: nearest.tick };
-    let index = s.measures.findIndex((m) => m.id === p.measureId),
-      m = s.measures[index];
+    const index = s.measures.findIndex((m) => m.id === p.measureId);
+    let m = s.measures[index];
     let offset = p.tick / m.denominator;
     if (
       offset >= (m.beats * 4) / m.denominator &&
       index + 1 < s.measures.length
     ) {
-      m = s.measures[++index];
+      m = s.measures[index + 1];
       offset = 0;
     }
     const duration = Math.max(

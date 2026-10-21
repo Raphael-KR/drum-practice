@@ -21,7 +21,17 @@ function fixture(): RecordData {
     ),
   };
 }
-async function changed(change: (zip: JSZip, m: any) => void) {
+async function changed(
+  change: (
+    zip: JSZip,
+    m: {
+      version: number;
+      pages: unknown[];
+      audio: { type: string; path: string; size: number };
+      song: { bpm: number };
+    },
+  ) => void,
+) {
   const zip = await JSZip.loadAsync(
     await (await createScorePackage(fixture())).arrayBuffer(),
   );

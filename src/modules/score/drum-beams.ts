@@ -1,3 +1,23 @@
+interface BeamNote {
+  getYs(): number[];
+  getStemX(): number;
+  getStemExtents(): { topY: number };
+  getStave(): { getSpacingBetweenLines(): number };
+}
+interface NativeBeam {
+  notes: BeamNote[];
+  stem_direction: number;
+  slope: number;
+  y_shift: number;
+  calculateSlope(): void;
+}
+interface BeamMeasure {
+  staffEntries: {
+    graphicalVoiceEntries: { vfStaveNote?: { beam?: NativeBeam } }[];
+  }[];
+  draw(...args: unknown[]): unknown;
+}
+import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 /** Screen Y increases downwards. Chords use the head nearest the beam. */
 export function drumBeamSlope(ys: number[], span: number, staffGap: number) {
   const directions = new Set(
@@ -10,18 +30,20 @@ export function drumBeamSlope(ys: number[], span: number, staffGap: number) {
   return Math.sign(ys.at(-1)! - ys[0]) * Math.min(0.08, staffGap / 2 / span);
 }
 /** OSMD 2.1/VexFlow adapter, applied before native stem extension and beam drawing. */
-export function installDrumBeams(osmd: any) {
-  const calculator = osmd.GraphicSheet.GetCalculator;
+export function installDrumBeams(osmd: OpenSheetMusicDisplay) {
+  const calculator = osmd.GraphicSheet.GetCalculator as unknown as {
+    calculateMeasureXLayout(row: BeamMeasure[]): number;
+  };
   const calculate = calculator.calculateMeasureXLayout.bind(calculator);
   const wrapped = new WeakSet<object>();
-  calculator.calculateMeasureXLayout = (row: any[]) => {
+  calculator.calculateMeasureXLayout = (row: BeamMeasure[]) => {
     const result = calculate(row);
     for (const measure of row) {
       if (wrapped.has(measure)) continue;
       wrapped.add(measure);
       const draw = measure.draw;
-      measure.draw = function (...args: any[]) {
-        const beams = new Set<any>();
+      measure.draw = function (...args: unknown[]) {
+        const beams = new Set<NativeBeam>();
         for (const entry of measure.staffEntries)
           for (const voice of entry.graphicalVoiceEntries) {
             const beam = voice.vfStaveNote?.beam;
@@ -31,7 +53,7 @@ export function installDrumBeams(osmd: any) {
           beam.calculateSlope = function () {
             const notes = this.notes;
             const up = this.stem_direction === 1;
-            const ys = notes.map((n: any) =>
+            const ys = notes.map((n: BeamNote) =>
               up ? Math.min(...n.getYs()) : Math.max(...n.getYs()),
             );
             const first = notes[0],
@@ -39,12 +61,12 @@ export function installDrumBeams(osmd: any) {
               y = first.getStemExtents().topY;
             this.slope = drumBeamSlope(
               ys,
-              notes.at(-1).getStemX() - x,
+              notes.at(-1)!.getStemX() - x,
               first.getStave().getSpacingBetweenLines(),
             );
             // Native stems already include minimum clearance. Only extend them.
             const shifts = notes.map(
-              (n: any) =>
+              (n: BeamNote) =>
                 n.getStemExtents().topY - (y + (n.getStemX() - x) * this.slope),
             );
             this.y_shift = up ? Math.min(0, ...shifts) : Math.max(0, ...shifts);

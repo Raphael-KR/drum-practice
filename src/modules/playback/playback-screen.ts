@@ -321,7 +321,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function layoutLyrics() {
     layoutScoreLyrics(stage, ribbon, h.song().settings.view);
   }
-  let loopSlots: ReturnType<typeof mountLoopSlots> | undefined;
+
   function rowCellWidth() {
     const song = h.song();
     const s: Song = { ...song, settings: { ...song.settings, view: "rows" } };
@@ -601,23 +601,27 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     finish: finishScrub,
   });
   disposers.push(gestures.dispose);
-  loopSlots = mountLoopSlots(root, stage, {
-    song: h.song,
-    player: () => ({ loop: h.player().loop, current: selectionTime }),
-    changed: h.changed,
-    pause: () => {
-      gestures.cancel();
-      pause();
-      frame();
-      stationary = h.player().current();
+  const loopSlots: ReturnType<typeof mountLoopSlots> = mountLoopSlots(
+    root,
+    stage,
+    {
+      song: h.song,
+      player: () => ({ loop: h.player().loop, current: selectionTime }),
+      changed: h.changed,
+      pause: () => {
+        gestures.cancel();
+        pause();
+        frame();
+        stationary = h.player().current();
+      },
+      use: (loop) => {
+        if (loop) selectedIndex = undefined;
+        clearPreset();
+        useLoop(loop);
+      },
+      ready: available,
     },
-    use: (loop) => {
-      if (loop) selectedIndex = undefined;
-      clearPreset();
-      useLoop(loop);
-    },
-    ready: available,
-  });
+  );
   disposers.push(loopSlots.dispose);
 
   disposers.push(
@@ -1067,7 +1071,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     center = preset.center;
     radius = value;
     useLoop(preset.loop, true);
-    drawer.show("loop", false);
+    drawer.show("loop");
   }
   listen(root.querySelector(".repeat-presets")!, "click", (e) => {
     const b = (e.target as Element).closest(`[${ids.radiusAttribute}]`);

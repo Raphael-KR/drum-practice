@@ -15,9 +15,14 @@ function fixture(stop = 1) {
     ContinuousDynamic: { EndMultiExpression: end },
     StartMeasure: { ParentStaff: staff },
   };
-  const calls: any[] = [];
-  const calculator = {
-    calculateGraphicalContinuousDynamic: (_expression: any, _position: any) => {
+  const calls: (typeof end)[] = [];
+  const calculator: {
+    calculateGraphicalContinuousDynamic(
+      dynamic: typeof expression,
+      position: object,
+    ): number;
+  } = {
+    calculateGraphicalContinuousDynamic: () => {
       calls.push({ ...end });
       return 7;
     },
@@ -38,7 +43,9 @@ function fixture(stop = 1) {
 }
 it("anchors a bar-end offset to the final timed entry for native wedge layout, then restores source state", () => {
   const f = fixture();
-  installMeasureEndWedges(f.osmd);
+  installMeasureEndWedges(
+    f.osmd as unknown as Parameters<typeof installMeasureEndWedges>[0],
+  );
   expect(
     f.calculator.calculateGraphicalContinuousDynamic(f.expression, {}),
   ).toBe(7);
@@ -49,7 +56,9 @@ it("anchors a bar-end offset to the final timed entry for native wedge layout, t
 });
 it("leaves interior stops unchanged", () => {
   const f = fixture(0.5);
-  installMeasureEndWedges(f.osmd);
+  installMeasureEndWedges(
+    f.osmd as unknown as Parameters<typeof installMeasureEndWedges>[0],
+  );
   f.calculator.calculateGraphicalContinuousDynamic(f.expression, {});
   expect(f.calls[0].Timestamp).toBe(f.timestamp);
   expect(f.calls[0].EndOffsetFraction).toBe(f.offset);
@@ -59,7 +68,9 @@ it("restores source state even when native layout fails", () => {
   f.calculator.calculateGraphicalContinuousDynamic = () => {
     throw Error("layout");
   };
-  installMeasureEndWedges(f.osmd);
+  installMeasureEndWedges(
+    f.osmd as unknown as Parameters<typeof installMeasureEndWedges>[0],
+  );
   expect(() =>
     f.calculator.calculateGraphicalContinuousDynamic(f.expression, {}),
   ).toThrow("layout");

@@ -88,7 +88,7 @@ it("waits for all missing originals, accepts multiple selections, and does not i
   expect(options.restore).not.toHaveBeenCalled();
   choose("[data-practice-audio-file]", [records[1].audio]);
   await vi.waitFor(() => expect(options.restore).toHaveBeenCalledOnce());
-  const batch = options.restore.mock.calls[0] as unknown as [any[]];
+  const batch = options.restore.mock.calls[0] as unknown as [unknown[]];
   expect(batch[0]).toHaveLength(2);
 });
 it("reuses existing originals and restores without asking for audio files", async () => {

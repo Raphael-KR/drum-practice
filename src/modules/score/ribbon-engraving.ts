@@ -1,3 +1,10 @@
+import type { VexFlowMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure";
+import type { VexFlowVoiceEntry } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowVoiceEntry";
+import type { MusicSheetCalculator } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/MusicSheetCalculator";
+type LayoutCalculator = MusicSheetCalculator & {
+  calculateMeasureXLayout(row: VexFlowMeasure[]): number;
+};
+import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { gridPhase, RIBBON_HEAD_ANCHOR } from "./ribbon-timeline";
 /** OSMD 2.1.x adapter: change musical positions before native engraving, never scale glyphs. */
 export interface RibbonSpacing {
@@ -15,7 +22,7 @@ export interface RibbonSpacing {
     right: number;
   }[];
 }
-export function ribbonSpacing(osmd: any): RibbonSpacing {
+export function ribbonSpacing(osmd: OpenSheetMusicDisplay): RibbonSpacing {
   let quarter = 64,
     offset = 8;
   const measures: { q: number; left: number; right: number }[][] = [];
@@ -27,7 +34,9 @@ export function ribbonSpacing(osmd: any): RibbonSpacing {
         right = 12;
       for (const v of e.graphicalVoiceEntries) {
         if (v.parentVoiceEntry.IsGrace) continue;
-        const metrics = v.vfStaveNote?.getTickContext()?.getMetrics();
+        const metrics = (v as VexFlowVoiceEntry).vfStaveNote
+          ?.getTickContext()
+          ?.getMetrics();
         left = Math.max(left, metrics?.extraLeftPx || 0);
         right = Math.max(
           right,
@@ -82,27 +91,33 @@ export function ribbonSpacing(osmd: any): RibbonSpacing {
     constraints: constraints.sort((a, b) => b.quarter - a.quarter).slice(0, 8),
   };
 }
-export function installRibbonEngraving(osmd: any, spacing: RibbonSpacing) {
-  const calculator = osmd.GraphicSheet.GetCalculator;
+export function installRibbonEngraving(
+  osmd: OpenSheetMusicDisplay,
+  spacing: RibbonSpacing,
+) {
+  const calculator = osmd.GraphicSheet
+    .GetCalculator as unknown as LayoutCalculator;
   installMeasureEndWedges(osmd);
   const calculate = calculator.calculateMeasureXLayout.bind(calculator);
-  calculator.calculateMeasureXLayout = (row: any[]) => {
+  calculator.calculateMeasureXLayout = (row: VexFlowMeasure[]) => {
     const minimum = calculate(row);
     for (const measure of row) {
       if (!measure?.formatVoices) continue;
       const format = measure.formatVoices;
-      measure.formatVoices = (width: number, parent: any) => {
+      measure.formatVoices = (width: number, parent: VexFlowMeasure) => {
         format(width, parent);
         const duration = measure.parentSourceMeasure.Duration.RealValue * 4;
         const quarters = spacing.uniformQuarters ?? duration;
         const rowEntries =
           spacing.uniformQuarters && spacing.rowWidth
-            ? measure.staffEntries.map((e: any) => {
+            ? measure.staffEntries.map((e) => {
                 let left = 0,
                   right = 12;
                 for (const v of e.graphicalVoiceEntries) {
                   if (v.parentVoiceEntry.IsGrace) continue;
-                  const metrics = v.vfStaveNote?.getTickContext()?.getMetrics();
+                  const metrics = (v as VexFlowVoiceEntry).vfStaveNote
+                    ?.getTickContext()
+                    ?.getMetrics();
                   left = Math.max(left, metrics?.extraLeftPx || 0);
                   right = Math.max(
                     right,
@@ -137,7 +152,7 @@ export function installRibbonEngraving(osmd: any, spacing: RibbonSpacing) {
           for (const voice of entry.graphicalVoiceEntries) {
             // GraceNoteGroup remains attached to its principal note in VexFlow.
             if (voice.parentVoiceEntry.IsGrace) continue;
-            const note = voice.vfStaveNote;
+            const note = (voice as VexFlowVoiceEntry).vfStaveNote;
             if (!note) continue;
             note.setStave(stave);
             const context = note.getTickContext();
@@ -191,16 +206,19 @@ export function rowPositions(
  * native wedge layout then extends it to this measure's right boundary.
  * Scope the adaptation to the calculation; never mutate the canonical input.
  */
-export function installMeasureEndWedges(osmd: any) {
-  const calculator = osmd.GraphicSheet.GetCalculator;
+export function installMeasureEndWedges(osmd: OpenSheetMusicDisplay) {
+  const calculator = osmd.GraphicSheet
+    .GetCalculator as unknown as LayoutCalculator;
   if (!calculator.calculateGraphicalContinuousDynamic) return;
   const calculate =
     calculator.calculateGraphicalContinuousDynamic.bind(calculator);
-  calculator.calculateGraphicalContinuousDynamic = (
-    expression: any,
-    position: any,
-  ) => {
-    const end = expression.ContinuousDynamic.EndMultiExpression;
+  calculator.calculateGraphicalContinuousDynamic = (expression, position) => {
+    const end = expression.ContinuousDynamic.EndMultiExpression as Omit<
+      typeof expression.ContinuousDynamic.EndMultiExpression,
+      "EndOffsetFraction"
+    > & {
+      EndOffsetFraction?: import("opensheetmusicdisplay/build/dist/src/Common/DataObjects/Fraction").Fraction;
+    };
     const offset = end?.EndOffsetFraction;
     const source = end?.SourceMeasureParent;
     const timestamp = end?.Timestamp;
@@ -214,15 +232,13 @@ export function installMeasureEndWedges(osmd: any) {
     const measure =
       atBarline &&
       osmd.GraphicSheet.MeasureList[source.measureListIndex]?.find(
-        (m: any) => m?.ParentStaff === expression.StartMeasure.ParentStaff,
+        (m) => m?.ParentStaff === expression.StartMeasure.ParentStaff,
       );
-    const last = measure?.staffEntries
+    const last = (measure || undefined)?.staffEntries
       ?.filter(
-        (entry: any) =>
+        (entry) =>
           entry.relInMeasureTimestamp.RealValue < source.Duration.RealValue &&
-          entry.graphicalVoiceEntries.some(
-            (v: any) => !v.parentVoiceEntry.IsGrace,
-          ),
+          entry.graphicalVoiceEntries.some((v) => !v.parentVoiceEntry.IsGrace),
       )
       .at(-1);
     if (!last || expression.IsSoftAccent)

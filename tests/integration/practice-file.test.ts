@@ -146,15 +146,19 @@ it("rejects a wrong audio file even when size and filename match", async () => {
 });
 it("rejects malformed JSON, unknown format/version, broken timing and dangling slots", async () => {
   const base = await readPracticeFile(await createPracticeFile([fixture()]));
+  type MutableFile = Omit<typeof base, "format" | "version"> & {
+    format: string;
+    version: number;
+  };
   for (const mutate of [
-    (d: any) => (d.version = 2),
-    (d: any) => (d.format = "drumscore"),
-    (d: any) => delete d.records[0].song.audioPractice,
-    (d: any) => (d.records[0].song.measures[0].start = 1),
-    (d: any) => (d.records[0].song.audioPractice.beatTimes = [1, 0.5]),
-    (d: any) => (d.records[0].song.markerSlots = ["missing"]),
-    (d: any) => (d.records[0].audio.sha256 = "invalid"),
-    (d: any) => (d.records[0].audio.size = 0),
+    (d: MutableFile) => (d.version = 2),
+    (d: MutableFile) => (d.format = "drumscore"),
+    (d: MutableFile) => delete d.records[0].song.audioPractice,
+    (d: MutableFile) => (d.records[0].song.measures[0].start = 1),
+    (d: MutableFile) => (d.records[0].song.audioPractice!.beatTimes = [1, 0.5]),
+    (d: MutableFile) => (d.records[0].song.markerSlots = ["missing"]),
+    (d: MutableFile) => (d.records[0].audio.sha256 = "invalid"),
+    (d: MutableFile) => (d.records[0].audio.size = 0),
   ]) {
     const data = structuredClone(base);
     mutate(data);

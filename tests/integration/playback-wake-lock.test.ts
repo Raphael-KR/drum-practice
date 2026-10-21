@@ -35,8 +35,8 @@ function api(request = vi.fn(async () => new Lock())) {
 }
 afterEach(() => {
   controllers.splice(0).forEach((c) => c.dispose());
-  delete (navigator as any).wakeLock;
-  delete (document as any).visibilityState;
+  Reflect.deleteProperty(navigator, "wakeLock");
+  Reflect.deleteProperty(document, "visibilityState");
   vi.restoreAllMocks();
 });
 it("requests once while playing on any OS, then releases on pause/end", async () => {
@@ -92,7 +92,8 @@ it("releases a late response after pause or disposal", async () => {
     );
     const c = create();
     c.setPlaying(true);
-    dispose ? c.dispose() : c.setPlaying(false);
+    if (dispose) c.dispose();
+    else c.setPlaying(false);
     const lock = new Lock();
     resolve(lock);
     await settle();

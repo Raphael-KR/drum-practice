@@ -25,7 +25,9 @@
     "test:portable": "vitest run tests/unit tests/integration",
     "pretest:portable": "node scripts/build/third-party.mjs && node scripts/build/build-info.mjs",
     "test:local-media": "node scripts/checks/check-local-assets.mjs && vitest run tests/local-media",
-    "pretest:local-media": "node scripts/build/third-party.mjs && node scripts/build/build-info.mjs"
+    "pretest:local-media": "node scripts/build/third-party.mjs && node scripts/build/build-info.mjs",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0"
   },
   "dependencies": {
     "jszip": "^3.10.2",
@@ -36,13 +38,18 @@
     "soundtouchjs": "^0.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^22.20.3",
     "esbuild": "^0.28.2",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
     "fake-indexeddb": "^6.2.5",
+    "globals": "^17.13.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.9.7",
     "typescript": "^5.9.0",
+    "typescript-eslint": "^8.72.0",
     "vite": "^7.1.0",
     "vitest": "^5.0.1"
   }

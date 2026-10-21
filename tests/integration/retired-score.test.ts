@@ -63,7 +63,7 @@ it("permanently purges 16-bar live records and backups in both databases while p
   for (const name of ["drum-practice", "drum-practice-player"]) {
     const db = await connection(name);
     const read = (store: string) =>
-      new Promise<any[]>((resolve, reject) => {
+      new Promise<unknown[]>((resolve, reject) => {
         const r = db.transaction(store).objectStore(store).getAll();
         r.onsuccess = () => resolve(r.result);
         r.onerror = () => reject(r.error);
@@ -80,6 +80,9 @@ it("does not accept the retired edition again", async () => {
   const { savePracticeRecord } =
     await import("../../src/platform/storage/practice-library");
   await expect(
-    savePracticeRecord({ song: { id: RETIRED_SCORE_ID }, pages: [] } as any),
+    savePracticeRecord({
+      song: { id: RETIRED_SCORE_ID },
+      pages: [],
+    } as unknown as import("../../src/model/record").RecordData),
   ).rejects.toThrow("16마디");
 });

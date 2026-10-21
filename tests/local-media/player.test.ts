@@ -174,18 +174,19 @@ it.each([
   "honors %s playback intent after %s during rate preparation",
   async (entry, action) => {
     vi.stubGlobal("document", { getElementById: () => null });
-    let worker!: {
+    const workers: {
       onmessage: (event: { data: unknown }) => void;
       terminate: ReturnType<typeof vi.fn>;
-    };
+    }[] = [];
+    const worker = () => workers.at(-1)!;
     vi.stubGlobal(
       "Worker",
       class {
-        onmessage = (_event: { data: unknown }) => {};
+        onmessage: (event: { data: unknown }) => void = () => {};
         onerror = () => {};
         terminate = vi.fn();
         constructor() {
-          worker = this;
+          workers.push(this);
         }
         postMessage() {}
       },
@@ -208,8 +209,8 @@ it.each([
       if (entry === "setRate") await p.play(false);
       else p.song!.settings.rate = 0.8;
       const pending = entry === "setRate" ? p.setRate(0.8) : p.play(false);
-      // play awaits prepare() before it creates the stretch worker.
-      await vi.waitFor(() => expect(worker).toBeDefined());
+      // play awaits prepare() before it creates the stretch worker().
+      await vi.waitFor(() => expect(worker()).toBeDefined());
       if (action === "pause") p.pause();
       if (action === "load") {
         const next = structuredClone(p.song!);
@@ -219,12 +220,12 @@ it.each([
         // responds, without accidentally resuming the newly loaded song.
         await p.load(new Blob(["next"]), next);
       } else {
-        worker.onmessage({
+        worker().onmessage({
           data: { left: new Float32Array(40), right: new Float32Array(40) },
         });
       }
       await pending;
-      expect(worker.terminate).toHaveBeenCalled();
+      expect(worker().terminate).toHaveBeenCalled();
       expect(p.renderRate).toBe(action === "load" ? 1 : 0.8);
       expect(p.playing).toBe(action === "continue");
       expect(p.cycles).toHaveLength(action === "continue" ? 1 : 0);
@@ -635,19 +636,26 @@ it.each(["complete", "error", "switch"])(
     const { followAudioTempo, audioMeasures } =
       await import("../../src/modules/audio/audio-practice");
     const { defaults } = await import("../../src/model/model");
-    let worker: any;
+    type RenderWorker = {
+      onmessage: (event: { data: unknown }) => void;
+      onerror: (event: { message: string }) => void;
+      terminate: ReturnType<typeof vi.fn>;
+      data: { timeMap?: unknown };
+    };
+    const workers: RenderWorker[] = [];
+    const worker = () => workers.at(-1)!;
     vi.stubGlobal("document", { getElementById: () => null });
     vi.stubGlobal(
       "Worker",
       class {
-        onmessage: any;
-        onerror: any;
+        onmessage!: (event: { data: unknown }) => void;
+        onerror!: (event: { message: string }) => void;
         terminate = vi.fn();
-        data: any;
+        data!: { timeMap?: unknown };
         constructor() {
-          worker = this;
+          workers.push(this);
         }
-        postMessage(data: any) {
+        postMessage(data: { timeMap?: unknown }) {
           this.data = data;
         }
       },
@@ -690,18 +698,18 @@ it.each(["complete", "error", "switch"])(
       const report = vi.fn();
       p.onprogress = vi.fn();
       const pending = p.setRate(1, false, report);
-      worker.onmessage({ data: { progress: 0.42 } });
+      worker().onmessage({ data: { progress: 0.42 } });
       expect(report).toHaveBeenLastCalledWith("BPM 변환 42%");
       expect(p.onprogress).not.toHaveBeenCalled();
-      expect(worker.data.timeMap).toBeDefined();
+      expect(worker().data.timeMap).toBeDefined();
       expect(p.song.settings.tempoMode).toBe("original");
       if (action === "error") {
-        worker.onerror({ message: "render failed" });
+        worker().onerror({ message: "render failed" });
         await expect(pending).rejects.toThrow("render failed");
         expect(p.song.settings.tempoMode).toBe("original");
         expect(p.rendered).toBe(p.original);
       } else if (action === "switch") {
-        const old = worker;
+        const old = worker();
         await p.setRate(1, true);
         await pending;
         old.onmessage({
@@ -714,7 +722,7 @@ it.each(["complete", "error", "switch"])(
         expect(p.renderedMap).toBeUndefined();
         expect(p.rendered).toBe(p.original);
       } else {
-        worker.onmessage({
+        worker().onmessage({
           data: {
             left: new Float32Array(170000),
             right: new Float32Array(170000),
@@ -736,7 +744,7 @@ it.each(["complete", "error", "switch"])(
         expect(p.rendered).toBe(p.original);
         expect(p.position).toBeCloseTo(1.41);
       }
-      expect(worker.terminate).toHaveBeenCalled();
+      expect(worker().terminate).toHaveBeenCalled();
     } finally {
       p.pause();
       vi.unstubAllGlobals();

@@ -40,8 +40,8 @@ export class Player {
   worker?: Worker;
   private cancelRender?: () => void;
   onstate = () => {};
-  onprogress = (s: string) => {};
-  onerror = (message: string) => {};
+  onprogress: (s: string) => void = () => {};
+  onerror: (message: string) => void = () => {};
   constructor(
     private preferences: () => PlaybackPreferences = () => ({
       restartMeasure: true,
@@ -133,7 +133,9 @@ export class Player {
     for (const n of this.nodes) {
       try {
         n.stop();
-      } catch {}
+      } catch {
+        // A source that has already stopped still needs to be disconnected.
+      }
       n.disconnect();
     }
     this.nodes.clear();

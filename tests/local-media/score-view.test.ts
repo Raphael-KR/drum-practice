@@ -115,8 +115,9 @@ it("removes the 26-unit empty prefix from all 31 reviewed SVG system starts", ()
   expect(svgCrops.regions).toHaveLength(31);
   expect(svgCrops.regions.some((r) => r.id === "xml-r1")).toBe(false);
   for (const c of svgCrops.regions) {
-    const { left, ...r } = c,
-      before = JSON.stringify(r),
+    const r: Omit<typeof c, "left"> & { left?: number } = { ...c };
+    delete r.left;
+    const before = JSON.stringify(r),
       d = displayRegion(s, r);
     expect((d.x - r.x) * 1500).toBeCloseTo(26);
     expect(d.beatXs[0] * d.w * 1500).toBeCloseTo(23.00912);

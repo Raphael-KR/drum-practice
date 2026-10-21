@@ -55,7 +55,9 @@ function record(): RecordData {
     pages: [new Blob(["page"])],
   };
 }
-async function raw(store: string): Promise<any[]> {
+async function raw(
+  store: string,
+): Promise<{ song: { id: string }; pdf: { bytes: ArrayBuffer } }[]> {
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
     const r = indexedDB.open("drum-practice");
     r.onsuccess = () => resolve(r.result);
@@ -92,7 +94,7 @@ describe("independent playback library", () => {
     expect(await loaded.pdf.text()).toBe("pdf");
     expect(loaded.pdf.type).toBe("application/pdf");
     expect(
-      (await raw("songs")).find((r) => r.song.id === input.song.id).pdf.bytes,
+      (await raw("songs")).find((r) => r.song.id === input.song.id)!.pdf.bytes,
     ).toBeInstanceOf(ArrayBuffer);
     expect(
       (await listPracticeRecords()).some((r) => r.song.id === input.song.id),

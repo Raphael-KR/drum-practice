@@ -183,16 +183,15 @@ const time = (s: number) =>
 let player: Player | undefined,
   record: RecordData | undefined,
   urls: string[] = [];
-let session: ReturnType<typeof editorSession> | undefined;
-let management: ReturnType<typeof setupScoreManagement> | undefined;
+
 let selected = 0;
 let saveTimer = 0,
   busy = false;
-let practiceManagement: ReturnType<typeof attachPracticeManagement> | undefined;
-let pageRatios: number[] = [];
-let practiceStaffs = new Map<string, StaffPosition>();
+
+const pageRatios: number[] = [];
+const practiceStaffs = new Map<string, StaffPosition>();
 const ribbonAssets = new Map<number, RibbonAsset>();
-let highlightPages: (HighlightPage | undefined)[] = [];
+const highlightPages: (HighlightPage | undefined)[] = [];
 let noteHighlightEnabled = readNoteHighlight();
 
 const app = $("app");
@@ -765,16 +764,17 @@ seek.onchange = () => {
 seek.onblur = () => {
   $("seek-position").hidden = true;
 };
-practiceManagement = attachPracticeManagement({
-  canonicalXML: () => record?.canonicalXML,
-  root: $("app"),
-  song,
-  playback: () => playback,
-  player: engine,
-  changed: queueSave,
-  fail: error,
-  paginate: paginateList,
-});
+const practiceManagement: ReturnType<typeof attachPracticeManagement> =
+  attachPracticeManagement({
+    canonicalXML: () => record?.canonicalXML,
+    root: $("app"),
+    song,
+    playback: () => playback,
+    player: engine,
+    changed: queueSave,
+    fail: error,
+    paginate: paginateList,
+  });
 function renderLists() {
   playback.renderLists();
 }
@@ -1532,7 +1532,7 @@ function restoreEditorForm(form: EditorForm) {
       else el.value = v;
     });
 }
-session = editorSession({
+const session: ReturnType<typeof editorSession> = editorSession({
   get: () => record,
   pending: () => {
     const p = pendingEditorValues();
@@ -1547,124 +1547,126 @@ session = editorSession({
   persist,
   error,
 });
-management = setupScoreManagement({
-  get: () => record,
-  error,
-  uploadLyrics: async (text) => {
-    if (!record) return;
-    if (
-      (song().lyricText || song().lyrics.length) &&
-      !confirm(i18nText("main.message371"))
-    )
-      return;
-    record.revisions = retainRevision(record.revisions, record);
-    song().lyricText = text;
-    await persist();
-  },
-  exportFiles: async (kinds) => {
-    if (!record || !kinds.length) return;
-    await persist();
-    const title = song().title.replace(/[\\/:*?"<>|]/g, "_"),
-      files: { name: string; blob: Blob }[] = [];
-    for (const k of kinds) {
-      if (k === "xml")
-        files.push({
-          name: title + ".musicxml",
-          blob: new Blob([record.canonicalXML!], {
-            type: "application/vnd.recordare.musicxml+xml",
-          }),
-        });
-      if (k === "pdf") {
-        const pdf = songScores(record).find((s) => s.format === "pdf");
-        if (pdf) files.push({ name: title + ".pdf", blob: pdf.source });
-      }
-      if (k === "audio")
-        files.push({
-          name:
-            song().audioName.replace(/[\\/:*?"<>|]/g, "_") || title + ".audio",
-          blob: record.audio,
-        });
-    }
-    if (files.length === 1) download(files[0].blob, files[0].name);
-    else {
-      const zip = new JSZip();
-      for (const f of files) zip.file(f.name, await f.blob.arrayBuffer());
-      download(
-        new Blob([
-          new Uint8Array(await zip.generateAsync({ type: "uint8array" })),
-        ]),
-        title + ".zip",
-      );
-    }
-  },
-  exportAll: async () => {
-    await persist();
-    const records = await allRecords();
-    if (!records.length) throw Error(i18nText("main.message372"));
-    const prefs = Object.fromEntries(
-      preferenceKeys
-        .map((k) => [k, localStorage.getItem(k)])
-        .filter((p): p is [string, string] => p[1] !== null),
-    );
-    download(
-      new Blob([new Uint8Array(await exportLibrary(records, prefs))]),
-      i18nText("main.message373", { value1: records.length }),
-    );
-    tell(i18nText("main.message374", { value1: records.length }));
-  },
-  restoreAll: async (f) => {
-    const parsed = await importLibrary(await f.arrayBuffer());
-    for (const r of parsed.records) {
-      if (r.canonicalXML) readCanonical(r.canonicalXML, r.song);
-    }
-    const existing = await allRecords(),
-      overlap = parsed.records.filter((r) =>
-        existing.some((x) => x.song.id === r.song.id),
-      );
-    if (
-      !confirm(
-        i18nText("main.message375", {
-          value1: parsed.records.length,
-          value2: overlap.length,
-        }),
+const management: ReturnType<typeof setupScoreManagement> =
+  setupScoreManagement({
+    get: () => record,
+    error,
+    uploadLyrics: async (text) => {
+      if (!record) return;
+      if (
+        (song().lyricText || song().lyrics.length) &&
+        !confirm(i18nText("main.message371"))
       )
-    )
-      return;
-    player?.pause();
-    clearTimeout(saveTimer);
-    session?.reset();
-    await saveRecords(parsed.records);
-    for (const [k, v] of Object.entries(parsed.preferences))
-      localStorage.setItem(k, v);
-    const replacement = parsed.records.find(
-      (r) => r.song.id === record?.song.id,
-    );
-    if (replacement) {
-      record = undefined;
-      await activate(replacement);
-    }
-    await openLibrary();
-    tell(i18nText("main.message376", { value1: parsed.records.length }));
-  },
-  replaceAudio: async (f) => {
-    if (!record) return;
-    if (!confirm(i18nText("main.message377"))) return;
-    const old = record;
-    const next = {
-      ...old,
-      audio: f,
-      song: { ...structuredClone(old.song), audioName: f.name },
-    };
-    next.canonicalXML = writeCanonical(
-      next.song,
-      old.canonicalXML,
-      (await mediaIdentity(next.pdf, next.audio)).audio,
-    );
-    await ensureCanonical(next);
-    await activate(next);
-    await persist();
-  },
-});
+        return;
+      record.revisions = retainRevision(record.revisions, record);
+      song().lyricText = text;
+      await persist();
+    },
+    exportFiles: async (kinds) => {
+      if (!record || !kinds.length) return;
+      await persist();
+      const title = song().title.replace(/[\\/:*?"<>|]/g, "_"),
+        files: { name: string; blob: Blob }[] = [];
+      for (const k of kinds) {
+        if (k === "xml")
+          files.push({
+            name: title + ".musicxml",
+            blob: new Blob([record.canonicalXML!], {
+              type: "application/vnd.recordare.musicxml+xml",
+            }),
+          });
+        if (k === "pdf") {
+          const pdf = songScores(record).find((s) => s.format === "pdf");
+          if (pdf) files.push({ name: title + ".pdf", blob: pdf.source });
+        }
+        if (k === "audio")
+          files.push({
+            name:
+              song().audioName.replace(/[\\/:*?"<>|]/g, "_") ||
+              title + ".audio",
+            blob: record.audio,
+          });
+      }
+      if (files.length === 1) download(files[0].blob, files[0].name);
+      else {
+        const zip = new JSZip();
+        for (const f of files) zip.file(f.name, await f.blob.arrayBuffer());
+        download(
+          new Blob([
+            new Uint8Array(await zip.generateAsync({ type: "uint8array" })),
+          ]),
+          title + ".zip",
+        );
+      }
+    },
+    exportAll: async () => {
+      await persist();
+      const records = await allRecords();
+      if (!records.length) throw Error(i18nText("main.message372"));
+      const prefs = Object.fromEntries(
+        preferenceKeys
+          .map((k) => [k, localStorage.getItem(k)])
+          .filter((p): p is [string, string] => p[1] !== null),
+      );
+      download(
+        new Blob([new Uint8Array(await exportLibrary(records, prefs))]),
+        i18nText("main.message373", { value1: records.length }),
+      );
+      tell(i18nText("main.message374", { value1: records.length }));
+    },
+    restoreAll: async (f) => {
+      const parsed = await importLibrary(await f.arrayBuffer());
+      for (const r of parsed.records) {
+        if (r.canonicalXML) readCanonical(r.canonicalXML, r.song);
+      }
+      const existing = await allRecords(),
+        overlap = parsed.records.filter((r) =>
+          existing.some((x) => x.song.id === r.song.id),
+        );
+      if (
+        !confirm(
+          i18nText("main.message375", {
+            value1: parsed.records.length,
+            value2: overlap.length,
+          }),
+        )
+      )
+        return;
+      player?.pause();
+      clearTimeout(saveTimer);
+      session?.reset();
+      await saveRecords(parsed.records);
+      for (const [k, v] of Object.entries(parsed.preferences))
+        localStorage.setItem(k, v);
+      const replacement = parsed.records.find(
+        (r) => r.song.id === record?.song.id,
+      );
+      if (replacement) {
+        record = undefined;
+        await activate(replacement);
+      }
+      await openLibrary();
+      tell(i18nText("main.message376", { value1: parsed.records.length }));
+    },
+    replaceAudio: async (f) => {
+      if (!record) return;
+      if (!confirm(i18nText("main.message377"))) return;
+      const old = record;
+      const next = {
+        ...old,
+        audio: f,
+        song: { ...structuredClone(old.song), audioName: f.name },
+      };
+      next.canonicalXML = writeCanonical(
+        next.song,
+        old.canonicalXML,
+        (await mediaIdentity(next.pdf, next.audio)).audio,
+      );
+      await ensureCanonical(next);
+      await activate(next);
+      await persist();
+    },
+  });
 
 // New-score entry uses one package-import path. The authoring database remains
 // the existing library; an existing identity is never silently overwritten.

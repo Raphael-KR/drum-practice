@@ -63,7 +63,7 @@ export function mountPlaybackDrawer(
     trigger.removeAttribute("aria-controls");
   }
   // Toolbar shortcuts focus their fixed controls; nothing opens or collapses.
-  const show = (name: Panel, _toggle = true) => {
+  const show = (name: Panel) => {
     const target = panels.get(name)!;
     target.focus({ preventScroll: true });
   };

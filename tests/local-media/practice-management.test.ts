@@ -24,7 +24,6 @@ function setup() {
   };
   const changed = vi.fn(),
     fail = vi.fn();
-  let management: ReturnType<typeof attachPracticeManagement>;
   const playback = {
     loopFromForm: (id?: string, name = "") => ({
       id: id ?? "new",
@@ -47,7 +46,7 @@ function setup() {
     },
     renderLists: () => management.render(),
   };
-  management = attachPracticeManagement({
+  const management = attachPracticeManagement({
     root,
     song: () => song,
     canonicalXML: () =>

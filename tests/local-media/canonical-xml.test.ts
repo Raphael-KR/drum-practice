@@ -15,11 +15,12 @@ import {
   projectLyrics,
 } from "../../src/modules/lyrics/lyric-score";
 import { parseMusicXML } from "../../src/modules/score/musicxml";
-const song = () => JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+const song = (): import("../../src/model/model").Song =>
+  JSON.parse(readFileSync("public/demo/song.json", "utf8"));
 it("migrates all lyric starts and restores from XML, disregarding poisoned cache values", () => {
   const s = song();
   migrateLyricPositions(s);
-  const positions = s.lyrics.map((l: any) => ({ ...l.scorePosition }));
+  const positions = s.lyrics.map((l) => ({ ...l.scorePosition }));
   const xml = writeCanonical(s);
   expect(xml).toContain("가사 리듬");
   expect(xml).not.toContain('"time":');
@@ -27,18 +28,16 @@ it("migrates all lyric starts and restores from XML, disregarding poisoned cache
   copy.lyrics = [];
   copy.title = "wrong";
   readCanonical(xml, copy);
-  expect(copy.lyrics.map((l: any) => l.scorePosition)).toEqual(positions);
+  expect(copy.lyrics.map((l) => l.scorePosition)).toEqual(positions);
   expect(copy.title).toBe(s.title);
-  expect(copy.lyrics.map((l: any) => l.text)).toEqual(
-    s.lyrics.map((l: any) => l.text),
-  );
+  expect(copy.lyrics.map((l) => l.text)).toEqual(s.lyrics.map((l) => l.text));
 });
 it("keeps musical positions independent of audio alignment and handles mixed meter", () => {
   const s = song();
   migrateLyricPositions(s);
   const p = structuredClone(s.lyrics[0].scorePosition),
     before = s.lyrics[0].time;
-  s.measures.forEach((m: any) => {
+  s.measures.forEach((m) => {
     m.start += 5;
     m.end += 5;
   });
@@ -109,10 +108,10 @@ it("imports exact vocal triplet rhythm without snapping it to a quarter-beat gri
   const parsed = {
     measures: s.measures,
     lyrics: [{ measure: 0, beat: 1 / 3, duration: 2 / 3, text: "나" }],
-  } as any;
+  } as unknown as Parameters<typeof vocalLyrics>[1];
   s.lyrics = vocalLyrics(s, parsed);
   projectLyrics(s);
-  expect(s.lyrics[0].scorePosition.quarterOffset).toBeCloseTo(1 / 3);
+  expect(s.lyrics[0].scorePosition!.quarterOffset).toBeCloseTo(1 / 3);
   const c = structuredClone(s);
   readCanonical(writeCanonical(s), c);
   expect(c.lyrics[0].scorePosition).toEqual(s.lyrics[0].scorePosition);
@@ -133,10 +132,10 @@ it("binds audio anchors to audio bytes", async () => {
       audio: new NativeBlob(["audio"]),
       pages: [],
       canonicalXML: undefined,
-    } as any;
+    } as unknown as import("../../src/model/record").RecordData;
   await ensureCanonical(r);
   await verifyCanonicalAudio(r);
-  r.audio = new NativeBlob(["other"]);
+  r.audio = new NativeBlob(["other"]) as unknown as Blob;
   await expect(verifyCanonicalAudio(r)).rejects.toThrow("음원");
 });
 it("preserves canonical XML through format switching, storage and backup serialization", async () => {
@@ -157,7 +156,7 @@ it("preserves canonical XML through format switching, storage and backup seriali
     audio: new NativeBlob(["audio"]),
     pages: Array.from({ length: s.pageCount }, () => new NativeBlob(["page"])),
     canonicalXML: writeCanonical(s),
-  } as any;
+  } as unknown as import("../../src/model/record").RecordData;
   await saveRecord(r);
   const restored = (await allRecords()).find((r) => r.song.id === s.id)!;
   expect(restored.canonicalXML).toBe(r.canonicalXML);
@@ -175,11 +174,11 @@ it("reimports the app MusicXML into new geometry while keeping its musical IDs",
   const s = song(),
     xml = writeCanonical(s),
     fresh = structuredClone(s);
-  fresh.measures.forEach((m: any, i: number) => (m.id = "new-" + i));
+  fresh.measures.forEach((m, i) => (m.id = "new-" + i));
   fresh.lyrics = [];
   const canonical = importedCanonical(xml, fresh)!;
   readCanonical(canonical, fresh);
-  expect(fresh.lyrics.map((l: any) => l.scorePosition)).toEqual(
-    s.lyrics.map((l: any) => l.scorePosition),
+  expect(fresh.lyrics.map((l) => l.scorePosition)).toEqual(
+    s.lyrics.map((l) => l.scorePosition),
   );
 });

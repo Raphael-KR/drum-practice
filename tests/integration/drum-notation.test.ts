@@ -61,8 +61,8 @@ it("places sticking over the actual beamed stem even when no stem SVG is inside 
   );
   Object.assign(globalThis, { document: dom.window.document });
   const host = document.querySelector("#host") as HTMLElement;
-  const head = document.querySelector("#head") as any;
-  head.getBBox = () => ({ x: 20, y: 100, width: 12, height: 10 });
+  const head = document.querySelector("#head") as SVGGraphicsElement;
+  head.getBBox = () => ({ x: 20, y: 100, width: 12, height: 10 }) as DOMRect;
   const note = {
     sourceNote: { NoteheadColorXml: "#abcdef" },
     getNoteheadSVGs: () => [head],
@@ -80,7 +80,7 @@ it("places sticking over the actual beamed stem even when no stem SVG is inside 
           [{ staffEntries: [{ graphicalVoiceEntries: [{ notes: [note] }] }] }],
         ],
       },
-    },
+    } as unknown as Parameters<typeof applyDrumDecorations>[1],
     new Map([["#abcdef", { sticking: "R", ghost: false, color: "#000000" }]]),
   );
   const text = host.querySelector("[data-sticking]")!;

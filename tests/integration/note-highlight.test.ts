@@ -97,14 +97,19 @@ it("attaches rhythmic data to notes and beams but excludes rests", () => {
       ],
     },
   };
-  annotateNoteHighlights(osmd, [4]);
+  annotateNoteHighlights(
+    osmd as unknown as Parameters<typeof annotateNoteHighlights>[0],
+    [4],
+  );
   expect(note.getSVGGElement().getAttribute("data-note-beat")).toBe("1.5");
   expect(rest.getSVGGElement().hasAttribute("data-note-beat")).toBe(false);
   expect(beam.getAttribute("data-beam-measure")).toBe("0");
 });
 it("uses the connected beam voice instead of nearby simultaneous stems", () => {
   const beam = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  const sourceBeam: { Notes: any[] } = { Notes: [] };
+  const sourceBeam: {
+    Notes: { isRest(): boolean; NoteBeam?: typeof sourceBeam }[];
+  } = { Notes: [] };
   const note = (beat: number, x: number, connected: boolean) => {
     const source = {
       isRest: () => false,
@@ -136,7 +141,9 @@ it("uses the connected beam voice instead of nearby simultaneous stems", () => {
     note(0.25, 45, false),
   ];
   annotateNoteHighlights(
-    { GraphicSheet: { MeasureList: [[{ staffEntries: entries }]] } },
+    {
+      GraphicSheet: { MeasureList: [[{ staffEntries: entries }]] },
+    } as unknown as Parameters<typeof annotateNoteHighlights>[0],
     [4],
   );
   expect(JSON.parse(beam.getAttribute("data-beam-points")!)).toEqual([

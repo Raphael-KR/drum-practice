@@ -419,6 +419,7 @@ export async function readAudioPractice(
             ? `${error.name}: ${error.message}`
             : String(error),
       }),
+      { cause: error },
     );
   } finally {
     await context.close().catch(() => {});

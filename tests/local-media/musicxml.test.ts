@@ -129,8 +129,22 @@ it("preserves timeline, lyrics, loops, marker and old song on geometry replaceme
   expect(next.loops).toEqual(before.loops);
   expect(next.markers).toEqual(before.markers);
   expect(next.settings).toEqual(before.settings);
-  expect(next.measures.map(({ regionId, ...m }) => m)).toEqual(
-    before.measures.map(({ regionId, ...m }) => m),
+  expect(
+    next.measures.map((measure) => {
+      const m: Omit<typeof measure, "regionId"> & { regionId?: string } = {
+        ...measure,
+      };
+      delete m.regionId;
+      return m;
+    }),
+  ).toEqual(
+    before.measures.map((measure) => {
+      const m: Omit<typeof measure, "regionId"> & { regionId?: string } = {
+        ...measure,
+      };
+      delete m.regionId;
+      return m;
+    }),
   );
   validateSong(next);
   expect(scoreArchivePath(next)).toBe("media/score.musicxml");

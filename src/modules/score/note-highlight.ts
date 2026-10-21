@@ -1,3 +1,7 @@
+import type { Note } from "opensheetmusicdisplay/build/dist/src/MusicalScore/VoiceData/Note";
+import type { Beam } from "opensheetmusicdisplay/build/dist/src/MusicalScore/VoiceData/Beam";
+import type { VexFlowGraphicalNote } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowGraphicalNote";
+import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { displayPage } from "./score-pages";
 
 export const NOTE_HIGHLIGHT_VERSION = "2";
@@ -5,34 +9,38 @@ const NS = "http://www.w3.org/2000/svg";
 let clipSerial = 0;
 
 /** Keep OSMD's musical onset attached to its exact SVG glyph, not a pixel estimate. */
-export function annotateNoteHighlights(osmd: any, denominators: number[]) {
+export function annotateNoteHighlights(
+  osmd: OpenSheetMusicDisplay,
+  denominators: number[],
+) {
   for (const [index, row] of osmd.GraphicSheet.MeasureList.entries()) {
     const measure = row[0];
     if (!measure) continue;
     const points: { beat: number; x: number }[] = [];
-    const beams = new Map<SVGGraphicsElement, any>();
-    const notePoints = new Map<any, Point>();
+    const beams = new Map<SVGGraphicsElement, Beam>();
+    const notePoints = new Map<Note, Point>();
     for (const entry of measure.staffEntries) {
       const beat = entry.relInMeasureTimestamp.RealValue * denominators[index];
       for (const voice of entry.graphicalVoiceEntries)
-        for (const note of voice.notes) {
+        for (const note of voice.notes as VexFlowGraphicalNote[]) {
           const stemX = note.vfnote?.[0]?.getStemX?.();
           if (Number.isFinite(stemX))
             notePoints.set(note.sourceNote, { beat, x: stemX });
           if (note.sourceNote.isRest()) continue;
-          const group = note.getSVGGElement?.() as
+          const group = note.getSVGGElement?.() as unknown as
             SVGGraphicsElement | undefined;
           if (!group) continue;
           group.setAttribute("data-note-measure", String(index));
           group.setAttribute("data-note-beat", String(beat));
           if (note.sourceNote.IsGraceNote)
             group.setAttribute("data-note-grace", "true");
-          const stem = note.getStemSVG?.() as SVGGraphicsElement | undefined;
+          const stem = note.getStemSVG?.() as unknown as
+            SVGGraphicsElement | undefined;
           if (stem && !group.contains(stem)) {
             stem.setAttribute("data-note-measure", String(index));
             stem.setAttribute("data-note-beat", String(beat));
           }
-          const head = note.getNoteheadSVGs?.()[note.vfnote?.[1]] as
+          const head = note.getNoteheadSVGs?.()[note.vfnote?.[1]] as unknown as
             SVGGraphicsElement | undefined;
           const box = (stem || head || group).getBBox();
           const point = {
@@ -42,7 +50,10 @@ export function annotateNoteHighlights(osmd: any, denominators: number[]) {
           points.push(point);
           notePoints.set(note.sourceNote, point);
           for (const beam of note.getBeamSVGs?.() || [])
-            beams.set(beam, note.sourceNote.NoteBeam);
+            beams.set(
+              beam as unknown as SVGGraphicsElement,
+              note.sourceNote.NoteBeam,
+            );
         }
     }
     const sorted = points
@@ -50,8 +61,8 @@ export function annotateNoteHighlights(osmd: any, denominators: number[]) {
       .filter((p, i, a) => !i || p.beat !== a[i - 1].beat);
     for (const [beam, sourceBeam] of beams) {
       const connected: Point[] = (sourceBeam?.Notes || [])
-        .map((n: any) => notePoints.get(n))
-        .filter(Boolean)
+        .map((n: Note) => notePoints.get(n))
+        .filter((point): point is Point => point !== undefined)
         .sort((a: Point, b: Point) => a.beat - b.beat);
       const anchors = connected.filter(
         (p, i) => !i || p.beat !== connected[i - 1].beat,

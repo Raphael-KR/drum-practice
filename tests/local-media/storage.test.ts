@@ -42,7 +42,10 @@ it("round-trips blobs, edited syllables, markers, loops and 81% rate", async () 
     const request = indexedDB.open("drum-practice");
     request.onsuccess = () => resolve(request.result);
   });
-  const raw = await new Promise<any>((resolve) => {
+  const raw = await new Promise<{
+    mediaFormat: string;
+    pages: { bytes: ArrayBuffer }[];
+  }>((resolve) => {
     const request = db.transaction("songs").objectStore("songs").get(song.id);
     request.onsuccess = () => resolve(request.result);
   });

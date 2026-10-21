@@ -4,7 +4,7 @@ import { Blob as NodeBlob } from "node:buffer";
 import { preparePlaybackAssets } from "../../src/modules/playback/playback-assets";
 import type { Song } from "../../src/model/model";
 const state = vi.hoisted(() => ({
-  host: null as any,
+  host: undefined as unknown as import("../../src/modules/playback/playback-screen").PlaybackScreenHost,
   dispose: vi.fn(),
   close: vi.fn(async () => {}),
   load: vi.fn(async () => {}),
@@ -21,7 +21,9 @@ vi.mock("../../src/modules/audio/audio-core", () => ({
   },
 }));
 vi.mock("../../src/modules/playback/playback-screen", () => ({
-  createPlaybackScreen: (host: any) => {
+  createPlaybackScreen: (
+    host: import("../../src/modules/playback/playback-screen").PlaybackScreenHost,
+  ) => {
     state.host = host;
     return {
       dispose: state.dispose,
@@ -42,8 +44,10 @@ vi.mock("../../src/modules/playback/playback-assets", () => ({
     highlightPages: [],
     practiceStaffs: new Map(),
   })),
-  replacePlaybackAssets: (current: any, next: any) =>
-    Object.assign(current, next),
+  replacePlaybackAssets: (
+    current: import("../../src/modules/playback/playback-assets").PlaybackAssets,
+    next: import("../../src/modules/playback/playback-assets").PlaybackAssets,
+  ) => Object.assign(current, next),
   releasePlaybackAssets: vi.fn(),
 }));
 import { mountPlaybackRuntime } from "../../src/modules/playback/playback-runtime";
@@ -81,7 +85,7 @@ it("mounts either adapter, persists position/preferences and disposes once befor
   expect(new Set(ids).size).toBe(ids.length);
   expect(o.root.querySelector("#section-shortcuts")).not.toBeNull();
   expect(o.root.querySelector("#quick-markers")).not.toBeNull();
-  state.host.afterFrame(12);
+  state.host.afterFrame!(12);
   state.host.preferences.write({ restartMeasure: false, countOff: false });
   await runtime.flush();
   expect(changed).toHaveBeenLastCalledWith(
@@ -121,12 +125,12 @@ it("throttles frame writes, serializes saves and flushes the latest position on 
   );
   const o = options();
   const runtime = await mountPlaybackRuntime({ ...o, changed });
-  for (let n = 1; n <= 60; n++) state.host.afterFrame(n / 10);
+  for (let n = 1; n <= 60; n++) state.host.afterFrame!(n / 10);
   expect(changed).not.toHaveBeenCalled();
   await vi.advanceTimersByTimeAsync(1000);
   expect(changed).toHaveBeenCalledTimes(1);
   expect(changed.mock.calls[0][0].settings.position).toBe(6);
-  state.host.afterFrame(7);
+  state.host.afterFrame!(7);
   runtime.dispose();
   expect(changed).toHaveBeenCalledTimes(1);
   finish();
@@ -197,7 +201,7 @@ it("keeps a BFCache page usable and saves position, while final pagehide dispose
   const o = options();
   const changed = vi.fn();
   const runtime = await mountPlaybackRuntime({ ...o, changed });
-  state.host.afterFrame(8);
+  state.host.afterFrame!(8);
   window.dispatchEvent(
     new PageTransitionEvent("pagehide", { persisted: true }),
   );

@@ -33,7 +33,6 @@ import {
   beginLoadTiming,
   recordLoadTiming,
 } from "../../platform/browser/load-timing";
-import { icon } from "../../shared/ui/icon-svg";
 import { installLandscapeKeyboardGuard } from "../../platform/browser/landscape-keyboard";
 import { renderKeepingTopHeader } from "../../shared/ui/top-edge-header";
 import "../../modules/help/help.css";
@@ -428,8 +427,6 @@ export async function showLibrary() {
   delete document.body.dataset.ready;
   root.className = "player-library";
   renderKeepingTopHeader(root, libraryHTML(import.meta.env.DEV));
-  if (import.meta.env.DEV) {
-  }
   showBuildLabel();
   root
     .querySelector("#library-refresh")!

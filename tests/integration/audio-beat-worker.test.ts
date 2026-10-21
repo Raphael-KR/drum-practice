@@ -13,16 +13,22 @@ afterEach(() => {
 it.each(["success", "error", "timeout", "abort"])(
   "settles and terminates the analysis worker on %s",
   async (mode) => {
-    let worker: any;
+    const workers: {
+      onmessage: (event: { data: { beatTimes: number[] } }) => void;
+      onerror: (event: { message: string }) => void;
+      terminate: ReturnType<typeof vi.fn>;
+      postMessage: ReturnType<typeof vi.fn>;
+    }[] = [];
+    const worker = () => workers.at(-1)!;
     vi.stubGlobal(
       "Worker",
       class {
-        onmessage: any;
-        onerror: any;
+        onmessage!: (event: { data: { beatTimes: number[] } }) => void;
+        onerror!: (event: { message: string }) => void;
         terminate = vi.fn();
         postMessage = vi.fn();
         constructor() {
-          worker = this;
+          workers.push(this);
         }
       },
     );
@@ -33,12 +39,12 @@ it.each(["success", "error", "timeout", "abort"])(
       (value) => ({ value }),
       (error) => ({ error }),
     );
-    expect(worker.postMessage).toHaveBeenCalledOnce();
+    expect(worker().postMessage).toHaveBeenCalledOnce();
     if (mode === "success")
-      worker.onmessage({
+      worker().onmessage({
         data: { beatTimes: [0.2, 0.7, 1.2, 1.7, 2.2, 2.7, 3.2, 3.7] },
       });
-    if (mode === "error") worker.onerror({ message: "WASM unavailable" });
+    if (mode === "error") worker().onerror({ message: "WASM unavailable" });
     if (mode === "timeout") await vi.advanceTimersByTimeAsync(120000);
     if (mode === "abort") controller.abort();
     if (mode === "success")
@@ -46,7 +52,7 @@ it.each(["success", "error", "timeout", "abort"])(
         value: [0.2, 0.7, 1.2, 1.7, 2.2, 2.7, 3.2, 3.7],
       });
     else expect(await result).toHaveProperty("error");
-    expect(worker.terminate).toHaveBeenCalledOnce();
+    expect(worker().terminate).toHaveBeenCalledOnce();
     expect(vi.getTimerCount()).toBe(0);
   },
 );

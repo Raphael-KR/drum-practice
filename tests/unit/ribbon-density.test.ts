@@ -104,7 +104,9 @@ it("selects grid artwork without changing the legacy row artwork", async () => {
     await import("../../src/modules/playback/playback-assets");
   const row = { url: "row" },
     grid = { url: "grid" },
-    asset = { row, grid } as any;
+    asset = { row, grid } as unknown as Parameters<
+      typeof selectPlaybackEngraving
+    >[0];
   expect(selectPlaybackEngraving(asset, true)).toBe(grid);
   expect(selectPlaybackEngraving(asset, false)).toBe(row);
 });

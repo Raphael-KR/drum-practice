@@ -99,16 +99,12 @@ function mount(
     }),
     prepare: vi.fn(async () => {}),
     volumes: vi.fn(),
-    setRate: vi.fn(
-      async (
-        rate: number,
-        original = rate === 1,
-        _report?: (message: string) => void,
-      ) => {
-        song.settings.rate = rate;
-        song.settings.tempoMode = original ? "original" : "practice";
-      },
-    ),
+    setRate: vi.fn<
+      import("../../src/modules/audio/audio-core").Player["setRate"]
+    >(async (rate: number, original = rate === 1) => {
+      song.settings.rate = rate;
+      song.settings.tempoMode = original ? "original" : "practice";
+    }),
   };
   const prefs = { restartMeasure: false, countOff: false };
   let highlight = true,
@@ -240,7 +236,7 @@ for (const environment of ["web", "player"] as const) {
     expect(p.volumes).toHaveBeenCalled();
   });
   it(`${environment}: centered repeats, whole-measure endpoints, markers and seeking outside a loop agree`, () => {
-    const { screen, p, song, ids, input, click, root } = mount(environment);
+    const { screen, p, song, ids, click, root } = mount(environment);
     p.position = song.measures[20].start;
     root.querySelector<HTMLButtonElement>('[data-radius="2"]')!.click();
     const centerLoop = p.loop!;
@@ -310,7 +306,7 @@ for (const environment of ["web", "player"] as const) {
 }
 
 it("fixed control board stays visible while shortcuts and repeat presets are used", () => {
-  const { root, p, song, click, ids, input, screen } = mount("player");
+  const { root, p, song, click, ids, input } = mount("player");
   const preset = root.querySelector<HTMLButtonElement>('[data-radius="1"]')!;
   p.position = song.measures[20].start;
   preset.click();

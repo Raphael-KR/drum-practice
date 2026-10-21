@@ -1,3 +1,5 @@
+import type { VexFlowGraphicalNote } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowGraphicalNote";
+import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { applyDrumLegend } from "./drum-legend";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import halfOpenGlyph from "./vendor/pict-half-open.json";
@@ -116,7 +118,7 @@ export function prepareDrumDecorations(
 }
 export function applyDrumDecorations(
   host: HTMLElement,
-  osmd: any,
+  osmd: OpenSheetMusicDisplay,
   decorations: Map<string, NoteDecoration>,
 ) {
   const seen = new Set<string>();
@@ -124,7 +126,7 @@ export function applyDrumDecorations(
     for (const measure of row)
       for (const entry of measure.staffEntries)
         for (const voice of entry.graphicalVoiceEntries)
-          for (const n of voice.notes) {
+          for (const n of voice.notes as VexFlowGraphicalNote[]) {
             const token = String(
               n.sourceNote.NoteheadColorXml || n.sourceNote.NoteheadColor || "",
             ).toLowerCase();
@@ -132,7 +134,7 @@ export function applyDrumDecorations(
             if (!rule) continue;
             const glyph = n.getNoteheadSVGs()[
               n.vfnote[1]
-            ] as SVGGraphicsElement;
+            ] as unknown as SVGGraphicsElement;
             if (!glyph) throw Error(i18nText("drum-notation.message025"));
             seen.add(token);
             const b = glyph.getBBox(),
@@ -163,7 +165,9 @@ export function applyDrumDecorations(
             if (rule.sticking) {
               const stem = n
                 .getSVGGElement()
-                .querySelector(".vf-stem path") as SVGGraphicsElement | null;
+                .querySelector(
+                  ".vf-stem path",
+                ) as unknown as SVGGraphicsElement | null;
               const sb = stem?.getBBox();
               // Beamed stems may be drawn outside the note's SVG group.
               const vf = n.vfnote[0];
@@ -184,7 +188,9 @@ export function applyDrumDecorations(
             if (rule.halfOpen) {
               const stem = n
                 .getSVGGElement()
-                .querySelector(".vf-stem path") as SVGGraphicsElement | null;
+                .querySelector(
+                  ".vf-stem path",
+                ) as unknown as SVGGraphicsElement | null;
               const sb = stem?.getBBox();
               const size = 10,
                 scale = size / 286;

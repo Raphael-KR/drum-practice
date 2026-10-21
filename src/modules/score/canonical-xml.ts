@@ -444,7 +444,7 @@ export function vocalLyrics(
   )
     throw Error(i18nText("canonical-xml.message021"));
   if (!parsed.lyrics.length) throw Error(i18nText("canonical-xml.message022"));
-  return parsed.lyrics.map((l, i) => ({
+  return parsed.lyrics.map((l) => ({
     id: crypto.randomUUID(),
     text: l.text,
     confirmed: false,

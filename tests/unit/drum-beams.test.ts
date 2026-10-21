@@ -21,9 +21,15 @@ it("adapts the native note.beam before drawing and preserves minimum stem cleara
     getStemExtents: () => ({ topY: y - 35 }),
     getStave: () => ({ getSpacingBetweenLines: () => 10 }),
   }));
-  const beam: any = { notes, stem_direction: 1 };
+  const beam = {
+    notes,
+    stem_direction: 1,
+    slope: 0,
+    y_shift: 0,
+    calculateSlope() {},
+  };
   let slope: number | undefined;
-  const m: any = {
+  const m = {
     staffEntries: [
       {
         graphicalVoiceEntries: notes.map((n) => ({
@@ -37,8 +43,10 @@ it("adapts the native note.beam before drawing and preserves minimum stem cleara
     },
   };
   const calculator = { calculateMeasureXLayout: () => 1 };
-  installDrumBeams({ GraphicSheet: { GetCalculator: calculator } });
-  (calculator.calculateMeasureXLayout as any)([m]);
+  installDrumBeams({
+    GraphicSheet: { GetCalculator: calculator },
+  } as unknown as Parameters<typeof installDrumBeams>[0]);
+  (calculator.calculateMeasureXLayout as (row: (typeof m)[]) => number)([m]);
   m.draw();
   expect(slope).toBeCloseTo(5 / 90);
   expect(beam.y_shift).toBe(0);

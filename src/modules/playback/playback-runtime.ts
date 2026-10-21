@@ -93,7 +93,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     root,
     `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML('<p id="status" role="alert" aria-atomic="true"></p>')}</section></main>`,
   );
-  let management: ReturnType<typeof attachPracticeManagement> | undefined;
+
   const markerContent = document.createElement("div");
   markerContent.innerHTML = practiceMarkerHTML();
   const loopExtra = document.createElement("div");
@@ -314,15 +314,16 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     if (player.playing) status("");
     playback.onState();
   };
-  management = attachPracticeManagement({
-    canonicalXML: () => options.canonicalXML,
-    root,
-    song,
-    playback: () => playback,
-    player: () => player,
-    changed,
-    fail,
-  });
+  const management: ReturnType<typeof attachPracticeManagement> =
+    attachPracticeManagement({
+      canonicalXML: () => options.canonicalXML,
+      root,
+      song,
+      playback: () => playback,
+      player: () => player,
+      changed,
+      fail,
+    });
   async function preparePages(pages = currentPages, score: Song = s) {
     return preparePlaybackAssets(pages, score, {
       validate:

@@ -9,7 +9,7 @@ import { fullScoreLabels } from "../../modules/score/full-score-labels";
 import { displayPage } from "../../modules/score/score-pages";
 import { icon } from "../../shared/ui/icons";
 import { songScores } from "../../modules/score/song-scores";
-import { openSettingsChild, selectEditorPane } from "./workspace";
+import { selectEditorPane } from "./workspace";
 import type { RecordData } from "../../model/record";
 import { escapeHTML } from "../../shared/ui/html";
 export { escapeHTML } from "../../shared/ui/html";

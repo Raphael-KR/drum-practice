@@ -39,7 +39,7 @@ it("upgrades both v2 databases, deletes all recovery copies and preserves live s
       });
       expect(db.version).toBe(name === "drum-practice" ? 4 : 3);
       expect(db.objectStoreNames.contains("archives")).toBe(false);
-      const rows = await new Promise<any[]>((resolve) => {
+      const rows = await new Promise<unknown[]>((resolve) => {
         const r = db.transaction("songs").objectStore("songs").getAll();
         r.onsuccess = () => resolve(r.result);
       });

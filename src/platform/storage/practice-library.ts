@@ -70,7 +70,10 @@ async function encode(record: RecordData): Promise<Stored> {
 }
 function decode(record: Stored): RecordData {
   if (!("mediaFormat" in record)) return record as RecordData;
-  const { mediaFormat: _, ...rest } = record;
+  const rest: Omit<Stored, "mediaFormat"> & {
+    mediaFormat?: Stored["mediaFormat"];
+  } = { ...record };
+  delete rest.mediaFormat;
   return {
     ...rest,
     ...restoreScoreMedia(record),

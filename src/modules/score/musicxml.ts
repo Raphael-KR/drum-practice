@@ -17,7 +17,7 @@ import {
   type RibbonSpacing,
 } from "./ribbon-engraving";
 import { displayPage } from "./score-pages";
-import { uid, type Region } from "../../model/model";
+import { type Region } from "../../model/model";
 
 export interface XMLMeasure {
   label: string;
@@ -270,7 +270,9 @@ export async function readMusicXML(blob: Blob): Promise<string> {
     const stream = (
       entry as unknown as {
         internalStream(type: string): {
-          on(event: string, callback: (value: any) => void): void;
+          on(event: "data", callback: (value: Uint8Array) => void): void;
+          on(event: "error", callback: (value: unknown) => void): void;
+          on(event: "end", callback: () => void): void;
           pause(): void;
           resume(): void;
         };
@@ -612,8 +614,10 @@ async function renderMusicXMLPass(
         );
         const bounds = systemBounds[page.PageNumber - 1].get(key);
         if (!bounds) continue;
-        for (const expression of g.ParentStaffLine
-          .AbstractExpressions as any[]) {
+        for (const expression of g.ParentStaffLine.AbstractExpressions as {
+          Lines?: { SVGElement?: SVGGraphicsElement }[];
+          lines?: { SVGElement?: SVGGraphicsElement }[];
+        }[]) {
           for (const line of expression.Lines ?? expression.lines ?? []) {
             const box = line.SVGElement?.getBBox?.();
             if (!box) continue;
@@ -659,8 +663,7 @@ async function renderMusicXMLPass(
         height = svg.viewBox.baseVal.height;
       if (!(width > 0 && height > 0))
         throw Error(i18nText("musicxml.message417"));
-      const sx = 1,
-        sy = 1;
+      const sx = 1;
       const x = Math.max(0, (p.x - pp.x + box.BorderLeft) * 10 * sx),
         right = timeline
           ? x +
@@ -728,7 +731,11 @@ async function renderMusicXMLPass(
       });
     }
     const staffs = regions.map((r, i) => {
-      const stave = (osmd.GraphicSheet.MeasureList[i][0] as any).getVFStave();
+      const stave = (
+        osmd.GraphicSheet.MeasureList[
+          i
+        ][0] as import("opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure").VexFlowMeasure
+      ).getVFStave();
       const height = svgs[r.page].viewBox.baseVal.height;
       return {
         top: stave.getYForLine(0) / height,

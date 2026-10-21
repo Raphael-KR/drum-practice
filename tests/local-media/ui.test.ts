@@ -1,3 +1,4 @@
+import type { Song, Loop } from "../../src/model/model";
 // DOM interaction contract only. Does not claim browser layout/audio or iPad proof.
 // @vitest-environment jsdom
 import "fake-indexeddb/auto";
@@ -19,12 +20,12 @@ vi.mock("../../src/apps/editor/audio", () => ({
     playing = false;
     position = 0;
     duration = 300;
-    song: any;
-    loop: any;
+    song!: Song;
+    loop?: Loop;
     onstate = () => {};
     onprogress = () => {};
     renderRate = 1;
-    async load(_b: any, s: any) {
+    async load(_b: Blob, s: Song) {
       this.song = s;
       this.position = s.settings.position;
     }
@@ -92,7 +93,7 @@ beforeAll(async () => {
     },
     fillRect() {},
     strokeRect() {},
-  })) as any;
+  })) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   vi.stubGlobal("confirm", () => true);
   vi.stubGlobal("fetch", async (url: string) => ({
     ok: true,

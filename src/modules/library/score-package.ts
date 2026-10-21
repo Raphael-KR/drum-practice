@@ -94,7 +94,10 @@ function inspectZip(bytes: Uint8Array, nestedMXL = false) {
     const nestedPath = name.replace(/\/$/, "");
     const pathValid = nestedMXL
       ? !!nestedPath &&
-        !/^[\/]|[\\\x00-\x1f]/.test(nestedPath) &&
+        !nestedPath.startsWith("/") &&
+        !Array.from(nestedPath).some(
+          (character) => character === "\\" || character.charCodeAt(0) < 32,
+        ) &&
         nestedPath.split("/").every((p) => p && p !== "." && p !== "..")
       : safePath(name);
     if (!pathValid || entries.has(name)) invalid();

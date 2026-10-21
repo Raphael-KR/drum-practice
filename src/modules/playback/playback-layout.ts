@@ -125,8 +125,8 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     scrubbing,
     resume,
   } = h;
-  let { rowWindow, pausedBrowseIndex, renderedBrowseWidth, playbackRowOrigin } =
-    state;
+  let { rowWindow, pausedBrowseIndex, renderedBrowseWidth } = state;
+  const { playbackRowOrigin } = state;
   try {
     if (!playing && !resume) {
       const stableBrowse =
