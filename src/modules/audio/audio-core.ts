@@ -1,4 +1,4 @@
-import {audioTimeMap, mapTime, type AudioTimeMap} from "./audio-time-map";
+import { audioTimeMap, mapTime, type AudioTimeMap } from "./audio-time-map";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import type { PlaybackPreferences } from "../playback/playback-preferences";
 import { stickClickSamples } from "./stick-click";
@@ -12,7 +12,11 @@ import {
   type Song,
   type Loop,
 } from "../../model/model";
-import { createMixLimiterCurve, MIX_INPUT_GAIN, METRONOME_MAX_GAIN } from "./audio-levels";
+import {
+  createMixLimiterCurve,
+  MIX_INPUT_GAIN,
+  METRONOME_MAX_GAIN,
+} from "./audio-levels";
 export class Player {
   ctx: AudioContext;
   music: GainNode;
@@ -94,7 +98,13 @@ export class Player {
     const now = this.ctx.currentTime;
     const c =
       [...this.cycles].reverse().find((c) => now >= c.at) || this.cycles[0];
-    if(c && this.renderedMap) return this.sourceTime(Math.min(this.outputTime(c.to),this.outputTime(c.from)+Math.max(0,now-c.musicAt)));
+    if (c && this.renderedMap)
+      return this.sourceTime(
+        Math.min(
+          this.outputTime(c.to),
+          this.outputTime(c.from) + Math.max(0, now - c.musicAt),
+        ),
+      );
     return c ? cyclePosition(c, now) : this.position;
   }
   count() {
@@ -131,13 +141,28 @@ export class Player {
     this.nextClick.clear();
     if (notify) this.onstate();
   }
-  outputTime(source: number) { return this.renderedMap ? mapTime(source,this.renderedMap.source,this.renderedMap.output) : source/this.renderRate; }
-  sourceTime(output: number) { return this.renderedMap ? mapTime(output,this.renderedMap.output,this.renderedMap.source) : output*this.renderRate; }
+  outputTime(source: number) {
+    return this.renderedMap
+      ? mapTime(source, this.renderedMap.source, this.renderedMap.output)
+      : source / this.renderRate;
+  }
+  sourceTime(output: number) {
+    return this.renderedMap
+      ? mapTime(output, this.renderedMap.output, this.renderedMap.source)
+      : output * this.renderRate;
+  }
   async setRate(rate: number, original = rate === 1, report = this.onprogress) {
     const was = this.playing;
     this.pause();
     const request = this.playRequest;
-    if (!(await this.renderAtRate(original ? 1 : rate, original ? "original" : "practice", report)) || request !== this.playRequest)
+    if (
+      !(await this.renderAtRate(
+        original ? 1 : rate,
+        original ? "original" : "practice",
+        report,
+      )) ||
+      request !== this.playRequest
+    )
       return;
     if (was) await this.play(false, false);
     this.onstate();
@@ -148,13 +173,20 @@ export class Player {
     this.worker?.terminate();
     this.worker = undefined;
   }
-  private async renderAtRate(rate: number, mode = this.song?.settings.tempoMode, report = this.onprogress) {
+  private async renderAtRate(
+    rate: number,
+    mode = this.song?.settings.tempoMode,
+    report = this.onprogress,
+  ) {
     const gen = ++this.generation;
     this.cancelStretch();
     if (!this.original || !this.song) return false;
     const original = this.original;
     const song = this.song;
-    const timeMap = audioTimeMap({...song, settings: {...song.settings, rate, tempoMode: mode}},original.duration);
+    const timeMap = audioTimeMap(
+      { ...song, settings: { ...song.settings, rate, tempoMode: mode } },
+      original.duration,
+    );
     if (rate === 1 && !timeMap) {
       this.rendered = this.original;
       this.renderRate = 1;
@@ -165,9 +197,12 @@ export class Player {
         r = this.original
           .getChannelData(Math.min(1, this.original.numberOfChannels - 1))
           .slice();
-      const worker = new Worker(new URL("./stretch-worker.ts", import.meta.url), {
-        type: "module",
-      });
+      const worker = new Worker(
+        new URL("./stretch-worker.ts", import.meta.url),
+        {
+          type: "module",
+        },
+      );
       this.worker = worker;
       let result: { left: Float32Array; right: Float32Array } | undefined;
       try {
@@ -240,7 +275,10 @@ export class Player {
     await this.prepare();
     if (request !== this.playRequest) return;
     this.stopPlayback(false);
-    if (this.renderRate !== this.song.settings.rate || !!this.renderedMap !== !!audioTimeMap(this.song,this.duration)) {
+    if (
+      this.renderRate !== this.song.settings.rate ||
+      !!this.renderedMap !== !!audioTimeMap(this.song, this.duration)
+    ) {
       if (!(await this.renderAtRate(this.song.settings.rate))) return;
       if (request !== this.playRequest) return;
     }
@@ -277,32 +315,50 @@ export class Player {
     const m = locate(s, from).measure;
     if (!m || to <= from) return;
     // The untracked fade-out can be long; never use it as a count-off beat.
-    const beats = s.audioPractice?.followTempo ? s.audioPractice.beatTimes : undefined;
+    const beats = s.audioPractice?.followTempo
+      ? s.audioPractice.beatTimes
+      : undefined;
     let observedBeatSeconds: number | undefined;
     if (beats) {
-      const next = beats.findIndex(t => t >= from);
+      const next = beats.findIndex((t) => t >= from);
       const i = Math.min(next < 0 ? beats.length - 1 : next, beats.length - 2);
       observedBeatSeconds = beats[i + 1] - beats[i];
     }
-    const c = makeCycle(at, from, to, s.settings.rate, 0, m, countOff && !m.audioPrelude, observedBeatSeconds);
-    if(this.renderedMap) {
-      c.countBeatSeconds=60/(s.bpm*s.settings.rate);
-      const leading=Math.max(0,this.outputTime(m.start)-this.outputTime(from));
-      c.musicAt=at+Math.max(0,c.count*c.countBeatSeconds-leading);
-      c.countAt=at+Math.max(0,leading-c.count*c.countBeatSeconds);
-      c.endAt=c.musicAt+this.outputTime(to)-this.outputTime(from);
+    const c = makeCycle(
+      at,
+      from,
+      to,
+      s.settings.rate,
+      0,
+      m,
+      countOff && !m.audioPrelude,
+      observedBeatSeconds,
+    );
+    if (this.renderedMap) {
+      c.countBeatSeconds = 60 / (s.bpm * s.settings.rate);
+      const leading = Math.max(
+        0,
+        this.outputTime(m.start) - this.outputTime(from),
+      );
+      c.musicAt = at + Math.max(0, c.count * c.countBeatSeconds - leading);
+      c.countAt = at + Math.max(0, leading - c.count * c.countBeatSeconds);
+      c.endAt = c.musicAt + this.outputTime(to) - this.outputTime(from);
     }
     if (m.audioPrelude && this.preferences().countOff)
       c.preludeClicks = preludeCountBeats(s)
-        .filter(t => t >= from - 1e-7 && t < to - 1e-7)
-        .map(t => c.musicAt + this.outputTime(t) - this.outputTime(from));
+        .filter((t) => t >= from - 1e-7 && t < to - 1e-7)
+        .map((t) => c.musicAt + this.outputTime(t) - this.outputTime(from));
     this.cycles.push(c);
     this.nextClick.set(c, 0);
     const source = this.ctx.createBufferSource();
     source.buffer = this.rendered!;
     source.connect(this.music);
     this.track(source);
-    source.start(c.musicAt, this.outputTime(from), this.outputTime(to)-this.outputTime(from));
+    source.start(
+      c.musicAt,
+      this.outputTime(from),
+      this.outputTime(to) - this.outputTime(from),
+    );
   }
   track(n: AudioScheduledSourceNode) {
     this.nodes.add(n);
@@ -358,14 +414,18 @@ export class Player {
     }
     for (const c of this.cycles) {
       const events = [
-        ...(c.preludeClicks ?? []).map(at => ({ at, accent: false, count: true })),
+        ...(c.preludeClicks ?? []).map((at) => ({
+          at,
+          accent: false,
+          count: true,
+        })),
         ...Array.from({ length: c.count }, (_, i) => ({
           at: c.countAt + i * c.countBeatSeconds,
           accent: i % c.beats === 0,
           count: true,
         })),
         ...beatEvents(this.song, c.from, c.to).map((b) => ({
-          at: c.musicAt + this.outputTime(b.time)-this.outputTime(c.from),
+          at: c.musicAt + this.outputTime(b.time) - this.outputTime(c.from),
           accent: b.accent,
           count: false,
         })),

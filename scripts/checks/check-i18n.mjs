@@ -9,7 +9,7 @@ const exceptions = JSON.parse(
 const errors = [];
 let refs = 0,
   content = 0;
-const files = sourceFiles().map(file => file.slice(4));
+const files = sourceFiles().map((file) => file.slice(4));
 for (const file of files) {
   const source = fs.readFileSync("src/" + file, "utf8"),
     ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
@@ -22,7 +22,11 @@ for (const file of files) {
     ) {
       if (
         (exceptions[file]?.literals.includes(n.text ?? n.getText(ast)) ||
-          exceptions[file]?.sha256?.includes(createHash("sha256").update(n.text ?? n.getText(ast)).digest("hex"))) &&
+          exceptions[file]?.sha256?.includes(
+            createHash("sha256")
+              .update(n.text ?? n.getText(ast))
+              .digest("hex"),
+          )) &&
         !/Error/.test(n.parent.getText(ast).slice(0, 30))
       )
         content++;

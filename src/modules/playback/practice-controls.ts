@@ -1,5 +1,11 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
-import { beatTime, clamp, locate, type Measure, type Song } from "../../model/model";
+import {
+  beatTime,
+  clamp,
+  locate,
+  type Measure,
+  type Song,
+} from "../../model/model";
 
 /** Inclusive measure range for the current bar and equally many neighbours. */
 export function centeredRange(

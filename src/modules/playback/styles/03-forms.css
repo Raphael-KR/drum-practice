@@ -1,4 +1,3 @@
-
 /* Shared settings switch component. */
 .settings-switch {
   display: flex;
@@ -363,12 +362,50 @@ main {
   min-width: 44px;
 }
 
-.score-reader-action { display:block; width:100%; text-align:left; margin-block:12px; }
-.score-reader-dialog { width:min(1100px,96vw); max-height:92dvh; overflow:auto; }
-.score-reader-dialog .dialoghead { position:sticky; top:0; z-index:2; background:var(--panel,#f5f7fc); }
-.score-reader-pages figure { margin:16px 0 24px; }
-.score-reader-pages figcaption { color:var(--muted,#64748b); margin-bottom:8px; }
-.score-reader-surface { position:relative; background:#fff; }
-.score-reader-surface img { display:block; width:100%; height:auto; }
-.score-reader-measure { position:absolute; transform:translate(-110%,-50%); color:#64748b; font-size:clamp(9px,1vw,14px); font-weight:600; line-height:1; pointer-events:none; }
-.score-reader-lyrics { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; }
+.score-reader-action {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-block: 12px;
+}
+.score-reader-dialog {
+  width: min(1100px, 96vw);
+  max-height: 92dvh;
+  overflow: auto;
+}
+.score-reader-dialog .dialoghead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--panel, #f5f7fc);
+}
+.score-reader-pages figure {
+  margin: 16px 0 24px;
+}
+.score-reader-pages figcaption {
+  color: var(--muted, #64748b);
+  margin-bottom: 8px;
+}
+.score-reader-surface {
+  position: relative;
+  background: #fff;
+}
+.score-reader-surface img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.score-reader-measure {
+  position: absolute;
+  transform: translate(-110%, -50%);
+  color: #64748b;
+  font-size: clamp(9px, 1vw, 14px);
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+.score-reader-lyrics {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}

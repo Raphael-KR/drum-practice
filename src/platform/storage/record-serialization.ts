@@ -53,7 +53,8 @@ export async function packSong(record: RecordData): Promise<PackedRecord> {
   };
 }
 export function unpackSong(data: PackedRecord): RecordData {
-  if (data.version !== 1) throw Error(i18nText("record-serialization.invalidVersion"));
+  if (data.version !== 1)
+    throw Error(i18nText("record-serialization.invalidVersion"));
   validateSong(data.song);
   if (data.pages.length !== data.song.pageCount)
     throw Error(i18nText("record-serialization.invalidPages"));

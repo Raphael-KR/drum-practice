@@ -39,8 +39,18 @@ export default defineConfig(({ mode }) => {
         generateBundle(_, bundle) {
           if (!separate) return;
           if (mode === "player") {
-            for (const name of ["apple-touch-icon.png", "apple-touch-icon-180.png", "favicon.ico", "favicon-32.png", "icon-192.png"])
-              this.emitFile({type: "asset", fileName: `icons/${name}`, source: readFileSync(`public/icons/${name}`)});
+            for (const name of [
+              "apple-touch-icon.png",
+              "apple-touch-icon-180.png",
+              "favicon.ico",
+              "favicon-32.png",
+              "icon-192.png",
+            ])
+              this.emitFile({
+                type: "asset",
+                fileName: `icons/${name}`,
+                source: readFileSync(`public/icons/${name}`),
+              });
             const scores = JSON.parse(
               readFileSync("src/content/bundled-scores.json", "utf8"),
             );

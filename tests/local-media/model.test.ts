@@ -126,44 +126,69 @@ it("matches independent snare observations, not just the BPM formula", () => {
   expect(s.measures[84].start).toBeCloseTo(g.t0 + 337 * g.seconds_per_beat, 9);
 });
 
-it('schedules exactly four quarter-note count-off strokes in any meter and playback rate',()=>{
-  for(const [beats,denominator] of [[4,4],[5,4],[6,8]]) for(const rate of [.5,1,1.2]) {
-    const m={id:'m',regionId:'r',label:'1',beats,denominator,start:0,end:beats*60/94*4/denominator};
-    const c=makeCycle(10,.23,m.end,rate,0,m,true);
-    expect(c.count).toBe(4);expect(c.beats).toBe(4);
-    expect(c.countAt).toBe(10);
-    expect(c.countBeatSeconds).toBeCloseTo(60/94/rate);
-    expect(c.musicAt).toBeCloseTo(10+4*60/94/rate);
-    expect(cyclePosition(c,c.musicAt)).toBe(.23);
+it("schedules exactly four quarter-note count-off strokes in any meter and playback rate", () => {
+  for (const [beats, denominator] of [
+    [4, 4],
+    [5, 4],
+    [6, 8],
+  ])
+    for (const rate of [0.5, 1, 1.2]) {
+      const m = {
+        id: "m",
+        regionId: "r",
+        label: "1",
+        beats,
+        denominator,
+        start: 0,
+        end: (((beats * 60) / 94) * 4) / denominator,
+      };
+      const c = makeCycle(10, 0.23, m.end, rate, 0, m, true);
+      expect(c.count).toBe(4);
+      expect(c.beats).toBe(4);
+      expect(c.countAt).toBe(10);
+      expect(c.countBeatSeconds).toBeCloseTo(60 / 94 / rate);
+      expect(c.musicAt).toBeCloseTo(10 + (4 * 60) / 94 / rate);
+      expect(cyclePosition(c, c.musicAt)).toBe(0.23);
+    }
+});
+
+it("validates optional PDF lyric anchors and rejects corrupt coordinates or duplicate IDs", () => {
+  const s = fixture();
+  s.regions[0].lyricAnchors = [{ lyricId: "a", quarterOffset: 0.5, x: 0.3 }];
+  expect(() => validateSong(s)).not.toThrow();
+  for (const value of [NaN, Infinity, -0.1, 1.1]) {
+    const bad = structuredClone(s);
+    bad.regions[0].lyricAnchors![0].x = value;
+    expect(() => validateSong(bad)).toThrow();
   }
+  const bad = structuredClone(s);
+  bad.regions[0].lyricAnchors!.push({ ...bad.regions[0].lyricAnchors![0] });
+  expect(() => validateSong(bad)).toThrow();
 });
 
-it('validates optional PDF lyric anchors and rejects corrupt coordinates or duplicate IDs',()=>{
- const s=fixture();
- s.regions[0].lyricAnchors=[{lyricId:'a',quarterOffset:.5,x:.3}];
- expect(()=>validateSong(s)).not.toThrow();
- for(const value of [NaN,Infinity,-.1,1.1]){
-  const bad=structuredClone(s);bad.regions[0].lyricAnchors![0].x=value;
-  expect(()=>validateSong(bad)).toThrow();
- }
- const bad=structuredClone(s);bad.regions[0].lyricAnchors!.push({...bad.regions[0].lyricAnchors![0]});
- expect(()=>validateSong(bad)).toThrow();
-});
-
-it('aligns quarter count-off with the first beat while preserving leading audio at every rate', () => {
- const firstBeat=.38897134124462235;
- for (const lead of [firstBeat, 5]) for (const rate of [.5,1,1.5]) {
-  const m={id:'m',regionId:'r',label:'1',beats:4,denominator:4,start:lead,end:lead+4*60/94};
-  const c=makeCycle(10,0,m.end,rate,0,m,true);
-  const first=c.musicAt+lead/rate;
-  const last=c.countAt+3*c.countBeatSeconds;
-  expect(first-last).toBeCloseTo(60/94/rate,10);
-  expect(c.musicAt).toBeGreaterThanOrEqual(10);
-  expect(c.countAt).toBeGreaterThanOrEqual(10-1e-10);
-  expect(cyclePosition(c,c.musicAt)).toBe(0);
-  expect(cyclePosition(c,first)).toBeCloseTo(lead,10);
-  expect(makeCycle(10,0,m.end,rate,0,m,false).musicAt).toBe(10);
-  const onBeat=makeCycle(10,m.start,m.end,rate,0,m,true);
-  expect(onBeat.musicAt).toBeCloseTo(10+4*60/94/rate,10);
- }
+it("aligns quarter count-off with the first beat while preserving leading audio at every rate", () => {
+  const firstBeat = 0.38897134124462235;
+  for (const lead of [firstBeat, 5])
+    for (const rate of [0.5, 1, 1.5]) {
+      const m = {
+        id: "m",
+        regionId: "r",
+        label: "1",
+        beats: 4,
+        denominator: 4,
+        start: lead,
+        end: lead + (4 * 60) / 94,
+      };
+      const c = makeCycle(10, 0, m.end, rate, 0, m, true);
+      const first = c.musicAt + lead / rate;
+      const last = c.countAt + 3 * c.countBeatSeconds;
+      expect(first - last).toBeCloseTo(60 / 94 / rate, 10);
+      expect(c.musicAt).toBeGreaterThanOrEqual(10);
+      expect(c.countAt).toBeGreaterThanOrEqual(10 - 1e-10);
+      expect(cyclePosition(c, c.musicAt)).toBe(0);
+      expect(cyclePosition(c, first)).toBeCloseTo(lead, 10);
+      expect(makeCycle(10, 0, m.end, rate, 0, m, false).musicAt).toBe(10);
+      const onBeat = makeCycle(10, m.start, m.end, rate, 0, m, true);
+      expect(onBeat.musicAt).toBeCloseTo(10 + (4 * 60) / 94 / rate, 10);
+    }
 });

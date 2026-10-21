@@ -1,5 +1,9 @@
 import { markedMeasureIndices } from "./marker-slots";
-import { readSectionShortcuts, sectionShortcutSlots, syncCurrentSection } from "./section-shortcuts";
+import {
+  readSectionShortcuts,
+  sectionShortcutSlots,
+  syncCurrentSection,
+} from "./section-shortcuts";
 import { t } from "../../shared/i18n/i18n";
 import { escapeHTML as esc } from "../../shared/ui/html";
 import { locate, type Song, type Loop } from "../../model/model";
@@ -11,7 +15,10 @@ export function practiceLoopHTML(heading = false) {
 export function practiceMarkerHTML(heading = false) {
   return `${heading ? `<h2>${t("icons.message069")}</h2>` : ""}<div id="section-shortcuts" class="section-shortcuts" role="group" aria-label="${t("sections.shortcuts")}"></div>`;
 }
-type Playback = Pick<ReturnType<typeof createPlaybackScreen>, "seek" | "mark" | "renderLists">;
+type Playback = Pick<
+  ReturnType<typeof createPlaybackScreen>,
+  "seek" | "mark" | "renderLists"
+>;
 interface Options {
   root: HTMLElement;
   song(): Song;
@@ -40,8 +47,10 @@ export function attachPracticeManagement(h: Options) {
     element.addEventListener("click", handler);
     dispose.push(() => element.removeEventListener("click", handler));
   };
-  listen("section-shortcuts", event => {
-    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-section-measure]");
+  listen("section-shortcuts", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-section-measure]",
+    );
     if (!button || button.disabled) return;
     const measure = h.song().measures[Number(button.dataset.sectionMeasure)];
     if (measure) h.playback().seek(measure.start);
@@ -55,14 +64,17 @@ export function attachPracticeManagement(h: Options) {
       activeLabel.textContent = active
         ? t("main.message271", { value1: active.name })
         : t("main.message270");
-    const sections = readSectionShortcuts(h.canonicalXML?.() ?? "").filter(section => !!song.measures[section.measureIndex]);
+    const sections = readSectionShortcuts(h.canonicalXML?.() ?? "").filter(
+      (section) => !!song.measures[section.measureIndex],
+    );
     get("section-shortcuts").innerHTML = sectionShortcutSlots(sections, song)
-      .map((section, index) => section
-        ? `<button type="button" class="${marked.has(section.measureIndex) ? "is-marked" : ""}" data-section-measure="${section.measureIndex}" data-section-end="${sections[index + 1]?.measureIndex ?? song.measures.length}" title="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
-        : `<button type="button" disabled title="${t("sections.empty", {number:index + 1})}" aria-label="${t("sections.empty", {number:index + 1})}">empty</button>`)
+      .map((section, index) =>
+        section
+          ? `<button type="button" class="${marked.has(section.measureIndex) ? "is-marked" : ""}" data-section-measure="${section.measureIndex}" data-section-end="${sections[index + 1]?.measureIndex ?? song.measures.length}" title="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}" aria-label="${esc(section.name)} · ${esc(song.measures[section.measureIndex].label)}${t("sections.goMeasure")}"><strong>${esc(section.name)}</strong><span>${esc(song.measures[section.measureIndex].label)}&thinsp;${t("sections.measure")}</span></button>`
+          : `<button type="button" disabled title="${t("sections.empty", { number: index + 1 })}" aria-label="${t("sections.empty", { number: index + 1 })}">empty</button>`,
+      )
       .join("");
     syncCurrentSection(h.root, locate(song, h.player().current()).index);
-
   }
   return {
     render,

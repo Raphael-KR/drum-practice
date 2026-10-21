@@ -2,7 +2,11 @@ import { it, expect, beforeAll } from "vitest";
 import { JSDOM } from "jsdom";
 import { readFileSync } from "node:fs";
 import JSZip from "jszip";
-import { parseMusicXML, readMusicXML, interpolateX } from "../../src/modules/score/musicxml";
+import {
+  parseMusicXML,
+  readMusicXML,
+  interpolateX,
+} from "../../src/modules/score/musicxml";
 import {
   applyXMLTiming,
   replaceWithMusicXML,
@@ -10,7 +14,10 @@ import {
   scoreFormat,
 } from "../../src/modules/score/score-import";
 import { validateSong, type Song } from "../../src/model/model";
-import { packSong, unpackSong } from "../../src/platform/storage/record-serialization";
+import {
+  packSong,
+  unpackSong,
+} from "../../src/platform/storage/record-serialization";
 beforeAll(() => {
   globalThis.DOMParser = new JSDOM().window.DOMParser;
 });
@@ -183,8 +190,15 @@ it("extracts lyric onsets using durations rather than printed x coordinates", ()
     { measure: 0, beat: 1, duration: 1, text: "나" },
   ]);
 });
-it('rejects an incomplete bar and a tempo direction after the first beat',()=>{
- expect(()=>parseMusicXML(xml.replace('<duration>20</duration>','<duration>16</duration>'))).toThrow('음가 합계');
- const changed=xml.replace('</note><note><rest/>','</note><direction><sound tempo="100"/></direction><note><rest/>');
- expect(()=>parseMusicXML(changed)).toThrow('마디 중간');
+it("rejects an incomplete bar and a tempo direction after the first beat", () => {
+  expect(() =>
+    parseMusicXML(
+      xml.replace("<duration>20</duration>", "<duration>16</duration>"),
+    ),
+  ).toThrow("음가 합계");
+  const changed = xml.replace(
+    "</note><note><rest/>",
+    '</note><direction><sound tempo="100"/></direction><note><rest/>',
+  );
+  expect(() => parseMusicXML(changed)).toThrow("마디 중간");
 });

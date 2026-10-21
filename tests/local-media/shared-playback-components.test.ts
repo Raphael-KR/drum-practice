@@ -15,7 +15,10 @@ import {
   updateScoreFrame,
 } from "../../src/modules/playback/playback-frame";
 import { seekPlaybackFreely } from "../../src/modules/playback/playback-actions";
-import { markerSlotsHTML, bindMarkerSlots } from "../../src/modules/playback/marker-ui";
+import {
+  markerSlotsHTML,
+  bindMarkerSlots,
+} from "../../src/modules/playback/marker-ui";
 import { settingsSwitch } from "../../src/shared/ui/settings-ui";
 import { scoreStageHTML } from "../../src/modules/playback/playback-ui";
 import type { Song } from "../../src/model/model";
@@ -192,7 +195,10 @@ it("switches share accessible description, disabled and checked state", () => {
   ).toBe("Description");
 });
 it("both entry points mount the single screen owner", () => {
-  for (const file of ["apps/editor/main.ts", "modules/playback/playback-runtime.ts"]) {
+  for (const file of [
+    "apps/editor/main.ts",
+    "modules/playback/playback-runtime.ts",
+  ]) {
     const source = readFileSync(`src/${file}`, "utf8");
     expect(source).toContain("createPlaybackScreen({");
     for (const call of [
@@ -212,7 +218,10 @@ it("both entry points mount the single screen owner", () => {
 });
 
 it("player switch visibility uses the shared component selector", () => {
-  const source = readFileSync("src/modules/playback/playback-runtime.ts", "utf8");
+  const source = readFileSync(
+    "src/modules/playback/playback-runtime.ts",
+    "utf8",
+  );
   expect(source).not.toContain('closest<HTMLElement>(".setting")');
   document.body.innerHTML = settingsSwitch(
     "highlight",
@@ -224,18 +233,19 @@ it("player switch visibility uses the shared component selector", () => {
   ).not.toBeNull();
 });
 
-
 it("does not turn automatic end-of-track alignment into a seek", () => {
   const stage = document.createElement("div");
   const s = song();
   const seek = vi.fn();
   const selected = vi.fn();
   const dispose = installScoreScroll(stage, {
-    enabled: () => true, song: () => s,
+    enabled: () => true,
+    song: () => s,
     offsets: s.measures.map((_, i) => i * 100),
     widths: s.measures.map(() => 100),
-    position: (i, beat, width) => beat / s.measures[i].beats * width,
-    seek, selected,
+    position: (i, beat, width) => (beat / s.measures[i].beats) * width,
+    seek,
+    selected,
   });
   stage.scrollLeft = s.measures.length * 100;
   stage.style.setProperty("--scroll-x", `${stage.scrollLeft}px`);
@@ -249,63 +259,134 @@ it("does not turn automatic end-of-track alignment into a seek", () => {
   dispose();
 });
 
-it('marker slot seeks first and deletes only when its measure is already selected',()=>{
- const s=song();s.markers=[{id:'m',name:'test',time:s.measures[8].start}];
- document.body.innerHTML=markerSlotsHTML(s,'data-slot');
- let current=s.measures[0].start;
- const remove=vi.fn(), seek=vi.fn((time:number)=>{current=time;});
- const dispose=bindMarkerSlots(document.body,()=>s,seek,'data-slot',false,{current:()=>current,remove});
- const button=document.querySelector<HTMLButtonElement>('button:not(:disabled)')!;
- button.click(); expect(seek).toHaveBeenCalledOnce();expect(remove).not.toHaveBeenCalled();
- current+=0.1;button.click();expect(remove).toHaveBeenCalledWith('m');expect(seek).toHaveBeenCalledOnce();
- dispose();
+it("marker slot seeks first and deletes only when its measure is already selected", () => {
+  const s = song();
+  s.markers = [{ id: "m", name: "test", time: s.measures[8].start }];
+  document.body.innerHTML = markerSlotsHTML(s, "data-slot");
+  let current = s.measures[0].start;
+  const remove = vi.fn(),
+    seek = vi.fn((time: number) => {
+      current = time;
+    });
+  const dispose = bindMarkerSlots(
+    document.body,
+    () => s,
+    seek,
+    "data-slot",
+    false,
+    { current: () => current, remove },
+  );
+  const button = document.querySelector<HTMLButtonElement>(
+    "button:not(:disabled)",
+  )!;
+  button.click();
+  expect(seek).toHaveBeenCalledOnce();
+  expect(remove).not.toHaveBeenCalled();
+  current += 0.1;
+  button.click();
+  expect(remove).toHaveBeenCalledWith("m");
+  expect(seek).toHaveBeenCalledOnce();
+  dispose();
 });
 
-it('places the shared uniform spacing switch immediately before note following', async()=>{
- const {screenSettingsHTML}=await import("../../src/modules/playback/playback-forms");
- const node=document.createElement('div');
- node.innerHTML=screenSettingsHTML({pdf:'pdf',highlight:'highlight',fullscreen:'fullscreen'});
- const row=node.querySelector('#uniform-spacing')!.closest('label')!;
- expect(row.nextElementSibling?.querySelector('#highlight')).not.toBeNull();
- expect((node.querySelector('#uniform-spacing') as HTMLInputElement).checked).toBe(false);
+it("places the shared uniform spacing switch immediately before note following", async () => {
+  const { screenSettingsHTML } =
+    await import("../../src/modules/playback/playback-forms");
+  const node = document.createElement("div");
+  node.innerHTML = screenSettingsHTML({
+    pdf: "pdf",
+    highlight: "highlight",
+    fullscreen: "fullscreen",
+  });
+  const row = node.querySelector("#uniform-spacing")!.closest("label")!;
+  expect(row.nextElementSibling?.querySelector("#highlight")).not.toBeNull();
+  expect(
+    (node.querySelector("#uniform-spacing") as HTMLInputElement).checked,
+  ).toBe(false);
 });
 
 it("keeps configured ranges visible while the master repeat is off", () => {
- const s = song();
- const root = document.createElement("div");
- root.innerHTML = '<button id="master"></button><button data-radius="1"></button><button data-radius="2"></button>';
- const a=repeatPreset(s,s.measures[3].start,s.measures.at(-1)!.end,1).loop;
- const b=repeatPreset(s,s.measures[8].start,s.measures.at(-1)!.end,2).loop;
- const presets=new Map([[1,a],[2,b]]);
- const bindings={summary:"",stop:"",adjust:"master",attribute:"data-radius"};
- updateRepeatControls(root,s,b,2,bindings,presets);
- const labels=[...root.querySelectorAll("[data-radius]")].map(e=>e.textContent);
- expect(root.querySelector('#master')!.getAttribute('aria-pressed')).toBe('true');
- expect(root.querySelector('[data-radius="2"]')!.getAttribute('aria-pressed')).toBe('true');
- updateRepeatControls(root,s,undefined,undefined,bindings,presets);
- expect([...root.querySelectorAll("[data-radius]")].map(e=>e.textContent)).toEqual(labels);
- expect([...root.querySelectorAll('button')].every(e=>e.getAttribute('aria-pressed')==='false')).toBe(true);
- updateRepeatControls(root,s,b,2,bindings,presets);
- expect(root.querySelector('[data-radius="2"]')!.classList.contains('primary')).toBe(true);
+  const s = song();
+  const root = document.createElement("div");
+  root.innerHTML =
+    '<button id="master"></button><button data-radius="1"></button><button data-radius="2"></button>';
+  const a = repeatPreset(
+    s,
+    s.measures[3].start,
+    s.measures.at(-1)!.end,
+    1,
+  ).loop;
+  const b = repeatPreset(
+    s,
+    s.measures[8].start,
+    s.measures.at(-1)!.end,
+    2,
+  ).loop;
+  const presets = new Map([
+    [1, a],
+    [2, b],
+  ]);
+  const bindings = {
+    summary: "",
+    stop: "",
+    adjust: "master",
+    attribute: "data-radius",
+  };
+  updateRepeatControls(root, s, b, 2, bindings, presets);
+  const labels = [...root.querySelectorAll("[data-radius]")].map(
+    (e) => e.textContent,
+  );
+  expect(root.querySelector("#master")!.getAttribute("aria-pressed")).toBe(
+    "true",
+  );
+  expect(
+    root.querySelector('[data-radius="2"]')!.getAttribute("aria-pressed"),
+  ).toBe("true");
+  updateRepeatControls(root, s, undefined, undefined, bindings, presets);
+  expect(
+    [...root.querySelectorAll("[data-radius]")].map((e) => e.textContent),
+  ).toEqual(labels);
+  expect(
+    [...root.querySelectorAll("button")].every(
+      (e) => e.getAttribute("aria-pressed") === "false",
+    ),
+  ).toBe(true);
+  updateRepeatControls(root, s, b, 2, bindings, presets);
+  expect(
+    root.querySelector('[data-radius="2"]')!.classList.contains("primary"),
+  ).toBe(true);
 });
 
-it('empty bookmark buttons invoke the existing current-measure toggle',()=>{
- const s=song();s.markers=[];delete s.markerSlots;
- document.body.innerHTML=markerSlotsHTML(s,'data-slot');
- const toggleCurrent=vi.fn();
- const dispose=bindMarkerSlots(document.body,()=>s,vi.fn(),'data-slot',false,{current:()=>0,remove:vi.fn(),toggleCurrent});
- const buttons=[...document.querySelectorAll<HTMLButtonElement>('.empty-marker-slot')];
- expect(buttons).toHaveLength(5);
- for(const button of buttons) {
-  expect(button.disabled).toBe(false);
-  expect(button.getAttribute('aria-label')).toBe('현재 마디에 마커 표기');
-  button.querySelector('path')!.dispatchEvent(new MouseEvent('click',{bubbles:true}));
- }
- expect(toggleCurrent).toHaveBeenCalledTimes(5);
- s.markers=[{id:'current',name:'current',time:s.measures[0].start}];
- buttons[0].click();
- expect(toggleCurrent).toHaveBeenCalledTimes(5);
- dispose();
+it("empty bookmark buttons invoke the existing current-measure toggle", () => {
+  const s = song();
+  s.markers = [];
+  delete s.markerSlots;
+  document.body.innerHTML = markerSlotsHTML(s, "data-slot");
+  const toggleCurrent = vi.fn();
+  const dispose = bindMarkerSlots(
+    document.body,
+    () => s,
+    vi.fn(),
+    "data-slot",
+    false,
+    { current: () => 0, remove: vi.fn(), toggleCurrent },
+  );
+  const buttons = [
+    ...document.querySelectorAll<HTMLButtonElement>(".empty-marker-slot"),
+  ];
+  expect(buttons).toHaveLength(5);
+  for (const button of buttons) {
+    expect(button.disabled).toBe(false);
+    expect(button.getAttribute("aria-label")).toBe("현재 마디에 마커 표기");
+    button
+      .querySelector("path")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  }
+  expect(toggleCurrent).toHaveBeenCalledTimes(5);
+  s.markers = [{ id: "current", name: "current", time: s.measures[0].start }];
+  buttons[0].click();
+  expect(toggleCurrent).toHaveBeenCalledTimes(5);
+  dispose();
 });
 
 it("rows progress follows the displayed crop's first beat and later beats", () => {
@@ -314,16 +395,31 @@ it("rows progress follows the displayed crop's first beat and later beats", () =
   s.settings.uniformSpacing = false;
   const m = s.measures[0];
   m.beats = 4;
-  const original = s.regions.find(r => r.id === m.regionId)!;
-  original.beatXs = [.17, .38, .59, .8, 1];
-  const shown = { ...original, beatXs: [.04, .28, .52, .76, 1] };
+  const original = s.regions.find((r) => r.id === m.regionId)!;
+  original.beatXs = [0.17, 0.38, 0.59, 0.8, 1];
+  const shown = { ...original, beatXs: [0.04, 0.28, 0.52, 0.76, 1] };
   document.body.innerHTML = scoreStageHTML();
   const stage = document.getElementById("stage")!;
   const ribbon = document.getElementById("ribbon")!;
-  ribbon.innerHTML = '<div data-index="0"><span class="measure-beat"></span></div>';
-  const h = {root:document.body, stage, ribbon, s, t:m.start, playing:false,
-    count:0, highlight:false, native:false, scrubbing:false, offsets:[0], widths:[100],
-    position:()=>0, rows:()=>{}, regionAt:()=>shown};
+  ribbon.innerHTML =
+    '<div data-index="0"><span class="measure-beat"></span></div>';
+  const h = {
+    root: document.body,
+    stage,
+    ribbon,
+    s,
+    t: m.start,
+    playing: false,
+    count: 0,
+    highlight: false,
+    native: false,
+    scrubbing: false,
+    offsets: [0],
+    widths: [100],
+    position: () => 0,
+    rows: () => {},
+    regionAt: () => shown,
+  };
   const cell = ribbon.firstElementChild as HTMLElement;
   updateScoreFrame(h);
   expect(parseFloat(cell.style.getPropertyValue("--played"))).toBeCloseTo(4);
@@ -331,7 +427,7 @@ it("rows progress follows the displayed crop's first beat and later beats", () =
   updateScoreFrame(h);
   expect(parseFloat(cell.style.getPropertyValue("--played"))).toBeCloseTo(28);
   // Without an alternate engraving (e.g. PDF), source anchors still apply.
-  updateScoreFrame({...h, t:m.start, regionAt:()=>undefined});
+  updateScoreFrame({ ...h, t: m.start, regionAt: () => undefined });
   expect(parseFloat(cell.style.getPropertyValue("--played"))).toBeCloseTo(17);
 });
 it("retains tooltips when marker slots are regenerated", () => {
@@ -339,6 +435,10 @@ it("retains tooltips when marker slots are regenerated", () => {
   s.markers = [{ id: "test", name: "marker", time: s.measures[0].start }];
   const root = document.createElement("div");
   root.innerHTML = markerSlotsHTML(s, "data-marker");
-  expect([...root.querySelectorAll("button")].every(b => !!b.title)).toBe(true);
-  expect(root.querySelector("[data-marker]")!.getAttribute("title")).toContain("마커 삭제");
+  expect([...root.querySelectorAll("button")].every((b) => !!b.title)).toBe(
+    true,
+  );
+  expect(root.querySelector("[data-marker]")!.getAttribute("title")).toContain(
+    "마커 삭제",
+  );
 });

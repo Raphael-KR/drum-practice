@@ -1,4 +1,7 @@
-import { applyEnglishLyrics,correctBrightSpelling } from "../../content/english-lyrics";
+import {
+  applyEnglishLyrics,
+  correctBrightSpelling,
+} from "../../content/english-lyrics";
 import { applyListeningRevision } from "../../content/listening-revision";
 import { applyBar34AcousticReview } from "../../content/lyric-bar34-review";
 import { applyListeningFeedbackBatch } from "../../content/lyric-feedback-batch";
@@ -10,85 +13,112 @@ import { applyListeningFeedbackM48 } from "../../content/lyric-feedback-m48";
 import { applyTookuTailShift } from "../../content/lyric-tail-shift";
 import lyricTimingRefinement from "../../content/lyric-timing-refinement";
 import {
-retainRevision,
-type EditSnapshot,
-type EditorForm,
+  retainRevision,
+  type EditSnapshot,
+  type EditorForm,
 } from "../../model/edit-history";
 import type { RecordData } from "../../model/record";
 import "../../modules/help/help.css";
-import { attachBundledScore,repairBundledMetadata } from "../../modules/library/bundled-score";
-import { exportLibrary,importLibrary,preferenceKeys } from "../../modules/library/library-backup";
-import { chooseRecent,rememberScore } from "../../modules/library/recent-score";
-import { createScorePackage,readScorePackage } from "../../modules/library/score-package";
-import { preferPDF,savePreferPDF,scorePreference } from "../../modules/library/score-preference";
 import {
-enableLyricGrid
-} from "../../modules/lyrics/lyric-grid";
+  attachBundledScore,
+  repairBundledMetadata,
+} from "../../modules/library/bundled-score";
+import {
+  exportLibrary,
+  importLibrary,
+  preferenceKeys,
+} from "../../modules/library/library-backup";
+import {
+  chooseRecent,
+  rememberScore,
+} from "../../modules/library/recent-score";
+import {
+  createScorePackage,
+  readScorePackage,
+} from "../../modules/library/score-package";
+import {
+  preferPDF,
+  savePreferPDF,
+  scorePreference,
+} from "../../modules/library/score-preference";
+import { enableLyricGrid } from "../../modules/lyrics/lyric-grid";
 import { applyJapaneseReadings } from "../../modules/lyrics/lyric-reading";
 import { applyLyricRevision } from "../../modules/lyrics/lyric-revision";
+import { migrateLyricPositions } from "../../modules/lyrics/lyric-score";
 import {
-migrateLyricPositions
-} from "../../modules/lyrics/lyric-score";
-import { applyLyricTimingPatch,applyUserLyricAnchors } from "../../modules/lyrics/lyric-timing";
+  applyLyricTimingPatch,
+  applyUserLyricAnchors,
+} from "../../modules/lyrics/lyric-timing";
 import type { RibbonAsset } from "../../modules/playback/playback-assets";
 import {
-preparePlaybackAssets,
-releasePlaybackAssets,
-replacePlaybackAssets,
+  preparePlaybackAssets,
+  releasePlaybackAssets,
+  replacePlaybackAssets,
 } from "../../modules/playback/playback-assets";
 import { syncSettingsChoices } from "../../modules/playback/playback-forms";
 import {
-readPlaybackPreferences,
-savePlaybackPreferences,
+  readPlaybackPreferences,
+  savePlaybackPreferences,
 } from "../../modules/playback/playback-preferences";
 import { createPlaybackScreen } from "../../modules/playback/playback-screen";
 import { webPlaybackBindings } from "../../modules/playback/playback-ui";
 import "../../modules/playback/playback-ui.css";
+import { attachPracticeManagement } from "../../modules/playback/practice-management";
 import {
-attachPracticeManagement
-} from "../../modules/playback/practice-management";
-import { readSectionShortcuts,type SectionShortcut } from "../../modules/playback/section-shortcuts";
+  readSectionShortcuts,
+  type SectionShortcut,
+} from "../../modules/playback/section-shortcuts";
 import {
-ensureCanonical,
-importedCanonical,
-readCanonical,
-saveCanonical,
-verifyCanonicalAudio,
-vocalLyrics,
-withVocalSource,
-writeCanonical
+  ensureCanonical,
+  importedCanonical,
+  readCanonical,
+  saveCanonical,
+  verifyCanonicalAudio,
+  vocalLyrics,
+  withVocalSource,
+  writeCanonical,
 } from "../../modules/score/canonical-xml";
 import { type HighlightPage } from "../../modules/score/note-highlight";
 import {
-readNoteHighlight,
-saveNoteHighlight,
+  readNoteHighlight,
+  saveNoteHighlight,
 } from "../../modules/score/note-highlight-preference";
 import { type StaffPosition } from "../../modules/score/practice-staff-layout";
 import {
-applyXMLTiming,
-replaceWithMusicXML,
-scoreArchivePath,
-scoreFormat,
+  applyXMLTiming,
+  replaceWithMusicXML,
+  scoreArchivePath,
+  scoreFormat,
 } from "../../modules/score/score-import";
-import { SVG_GZIP,displayPage,pageExtension } from "../../modules/score/score-pages";
 import {
-correctStoredRests,
-} from "../../modules/score/score-rest-correction";
-import { activeScore,songScores,useScore } from "../../modules/score/song-scores";
+  SVG_GZIP,
+  displayPage,
+  pageExtension,
+} from "../../modules/score/score-pages";
+import { correctStoredRests } from "../../modules/score/score-rest-correction";
+import {
+  activeScore,
+  songScores,
+  useScore,
+} from "../../modules/score/song-scores";
 import { download } from "../../platform/browser/download";
 import {
-autoFullscreenEnabled,
-enterFullscreen,
-saveAutoFullscreen,
+  autoFullscreenEnabled,
+  enterFullscreen,
+  saveAutoFullscreen,
 } from "../../platform/browser/fullscreen";
-import { allRecords,saveRecord,saveRecords } from "../../platform/storage/storage";
-import { formatTime,t as i18nText } from "../../shared/i18n/i18n";
+import {
+  allRecords,
+  saveRecord,
+  saveRecords,
+} from "../../platform/storage/storage";
+import { formatTime, t as i18nText } from "../../shared/i18n/i18n";
 import "../../shared/styles/controls.css";
 import { createDialog } from "../../shared/ui/dialog-ui";
 import { arrangeIcons } from "../../shared/ui/icons";
 import { Player } from "./audio";
-import { $,num,val } from "./editor-dom";
-import { createEditorForm,editorFields } from "./editor-form";
+import { $, num, val } from "./editor-dom";
+import { createEditorForm, editorFields } from "./editor-form";
 import { createEditorLibrary } from "./editor-library";
 import { createLyricEditor } from "./editor-lyrics";
 import { createEditorReview } from "./editor-review";
@@ -97,17 +127,18 @@ import { editorSession } from "./editor-session";
 import { editorHTML } from "./editor-view";
 import { setupScoreManagement } from "./score-management";
 import { reviewPair } from "./score-review";
-import { mountSectionEditor,writeSections } from "./section-editor";
+import { mountSectionEditor, writeSections } from "./section-editor";
 import "./style.css";
 import "../../modules/library/player-library.css";
 import {
-arrangeWorkspace,
-openSettingsChild,
-paginateList,
-selectEditorPane,
+  arrangeWorkspace,
+  openSettingsChild,
+  paginateList,
+  selectEditorPane,
 } from "./workspace";
-const renderPDF: typeof import("../../modules/score/pdf").renderPDF = async (...args) =>
-  (await import("../../modules/score/pdf")).renderPDF(...args);
+const renderPDF: typeof import("../../modules/score/pdf").renderPDF = async (
+  ...args
+) => (await import("../../modules/score/pdf")).renderPDF(...args);
 const xmlModule = () => import("../../modules/score/musicxml");
 async function renderScore(
   blob: Blob,
@@ -125,18 +156,25 @@ async function renderScore(
 
 import JSZip from "jszip";
 import {
-beatTime,
-clamp,
-defaults,
-locate,
-reflow,
-uid,
-validateSong,
-type Region,
-type Song
+  beatTime,
+  clamp,
+  defaults,
+  locate,
+  reflow,
+  uid,
+  validateSong,
+  type Region,
+  type Song,
 } from "../../model/model";
-import { mediaIdentity,verifyMedia,type MediaIdentity } from "../../modules/audio/media";
-import { packScores,unpackScores } from "../../platform/storage/record-serialization";
+import {
+  mediaIdentity,
+  verifyMedia,
+  type MediaIdentity,
+} from "../../modules/audio/media";
+import {
+  packScores,
+  unpackScores,
+} from "../../platform/storage/record-serialization";
 import { escapeHTML as esc } from "../../shared/ui/html";
 const time = (s: number) =>
   `${Math.floor(s / 60)}:${Math.floor(s % 60)
@@ -199,7 +237,7 @@ const playback = createPlaybackScreen({
     radiusAttribute: "data-loop-radius",
     settings: "open-settings-dialog",
   },
-    canonicalXML: () => record?.canonicalXML,
+  canonicalXML: () => record?.canonicalXML,
   song,
   player: engine,
   ready: () => !!record,
@@ -212,7 +250,7 @@ const playback = createPlaybackScreen({
     ratios: pageRatios,
     staffs: practiceStaffs,
     highlights: highlightPages,
-      ribbon: ribbonAssets,
+    ribbon: ribbonAssets,
   }),
   highlight: () => noteHighlightEnabled,
   formats: () => (record ? songScores(record).map((s) => s.format) : []),
@@ -357,9 +395,7 @@ async function persist() {
   saveCanonical(record);
   await saveRecord(session?.forStorage() || record);
   management?.refresh();
-  status(
-    i18nText("main.message216"),
-  );
+  status(i18nText("main.message216"));
 }
 function queueSave() {
   clearTimeout(saveTimer);
@@ -412,7 +448,9 @@ async function activate(r: RecordData) {
     if (await repairBundledMetadata(r)) await saveRecord(r);
     r = await attachBundledScore(r, status);
     r = await correctStoredRests(r, status);
-    r = await (await import("../../modules/score/browser-score")).prepareBrowserScore(r, status);
+    r = await (
+      await import("../../modules/score/browser-score")
+    ).prepareBrowserScore(r, status);
     const preferred = scorePreference(r).format;
     if (preferred !== (r.song.scoreFormat ?? "pdf"))
       r = useScore(
@@ -454,7 +492,13 @@ async function activate(r: RecordData) {
         ),
     });
     replacePlaybackAssets(
-      { urls, pageRatios, highlightPages, practiceStaffs, ribbon: ribbonAssets },
+      {
+        urls,
+        pageRatios,
+        highlightPages,
+        practiceStaffs,
+        ribbon: ribbonAssets,
+      },
       prepared,
     );
     try {
@@ -566,7 +610,13 @@ val("prefer-pdf").onchange = async () => {
     // Settings may have changed while the images decoded; retain the latest values.
     next.song.settings = original.song.settings;
     replacePlaybackAssets(
-      { urls, pageRatios, highlightPages, practiceStaffs, ribbon: ribbonAssets },
+      {
+        urls,
+        pageRatios,
+        highlightPages,
+        practiceStaffs,
+        ribbon: ribbonAssets,
+      },
       prepared,
     );
     prepared = undefined;
@@ -587,7 +637,14 @@ function syncSettings() {
   playback.sync();
   management?.refresh();
 }
-const reviewController = createEditorReview({record: () => record, song, engine, renderScore, action, error});
+const reviewController = createEditorReview({
+  record: () => record,
+  song,
+  engine,
+  renderScore,
+  action,
+  error,
+});
 const prepareReview = () => reviewController.prepare();
 function renderTrack() {
   playback.renderTrack();
@@ -640,7 +697,9 @@ document.addEventListener(
   "click",
   (e) => {
     if (
-      (e.target as Element).closest("#demo-button, #editor-home-list [data-editor-open]")
+      (e.target as Element).closest(
+        "#demo-button, #editor-home-list [data-editor-open]",
+      )
     )
       requestScoreFullscreen();
   },
@@ -738,10 +797,13 @@ async function showEditorHome() {
   playback.reset();
   session?.reset();
   record = undefined;
-  releasePlaybackAssets({urls, ribbon:ribbonAssets});
+  releasePlaybackAssets({ urls, ribbon: ribbonAssets });
   ribbonAssets.clear();
   urls = [];
-  for (const dialog of document.querySelectorAll<HTMLDialogElement>("dialog[open]")) dialog.close();
+  for (const dialog of document.querySelectorAll<HTMLDialogElement>(
+    "dialog[open]",
+  ))
+    dialog.close();
   $("practice").hidden = true;
   $("welcome").hidden = false;
   $("song-title").textContent = i18nText("separation.editorTitle");
@@ -753,7 +815,13 @@ async function showEditorHome() {
   management?.refresh();
   status("");
 }
-const editorLibrary = createEditorLibrary({showHome: showEditorHome, activate, openEditor, error, action});
+const editorLibrary = createEditorLibrary({
+  showHome: showEditorHome,
+  activate,
+  openEditor,
+  error,
+  action,
+});
 const openLibrary = () => editorLibrary.open();
 const refreshRecentScore = () => editorLibrary.refreshRecent();
 function openNew() {
@@ -763,7 +831,9 @@ function openNew() {
 action("welcome-new", openNew);
 action("demo-button", async () => {
   status(i18nText("main.message290"));
-  const existing = chooseRecent((await allRecords()).filter(r => !r.song.audioPractice));
+  const existing = chooseRecent(
+    (await allRecords()).filter((r) => !r.song.audioPractice),
+  );
   if (existing) {
     await activate(existing);
     return;
@@ -922,18 +992,60 @@ document.addEventListener("open-score-editor", () => {
   if (!$<HTMLDialogElement>("editor-dialog").open)
     void openEditor().catch(error);
 });
-const scoreEditor = createScoreEditor({cancelGestures: () => scoreGestures.cancel(),
- get selected() {return selected;}, set selected(value) {selected=value;},
- get record() {return record;}, get urls() {return urls;}, get session() {return session;},
- song,engine,renderLyricEditor,renderCurrentLyrics: () => renderLyricEditor(lyricEditor.near),
- flushEditorForm: () => flushEditorForm(),renderTrack,renderLists,queueSave,updateSongHeading,action,error,tell,toggle,
+const scoreEditor = createScoreEditor({
+  cancelGestures: () => scoreGestures.cancel(),
+  get selected() {
+    return selected;
+  },
+  set selected(value) {
+    selected = value;
+  },
+  get record() {
+    return record;
+  },
+  get urls() {
+    return urls;
+  },
+  get session() {
+    return session;
+  },
+  song,
+  engine,
+  renderLyricEditor,
+  renderCurrentLyrics: () => renderLyricEditor(lyricEditor.near),
+  flushEditorForm: () => flushEditorForm(),
+  renderTrack,
+  renderLists,
+  queueSave,
+  updateSongHeading,
+  action,
+  error,
+  tell,
+  toggle,
 });
-function openEditor() {return scoreEditor.openEditor();}
-function updateMeasureForm() {scoreEditor.updateMeasureForm();}
-function drawPage() {return scoreEditor.drawPage();}
-function edit(mut: (song: Song) => void) {scoreEditor.edit(mut);}
-const lyricEditor = createLyricEditor({song, selected: () => selected, edit, current: () => engine().current(), action, error});
-function renderLyricEditor(near: boolean, keepPage = false) { lyricEditor.render(near, keepPage); }
+function openEditor() {
+  return scoreEditor.openEditor();
+}
+function updateMeasureForm() {
+  scoreEditor.updateMeasureForm();
+}
+function drawPage() {
+  return scoreEditor.drawPage();
+}
+function edit(mut: (song: Song) => void) {
+  scoreEditor.edit(mut);
+}
+const lyricEditor = createLyricEditor({
+  song,
+  selected: () => selected,
+  edit,
+  current: () => engine().current(),
+  action,
+  error,
+});
+function renderLyricEditor(near: boolean, keepPage = false) {
+  lyricEditor.render(near, keepPage);
+}
 let originalPage = 0;
 let originalURLs: string[] = [];
 function showOriginalPage() {
@@ -1374,10 +1486,19 @@ $("vocal-apply").onclick = async () => {
 
 // Approved score-management workflow. The session preserves drafts independently
 // from the confirmed record; input fields are included even before Apply.
-const {editorForm, fillMetadata, pendingEditorValues, flushEditorForm} = createEditorForm({song, selected: () => selected, edit, renderLyricEditor, updateSongHeading});
+const { editorForm, fillMetadata, pendingEditorValues, flushEditorForm } =
+  createEditorForm({
+    song,
+    selected: () => selected,
+    edit,
+    renderLyricEditor,
+    updateSongHeading,
+  });
 function applySnapshot(s: EditSnapshot) {
   if (!record) return;
-  const sectionsChanged = JSON.stringify(readSectionShortcuts(record.canonicalXML ?? "")) !== JSON.stringify(readSectionShortcuts(s.canonicalXML ?? ""));
+  const sectionsChanged =
+    JSON.stringify(readSectionShortcuts(record.canonicalXML ?? "")) !==
+    JSON.stringify(readSectionShortcuts(s.canonicalXML ?? ""));
   record.song = structuredClone(s.song);
   record.canonicalXML = s.canonicalXML;
   if (sectionsChanged) void refreshSectionGeometry(record).catch(error);
@@ -1553,9 +1674,7 @@ packageInput.accept = ".drumscore";
 packageInput.hidden = true;
 packageInput.id = "authoring-package-file";
 document.body.append(packageInput);
-for (const [host, id] of [
-  ["new-dialog", "new-package-import"],
-]) {
+for (const [host, id] of [["new-dialog", "new-package-import"]]) {
   const button = document.createElement("button");
   button.id = id;
   button.type = "button";
@@ -1631,22 +1750,44 @@ const sectionEditor = mountSectionEditor(sectionPane, {
     if (!record || busy) throw Error(i18nText("sectionEditor.busy"));
     flushEditorForm();
     const original = record;
-    const xml = writeSections(original.canonicalXML!, sections, original.song.measures.length, original.song.scorePartId);
+    const xml = writeSections(
+      original.canonicalXML!,
+      sections,
+      original.song.measures.length,
+      original.song.scorePartId,
+    );
     busy = true;
     try {
-      const next = await (await import("../../modules/score/browser-score")).prepareBrowserScore({...original, canonicalXML: xml}, status);
+      const next = await (
+        await import("../../modules/score/browser-score")
+      ).prepareBrowserScore({ ...original, canonicalXML: xml }, status);
       const prepared = await preparePlaybackAssets(next.pages, next.song);
-      if (record !== original) { releasePlaybackAssets(prepared); throw Error(i18nText("sectionEditor.changed")); }
+      if (record !== original) {
+        releasePlaybackAssets(prepared);
+        throw Error(i18nText("sectionEditor.changed"));
+      }
       engine().pause();
       session?.before();
       Object.assign(original, next);
       engine().song = original.song;
-      replacePlaybackAssets({urls, pageRatios, highlightPages, practiceStaffs, ribbon:ribbonAssets}, prepared);
-      renderTrack(); renderLists();
+      replacePlaybackAssets(
+        {
+          urls,
+          pageRatios,
+          highlightPages,
+          practiceStaffs,
+          ribbon: ribbonAssets,
+        },
+        prepared,
+      );
+      renderTrack();
+      renderLists();
       await drawPage();
       session?.changed();
       queueSave();
-    } finally { busy = false; }
+    } finally {
+      busy = false;
+    }
   },
 });
 sectionTab.onclick = () => {
@@ -1656,18 +1797,27 @@ sectionTab.onclick = () => {
 
 async function refreshSectionGeometry(original: RecordData) {
   const expectedXML = original.canonicalXML;
-  const next = await (await import("../../modules/score/browser-score")).prepareBrowserScore(original, status);
+  const next = await (
+    await import("../../modules/score/browser-score")
+  ).prepareBrowserScore(original, status);
   const prepared = await preparePlaybackAssets(next.pages, next.song);
   if (record !== original || original.canonicalXML !== expectedXML) {
-    releasePlaybackAssets(prepared); return;
+    releasePlaybackAssets(prepared);
+    return;
   }
   original.pages = next.pages;
   original.otherScores = next.otherScores;
   original.song.regions = next.song.regions;
   original.song.pageCount = next.song.pageCount;
-  original.song.measures.forEach((m,i) => m.regionId = next.song.measures[i].regionId);
-  replacePlaybackAssets({urls, pageRatios, highlightPages, practiceStaffs, ribbon:ribbonAssets}, prepared);
+  original.song.measures.forEach(
+    (m, i) => (m.regionId = next.song.measures[i].regionId),
+  );
+  replacePlaybackAssets(
+    { urls, pageRatios, highlightPages, practiceStaffs, ribbon: ribbonAssets },
+    prepared,
+  );
   sectionEditor.refresh();
-  renderTrack(); renderLists();
+  renderTrack();
+  renderLists();
   await drawPage();
 }

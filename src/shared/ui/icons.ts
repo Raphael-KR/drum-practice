@@ -58,11 +58,7 @@ export function arrangeIcons() {
       i18nText("icons.message065"),
       i18nText("icons.message066"),
     ],
-    [
-      "open-loop-dialog",
-      "repeat",
-      i18nText("icons.message067"),
-    ],
+    ["open-loop-dialog", "repeat", i18nText("icons.message067")],
     [
       "open-screen-dialog",
       "screen",

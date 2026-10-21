@@ -18,9 +18,15 @@ export async function prepareBrowserScore(
       })
     : xml.source;
   const canonicalXML = normalizeDrumScore(await readMusicXML(source));
-  record = {...record, canonicalXML};
+  record = { ...record, canonicalXML };
   onPhase("rendering");
-  const rendered = await renderMusicXML(new Blob([canonicalXML], {type:"application/vnd.recordare.musicxml+xml"}), progress, xml.partId);
+  const rendered = await renderMusicXML(
+    new Blob([canonicalXML], {
+      type: "application/vnd.recordare.musicxml+xml",
+    }),
+    progress,
+    xml.partId,
+  );
   if (
     rendered.parsed.measures.length !== record.song.measures.length ||
     rendered.parsed.measures.some(

@@ -1,5 +1,8 @@
 import { expect, it } from "vitest";
-import { createMixLimiterCurve, MIX_INPUT_GAIN } from "../../src/modules/audio/audio-levels";
+import {
+  createMixLimiterCurve,
+  MIX_INPUT_GAIN,
+} from "../../src/modules/audio/audio-levels";
 
 // Web Audio linearly interpolates a WaveShaper curve and clamps its input to
 // [-1, 1]. Include the preceding gain to exercise the complete output mapping.
@@ -8,7 +11,10 @@ function mixOutput(input: number, curve: Float32Array) {
   const index = ((bounded + 1) / 2) * (curve.length - 1);
   const lower = Math.floor(index);
   const fraction = index - lower;
-  return curve[lower] * (1 - fraction) + curve[Math.min(lower + 1, curve.length - 1)] * fraction;
+  return (
+    curve[lower] * (1 - fraction) +
+    curve[Math.min(lower + 1, curve.length - 1)] * fraction
+  );
 }
 
 it("preserves quiet music and silence and bounds both polarities of an overloaded mix", () => {

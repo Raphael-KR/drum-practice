@@ -1,6 +1,6 @@
 import { applyDrumLegend } from "./drum-legend";
 import { t as i18nText } from "../../shared/i18n/i18n";
-import halfOpenGlyph from './vendor/pict-half-open.json';
+import halfOpenGlyph from "./vendor/pict-half-open.json";
 /** Approved SCORE-MUSICXML-OSMD-MAPPING.md: render-only annotations retain XML semantics. */
 export type NoteDecoration = {
   ghost: boolean;
@@ -83,7 +83,9 @@ export function prepareDrumDecorations(
       let head = kids(node, "notehead")[0];
       const ghost = head?.getAttribute("parentheses") === "yes",
         sticking = sticks.get(node);
-      const halfOpen = !!node.querySelector('notations > technical > half-muted[smufl="pictHalfOpen1"]');
+      const halfOpen = !!node.querySelector(
+        'notations > technical > half-muted[smufl="pictHalfOpen1"]',
+      );
       if (!ghost && !sticking && !halfOpen) continue;
       const color =
         head?.getAttribute("color") || node.getAttribute("color") || "#000000";
@@ -102,7 +104,12 @@ export function prepareDrumDecorations(
       // Unique temporary colors bind XML annotations to exact chord members across OSMD.
       const token = "#" + (0x710000 + serial++).toString(16);
       head.setAttribute("color", token);
-      decorations.set(token.toLowerCase(), { ghost, sticking, color, ...(halfOpen ? {halfOpen:true} : {}) });
+      decorations.set(token.toLowerCase(), {
+        ghost,
+        sticking,
+        color,
+        ...(halfOpen ? { halfOpen: true } : {}),
+      });
     }
   }
   return decorations;
@@ -163,11 +170,11 @@ export function applyDrumDecorations(
               const stemTop = vf.getStemExtents().topY;
               const t = add("text");
               t.textContent = rule.sticking;
+              t.setAttribute("x", String(vf.getStemX()));
               t.setAttribute(
-                "x",
-                String(vf.getStemX()),
+                "y",
+                String(Math.min(stemTop, sb?.y ?? b.y, b.y) - 9),
               );
-              t.setAttribute("y", String(Math.min(stemTop, sb?.y ?? b.y, b.y) - 9));
               t.setAttribute("text-anchor", "middle");
               t.setAttribute("font-family", "serif");
               t.setAttribute("font-size", "16");
@@ -175,17 +182,25 @@ export function applyDrumDecorations(
               t.setAttribute("data-sticking", rule.sticking);
             }
             if (rule.halfOpen) {
-              const stem = n.getSVGGElement().querySelector('.vf-stem path') as SVGGraphicsElement | null;
+              const stem = n
+                .getSVGGElement()
+                .querySelector(".vf-stem path") as SVGGraphicsElement | null;
               const sb = stem?.getBBox();
-              const size = 10, scale = size / 286;
+              const size = 10,
+                scale = size / 286;
               const x = b.x + b.width / 2 - size / 2;
               const stemTop = n.vfnote[0].getStemExtents().topY;
-              const y = Math.min(stemTop, sb?.y ?? b.y, b.y) - (rule.sticking ? 30 : 16);
-              const p = add('path');
-              p.setAttribute('d', halfOpenGlyph.path);
-              p.setAttribute('transform', `translate(${x} ${y + size}) scale(${scale} ${-scale})`);
-              p.setAttribute('fill', rule.color);
-              p.setAttribute('data-smufl', halfOpenGlyph.glyph);
+              const y =
+                Math.min(stemTop, sb?.y ?? b.y, b.y) -
+                (rule.sticking ? 30 : 16);
+              const p = add("path");
+              p.setAttribute("d", halfOpenGlyph.path);
+              p.setAttribute(
+                "transform",
+                `translate(${x} ${y + size}) scale(${scale} ${-scale})`,
+              );
+              p.setAttribute("fill", rule.color);
+              p.setAttribute("data-smufl", halfOpenGlyph.glyph);
             }
           }
   for (const el of Array.from(host.querySelectorAll("[fill],[stroke]")))
@@ -200,9 +215,10 @@ export function applyDrumDecorations(
 /** Compatibility entry point; all songs use the same approved legend. */
 export function normalizeBundledDrumNotation(text: string) {
   const doc = new DOMParser().parseFromString(text, "application/xml");
-  if (doc.querySelector("parsererror")) throw Error(i18nText("drum-notation.message027"));
+  if (doc.querySelector("parsererror"))
+    throw Error(i18nText("drum-notation.message027"));
   const before = new XMLSerializer().serializeToString(doc);
   applyDrumLegend(doc);
   const after = new XMLSerializer().serializeToString(doc);
-  return {text: after === before ? text : after, changed: after !== before};
+  return { text: after === before ? text : after, changed: after !== before };
 }

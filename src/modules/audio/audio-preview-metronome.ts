@@ -1,4 +1,4 @@
-import { Player } from './audio-core';
+import { Player } from "./audio-core";
 import { beatEvents, preludeCountBeats, type Song } from "../../model/model";
 
 // The correction preview plays music at unity; lift the short stick count-in.
@@ -15,63 +15,107 @@ export function bindAudioPreviewMetronome(
   const listeners = new AbortController();
   let voice: Player | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
-  let generation = 0, disposed = false;
+  let generation = 0,
+    disposed = false;
   const stop = () => {
     generation++;
-    clearInterval(timer); timer = undefined;
+    clearInterval(timer);
+    timer = undefined;
     voice?.pause(false);
   };
   const unlock = async () => {
     if (disposed || !checkbox.checked) return;
     voice ??= new Player();
     voice.countOff.gain.value = PREVIEW_COUNT_OFF_GAIN;
-    if (voice.ctx.state === 'suspended') await voice.ctx.resume();
+    if (voice.ctx.state === "suspended") await voice.ctx.resume();
   };
   const start = async () => {
     stop();
     const request = generation;
-    if (disposed || !checkbox.checked || audio.paused || audio.seeking || audio.muted) return;
+    if (
+      disposed ||
+      !checkbox.checked ||
+      audio.paused ||
+      audio.seeking ||
+      audio.muted
+    )
+      return;
     try {
       await unlock();
       if (disposed || request !== generation || !voice || audio.paused) return;
       const song = getSong();
-      voice.song = {...song, settings: {...song.settings, click: true, clickVolume: 1}}; voice.volumes();
+      voice.song = {
+        ...song,
+        settings: { ...song.settings, click: true, clickVolume: 1 },
+      };
+      voice.volumes();
       const events = [
-        ...beatEvents(song, 0, Infinity).map(b => ({...b, count: false})),
-        ...preludeCountBeats(song)
-          .map(time => ({time, accent: false, count: true})),
+        ...beatEvents(song, 0, Infinity).map((b) => ({ ...b, count: false })),
+        ...preludeCountBeats(song).map((time) => ({
+          time,
+          accent: false,
+          count: true,
+        })),
       ].sort((a, b) => a.time - b.time);
-      let next = events.findIndex(e => e.time >= audio.currentTime - .01);
+      let next = events.findIndex((e) => e.time >= audio.currentTime - 0.01);
       if (next < 0) return;
       const tick = () => {
-        if (!voice || audio.paused || audio.seeking || !checkbox.checked) { stop(); return; }
-        const time = audio.currentTime, rate = audio.playbackRate;
+        if (!voice || audio.paused || audio.seeking || !checkbox.checked) {
+          stop();
+          return;
+        }
+        const time = audio.currentTime,
+          rate = audio.playbackRate;
         if (rate <= 0) return;
         const now = voice.ctx.currentTime;
-        while (next < events.length && events[next].time < time + .1 * rate) {
+        while (next < events.length && events[next].time < time + 0.1 * rate) {
           const event = events[next++];
-          if (event.time >= time - .015 * rate)
-            voice.pulse(now + Math.max(0, (event.time - time) / rate), event.accent, event.count);
+          if (event.time >= time - 0.015 * rate)
+            voice.pulse(
+              now + Math.max(0, (event.time - time) / rate),
+              event.accent,
+              event.count,
+            );
         }
       };
-      tick(); timer = setInterval(tick, 25);
-    } catch (error) { stop(); onError(error); }
+      tick();
+      timer = setInterval(tick, 25);
+    } catch (error) {
+      stop();
+      onError(error);
+    }
   };
   const listen = (target: EventTarget, event: string, callback: () => void) =>
-    target.addEventListener(event, callback, {signal: listeners.signal, capture: true});
+    target.addEventListener(event, callback, {
+      signal: listeners.signal,
+      capture: true,
+    });
   // Resume Web Audio in the actual gesture, before native audio emits playing.
-  for (const event of ['pointerdown', 'keydown']) listen(root, event, () => { void unlock().catch(onError); });
-  listen(audio, 'playing', () => { void start(); });
-  for (const event of ['pause', 'ended', 'seeking', 'waiting', 'emptied']) listen(audio, event, stop);
-  for (const event of ['seeked', 'ratechange', 'volumechange']) listen(audio, event, () => { void start(); });
-  listen(checkbox, 'change', () => {
+  for (const event of ["pointerdown", "keydown"])
+    listen(root, event, () => {
+      void unlock().catch(onError);
+    });
+  listen(audio, "playing", () => {
+    void start();
+  });
+  for (const event of ["pause", "ended", "seeking", "waiting", "emptied"])
+    listen(audio, event, stop);
+  for (const event of ["seeked", "ratechange", "volumechange"])
+    listen(audio, event, () => {
+      void start();
+    });
+  listen(checkbox, "change", () => {
     stop();
     if (checkbox.checked) void unlock().then(start).catch(onError);
   });
   return {
-    refresh: () => { void start(); },
+    refresh: () => {
+      void start();
+    },
     dispose: () => {
-      disposed = true; listeners.abort(); stop();
+      disposed = true;
+      listeners.abort();
+      stop();
       if (voice) void voice.ctx.close().catch(onError);
     },
   };

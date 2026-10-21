@@ -316,7 +316,10 @@ async function renderMusicXMLPass(
   partId?: string,
   timeline?: RibbonSpacing,
 ) {
-  const parsed = parseMusicXML(normalizeDrumScore(await readMusicXML(blob)), partId);
+  const parsed = parseMusicXML(
+    normalizeDrumScore(await readMusicXML(blob)),
+    partId,
+  );
   progress(i18nText("musicxml.message412"));
   const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
   const host = document.createElement("div");
@@ -474,7 +477,15 @@ async function renderMusicXMLPass(
     for (const row of osmd.GraphicSheet.MeasureList)
       for (const g of row) {
         if (!g?.hasOnlyRests || g.staffEntries.length !== 1) continue;
-        if (timeline && !g.staffEntries.every(e => e.graphicalVoiceEntries.every(v => v.notes.every(n => n.sourceNote.isRest())))) continue;
+        if (
+          timeline &&
+          !g.staffEntries.every((e) =>
+            e.graphicalVoiceEntries.every((v) =>
+              v.notes.every((n) => n.sourceNote.isRest()),
+            ),
+          )
+        )
+          continue;
         const page = g.ParentMusicSystem.Parent;
         const box = g.PositionAndShape;
         const left =
@@ -505,12 +516,24 @@ async function renderMusicXMLPass(
             if (!glyph) continue;
             const bounds = glyph.getBBox();
             const nativeLeft = timeline
-              ? (g as unknown as {getVFStave(): {getX(): number}}).getVFStave().getX()
+              ? (g as unknown as { getVFStave(): { getX(): number } })
+                  .getVFStave()
+                  .getX()
               : left;
             // Full-bar rests represent the whole measure, not its first grid tick.
             // VexFlow's rest offset can put them left of the cropped grid region.
             const dx = timeline
-              ? restCenterShift(nativeLeft, nativeLeft + (timeline.uniformQuarters && timeline.rowWidth ? timeline.rowWidth : g.parentSourceMeasure.Duration.RealValue * 4 * timeline.quarter), bounds.x, bounds.width)
+              ? restCenterShift(
+                  nativeLeft,
+                  nativeLeft +
+                    (timeline.uniformQuarters && timeline.rowWidth
+                      ? timeline.rowWidth
+                      : g.parentSourceMeasure.Duration.RealValue *
+                        4 *
+                        timeline.quarter),
+                  bounds.x,
+                  bounds.width,
+                )
               : restCenterShift(left, right, bounds.x, bounds.width);
             glyph.setAttribute(
               "transform",
@@ -578,22 +601,27 @@ async function renderMusicXMLPass(
     });
     // Native wedges live outside .vf-measure. Include their ink in playback
     // crop bounds, otherwise an above-staff crescendo is cut at the beam top.
-    for (const row of osmd.GraphicSheet.MeasureList) for (const g of row) {
-      if (!g) continue;
-      const page = g.ParentMusicSystem.Parent;
-      const key = Math.round((g.PositionAndShape.AbsolutePosition.y -
-        page.PositionAndShape.AbsolutePosition.y) * 1000);
-      const bounds = systemBounds[page.PageNumber - 1].get(key);
-      if (!bounds) continue;
-      for (const expression of g.ParentStaffLine.AbstractExpressions as any[]) {
-        for (const line of expression.Lines ?? expression.lines ?? []) {
-          const box = line.SVGElement?.getBBox?.();
-          if (!box) continue;
-          bounds.top = Math.min(bounds.top, box.y - 1);
-          bounds.bottom = Math.max(bounds.bottom, box.y + box.height + 1);
+    for (const row of osmd.GraphicSheet.MeasureList)
+      for (const g of row) {
+        if (!g) continue;
+        const page = g.ParentMusicSystem.Parent;
+        const key = Math.round(
+          (g.PositionAndShape.AbsolutePosition.y -
+            page.PositionAndShape.AbsolutePosition.y) *
+            1000,
+        );
+        const bounds = systemBounds[page.PageNumber - 1].get(key);
+        if (!bounds) continue;
+        for (const expression of g.ParentStaffLine
+          .AbstractExpressions as any[]) {
+          for (const line of expression.Lines ?? expression.lines ?? []) {
+            const box = line.SVGElement?.getBBox?.();
+            if (!box) continue;
+            bounds.top = Math.min(bounds.top, box.y - 1);
+            bounds.bottom = Math.max(bounds.bottom, box.y + box.height + 1);
+          }
         }
       }
-    }
     // Keep XML page/row boundaries; trim only the unused SVG canvas below ink.
     // Regions below are normalized against these final page dimensions.
     for (const svg of svgs) {
@@ -636,8 +664,11 @@ async function renderMusicXMLPass(
       const x = Math.max(0, (p.x - pp.x + box.BorderLeft) * 10 * sx),
         right = timeline
           ? x +
-            (timeline.uniformQuarters && timeline.rowWidth ? timeline.rowWidth :
-            (parsed.measures[i].beats * 4) / parsed.measures[i].denominator * timeline.quarter)
+            (timeline.uniformQuarters && timeline.rowWidth
+              ? timeline.rowWidth
+              : ((parsed.measures[i].beats * 4) /
+                  parsed.measures[i].denominator) *
+                timeline.quarter)
           : Math.min(width, (p.x - pp.x + box.BorderRight) * 10 * sx);
       const staffY = (p.y - pp.y) * 10;
       const bounds = systemBounds[pi].get(Math.round(staffY * 100));
@@ -664,7 +695,16 @@ async function renderMusicXMLPass(
       points.push({ beat: meta.beats, x: 1 });
       const beatXs = Array.from({ length: meta.beats + 1 }, (_, b) =>
         timeline?.fixedGrid
-          ? Math.min(1, (gridPosition(b * 4 / meta.denominator, meta.beats * 4 / meta.denominator, timeline.rowWidth!) + 6) / timeline.rowWidth!)
+          ? Math.min(
+              1,
+              (gridPosition(
+                (b * 4) / meta.denominator,
+                (meta.beats * 4) / meta.denominator,
+                timeline.rowWidth!,
+              ) +
+                6) /
+                timeline.rowWidth!,
+            )
           : interpolateX(points, b),
       );
       if (
@@ -714,18 +754,25 @@ async function engraveMusicXML(
   partId?: string,
 ) {
   const printed = await renderMusicXMLPass(blob, progress, partId);
-  const ribbon = await renderMusicXMLPass(
-    blob,
-    progress,
-    partId,
-    {...printed.spacing, rowWidth: undefined},
+  const ribbon = await renderMusicXMLPass(blob, progress, partId, {
+    ...printed.spacing,
+    rowWidth: undefined,
+  });
+  const durations = printed.parsed.measures.map(
+    (m) => (m.beats * 4) / m.denominator,
   );
-  const durations = printed.parsed.measures.map(m => m.beats * 4 / m.denominator);
   const uniformQuarters = Math.max(...durations);
   // Rows reserve glyph clearance and distribute remaining space by time.
   // Do not reuse the ribbon global shortest-duration spacing for row glyph size.
-  const rows = await renderMusicXMLPass(blob, progress, partId, {...printed.spacing, uniformQuarters});
-  const grid = await renderMusicXMLPass(blob, progress, partId, {...printed.spacing, uniformQuarters, fixedGrid: true});
+  const rows = await renderMusicXMLPass(blob, progress, partId, {
+    ...printed.spacing,
+    uniformQuarters,
+  });
+  const grid = await renderMusicXMLPass(blob, progress, partId, {
+    ...printed.spacing,
+    uniformQuarters,
+    fixedGrid: true,
+  });
   const document = new DOMParser().parseFromString(
     await (await displayPage(printed.pages[0])).text(),
     "image/svg+xml",
@@ -740,12 +787,28 @@ async function engraveMusicXML(
   );
   metadata.textContent = JSON.stringify({
     version: RIBBON_TIMELINE_VERSION,
-    grid: {version: RIBBON_TIMELINE_VERSION, ...printed.spacing, uniformQuarters,
-      regions: grid.regions, staffs: grid.staffs,
-      pages: await Promise.all(grid.pages.map(async p => (await displayPage(p)).text()))},
-    rows: rows ? {version: RIBBON_TIMELINE_VERSION, ...printed.spacing, uniformQuarters,
-      regions: rows.regions, staffs: rows.staffs,
-      pages: await Promise.all(rows.pages.map(async p => (await displayPage(p)).text()))} : undefined,
+    grid: {
+      version: RIBBON_TIMELINE_VERSION,
+      ...printed.spacing,
+      uniformQuarters,
+      regions: grid.regions,
+      staffs: grid.staffs,
+      pages: await Promise.all(
+        grid.pages.map(async (p) => (await displayPage(p)).text()),
+      ),
+    },
+    rows: rows
+      ? {
+          version: RIBBON_TIMELINE_VERSION,
+          ...printed.spacing,
+          uniformQuarters,
+          regions: rows.regions,
+          staffs: rows.staffs,
+          pages: await Promise.all(
+            rows.pages.map(async (p) => (await displayPage(p)).text()),
+          ),
+        }
+      : undefined,
     ...printed.spacing,
     regions: ribbon.regions,
     printStaffs: printed.staffs,

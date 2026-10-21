@@ -3,12 +3,16 @@ import buildInfo from "../../generated/build-info.generated.json";
 import { showAppBuildLabel } from "../../shared/ui/app-build-label";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { licenseSection } from "../../shared/ui/licenses";
-import { appInfoHTML, selectPlaybackSettings } from "../../modules/playback/playback-forms";
+import {
+  appInfoHTML,
+  selectPlaybackSettings,
+} from "../../modules/playback/playback-forms";
 import { mountPlaybackShell } from "../../modules/playback/playback-shell";
 import { webPlaybackBindings } from "../../modules/playback/playback-ui";
 import { componentName } from "../../shared/ui/ui-standard";
 // Arrange existing controls without duplicating their state or event handlers.
-export type SettingsCategory = "screen" | "playback" | "score" | "audio" | "info";
+export type SettingsCategory =
+  "screen" | "playback" | "score" | "audio" | "info";
 const settingsTitles: Record<SettingsCategory, string> = {
   screen: componentName("settings.screen"),
   playback: componentName("settings.playback"),
@@ -153,10 +157,7 @@ export function arrangeWorkspace() {
       "</button>",
   );
   const backupBody = group(i18nText("workspace.message563"), "backup-dialog");
-  backupBody.append(
-    ...backup.children,
-    el("alignment-note"),
-  );
+  backupBody.append(...backup.children, el("alignment-note"));
   const info = settingsPanel("info", "info-settings", "open-info-settings");
   info.innerHTML = appInfoHTML(appVersions.editor.version, buildInfo);
   info.append(licenseSection());

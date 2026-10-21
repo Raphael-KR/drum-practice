@@ -242,27 +242,43 @@ it("rejects renamed audio and restored duplicates without changing existing corr
   const duplicate = fixture();
   duplicate.song.audioName = "renamed.mp3";
   try {
-    await expect(assertNewPracticeAudio(new Blob([await existing.audio.arrayBuffer()]))).rejects.toThrow("이미 내 음원 목록");
-    await expect(importPracticeRecord(duplicate)).rejects.toThrow("이미 내 음원 목록");
-    const fresh = fixture(); fresh.audio = new Blob(["unique batch audio"]);
-    await expect(addPracticeRecords([fresh, duplicate])).rejects.toThrow("이미 내 음원 목록");
+    await expect(
+      assertNewPracticeAudio(new Blob([await existing.audio.arrayBuffer()])),
+    ).rejects.toThrow("이미 내 음원 목록");
+    await expect(importPracticeRecord(duplicate)).rejects.toThrow(
+      "이미 내 음원 목록",
+    );
+    const fresh = fixture();
+    fresh.audio = new Blob(["unique batch audio"]);
+    await expect(addPracticeRecords([fresh, duplicate])).rejects.toThrow(
+      "이미 내 음원 목록",
+    );
     expect(await loadPracticeRecord(fresh.song.id)).toBeUndefined();
     expect(await loadPracticeRecord(duplicate.song.id)).toBeUndefined();
-    expect((await loadPracticeRecord(existing.song.id))!.song).toEqual(existing.song);
-  } finally { await removePracticeRecord(existing.song.id); }
+    expect((await loadPracticeRecord(existing.song.id))!.song).toEqual(
+      existing.song,
+    );
+  } finally {
+    await removePracticeRecord(existing.song.id);
+  }
 });
 it("rejects repeated audio within a backup batch before saving anything", async () => {
-  const a = fixture(), b = fixture();
+  const a = fixture(),
+    b = fixture();
   await expect(addPracticeRecords([a, b])).rejects.toThrow("이미 내 음원 목록");
   expect(await loadPracticeRecord(a.song.id)).toBeUndefined();
   expect(await loadPracticeRecord(b.song.id)).toBeUndefined();
 });
 it("allows different bytes with the same filename and audio already in a score package", async () => {
-  const score = fixture(), a = fixture(), b = fixture();
+  const score = fixture(),
+    a = fixture(),
+    b = fixture();
   delete score.song.audioPractice;
   score.song.pageCount = 1;
-  score.song.regions = [{ id: "r", page: 0, x: 0, y: 0, w: 1, h: 1, beatXs: [] }];
-  score.song.measures.forEach(m => m.regionId = "r");
+  score.song.regions = [
+    { id: "r", page: 0, x: 0, y: 0, w: 1, h: 1, beatXs: [] },
+  ];
+  score.song.measures.forEach((m) => (m.regionId = "r"));
   score.pages = [new Blob(["page"])];
   b.audio = new Blob(["different recording"]);
   await savePracticeRecord(score);
@@ -271,23 +287,39 @@ it("allows different bytes with the same filename and audio already in a score p
     await importPracticeRecord(b);
     expect(await loadPracticeRecord(a.song.id)).toBeDefined();
     expect(await loadPracticeRecord(b.song.id)).toBeDefined();
-  } finally { for (const r of [score, a, b]) await removePracticeRecord(r.song.id); }
+  } finally {
+    for (const r of [score, a, b]) await removePracticeRecord(r.song.id);
+  }
 });
 it("serializes simultaneous imports so only one identical audio is registered", async () => {
-  const a = fixture(), b = fixture();
+  const a = fixture(),
+    b = fixture();
   try {
-    const results = await Promise.allSettled([importPracticeRecord(a), importPracticeRecord(b)]);
-    expect(results.map(r => r.status)).toEqual(["fulfilled", "rejected"]);
+    const results = await Promise.allSettled([
+      importPracticeRecord(a),
+      importPracticeRecord(b),
+    ]);
+    expect(results.map((r) => r.status)).toEqual(["fulfilled", "rejected"]);
     expect(await loadPracticeRecord(b.song.id)).toBeUndefined();
-  } finally { for (const r of [a, b]) await removePracticeRecord(r.song.id); }
+  } finally {
+    for (const r of [a, b]) await removePracticeRecord(r.song.id);
+  }
 });
 
 it("adds an explicitly approved duplicate as a new entry without replacing existing practice state", async () => {
-  const existing = fixture(), duplicate = fixture();
+  const existing = fixture(),
+    duplicate = fixture();
   await savePracticeRecord(existing);
   try {
     await importPracticeRecord(duplicate, { allowDuplicateAudio: true });
-    expect((await loadPracticeRecord(existing.song.id))!.song).toEqual(existing.song);
-    expect((await loadPracticeRecord(duplicate.song.id))!.song.id).toBe(duplicate.song.id);
-  } finally { for (const r of [existing, duplicate]) await removePracticeRecord(r.song.id); }
+    expect((await loadPracticeRecord(existing.song.id))!.song).toEqual(
+      existing.song,
+    );
+    expect((await loadPracticeRecord(duplicate.song.id))!.song.id).toBe(
+      duplicate.song.id,
+    );
+  } finally {
+    for (const r of [existing, duplicate])
+      await removePracticeRecord(r.song.id);
+  }
 });

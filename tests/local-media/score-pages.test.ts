@@ -1,6 +1,13 @@
 import { it, expect } from "vitest";
-import { compressSVG, displayPage, SVG_GZIP } from "../../src/modules/score/score-pages";
-import { packSong, unpackSong } from "../../src/platform/storage/record-serialization";
+import {
+  compressSVG,
+  displayPage,
+  SVG_GZIP,
+} from "../../src/modules/score/score-pages";
+import {
+  packSong,
+  unpackSong,
+} from "../../src/platform/storage/record-serialization";
 import { readFileSync } from "node:fs";
 import { saveRecord, allRecords } from "../../src/platform/storage/storage";
 import "fake-indexeddb/auto";

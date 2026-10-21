@@ -1,4 +1,4 @@
-import {defineConfig} from 'vitest/config';
+import { defineConfig } from "vitest/config";
 export default defineConfig({
-  test: {include: ['tests/{unit,integration,local-media}/**/*.test.ts']},
+  test: { include: ["tests/{unit,integration,local-media}/**/*.test.ts"] },
 });

@@ -48,7 +48,12 @@ export function createConfirmationDialog(options: {
   label: string;
   title: string;
   message: string;
-  actions: { answer: string; label: string; className?: string; autofocus?: boolean }[];
+  actions: {
+    answer: string;
+    label: string;
+    className?: string;
+    autofocus?: boolean;
+  }[];
   parent?: HTMLElement;
 }) {
   const d = document.createElement("dialog");
@@ -67,7 +72,8 @@ export function createConfirmationDialog(options: {
   const heading = document.createElement("div");
   heading.className = "confirmation-heading";
   heading.innerHTML = dialogCloseButton();
-  heading.querySelector<HTMLButtonElement>(".close-button")!.onclick = () => requestDialogCancel(d);
+  heading.querySelector<HTMLButtonElement>(".close-button")!.onclick = () =>
+    requestDialogCancel(d);
   heading.prepend(appIcon);
   const message = document.createElement("p");
   message.id = `${options.id}-message`;
@@ -93,7 +99,9 @@ export function createConfirmationDialog(options: {
   (options.parent || document.body).append(d);
   return d;
 }
-export function confirmDiscardChanges(parent: HTMLDialogElement): Promise<boolean> {
+export function confirmDiscardChanges(
+  parent: HTMLDialogElement,
+): Promise<boolean> {
   return new Promise((resolve) => {
     const previous = document.activeElement as HTMLElement | null;
     const d = createConfirmationDialog({
@@ -103,19 +111,30 @@ export function confirmDiscardChanges(parent: HTMLDialogElement): Promise<boolea
       message: t("dialog.discardQuestion"),
       parent,
       actions: [
-        { answer: "discard", label: t("dialog.discardChanges"), className: "primary" },
+        {
+          answer: "discard",
+          label: t("dialog.discardChanges"),
+          className: "primary",
+        },
         { answer: "keep", label: t("dialog.keepEditing"), autofocus: true },
       ],
     });
-    d.querySelectorAll<HTMLButtonElement>("[data-answer]").forEach(button => {
-      button.onclick = () => { d.returnValue = button.dataset.answer!; d.close(); };
+    d.querySelectorAll<HTMLButtonElement>("[data-answer]").forEach((button) => {
+      button.onclick = () => {
+        d.returnValue = button.dataset.answer!;
+        d.close();
+      };
     });
-    d.addEventListener("close", () => {
-      const discard = d.returnValue === "discard";
-      d.remove();
-      previous?.focus({ preventScroll: true });
-      resolve(discard);
-    }, { once: true });
+    d.addEventListener(
+      "close",
+      () => {
+        const discard = d.returnValue === "discard";
+        d.remove();
+        previous?.focus({ preventScroll: true });
+        resolve(discard);
+      },
+      { once: true },
+    );
     d.showModal();
     d.querySelector<HTMLButtonElement>('[data-answer="keep"]')!.focus();
   });

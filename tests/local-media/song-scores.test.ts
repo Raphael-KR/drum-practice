@@ -1,8 +1,16 @@
 import "fake-indexeddb/auto";
 import { it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { activeScore, songScores, useScore } from "../../src/modules/score/song-scores";
-import { saveRecord, allRecords, deleteRecord } from "../../src/platform/storage/storage";
+import {
+  activeScore,
+  songScores,
+  useScore,
+} from "../../src/modules/score/song-scores";
+import {
+  saveRecord,
+  allRecords,
+  deleteRecord,
+} from "../../src/platform/storage/storage";
 import type { RecordData } from "../../src/model/record";
 import {
   packSong,

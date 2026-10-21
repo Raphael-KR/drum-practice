@@ -46,10 +46,14 @@ export function installScoreReader(options: Options) {
     b.title = label;
     const badge = document.createElement("span");
     badge.className = "score-reader-action-icon";
-    badge.innerHTML = id === "runtime-full-svg" ? icon("library")
-      : svgFromPath(id === "runtime-full-pdf"
-        ? '<path d="M6 3h8l4 4v14H6Z M14 3v5h4 M9 12h6 M9 16h6"/>'
-        : '<path d="M5 5h14 M5 10h14 M5 15h10 M5 20h7"/>');
+    badge.innerHTML =
+      id === "runtime-full-svg"
+        ? icon("library")
+        : svgFromPath(
+            id === "runtime-full-pdf"
+              ? '<path d="M6 3h8l4 4v14H6Z M14 3v5h4 M9 12h6 M9 16h6"/>'
+              : '<path d="M5 5h14 M5 10h14 M5 15h10 M5 20h7"/>',
+          );
     const text = document.createElement("span");
     text.className = "score-reader-action-label";
     text.textContent = label;
@@ -120,7 +124,11 @@ export function installScoreReader(options: Options) {
       }
     });
   }
-  if (options.song.lyricText || options.song.measureLyrics?.length || options.song.lyrics?.length) {
+  if (
+    options.song.lyricText ||
+    options.song.measureLyrics?.length ||
+    options.song.lyrics?.length
+  ) {
     const label = t("score-management.message487");
     button("runtime-full-lyrics", label, () => {
       release();
@@ -130,7 +138,13 @@ export function installScoreReader(options: Options) {
       lyrics.textContent =
         options.song.lyricText ||
         (options.song.measureLyrics?.length
-          ? options.song.measures.flatMap(m => options.song.measureLyrics!.filter(l => l.measureId === m.id).map(l => l.text)).join("\n")
+          ? options.song.measures
+              .flatMap((m) =>
+                options.song
+                  .measureLyrics!.filter((l) => l.measureId === m.id)
+                  .map((l) => l.text),
+              )
+              .join("\n")
           : options.song.lyrics.map((l) => l.text).join(" "));
       body.append(lyrics);
       dialog.showModal();

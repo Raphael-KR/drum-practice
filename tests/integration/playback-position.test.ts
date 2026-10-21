@@ -1,11 +1,18 @@
 // @vitest-environment jsdom
 import { it, expect, vi } from "vitest";
-import { playbackPosition, copyPosition } from "../../src/modules/playback/playback-position";
+import {
+  playbackPosition,
+  copyPosition,
+} from "../../src/modules/playback/playback-position";
 import type { Song } from "../../src/model/model";
-const song = { title: "테스트", artist: "가수", measures: [
-  { label: "15", start: 10, end: 14, beats: 4, denominator: 4 },
-  { label: "16", start: 14, end: 19, beats: 5, denominator: 4 },
-] } as Song;
+const song = {
+  title: "테스트",
+  artist: "가수",
+  measures: [
+    { label: "15", start: 10, end: 14, beats: 4, denominator: 4 },
+    { label: "16", start: 14, end: 19, beats: 5, denominator: 4 },
+  ],
+} as Song;
 it("reports the fourth eighth-note slot with exact time", () => {
   const p = playbackPosition(song, 11.501);
   expect(p.label).toBe("15마디 · 2박 + ½");
@@ -19,14 +26,23 @@ it("handles measure changes, pre-roll, and the last beat in 5/4", () => {
 });
 it("writes the supplied snapshot to Clipboard API", async () => {
   const writeText = vi.fn().mockResolvedValue(undefined);
-  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText },
+  });
   await copyPosition("15마디");
   expect(writeText).toHaveBeenCalledWith("15마디");
 });
 it("falls back when clipboard access is denied and cleans up on failure", async () => {
-  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockRejectedValue(Error()) } });
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText: vi.fn().mockRejectedValue(Error()) },
+  });
   const exec = vi.fn(() => true);
-  Object.defineProperty(document, "execCommand", { configurable: true, value: exec });
+  Object.defineProperty(document, "execCommand", {
+    configurable: true,
+    value: exec,
+  });
   await copyPosition("위치");
   expect(exec).toHaveBeenCalledWith("copy");
   expect(document.querySelector("textarea")).toBeNull();

@@ -4,8 +4,12 @@ let request: any;
 class FakeXHR {
   status = 200;
   response = new Blob(["score"]);
-  open = vi.fn(); setRequestHeader = vi.fn(); send = vi.fn();
-  constructor() { request = this; }
+  open = vi.fn();
+  setRequestHeader = vi.fn();
+  send = vi.fn();
+  constructor() {
+    request = this;
+  }
 }
 afterEach(() => vi.unstubAllGlobals());
 it("reports byte-based progress and only completes on successful response", async () => {
@@ -27,11 +31,16 @@ it("keeps unknown totals indeterminate and rejects errors for retry", async () =
   const result = downloadScore("/score", progress);
   request.onprogress({ lengthComputable: false, loaded: 40, total: 0 });
   expect(progress).toHaveBeenLastCalledWith(null);
-  request.status = 503; request.onload();
+  request.status = 503;
+  request.onload();
   await expect(result).rejects.toThrow("503");
   expect(progress).not.toHaveBeenCalledWith(100);
 });
-it.each([["onerror", "NetworkError"], ["ontimeout", "TimeoutError"], ["onabort", "AbortError"]])("rejects %s with its cause", async (event, cause) => {
+it.each([
+  ["onerror", "NetworkError"],
+  ["ontimeout", "TimeoutError"],
+  ["onabort", "AbortError"],
+])("rejects %s with its cause", async (event, cause) => {
   vi.stubGlobal("XMLHttpRequest", FakeXHR);
   const result = downloadScore("/score", vi.fn());
   request[event]();

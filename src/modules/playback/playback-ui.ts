@@ -9,7 +9,11 @@ export interface RepeatControls {
 /** Same visible content; only event-routing identifiers belong to each host. */
 export function repeatControlsHTML(ids: RepeatControls) {
   return `<div class="repeat-presets">${[1, 2, 3, 4]
-    .map(radius => `<button type="button" title="${t("tooltip.repeat", {radius})}" ${ids.radiusAttribute}="${radius}" aria-pressed="false">${t("workspace.message550", {radius})}</button>`).join("")}</div>`;
+    .map(
+      (radius) =>
+        `<button type="button" title="${t("tooltip.repeat", { radius })}" ${ids.radiusAttribute}="${radius}" aria-pressed="false">${t("workspace.message550", { radius })}</button>`,
+    )
+    .join("")}</div>`;
 }
 
 export interface PlaybackBindings {
@@ -61,7 +65,9 @@ export function arrangePlaybackUI(root: HTMLElement, ids: PlaybackBindings) {
     settings.querySelector(":scope > div")?.classList.add("settings-detail");
   }
   const get = (id: string) => root.querySelector<HTMLElement>(`#${id}`)!;
-  root.querySelector("#" + ids.tempoInput)?.classList.add("playback-tempo-input");
+  root
+    .querySelector("#" + ids.tempoInput)
+    ?.classList.add("playback-tempo-input");
   const roles: Record<string, string> = {
     "playback-rewind": ids.rewind,
     "playback-position": ids.position,
@@ -87,10 +93,7 @@ export function arrangePlaybackUI(root: HTMLElement, ids: PlaybackBindings) {
     actions = document.createElement("div");
     actions.className = "repeat-actions";
   }
-  actions.append(
-    get(ids.adjust),
-    repeat.querySelector(".repeat-presets")!,
-  );
+  actions.append(get(ids.adjust), repeat.querySelector(".repeat-presets")!);
   repeat.replaceChildren(actions, get(ids.markers));
 }
 
@@ -135,13 +138,17 @@ export function updatePlayhead(
   ribbon: boolean,
 ) {
   root.querySelector<HTMLElement>("#playhead-status")!.hidden = !ribbon;
-  root.querySelector("#playhead-bar")!.textContent = measure.audioPrelude ? t("audioPractice.prelude") : t("main.message245", {
-    value1: measure.label,
-  });
-  root.querySelector("#playhead-beat")!.textContent =
-    measure.audioPrelude ? "" : `${count ? t("main.message246") : ""}${count || Math.min(measure.beats, Math.floor(beat) + 1)}`;
-  root.querySelector("#playhead-signature")!.textContent =
-    measure.audioPrelude ? "" : `${measure.beats}/${measure.denominator}`;
+  root.querySelector("#playhead-bar")!.textContent = measure.audioPrelude
+    ? t("audioPractice.prelude")
+    : t("main.message245", {
+        value1: measure.label,
+      });
+  root.querySelector("#playhead-beat")!.textContent = measure.audioPrelude
+    ? ""
+    : `${count ? t("main.message246") : ""}${count || Math.min(measure.beats, Math.floor(beat) + 1)}`;
+  root.querySelector("#playhead-signature")!.textContent = measure.audioPrelude
+    ? ""
+    : `${measure.beats}/${measure.denominator}`;
   const stage = root.querySelector<HTMLElement>("#stage")!;
   stage.style.setProperty(
     "--scroll-x",

@@ -230,7 +230,9 @@ it("separates conversion progress from score errors and clears playback errors o
   expect(notice.getAttribute("role")).toBe("alert");
   player.onprogress("BPM 변환 42%");
   expect(notice.textContent).toBe("");
-  expect(o.root.querySelector("#tempo-status")!.textContent).toBe("BPM 변환 42%");
+  expect(o.root.querySelector("#tempo-status")!.textContent).toBe(
+    "BPM 변환 42%",
+  );
   player.onprogress("");
   player.onerror("오디오가 중단되어 일시정지했습니다.");
   expect(notice.textContent).toContain("일시정지");
@@ -242,8 +244,12 @@ it("separates conversion progress from score errors and clears playback errors o
   stage.scrollLeft = 1200;
   stage.scrollTop = 117;
   stage.dispatchEvent(new Event("scroll"));
-  expect((notice as HTMLElement).style.getPropertyValue("--notice-scroll-y")).toBe("117px");
-  expect((notice as HTMLElement).style.getPropertyValue("--notice-scroll-x")).toBe("1200px");
+  expect(
+    (notice as HTMLElement).style.getPropertyValue("--notice-scroll-y"),
+  ).toBe("117px");
+  expect(
+    (notice as HTMLElement).style.getPropertyValue("--notice-scroll-x"),
+  ).toBe("1200px");
   player.playing = true;
   player.onstate();
   expect(notice.textContent).toBe("");

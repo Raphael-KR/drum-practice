@@ -1,5 +1,11 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
-import { validMeasureBeatTimes, validateMeasureLyrics, type Song, type Lyric, type MeasureLyric } from "../../model/model";
+import {
+  validMeasureBeatTimes,
+  validateMeasureLyrics,
+  type Song,
+  type Lyric,
+  type MeasureLyric,
+} from "../../model/model";
 import type { RecordData } from "../../model/record";
 import { migrateLyricPositions, projectLyrics } from "../lyrics/lyric-score";
 const PART = "DrumPracticeLyrics",
@@ -91,9 +97,9 @@ export function writeCanonical(
   base?: string,
   audioSHA256?: string,
 ): string {
-  if (s.measures.some(m => !validMeasureBeatTimes(m)))
+  if (s.measures.some((m) => !validMeasureBeatTimes(m)))
     throw Error(i18nText("model.message385"));
-  validateMeasureLyrics(s.measureLyrics, new Set(s.measures.map(m => m.id)));
+  validateMeasureLyrics(s.measureLyrics, new Set(s.measures.map((m) => m.id)));
   migrateLyricPositions(s);
   const d = parse(
       base || '<score-partwise version="4.0"><part-list/></score-partwise>',
@@ -269,11 +275,13 @@ export function writeCanonical(
         denominator,
         start,
         end,
-        ...(beatTimes ? {beatTimes: [...beatTimes]} : {}),
+        ...(beatTimes ? { beatTimes: [...beatTimes] } : {}),
         occurrence: 1,
       }),
     ),
-    ...(s.measureLyrics?.length ? { measureLyrics: s.measureLyrics.map(l => ({ ...l })) } : {}),
+    ...(s.measureLyrics?.length
+      ? { measureLyrics: s.measureLyrics.map((l) => ({ ...l })) }
+      : {}),
     lyrics: rows.map(({ l, voice }) => ({
       voice,
       id: l.id,
@@ -294,7 +302,9 @@ export function readCanonical(text: string, s: Song): void {
     throw Error(i18nText("canonical-xml.message016"));
   if (
     data.measures.length !== s.measures.length ||
-    data.measures.some((m, i) => m.id !== s.measures[i].id || !validMeasureBeatTimes(m))
+    data.measures.some(
+      (m, i) => m.id !== s.measures[i].id || !validMeasureBeatTimes(m),
+    )
   )
     throw Error(i18nText("canonical-xml.message017"));
   Object.assign(s, metadataFromXML(text));
@@ -306,7 +316,7 @@ export function readCanonical(text: string, s: Song): void {
       denominator: m.denominator,
       start: m.start,
       end: m.end,
-      ...(m.beatTimes ? {beatTimes: [...m.beatTimes]} : {}),
+      ...(m.beatTimes ? { beatTimes: [...m.beatTimes] } : {}),
     });
   });
   const part = kids(d.documentElement, "part").find(
@@ -363,8 +373,11 @@ export function readCanonical(text: string, s: Song): void {
       if (!child(e, "chord")) cursor += duration;
     }
   });
-  validateMeasureLyrics(data.measureLyrics, new Set(s.measures.map(m => m.id)));
-  s.measureLyrics = data.measureLyrics?.map(l => ({ ...l }));
+  validateMeasureLyrics(
+    data.measureLyrics,
+    new Set(s.measures.map((m) => m.id)),
+  );
+  s.measureLyrics = data.measureLyrics?.map((l) => ({ ...l }));
   s.lyrics = [...lyrics.values()];
   projectLyrics(s);
 }

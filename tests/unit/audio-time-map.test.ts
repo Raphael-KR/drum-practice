@@ -5,7 +5,10 @@ import {
   originalTempoMode,
   mapTime,
 } from "../../src/modules/audio/audio-time-map";
-import { audioMeasures, followAudioTempo } from "../../src/modules/audio/audio-practice";
+import {
+  audioMeasures,
+  followAudioTempo,
+} from "../../src/modules/audio/audio-practice";
 import { defaults } from "../../src/model/model";
 const beats = [0.2, 0.7, 1.18, 1.64, 2.08, 2.5, 2.9, 3.28, 3.64];
 function song() {
@@ -63,11 +66,19 @@ it("reports only completed intervals, averages four, and holds between beats and
   expect(currentAudioBpm(s, 5)).toBe(currentAudioBpm(s, 3.64));
 });
 
-it('uses selected note values for practice timing and BPM without moving source beats',()=>{
- const s=song();s.bpm=96;s.audioPractice!.beats=6;s.audioPractice!.denominator=8;
- const adjusted=followAudioTempo(s);adjusted.settings.tempoMode='practice';
- const map=audioTimeMap(adjusted,5)!;
- beats.forEach((t,i)=>expect(mapTime(t,map.source,map.output)).toBeCloseTo(.2+i*60/96/2));
- expect(adjusted.audioPractice!.beatTimes).toEqual(beats);
- expect(currentAudioBpm(adjusted,.7)).toBeCloseTo(60);
+it("uses selected note values for practice timing and BPM without moving source beats", () => {
+  const s = song();
+  s.bpm = 96;
+  s.audioPractice!.beats = 6;
+  s.audioPractice!.denominator = 8;
+  const adjusted = followAudioTempo(s);
+  adjusted.settings.tempoMode = "practice";
+  const map = audioTimeMap(adjusted, 5)!;
+  beats.forEach((t, i) =>
+    expect(mapTime(t, map.source, map.output)).toBeCloseTo(
+      0.2 + (i * 60) / 96 / 2,
+    ),
+  );
+  expect(adjusted.audioPractice!.beatTimes).toEqual(beats);
+  expect(currentAudioBpm(adjusted, 0.7)).toBeCloseTo(60);
 });

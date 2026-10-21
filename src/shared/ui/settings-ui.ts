@@ -1,4 +1,4 @@
-import { escapeHTML as escape } from './html';
+import { escapeHTML as escape } from "./html";
 export function settingsSwitch(
   id: string,
   title: string,

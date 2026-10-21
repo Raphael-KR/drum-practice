@@ -20,11 +20,22 @@ export function syncCardTitleOrder(heading: Element) {
 }
 /** Shared ordering, title presentation and favorites; no score data is mutated. */
 export function libraryPresentation(
-  catalog: ScoreCatalogEntry[], sectionLists: HTMLElement[], favoriteList: HTMLElement,
+  catalog: ScoreCatalogEntry[],
+  sectionLists: HTMLElement[],
+  favoriteList: HTMLElement,
   report: (error: unknown) => void,
 ) {
-  const categories = new Map(catalog.map(entry => [entry.id, entry.category]));
-  const listFor = (id: string) => sectionLists[categories.get(id) === "basic" ? 0 : categories.get(id) === "audio" ? 2 : 1];
+  const categories = new Map(
+    catalog.map((entry) => [entry.id, entry.category]),
+  );
+  const listFor = (id: string) =>
+    sectionLists[
+      categories.get(id) === "basic"
+        ? 0
+        : categories.get(id) === "audio"
+          ? 2
+          : 1
+    ];
   let favorites = new Set<string>();
   try {
     const stored: unknown = JSON.parse(
@@ -60,7 +71,9 @@ export function libraryPresentation(
   };
   const appendCard = (id: string, card: HTMLElement) => {
     card.dataset.scoreId = id;
-    card.dataset.libraryOrder = String(catalog.findIndex(entry => entry.id === id));
+    card.dataset.libraryOrder = String(
+      catalog.findIndex((entry) => entry.id === id),
+    );
     const heading = card.querySelector(".practice-card-title");
     if (heading) syncCardTitleOrder(heading);
     card.querySelectorAll<HTMLElement>("h3, p").forEach((text) => {

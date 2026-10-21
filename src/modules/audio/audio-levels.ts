@@ -7,9 +7,11 @@ export const METRONOME_MAX_GAIN = 1.5;
 export function limitMixedSample(sample: number): number {
   const magnitude = Math.abs(sample);
   if (magnitude <= MIX_LINEAR_LIMIT) return sample;
-  return Math.sign(sample) * (
-    MIX_LINEAR_LIMIT + (1 - MIX_LINEAR_LIMIT) *
-      Math.tanh((magnitude - MIX_LINEAR_LIMIT) / (1 - MIX_LINEAR_LIMIT))
+  return (
+    Math.sign(sample) *
+    (MIX_LINEAR_LIMIT +
+      (1 - MIX_LINEAR_LIMIT) *
+        Math.tanh((magnitude - MIX_LINEAR_LIMIT) / (1 - MIX_LINEAR_LIMIT)))
   );
 }
 

@@ -34,9 +34,14 @@ export function engravingHeight(stageWidth: number, zoom: number) {
   return (clamp(stageWidth * 0.245, 170, 340) * zoom) / 2;
 }
 /** 100% shows sixteen quarter notes; uniform glyph scale at every zoom. */
-export function ribbonHeight(width: number, zoom: number, staff?: StaffPosition) {
+export function ribbonHeight(
+  width: number,
+  zoom: number,
+  staff?: StaffPosition,
+) {
   return staff?.ribbonQuarterInGaps
-    ? (width / 16) * zoom / staff.ribbonQuarterInGaps * staffFrameHeight(staff)
+    ? (((width / 16) * zoom) / staff.ribbonQuarterInGaps) *
+        staffFrameHeight(staff)
     : engravingHeight(width, zoom);
 }
 export function scoreLayout(
@@ -58,7 +63,11 @@ export function scoreLayout(
   );
   if (s.settings.view === "ribbon") {
     const [x, y] = layout.position.split(" ").map(parseFloat);
-    return {...layout, height: layout.height + 24, position: `${x}px ${y + 24}px`};
+    return {
+      ...layout,
+      height: layout.height + 24,
+      position: `${x}px ${y + 24}px`,
+    };
   }
   return layout;
 }
@@ -75,7 +84,12 @@ export function measureWidth(
     : (height * r.w) / r.h / ratio;
 }
 /** Linear timeline position; phase * width is the shared note-head offset. */
-export function ribbonPosition(width: number, beat: number, beats: number, phase: number) {
+export function ribbonPosition(
+  width: number,
+  beat: number,
+  beats: number,
+  phase: number,
+) {
   return width * (phase + beat / beats);
 }
 export function measurePosition(
@@ -115,12 +129,18 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     state;
   try {
     if (!playing && !resume) {
-      const stableBrowse = rowWindow === -2 &&
+      const stableBrowse =
+        rowWindow === -2 &&
         (h.cellWidth ?? stage.clientWidth / 4) === renderedBrowseWidth;
       // Restore chronological browsing, retaining the active row's screen slot.
-      const visible = rowWindow >= 0
-        ? [...ribbon.querySelectorAll<HTMLElement>('[data-index], .empty-measure')].map(e => Number(e.dataset.index))
-        : [];
+      const visible =
+        rowWindow >= 0
+          ? [
+              ...ribbon.querySelectorAll<HTMLElement>(
+                "[data-index], .empty-measure",
+              ),
+            ].map((e) => Number(e.dataset.index))
+          : [];
       const wasLower = visible.slice(4, 8).includes(index);
       if (rowWindow !== -2) {
         rowWindow = -2;
@@ -153,17 +173,33 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
         // A keyboard move between the two visible rows changes selection only.
         // Real geometry also respects manual scrolling; newly built/resized rows
         // still follow the selected measure using the existing alignment below.
-        const selected = ribbon.querySelector<HTMLElement>(`[data-index="${index}"]`);
+        const selected = ribbon.querySelector<HTMLElement>(
+          `[data-index="${index}"]`,
+        );
         const cellBounds = selected?.getBoundingClientRect();
         const stageBounds = stage.getBoundingClientRect();
-        if (stableBrowse && cellBounds && cellBounds.height > 0 && stageBounds.height > 0 &&
-          cellBounds.top >= stageBounds.top - 1 && cellBounds.bottom <= stageBounds.bottom + 1) return;
-        const keepLower = wasLower || (stableBrowse && !!cellBounds &&
-          stageBounds.height > 0 && cellBounds.bottom > stageBounds.bottom + 1);
-        const topRow = Math.max(0, Math.min(
-          Math.floor(index / 4) - (keepLower ? 1 : 0),
-          Math.max(0, Math.ceil(song().measures.length / 4) - 2),
-        ));
+        if (
+          stableBrowse &&
+          cellBounds &&
+          cellBounds.height > 0 &&
+          stageBounds.height > 0 &&
+          cellBounds.top >= stageBounds.top - 1 &&
+          cellBounds.bottom <= stageBounds.bottom + 1
+        )
+          return;
+        const keepLower =
+          wasLower ||
+          (stableBrowse &&
+            !!cellBounds &&
+            stageBounds.height > 0 &&
+            cellBounds.bottom > stageBounds.bottom + 1);
+        const topRow = Math.max(
+          0,
+          Math.min(
+            Math.floor(index / 4) - (keepLower ? 1 : 0),
+            Math.max(0, Math.ceil(song().measures.length / 4) - 2),
+          ),
+        );
         const row = ribbon.querySelector<HTMLElement>(
           `[data-index="${topRow * 4}"]`,
         );
@@ -181,27 +217,43 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       rowWindow = -1;
     }
     const windowIndex = Math.floor(index / 4);
-    if (windowIndex === rowWindow && renderedBrowseWidth === h.cellWidth) return;
+    if (windowIndex === rowWindow && renderedBrowseWidth === h.cellWidth)
+      return;
     renderedBrowseWidth = h.cellWidth ?? stage.clientWidth / 4;
     rowWindow = windowIndex;
     const s = song();
     const currentOnTop = (windowIndex - playbackRowOrigin) % 2 === 0;
     const lastRow = Math.ceil(s.measures.length / 4) - 1;
     const atLastRow = lastRow > 0 && windowIndex === lastRow;
-    const upper = atLastRow ? lastRow - 1 : currentOnTop ? windowIndex : windowIndex + 1,
-      lower = atLastRow ? lastRow : currentOnTop ? windowIndex + 1 : windowIndex;
+    const upper = atLastRow
+        ? lastRow - 1
+        : currentOnTop
+          ? windowIndex
+          : windowIndex + 1,
+      lower = atLastRow
+        ? lastRow
+        : currentOnTop
+          ? windowIndex + 1
+          : windowIndex;
     const indices = [
       ...Array.from({ length: 4 }, (_, j) => upper * 4 + j),
       ...Array.from({ length: 4 }, (_, j) => lower * 4 + j),
     ];
     // Preserve all four slots when the upcoming final row is incomplete.
     const width = h.cellWidth ?? stage.clientWidth / 4;
-    const html = (i: number) => i < s.measures.length
-      ? measureHTML(s.measures[i], i, width)
-      : `<div class="measure empty-measure" style="width:${width}px"></div>`;
-    ribbon.innerHTML = s.scoreFormat === "musicxml" && s.settings.uniformSpacing
-      ? [indices.slice(0, 4), indices.slice(4)].map(row => `<div class="browse-row"><div class="browse-strip">${row.map(html).join("")}</div></div>`).join("")
-      : indices.map(html).join("");
+    const html = (i: number) =>
+      i < s.measures.length
+        ? measureHTML(s.measures[i], i, width)
+        : `<div class="measure empty-measure" style="width:${width}px"></div>`;
+    ribbon.innerHTML =
+      s.scoreFormat === "musicxml" && s.settings.uniformSpacing
+        ? [indices.slice(0, 4), indices.slice(4)]
+            .map(
+              (row) =>
+                `<div class="browse-row"><div class="browse-strip">${row.map(html).join("")}</div></div>`,
+            )
+            .join("")
+        : indices.map(html).join("");
     layoutLyrics();
   } finally {
     Object.assign(state, {
@@ -244,7 +296,9 @@ export function layoutScoreLyrics(
     const baseline = Math.max(...items.map(({ rect }) => rect.top));
     items.forEach(({ el, rect }, i) => {
       // Source-reviewed PDF underlay must stay at the corresponding note center.
-      el.style.marginLeft = el.dataset.pdfLyricAnchor ? "0px" : `${positions[i] - rect.left}px`;
+      el.style.marginLeft = el.dataset.pdfLyricAnchor
+        ? "0px"
+        : `${positions[i] - rect.left}px`;
       el.style.top = `${baseline - rect.top}px`;
     });
   }

@@ -1,4 +1,3 @@
-
 /* Shared visual baseline: scoped to app dialogs and musical asset types. */
 .asset-musicxml {
   background: var(--xml-bg);

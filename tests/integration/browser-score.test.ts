@@ -1,7 +1,12 @@
-vi.mock("../../src/modules/score/drum-legend", () => ({normalizeDrumScore: (s:string)=>s}));
+vi.mock("../../src/modules/score/drum-legend", () => ({
+  normalizeDrumScore: (s: string) => s,
+}));
 import { expect, it, vi } from "vitest";
 const render = vi.hoisted(() => vi.fn());
-vi.mock("../../src/modules/score/musicxml", () => ({ renderMusicXML: render, readMusicXML: (b:Blob)=>b.text() }));
+vi.mock("../../src/modules/score/musicxml", () => ({
+  renderMusicXML: render,
+  readMusicXML: (b: Blob) => b.text(),
+}));
 import { prepareBrowserScore } from "../../src/modules/score/browser-score";
 import type { RecordData } from "../../src/model/record";
 function record(): RecordData {

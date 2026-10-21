@@ -3,9 +3,18 @@ import { it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { Blob as NativeBlob } from "node:buffer";
 import { EditHistory, retainRevision } from "../../src/model/edit-history";
-import { writeCanonical, readCanonical } from "../../src/modules/score/canonical-xml";
-import { exportLibrary, importLibrary } from "../../src/modules/library/library-backup";
-import { scoreChips, lyricDocument } from "../../src/apps/editor/score-management";
+import {
+  writeCanonical,
+  readCanonical,
+} from "../../src/modules/score/canonical-xml";
+import {
+  exportLibrary,
+  importLibrary,
+} from "../../src/modules/library/library-backup";
+import {
+  scoreChips,
+  lyricDocument,
+} from "../../src/apps/editor/score-management";
 vi.stubGlobal("Blob", NativeBlob);
 const make = () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
@@ -121,7 +130,8 @@ it("separates actual rehearsal sections without inventing lyric section names", 
   ).toBe("나다");
 });
 it("uses canonical lyrics for both availability and chips", async () => {
-  const { hasLyrics, scoreAssets } = await import("../../src/modules/library/score-assets");
+  const { hasLyrics, scoreAssets } =
+    await import("../../src/modules/library/score-assets");
   const r = {
     ...make(),
     canonicalXML:

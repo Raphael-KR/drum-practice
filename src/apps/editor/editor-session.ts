@@ -1,4 +1,7 @@
-import { createDialog, createConfirmationDialog } from "../../shared/ui/dialog-ui";
+import {
+  createDialog,
+  createConfirmationDialog,
+} from "../../shared/ui/dialog-ui";
 import {
   EditHistory,
   retainRevision,
@@ -59,9 +62,21 @@ export function editorSession(host: SessionHost) {
     title: i18nText("editor-session.message032"),
     message: i18nText("editor-session.message033"),
     actions: [
-      { answer: "save", label: i18nText("editor-session.message036"), className: "primary" },
-      { answer: "discard", label: i18nText("editor-session.message034"), className: "danger" },
-      { answer: "continue", label: i18nText("editor-session.message035"), autofocus: true },
+      {
+        answer: "save",
+        label: i18nText("editor-session.message036"),
+        className: "primary",
+      },
+      {
+        answer: "discard",
+        label: i18nText("editor-session.message034"),
+        className: "danger",
+      },
+      {
+        answer: "continue",
+        label: i18nText("editor-session.message035"),
+        autofocus: true,
+      },
     ],
   });
   const versions = createDialog(

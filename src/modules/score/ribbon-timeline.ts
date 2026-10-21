@@ -43,7 +43,10 @@ export function validateRibbonTimeline(
     throw Error("Invalid SVG ribbon timeline");
   if (d.rows) validateRibbonTimeline(d.rows, count);
   if (d.grid) validateRibbonTimeline(d.grid, count);
-  if (d.uniformQuarters !== undefined && !(Number.isFinite(d.uniformQuarters) && d.uniformQuarters > 0))
+  if (
+    d.uniformQuarters !== undefined &&
+    !(Number.isFinite(d.uniformQuarters) && d.uniformQuarters > 0)
+  )
     throw Error("Invalid row duration");
   d.regions.forEach((r, i) => {
     const s = d.staffs[i];

@@ -1,14 +1,17 @@
 /** Centre is 100%; retain the existing 50–300% range. */
-export const ZOOM_TICKS = [0,25,50,75,100];
-export function zoomFromSlider(position:number) {
-  const p=Math.max(0,Math.min(100,position));
-  return p<=50 ? .5+p/100 : 1+(p-50)/25;
+export const ZOOM_TICKS = [0, 25, 50, 75, 100];
+export function zoomFromSlider(position: number) {
+  const p = Math.max(0, Math.min(100, position));
+  return p <= 50 ? 0.5 + p / 100 : 1 + (p - 50) / 25;
 }
-export function sliderFromZoom(zoom:number) {
-  return Math.max(0,Math.min(100,zoom<=1 ? (zoom-.5)*100 : 50+(zoom-1)*25));
+export function sliderFromZoom(zoom: number) {
+  return Math.max(
+    0,
+    Math.min(100, zoom <= 1 ? (zoom - 0.5) * 100 : 50 + (zoom - 1) * 25),
+  );
 }
-const ZOOM_SNAP_POINTS = [0,25,50,62.5,75,87.5,100];
-export function snapZoomSlider(position:number) {
-  const tick=ZOOM_SNAP_POINTS.find(t=>Math.abs(position-t)<=3);
+const ZOOM_SNAP_POINTS = [0, 25, 50, 62.5, 75, 87.5, 100];
+export function snapZoomSlider(position: number) {
+  const tick = ZOOM_SNAP_POINTS.find((t) => Math.abs(position - t) <= 3);
   return tick ?? position;
 }

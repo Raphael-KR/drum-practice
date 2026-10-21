@@ -1,4 +1,7 @@
-import { libraryCardHTML, libraryPresentation } from "../../modules/library/library-presentation";
+import {
+  libraryCardHTML,
+  libraryPresentation,
+} from "../../modules/library/library-presentation";
 import {
   scoreCatalog,
   librarySectionHTML,
@@ -49,7 +52,10 @@ export function createEditorLibrary(h: LibraryHost) {
       })
       .join("");
   const catalogCard = (entry: ScoreCatalogEntry, index: number) =>
-    libraryCardHTML(entry, `<button ${entry.record ? 'class="primary"' : ""} data-editor-open="${index}">${i18nText(entry.record ? "editorHome.edit" : "separation.loadBundled")}</button>${entry.record ? `<button data-editor-remove="${index}" title="${esc(i18nText("library.tipRemove"))}">${i18nText("separation.remove")}</button>` : ""}`);
+    libraryCardHTML(
+      entry,
+      `<button ${entry.record ? 'class="primary"' : ""} data-editor-open="${index}">${i18nText(entry.record ? "editorHome.edit" : "separation.loadBundled")}</button>${entry.record ? `<button data-editor-remove="${index}" title="${esc(i18nText("library.tipRemove"))}">${i18nText("separation.remove")}</button>` : ""}`,
+    );
   async function openCatalogEntry(
     entry: ScoreCatalogEntry,
     button: HTMLButtonElement,
@@ -99,8 +105,14 @@ export function createEditorLibrary(h: LibraryHost) {
       await openEditor();
     } catch (cause) {
       try {
-        console.error("Editor catalog open failed", { id: entry.id, stage, cause });
-      } catch { /* Reporting must not hide the original failure. */ }
+        console.error("Editor catalog open failed", {
+          id: entry.id,
+          stage,
+          cause,
+        });
+      } catch {
+        /* Reporting must not hide the original failure. */
+      }
       error(cause);
     } finally {
       opening = false;
@@ -123,15 +135,22 @@ export function createEditorLibrary(h: LibraryHost) {
     if (epoch !== homeEpoch || (opening && !force)) return;
     const recent = chooseRecent(records);
     const catalog = scoreCatalog(records);
-    $("editor-home-list").innerHTML = '<div id="editor-home-favorites" class="practice-records" hidden></div>' + sections(
+    $("editor-home-list").innerHTML =
+      '<div id="editor-home-favorites" class="practice-records" hidden></div>' +
+      sections(
+        catalog,
+        (entry, index) => catalogCard(entry, index),
+        "editor-home",
+      );
+    const presentation = libraryPresentation(
       catalog,
-      (entry, index) => catalogCard(entry, index),
-      "editor-home",
+      [$("editor-home-basic"), $("editor-home-personal")],
+      $("editor-home-favorites"),
+      error,
     );
-    const presentation = libraryPresentation(catalog,
-      [$("editor-home-basic"), $("editor-home-personal")], $("editor-home-favorites"), error);
-    $("editor-home-list").querySelectorAll<HTMLElement>(".practice-card").forEach(card =>
-      presentation.appendCard(card.dataset.scoreId!, card));
+    $("editor-home-list")
+      .querySelectorAll<HTMLElement>(".practice-card")
+      .forEach((card) => presentation.appendCard(card.dataset.scoreId!, card));
     presentation.sortFavorites();
     $("editor-home-list").onclick = async (event) => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
@@ -147,7 +166,14 @@ export function createEditorLibrary(h: LibraryHost) {
           await deleteRecord(entry.id);
           await refreshRecentScore(true);
         } catch (cause) {
-          try { console.error("Editor catalog deletion failed", { id: entry.id, cause }); } catch { /* Keep the original failure. */ }
+          try {
+            console.error("Editor catalog deletion failed", {
+              id: entry.id,
+              cause,
+            });
+          } catch {
+            /* Keep the original failure. */
+          }
           error(cause);
         } finally {
           opening = false;

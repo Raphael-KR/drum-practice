@@ -13,10 +13,15 @@ export function trimRegionLeft(region: Region, left: number): Region {
     x: left,
     w: region.w - trim,
     // Do not clamp: a musical anchor before the visible crop remains before it.
-    beatXs: region.beatXs.map(x => (x - fraction) / (1 - fraction)),
-    ...(region.lyricAnchors ? {lyricAnchors: region.lyricAnchors.map(a => ({
-      ...a, x: (a.x - fraction) / (1 - fraction),
-    }))} : {}),
+    beatXs: region.beatXs.map((x) => (x - fraction) / (1 - fraction)),
+    ...(region.lyricAnchors
+      ? {
+          lyricAnchors: region.lyricAnchors.map((a) => ({
+            ...a,
+            x: (a.x - fraction) / (1 - fraction),
+          })),
+        }
+      : {}),
   };
 }
 
@@ -24,33 +29,69 @@ export function trimRegionLeft(region: Region, left: number): Region {
 // Only its system-start regions contain the repeated percussion clef at 59–66pt.
 // Stop at 69pt: before the first notes and printed time signatures.
 export function displayRegion(song: Song, region: Region): Region {
-  if (song.scoreFormat === 'musicxml') {
+  if (song.scoreFormat === "musicxml") {
     // Reviewed OSMD system prefixes: omit only the empty percussion-clef slot.
     // Geometry and anchors guard against applying this to a re-engraved score.
-    const crop = song.id === svgDisplayCrops.songId && svgDisplayCrops.regions.find(c =>
-      c.id === region.id && (['page','x','y','w','h'] as const).every(k => Math.abs(c[k]-region[k]) < 1e-8) &&
-      c.beatXs.length === region.beatXs.length && c.beatXs.every((x,i) => Math.abs(x-region.beatXs[i]) < 1e-8));
+    const crop =
+      song.id === svgDisplayCrops.songId &&
+      svgDisplayCrops.regions.find(
+        (c) =>
+          c.id === region.id &&
+          (["page", "x", "y", "w", "h"] as const).every(
+            (k) => Math.abs(c[k] - region[k]) < 1e-8,
+          ) &&
+          c.beatXs.length === region.beatXs.length &&
+          c.beatXs.every((x, i) => Math.abs(x - region.beatXs[i]) < 1e-8),
+      );
     return crop ? trimRegionLeft(region, crop.left) : region;
   }
   if (song.id === pdfDisplayCrops.songId) {
-    const crop = pdfDisplayCrops.regions.find(c => c.id === region.id &&
-      (['page','x','y','w','h'] as const).every(k => Math.abs(c[k] - region[k]) < 1e-8));
+    const crop = pdfDisplayCrops.regions.find(
+      (c) =>
+        c.id === region.id &&
+        (["page", "x", "y", "w", "h"] as const).every(
+          (k) => Math.abs(c[k] - region[k]) < 1e-8,
+        ),
+    );
     if (crop) return trimRegionLeft(region, crop.left);
   }
   // Only fill missing anchors for the exact reviewed source crop.
-  const correction = scoreAnchorCorrections[region.id as keyof typeof scoreAnchorCorrections];
-  if (song.id === 'real-paradis' && !region.beatXs.length && correction &&
-      ['page','x','y','w','h'].every(k => Math.abs(region[k as 'x'] - correction[k as 'x']) < 1e-8)) {
-    const measure=song.measures.find(m=>m.regionId===region.id);
-    if(measure && (correction.kind==='symbolic' || correction.points.length===measure.beats)) {
-      region={...region,beatXs:correction.kind==='symbolic'
-        ? Array.from({length:measure.beats+1},(_,i)=>i/measure.beats)
-        : [...correction.points.map(x=>(x/612-region.x)/region.w),1]};
+  const correction =
+    scoreAnchorCorrections[region.id as keyof typeof scoreAnchorCorrections];
+  if (
+    song.id === "real-paradis" &&
+    !region.beatXs.length &&
+    correction &&
+    ["page", "x", "y", "w", "h"].every(
+      (k) => Math.abs(region[k as "x"] - correction[k as "x"]) < 1e-8,
+    )
+  ) {
+    const measure = song.measures.find((m) => m.regionId === region.id);
+    if (
+      measure &&
+      (correction.kind === "symbolic" ||
+        correction.points.length === measure.beats)
+    ) {
+      region = {
+        ...region,
+        beatXs:
+          correction.kind === "symbolic"
+            ? Array.from(
+                { length: measure.beats + 1 },
+                (_, i) => i / measure.beats,
+              )
+            : [
+                ...correction.points.map(
+                  (x) => (x / 612 - region.x) / region.w,
+                ),
+                1,
+              ],
+      };
     }
   }
   // Keep the opening context (Intro, clef and initial meter) intact.
   if (region.id === song.measures[0]?.regionId) return region;
-  if (song.id !== 'real-paradis' || Math.abs(region.x * 612 - 54) > 0.5)
+  if (song.id !== "real-paradis" || Math.abs(region.x * 612 - 54) > 0.5)
     return region;
   const trim = 15 / 612;
   return trimRegionLeft(region, region.x + trim);

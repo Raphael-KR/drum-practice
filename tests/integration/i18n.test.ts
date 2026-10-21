@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import ko from "../../src/shared/i18n/locales/ko.json";
-import { t, formatDate, formatNumber, type MessageKey } from "../../src/shared/i18n/i18n";
+import {
+  t,
+  formatDate,
+  formatNumber,
+  type MessageKey,
+} from "../../src/shared/i18n/i18n";
 import { execFileSync } from "node:child_process";
 describe("Korean message catalog", () => {
   it("keeps replacement values literal and validates missing variables", () => {

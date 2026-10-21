@@ -20,7 +20,11 @@ import {
 } from "./playback-forms";
 /** Shared preview variant keeps the same metronome control as practice playback. */
 export function audioSetupMetronomeHTML() {
-  return metronomeControlHTML({id: "audio-setup-click", name: "click", label: t("audioPractice.click")});
+  return metronomeControlHTML({
+    id: "audio-setup-click",
+    name: "click",
+    label: t("audioPractice.click"),
+  });
 }
 export interface PlaybackShellOptions {
   ids: PlaybackBindings & {
@@ -50,7 +54,13 @@ export function mountPlaybackShell(
     ids.tempo,
   );
   const actions = root.querySelector("header .actions")!;
-  root.querySelector(`#${ids.tempo}`)!.insertAdjacentHTML("afterend", metronomeControlHTML() + `<div id="row-view-toggle" class="row-view-toggle segmented-control" role="group" aria-label="${t("playback.view.group")}"><button type="button" title="${t("tooltip.viewSingle")}" data-row-view="ribbon" aria-pressed="true">${t("playback.view.single")}</button><button type="button" title="${t("tooltip.viewDouble")}" data-row-view="rows" aria-pressed="false">${t("playback.view.double")}</button></div>`);
+  root
+    .querySelector(`#${ids.tempo}`)!
+    .insertAdjacentHTML(
+      "afterend",
+      metronomeControlHTML() +
+        `<div id="row-view-toggle" class="row-view-toggle segmented-control" role="group" aria-label="${t("playback.view.group")}"><button type="button" title="${t("tooltip.viewSingle")}" data-row-view="ribbon" aria-pressed="true">${t("playback.view.single")}</button><button type="button" title="${t("tooltip.viewDouble")}" data-row-view="rows" aria-pressed="false">${t("playback.view.double")}</button></div>`,
+    );
   actions.insertAdjacentHTML(
     "beforeend",
     playbackButton(ids.settings, "settings", t("icons.message059")),

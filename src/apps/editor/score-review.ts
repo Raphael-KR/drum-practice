@@ -1,5 +1,9 @@
 import { formatSongTitle } from "../../modules/library/song-title";
-import { markerPath, markerFill, markerStroke } from "../../shared/ui/marker-icon";
+import {
+  markerPath,
+  markerFill,
+  markerStroke,
+} from "../../shared/ui/marker-icon";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { markedMeasureIndices } from "../../modules/playback/marker-slots";
 import { detectStaff } from "../../modules/score/staff-geometry";
@@ -74,14 +78,18 @@ export class ScoreReview {
           const key = score.format === "pdf" ? `${r.page}:${r.y}:${r.h}` : r.id;
           const cached = staffs.get(key);
           if (cached) return cached;
-          const regions = score.format === "pdf"
-            ? score.regions.filter(other =>
-              other.page === r.page &&
-              Math.abs(other.y - r.y) < 1e-6 &&
-              Math.abs(other.h - r.h) < 1e-6)
-            : [r];
-          const left = Math.min(...regions.map(other => other.x));
-          const width = Math.max(...regions.map(other => other.x + other.w)) - left;
+          const regions =
+            score.format === "pdf"
+              ? score.regions.filter(
+                  (other) =>
+                    other.page === r.page &&
+                    Math.abs(other.y - r.y) < 1e-6 &&
+                    Math.abs(other.h - r.h) < 1e-6,
+                )
+              : [r];
+          const left = Math.min(...regions.map((other) => other.x));
+          const width =
+            Math.max(...regions.map((other) => other.x + other.w)) - left;
           const c = document.createElement("canvas");
           c.width = Math.max(1, Math.round(width * image.naturalWidth));
           c.height = Math.max(1, Math.round(r.h * image.naturalHeight));
@@ -105,19 +113,23 @@ export class ScoreReview {
           );
           if (!staff) {
             const message = i18nText("score-review.message534", {
-                value1: row ? i18nText("term.SVG") : i18nText("term.PDF"),
-                value2: m.id,
-              });
+              value1: row ? i18nText("term.SVG") : i18nText("term.PDF"),
+              value2: m.id,
+            });
             try {
               console.error(message, {
-                format: score.format, measureId: m.id, page: r.page + 1,
+                format: score.format,
+                measureId: m.id,
+                page: r.page + 1,
                 crop: { x: left, y: r.y, w: width, h: r.h },
                 pixels: { width: c.width, height: c.height },
                 regionCount: regions.length,
                 expectedGap: expected?.[row][r.page] ?? null,
                 detectedStaff: null,
               });
-            } catch { /* Preserve the detection error if logging fails. */ }
+            } catch {
+              /* Preserve the detection error if logging fails. */
+            }
             throw Error(message);
           }
           const ratio = (r.h * image.naturalHeight) / c.height;
@@ -172,12 +184,7 @@ export class ScoreReview {
       c.fillRect(0, 0, w, h);
       c.fillStyle = "#233047";
       c.font = "bold 16px system-ui";
-      c.fillText(
-        formatSongTitle(this.song),
-        12,
-        23,
-        w - 24,
-      );
+      c.fillText(formatSongTitle(this.song), 12, 23, w - 24);
       const rowH = (h - 62) / 2,
         cellW = (w - 24) / 4,
         staffGap = Math.min((rowH - 44) / 13, cellW / 25);

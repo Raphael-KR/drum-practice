@@ -1,4 +1,11 @@
-import { locate, beatTime, measureBeatAt, uid, type Song, type Loop } from "../../model/model";
+import {
+  locate,
+  beatTime,
+  measureBeatAt,
+  uid,
+  type Song,
+  type Loop,
+} from "../../model/model";
 import { centeredRange, loopMeasureRange } from "./practice-controls";
 import { t } from "../../shared/i18n/i18n";
 export function repeatPreset(
@@ -90,9 +97,15 @@ export function updateRepeatControls(
   root.querySelectorAll<HTMLElement>(`[${bindings.attribute}]`).forEach((b) => {
     const active =
       !!loop && Number(b.getAttribute(bindings.attribute)) === radius;
-    const saved = presets.get(Number(b.getAttribute(bindings.attribute))) ?? (active ? loop : undefined);
+    const saved =
+      presets.get(Number(b.getAttribute(bindings.attribute))) ??
+      (active ? loop : undefined);
     const range = saved && loopMeasureRange(s, saved.start, saved.end);
-    b.textContent = range ? `${range.first + 1}~${range.last + 1}` : t("workspace.message550", {radius: Number(b.getAttribute(bindings.attribute))});
+    b.textContent = range
+      ? `${range.first + 1}~${range.last + 1}`
+      : t("workspace.message550", {
+          radius: Number(b.getAttribute(bindings.attribute)),
+        });
     b.classList.toggle("primary", active);
     b.setAttribute("aria-pressed", String(active));
   });

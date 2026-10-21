@@ -34,7 +34,10 @@ for (const file of files) {
           call: name,
         });
       if (name === "btoa" || name === "atob")
-        assert(file === "src/platform/storage/binary-asset.ts", `${file}: binary codec bypass`);
+        assert(
+          file === "src/platform/storage/binary-asset.ts",
+          `${file}: binary codec bypass`,
+        );
       if (
         [
           "transportHTML",
@@ -47,16 +50,20 @@ for (const file of files) {
           "screenSettingsHTML",
           "playbackPreferenceFieldsHTML",
         ].includes(name)
-      )
-        {
-          // settingsFrameHTML is the shared form composite, not a host copy.
-          let owner = n.parent;
-          while (owner && !ts.isFunctionDeclaration(owner)) owner = owner.parent;
-          const sharedSoundComposite = file === "src/modules/playback/playback-forms.ts" &&
-            name === "soundFieldsHTML" && owner?.name?.text === "settingsFrameHTML";
-          assert(file === "src/modules/playback/playback-shell.ts" || sharedSoundComposite,
-            `${file}: independently assembled playback UI`);
-        }
+      ) {
+        // settingsFrameHTML is the shared form composite, not a host copy.
+        let owner = n.parent;
+        while (owner && !ts.isFunctionDeclaration(owner)) owner = owner.parent;
+        const sharedSoundComposite =
+          file === "src/modules/playback/playback-forms.ts" &&
+          name === "soundFieldsHTML" &&
+          owner?.name?.text === "settingsFrameHTML";
+        assert(
+          file === "src/modules/playback/playback-shell.ts" ||
+            sharedSoundComposite,
+          `${file}: independently assembled playback UI`,
+        );
+      }
     }
     // Compare function token structure, ignoring local identifier spelling. Candidates require human review.
     if (
@@ -100,7 +107,10 @@ for (const file of files) {
       `${file}: copied icon button caption markup`,
     );
 }
-for (const file of ["src/apps/editor/workspace.ts", "src/modules/playback/playback-runtime.ts"])
+for (const file of [
+  "src/apps/editor/workspace.ts",
+  "src/modules/playback/playback-runtime.ts",
+])
   assert.equal(
     report.primitives.filter(
       (x) => x.file === file && x.call === "mountPlaybackShell",

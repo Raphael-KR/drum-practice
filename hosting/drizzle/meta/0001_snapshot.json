@@ -32,9 +32,7 @@
       "indexes": {
         "limits_expiry": {
           "name": "limits_expiry",
-          "columns": [
-            "expires_at"
-          ],
+          "columns": ["expires_at"],
           "isUnique": false
         }
       },
@@ -85,19 +83,14 @@
       "indexes": {
         "pending_created_at": {
           "name": "pending_created_at",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "audio_analysis_pending_sha256_analyzer_version_pk": {
-          "columns": [
-            "sha256",
-            "analyzer_version"
-          ],
+          "columns": ["sha256", "analyzer_version"],
           "name": "audio_analysis_pending_sha256_analyzer_version_pk"
         }
       },
@@ -133,10 +126,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "audio_analysis_sha256_analyzer_version_pk": {
-          "columns": [
-            "sha256",
-            "analyzer_version"
-          ],
+          "columns": ["sha256", "analyzer_version"],
           "name": "audio_analysis_sha256_analyzer_version_pk"
         }
       },

@@ -176,7 +176,10 @@ export function savePracticeRecord(record: RecordData): Promise<void> {
   });
 }
 export class DuplicatePracticeAudioError extends Error {
-  constructor() { super(t("audioPractice.duplicate")); this.name = "DuplicatePracticeAudioError"; }
+  constructor() {
+    super(t("audioPractice.duplicate"));
+    this.name = "DuplicatePracticeAudioError";
+  }
 }
 /** Only standalone audio entries conflict; score packages remain independent. */
 export async function assertNewPracticeAudio(audio: Blob): Promise<void> {
@@ -184,13 +187,14 @@ export async function assertNewPracticeAudio(audio: Blob): Promise<void> {
 }
 async function assertNewAudioBatch(incoming: Blob[]): Promise<void> {
   if (!incoming.length) return;
-  const sizes = new Set(incoming.map(audio => audio.size));
-  const existing = await read<Stored[]>(store => store.getAll());
+  const sizes = new Set(incoming.map((audio) => audio.size));
+  const existing = await read<Stored[]>((store) => store.getAll());
   const hashes = new Set<string>();
   for (const stored of existing) {
     if (!stored.song.audioPractice) continue;
     const audio = decode(stored).audio;
-    if (sizes.has(audio.size)) hashes.add(await audioFileHash(await audio.arrayBuffer()));
+    if (sizes.has(audio.size))
+      hashes.add(await audioFileHash(await audio.arrayBuffer()));
   }
   for (const audio of incoming) {
     const hash = await audioFileHash(await audio.arrayBuffer());
@@ -202,10 +206,14 @@ async function assertNewAudioBatch(incoming: Blob[]): Promise<void> {
 export function addPracticeRecords(records: RecordData[]): Promise<void> {
   const copies = records.map(snapshot);
   return queued(async () => {
-    await assertNewAudioBatch(copies.filter(copy => !!copy.song.audioPractice).map(copy => copy.audio));
+    await assertNewAudioBatch(
+      copies
+        .filter((copy) => !!copy.song.audioPractice)
+        .map((copy) => copy.audio),
+    );
     const stored: Stored[] = [];
     for (const copy of copies) stored.push(await encode(copy));
-    await change(tx => {
+    await change((tx) => {
       const store = tx.objectStore("songs");
       for (const record of stored) store.add(record);
     });
@@ -249,7 +257,8 @@ export function importPracticeRecord(
   const { musicVolume, clickVolume, click } = defaults();
   Object.assign(copy.song.settings, { musicVolume, clickVolume, click });
   return queued(async () => {
-    if (copy.song.audioPractice && !options.allowDuplicateAudio) await assertNewPracticeAudio(copy.audio);
+    if (copy.song.audioPractice && !options.allowDuplicateAudio)
+      await assertNewPracticeAudio(copy.audio);
     const stored = await encode(copy);
     let existed = false;
     let failure: unknown;

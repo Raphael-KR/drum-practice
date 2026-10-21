@@ -89,57 +89,93 @@ it("focus moves one bubble between real controls without activation", () => {
 });
 it("keeps only the common close in ordinary modals and restores main help after closing", async () => {
   const modal = createDialog("audio-practice-setup", "조정", "audio-setup");
-  modal.showModal(); await Promise.resolve();
+  modal.showModal();
+  await Promise.resolve();
   const help = document.querySelector<HTMLButtonElement>("#app-help-button")!;
-  const closeButton = modal.querySelector<HTMLButtonElement>(".close-button[data-common-icon]")!;
+  const closeButton = modal.querySelector<HTMLButtonElement>(
+    ".close-button[data-common-icon]",
+  )!;
   closeButton.focus();
   await Promise.resolve();
   expect(document.activeElement).toBe(closeButton);
   expect(modal.querySelector("#app-help-button")).toBeNull();
   expect(help.hidden).toBe(true);
-  open(); expect(guide()).toBeNull();
-  closeButton.click(); await Promise.resolve();
+  open();
+  expect(guide()).toBeNull();
+  closeButton.click();
+  await Promise.resolve();
   expect(modal.open).toBe(false);
   expect(help.hidden).toBe(false);
 });
-it.each(["audio-duplicate-dialog", "discard-changes-dialog", "edit-exit-dialog"])("keeps help out of %s and its underlying modal while preserving held explanations", async (id) => {
+it.each([
+  "audio-duplicate-dialog",
+  "discard-changes-dialog",
+  "edit-exit-dialog",
+])(
+  "keeps help out of %s and its underlying modal while preserving held explanations",
+  async (id) => {
+    vi.useFakeTimers();
+    const modal = document.createElement("dialog");
+    modal.id = "settings-dialog";
+    modal.innerHTML = '<div class="dialoghead"></div>';
+    document.body.append(modal);
+    modal.showModal();
+    await Promise.resolve();
+    const popup = document.createElement("dialog");
+    popup.id = id;
+    if (id === "audio-duplicate-dialog")
+      popup.className = "confirmation-dialog";
+    popup.innerHTML =
+      '<button title="수정한 내용을 유지합니다.">계속 수정</button>';
+    modal.append(popup);
+    popup.showModal();
+    await Promise.resolve();
+    const help = document.querySelector<HTMLButtonElement>("#app-help-button")!;
+    expect(help.hidden).toBe(true);
+    expect(popup.querySelector("#app-help-button")).toBeNull();
+    open();
+    expect(guide()).toBeNull();
+    const target = popup.querySelector<HTMLButtonElement>("button")!;
+    pointer(target, "pointerdown");
+    vi.advanceTimersByTime(650);
+    expect(popup.querySelector("#control-hold-help")!.textContent).toContain(
+      "수정한 내용을 유지합니다.",
+    );
+    pointer(target, "pointerup");
+    expect(popup.querySelector("#control-hold-help")).toBeNull();
+    popup.close();
+    popup.remove();
+    await Promise.resolve();
+    expect(help.hidden).toBe(true);
+    expect(modal.querySelector("#app-help-button")).toBeNull();
+    modal.close();
+    await Promise.resolve();
+    expect(help.hidden).toBe(false);
+  },
+);
+it("keeps detailed backup advice on held popup controls", async () => {
   vi.useFakeTimers();
   const modal = document.createElement("dialog");
   modal.id = "settings-dialog";
-  modal.innerHTML = '<div class="dialoghead"></div>';
-  document.body.append(modal); modal.showModal(); await Promise.resolve();
-  const popup = document.createElement("dialog");
-  popup.id = id;
-  if (id === "audio-duplicate-dialog") popup.className = "confirmation-dialog";
-  popup.innerHTML = '<button title="수정한 내용을 유지합니다.">계속 수정</button>';
-  modal.append(popup); popup.showModal(); await Promise.resolve();
-  const help = document.querySelector<HTMLButtonElement>("#app-help-button")!;
-  expect(help.hidden).toBe(true);
-  expect(popup.querySelector("#app-help-button")).toBeNull();
-  open(); expect(guide()).toBeNull();
-  const target = popup.querySelector<HTMLButtonElement>("button")!;
-  pointer(target,"pointerdown"); vi.advanceTimersByTime(650);
-  expect(popup.querySelector("#control-hold-help")!.textContent).toContain("수정한 내용을 유지합니다.");
-  pointer(target,"pointerup"); expect(popup.querySelector("#control-hold-help")).toBeNull();
-  popup.close(); popup.remove(); await Promise.resolve();
-  expect(help.hidden).toBe(true);
-  expect(modal.querySelector("#app-help-button")).toBeNull();
-  modal.close(); await Promise.resolve();
-  expect(help.hidden).toBe(false);
-});
-it("keeps detailed backup advice on held popup controls", async () => {
-  vi.useFakeTimers();
-  const modal = document.createElement("dialog"); modal.id = "settings-dialog";
-  modal.innerHTML = '<div class="dialoghead"></div><button data-practice-save>백업</button><button data-practice-load>복원</button>';
-  document.querySelector("#app")!.append(modal); modal.showModal(); await Promise.resolve();
-  const save=modal.querySelector<HTMLButtonElement>("[data-practice-save]")!;
-  pointer(save,"pointerdown"); vi.advanceTimersByTime(650);
-  expect(modal.querySelector("#control-hold-help")!.textContent).toContain("사이트 데이터를 지우면");
-  pointer(save,"pointerup");
-  const load=modal.querySelector<HTMLButtonElement>("[data-practice-load]")!;
-  pointer(load,"pointerdown"); vi.advanceTimersByTime(650);
-  expect(modal.querySelector("#control-hold-help")!.textContent).toContain("재분석 없이");
-  pointer(load,"pointerup");
+  modal.innerHTML =
+    '<div class="dialoghead"></div><button data-practice-save>백업</button><button data-practice-load>복원</button>';
+  document.querySelector("#app")!.append(modal);
+  modal.showModal();
+  await Promise.resolve();
+  const save = modal.querySelector<HTMLButtonElement>("[data-practice-save]")!;
+  pointer(save, "pointerdown");
+  vi.advanceTimersByTime(650);
+  expect(modal.querySelector("#control-hold-help")!.textContent).toContain(
+    "사이트 데이터를 지우면",
+  );
+  pointer(save, "pointerup");
+  const load = modal.querySelector<HTMLButtonElement>("[data-practice-load]")!;
+  pointer(load, "pointerdown");
+  vi.advanceTimersByTime(650);
+  expect(modal.querySelector("#control-hold-help")!.textContent).toContain(
+    "재분석 없이",
+  );
+  pointer(load, "pointerup");
 });
 it("supports unlisted and dynamically created buttons using their accessible explanation", () => {
   const target = document.createElement("button");

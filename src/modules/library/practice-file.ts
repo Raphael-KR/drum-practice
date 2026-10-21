@@ -1,16 +1,26 @@
 import { validateSong, uid, type Song } from "../../model/model";
 import type { RecordData } from "../../model/record";
-import { MAX_AUDIO_FILE_BYTES, MAX_AUDIO_SECONDS } from "../audio/audio-import-limits";
+import {
+  MAX_AUDIO_FILE_BYTES,
+  MAX_AUDIO_SECONDS,
+} from "../audio/audio-import-limits";
 import { t } from "../../shared/i18n/i18n";
 import { audioFileHash } from "../../platform/storage/audio-analysis-cache";
 
 /** Stable filename in Korean time, regardless of the device timezone. */
 export function practiceFileName(date = new Date()): string {
   const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
   }).formatToParts(date);
-  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find(part => part.type === type)!.value;
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)!.value;
   return `drumpractice_backup_${value("year")}${value("month")}${value("day")}_${value("hour")}${value("minute")}${value("second")}.json`;
 }
 const MAX_FILE = 64 * 1024 * 1024;

@@ -283,15 +283,13 @@ it("Enter does not intercept numeric editing, focused buttons or open dialogs", 
       cancelable: true,
     }),
   );
-  c.root
-    .querySelector("[data-loop-slot]")!
-    .dispatchEvent(
-      new KeyboardEvent("keydown", {
-        key: "Enter",
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
+  c.root.querySelector("[data-loop-slot]")!.dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key: "Enter",
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
   const dialog = document.createElement("dialog");
   dialog.setAttribute("open", "");
   c.root.append(dialog);

@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { attachScoreGestures, type ScoreGestureController } from "../../src/modules/score/score-gestures";
+import {
+  attachScoreGestures,
+  type ScoreGestureController,
+} from "../../src/modules/score/score-gestures";
 
 describe("score playback gestures", () => {
   let surface: HTMLDivElement;
@@ -11,21 +14,48 @@ describe("score playback gestures", () => {
   function makeCallbacks() {
     return {
       isPlaying: () => playing,
-      getTarget: vi.fn((event: PointerEvent) => Math.floor(event.clientX / 100)),
+      getTarget: vi.fn((event: PointerEvent) =>
+        Math.floor(event.clientX / 100),
+      ),
       prepareAudio: vi.fn(),
-      pause: vi.fn(() => { playing = false; }),
-      play: vi.fn(() => { playing = true; }),
-      seek: vi.fn((_target: number, resume: boolean) => { playing = resume; }),
-      scrubStart: vi.fn(() => { playing = false; }),
+      pause: vi.fn(() => {
+        playing = false;
+      }),
+      play: vi.fn(() => {
+        playing = true;
+      }),
+      seek: vi.fn((_target: number, resume: boolean) => {
+        playing = resume;
+      }),
+      scrubStart: vi.fn(() => {
+        playing = false;
+      }),
       scrubMove: vi.fn(),
-      scrubEnd: vi.fn((resume: boolean) => { playing = resume; }),
-      scrubCancel: vi.fn(() => { playing = false; }),
+      scrubEnd: vi.fn((resume: boolean) => {
+        playing = resume;
+      }),
+      scrubCancel: vi.fn(() => {
+        playing = false;
+      }),
     };
   }
 
-  function pointer(type: string, x = 120, y = 50, id = 1, target: EventTarget = surface, pointerType = "touch") {
+  function pointer(
+    type: string,
+    x = 120,
+    y = 50,
+    id = 1,
+    target: EventTarget = surface,
+    pointerType = "touch",
+  ) {
     // jsdom has no PointerEvent constructor; preserve the event's bubbling/cancelability.
-    const event = new MouseEvent(type, { clientX: x, clientY: y, button: 0, bubbles: true, cancelable: true });
+    const event = new MouseEvent(type, {
+      clientX: x,
+      clientY: y,
+      button: 0,
+      bubbles: true,
+      cancelable: true,
+    });
     Object.defineProperties(event, {
       pointerId: { value: id },
       pointerType: { value: pointerType },
@@ -42,7 +72,8 @@ describe("score playback gestures", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    document.body.innerHTML = "<div id='score'></div><button id='outside'>Other control</button>";
+    document.body.innerHTML =
+      "<div id='score'></div><button id='outside'>Other control</button>";
     surface = document.getElementById("score") as HTMLDivElement;
     playing = false;
     callbacks = makeCallbacks();
@@ -54,22 +85,28 @@ describe("score playback gestures", () => {
     vi.useRealTimers();
   });
 
-  it.each(["touch", "mouse"])("ignores disabled horizontal %s movement without selecting", pointerType => {
-    controller.dispose();
-    controller = attachScoreGestures(surface, { ...callbacks, horizontalEnabled: () => false });
-    for (const state of [false, true]) {
-      playing = state;
-      pointer("pointerdown", 300, 60, 1, surface, pointerType);
-      pointer("pointermove", 100, 60, 1, surface, pointerType);
-      pointer("pointerup", 100, 60, 1, surface, pointerType);
-      vi.runAllTimers();
-      expect(playing).toBe(state);
-    }
-    expect(callbacks.scrubStart).not.toHaveBeenCalled();
-    expect(callbacks.scrubMove).not.toHaveBeenCalled();
-    expect(callbacks.seek).not.toHaveBeenCalled();
-    expect(callbacks.pause).not.toHaveBeenCalled();
-  });
+  it.each(["touch", "mouse"])(
+    "ignores disabled horizontal %s movement without selecting",
+    (pointerType) => {
+      controller.dispose();
+      controller = attachScoreGestures(surface, {
+        ...callbacks,
+        horizontalEnabled: () => false,
+      });
+      for (const state of [false, true]) {
+        playing = state;
+        pointer("pointerdown", 300, 60, 1, surface, pointerType);
+        pointer("pointermove", 100, 60, 1, surface, pointerType);
+        pointer("pointerup", 100, 60, 1, surface, pointerType);
+        vi.runAllTimers();
+        expect(playing).toBe(state);
+      }
+      expect(callbacks.scrubStart).not.toHaveBeenCalled();
+      expect(callbacks.scrubMove).not.toHaveBeenCalled();
+      expect(callbacks.seek).not.toHaveBeenCalled();
+      expect(callbacks.pause).not.toHaveBeenCalled();
+    },
+  );
 
   it("keeps dragging when implicit capture leaves a child note for the surface", () => {
     const note = document.createElement("span");
@@ -86,7 +123,10 @@ describe("score playback gestures", () => {
 
   it("allows native horizontal touch scrolling without scrubbing or selecting on release", () => {
     controller.dispose();
-    controller = attachScoreGestures(surface, { ...callbacks, nativeHorizontal: () => true });
+    controller = attachScoreGestures(surface, {
+      ...callbacks,
+      nativeHorizontal: () => true,
+    });
     pointer("pointerdown", 300, 60);
     const move = pointer("pointermove", 120, 65);
     pointer("pointerup", 120, 65);
@@ -189,7 +229,11 @@ describe("score playback gestures", () => {
   });
 
   it("leaves mouse wheel/trackpad scroll to the parent", () => {
-    const wheel = new WheelEvent("wheel", { deltaY: 100, bubbles: true, cancelable: true });
+    const wheel = new WheelEvent("wheel", {
+      deltaY: 100,
+      bubbles: true,
+      cancelable: true,
+    });
     surface.dispatchEvent(wheel);
     expect(wheel.defaultPrevented).toBe(false);
     expect(callbacks.scrubStart).not.toHaveBeenCalled();
@@ -256,22 +300,27 @@ describe("score playback gestures", () => {
     pointer("pointerup", 180, 50, 1, document.body, "mouse");
     expect(callbacks.scrubEnd).toHaveBeenCalledOnce();
     const right = new MouseEvent("pointerdown", { button: 2, bubbles: true });
-    Object.defineProperties(right, { pointerType: { value: "mouse" }, pointerId: { value: 1 } });
+    Object.defineProperties(right, {
+      pointerType: { value: "mouse" },
+      pointerId: { value: 1 },
+    });
     surface.dispatchEvent(right);
     vi.runAllTimers();
     expect(callbacks.play).not.toHaveBeenCalled();
   });
-  it.each(["mouse", "touch"])("never calls selected-bar play after %s scrolling or cancellation", pointerType => {
-    const pausedTap = vi.fn(() => true);
-    controller.dispose();
-    controller = attachScoreGestures(surface, { ...callbacks, pausedTap });
-    pointer("pointerdown", 120, 50, 1, surface, pointerType);
-    pointer("pointermove", 120, 100, 1, surface, pointerType);
-    pointer("pointerup", 120, 100, 1, surface, pointerType);
-    pointer("pointerdown", 120, 50, 1, surface, pointerType);
-    pointer("pointercancel", 120, 50, 1, surface, pointerType);
-    vi.runAllTimers();
-    expect(pausedTap).not.toHaveBeenCalled();
-  });
-
+  it.each(["mouse", "touch"])(
+    "never calls selected-bar play after %s scrolling or cancellation",
+    (pointerType) => {
+      const pausedTap = vi.fn(() => true);
+      controller.dispose();
+      controller = attachScoreGestures(surface, { ...callbacks, pausedTap });
+      pointer("pointerdown", 120, 50, 1, surface, pointerType);
+      pointer("pointermove", 120, 100, 1, surface, pointerType);
+      pointer("pointerup", 120, 100, 1, surface, pointerType);
+      pointer("pointerdown", 120, 50, 1, surface, pointerType);
+      pointer("pointercancel", 120, 50, 1, surface, pointerType);
+      vi.runAllTimers();
+      expect(pausedTap).not.toHaveBeenCalled();
+    },
+  );
 });

@@ -1,4 +1,3 @@
-
 /* Approved score management: one editor, one file hub. */
 .management-dialog {
   width: min(640px, calc(100vw - 32px));

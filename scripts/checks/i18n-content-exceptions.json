@@ -14,16 +14,7 @@
   },
   "content/lyric-bar34-review.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
-    "literals": [
-      "스",
-      "베",
-      "테",
-      "오",
-      "우",
-      "시",
-      "낫",
-      "코"
-    ]
+    "literals": ["스", "베", "테", "오", "우", "시", "낫", "코"]
   },
   "content/lyric-feedback-batch.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
@@ -44,15 +35,7 @@
   },
   "content/lyric-feedback-followup.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
-    "literals": [
-      "케-",
-      "스",
-      "쿄-",
-      "이",
-      "우",
-      "노",
-      "요"
-    ]
+    "literals": ["케-", "스", "쿄-", "이", "우", "노", "요"]
   },
   "content/lyric-feedback-m32.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
@@ -79,26 +62,11 @@
   },
   "content/lyric-feedback-m36.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
-    "literals": [
-      "지",
-      "케",
-      "가",
-      "모",
-      "코"
-    ]
+    "literals": ["지", "케", "가", "모", "코"]
   },
   "content/lyric-feedback-m39.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
-    "literals": [
-      "낫",
-      "시",
-      "로",
-      "이",
-      "노",
-      "무",
-      "히",
-      "와"
-    ]
+    "literals": ["낫", "시", "로", "이", "노", "무", "히", "와"]
   },
   "content/lyric-feedback-m48.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
@@ -238,9 +206,7 @@
   },
   "content/lyric-tail-shift.ts": {
     "reason": "Bundled song lyric/reading corrections; content, not application UI",
-    "literals": [
-      "토"
-    ]
+    "literals": ["토"]
   },
   "modules/score/vendor/score-legend-svg.ts": {
     "reason": "Approved drum legend SVG text; exact content digest, not a directory exemption.",

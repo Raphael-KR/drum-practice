@@ -115,7 +115,10 @@ async function write(key: string, value: RenderedScore) {
         );
         const touched = Math.max(Date.now(), (entries[0]?.touched || 0) + 1);
         store.put({ key, touched, pages, regions: value.regions });
-        entries.filter(e => e.key !== key).slice(3).forEach((e) => store.delete(e.key));
+        entries
+          .filter((e) => e.key !== key)
+          .slice(3)
+          .forEach((e) => store.delete(e.key));
       };
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);

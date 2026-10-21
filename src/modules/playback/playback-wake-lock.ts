@@ -4,7 +4,8 @@ export function createPlaybackWakeLock() {
   let disposed = false;
   let pending = false;
   let sentinel: WakeLockSentinel | undefined;
-  const wanted = () => !disposed && playing && document.visibilityState === "visible";
+  const wanted = () =>
+    !disposed && playing && document.visibilityState === "visible";
   const release = () => {
     const previous = sentinel;
     sentinel = undefined;
@@ -25,9 +26,13 @@ export function createPlaybackWakeLock() {
       }
       if (!acquired.released) {
         sentinel = acquired;
-        acquired.addEventListener("release", () => {
-          if (sentinel === acquired) sentinel = undefined;
-        }, { once: true });
+        acquired.addEventListener(
+          "release",
+          () => {
+            if (sentinel === acquired) sentinel = undefined;
+          },
+          { once: true },
+        );
       }
     } catch {
       // A browser denial or unsupported environment must not interrupt audio.
@@ -35,7 +40,9 @@ export function createPlaybackWakeLock() {
       pending = false;
     }
   }
-  const visibilityChanged = () => { void sync(); };
+  const visibilityChanged = () => {
+    void sync();
+  };
   document.addEventListener("visibilitychange", visibilityChanged);
   return {
     setPlaying(value: boolean) {

@@ -6,7 +6,14 @@ export interface RibbonSpacing {
   rowWidth?: number;
   fixedGrid?: boolean;
   offset: number;
-  constraints?: { measure: number; beat: number; quarter: number; boundary: boolean; left: number; right: number }[];
+  constraints?: {
+    measure: number;
+    beat: number;
+    quarter: number;
+    boundary: boolean;
+    left: number;
+    right: number;
+  }[];
 }
 export function ribbonSpacing(osmd: any): RibbonSpacing {
   let quarter = 64,
@@ -47,7 +54,17 @@ export function ribbonSpacing(osmd: any): RibbonSpacing {
         next = entries[i],
         delta = next.q - prev.q;
       if (delta > 1e-7) {
-        constraints.push({measure: measure+1, beat: prev.q, quarter: Math.max((prev.right+next.left+4)/delta, i===entries.length-1 ? (offset+prev.right+4)/delta : 0), boundary:i===entries.length-1,left:next.left,right:prev.right});
+        constraints.push({
+          measure: measure + 1,
+          beat: prev.q,
+          quarter: Math.max(
+            (prev.right + next.left + 4) / delta,
+            i === entries.length - 1 ? (offset + prev.right + 4) / delta : 0,
+          ),
+          boundary: i === entries.length - 1,
+          left: next.left,
+          right: prev.right,
+        });
         quarter = Math.max(
           quarter,
           (prev.right + next.left + 4) / delta,
@@ -55,8 +72,15 @@ export function ribbonSpacing(osmd: any): RibbonSpacing {
         );
       }
     }
-  const rowWidth = Math.ceil(Math.max(320, ...measures.map(entries => offset + rowMinimum(entries))));
-  return { rowWidth, quarter: Math.ceil(quarter), offset: Math.ceil(offset), constraints: constraints.sort((a,b)=>b.quarter-a.quarter).slice(0,8) };
+  const rowWidth = Math.ceil(
+    Math.max(320, ...measures.map((entries) => offset + rowMinimum(entries))),
+  );
+  return {
+    rowWidth,
+    quarter: Math.ceil(quarter),
+    offset: Math.ceil(offset),
+    constraints: constraints.sort((a, b) => b.quarter - a.quarter).slice(0, 8),
+  };
 }
 export function installRibbonEngraving(osmd: any, spacing: RibbonSpacing) {
   const calculator = osmd.GraphicSheet.GetCalculator;
@@ -71,21 +95,42 @@ export function installRibbonEngraving(osmd: any, spacing: RibbonSpacing) {
         format(width, parent);
         const duration = measure.parentSourceMeasure.Duration.RealValue * 4;
         const quarters = spacing.uniformQuarters ?? duration;
-        const rowEntries = spacing.uniformQuarters && spacing.rowWidth ? measure.staffEntries.map((e: any) => {
-          let left = 0, right = 12;
-          for (const v of e.graphicalVoiceEntries) {
-            if (v.parentVoiceEntry.IsGrace) continue;
-            const metrics = v.vfStaveNote?.getTickContext()?.getMetrics();
-            left = Math.max(left, metrics?.extraLeftPx || 0);
-            right = Math.max(right, (metrics?.notePx || 12) + (metrics?.extraRightPx || 0));
-          }
-          return {q:e.relInMeasureTimestamp.RealValue*4,left,right};
-        }) : [];
-        const points = spacing.uniformQuarters && spacing.rowWidth
-          ? (spacing.fixedGrid
-            ? rowEntries.map((e: {q: number}) => gridPosition(e.q, duration, spacing.rowWidth!))
-            : rowPositions([...rowEntries,{q:duration,left:0,right:0}],spacing.offset,spacing.rowWidth)) : undefined;
-        measure.setWidth((points ? spacing.rowWidth! : quarters * spacing.quarter) / 10);
+        const rowEntries =
+          spacing.uniformQuarters && spacing.rowWidth
+            ? measure.staffEntries.map((e: any) => {
+                let left = 0,
+                  right = 12;
+                for (const v of e.graphicalVoiceEntries) {
+                  if (v.parentVoiceEntry.IsGrace) continue;
+                  const metrics = v.vfStaveNote?.getTickContext()?.getMetrics();
+                  left = Math.max(left, metrics?.extraLeftPx || 0);
+                  right = Math.max(
+                    right,
+                    (metrics?.notePx || 12) + (metrics?.extraRightPx || 0),
+                  );
+                }
+                return {
+                  q: e.relInMeasureTimestamp.RealValue * 4,
+                  left,
+                  right,
+                };
+              })
+            : [];
+        const points =
+          spacing.uniformQuarters && spacing.rowWidth
+            ? spacing.fixedGrid
+              ? rowEntries.map((e: { q: number }) =>
+                  gridPosition(e.q, duration, spacing.rowWidth!),
+                )
+              : rowPositions(
+                  [...rowEntries, { q: duration, left: 0, right: 0 }],
+                  spacing.offset,
+                  spacing.rowWidth,
+                )
+            : undefined;
+        measure.setWidth(
+          (points ? spacing.rowWidth! : quarters * spacing.quarter) / 10,
+        );
         const stave = measure.getVFStave(),
           contexts = new Set();
         for (const [entryIndex, entry] of measure.staffEntries.entries())
@@ -100,8 +145,14 @@ export function installRibbonEngraving(osmd: any, spacing: RibbonSpacing) {
             contexts.add(context);
             const x =
               stave.getX() +
-              (points ? points[entryIndex] : spacing.offset +
-              entry.relInMeasureTimestamp.RealValue * 4 * spacing.quarter * quarters / duration);
+              (points
+                ? points[entryIndex]
+                : spacing.offset +
+                  (entry.relInMeasureTimestamp.RealValue *
+                    4 *
+                    spacing.quarter *
+                    quarters) /
+                    duration);
             context.setX(context.getX() + x - note.getAbsoluteX());
           }
       };
@@ -110,18 +161,28 @@ export function installRibbonEngraving(osmd: any, spacing: RibbonSpacing) {
   };
 }
 
-interface RowEntry {q:number;left:number;right:number}
-function rowMinimum(entries:RowEntry[]) {
-  return entries.slice(1).reduce((sum,e,i)=>sum+entries[i].right+e.left+4,0);
+interface RowEntry {
+  q: number;
+  left: number;
+  right: number;
+}
+function rowMinimum(entries: RowEntry[]) {
+  return entries
+    .slice(1)
+    .reduce((sum, e, i) => sum + entries[i].right + e.left + 4, 0);
 }
 /** Reserve glyph/ornament clearance, then distribute spare space by musical time. */
-export function rowPositions(entries:RowEntry[],offset:number,width:number) {
-  const spare=Math.max(0,width-offset-rowMinimum(entries));
-  const duration=entries.at(-1)!.q;
-  let used=offset;
-  return entries.map((e,i)=>{
-    if(i) used+=entries[i-1].right+e.left+4;
-    return used+spare*e.q/duration;
+export function rowPositions(
+  entries: RowEntry[],
+  offset: number,
+  width: number,
+) {
+  const spare = Math.max(0, width - offset - rowMinimum(entries));
+  const duration = entries.at(-1)!.q;
+  let used = offset;
+  return entries.map((e, i) => {
+    if (i) used += entries[i - 1].right + e.left + 4;
+    return used + (spare * e.q) / duration;
   });
 }
 
@@ -133,25 +194,47 @@ export function rowPositions(entries:RowEntry[],offset:number,width:number) {
 export function installMeasureEndWedges(osmd: any) {
   const calculator = osmd.GraphicSheet.GetCalculator;
   if (!calculator.calculateGraphicalContinuousDynamic) return;
-  const calculate = calculator.calculateGraphicalContinuousDynamic.bind(calculator);
-  calculator.calculateGraphicalContinuousDynamic = (expression: any, position: any) => {
+  const calculate =
+    calculator.calculateGraphicalContinuousDynamic.bind(calculator);
+  calculator.calculateGraphicalContinuousDynamic = (
+    expression: any,
+    position: any,
+  ) => {
     const end = expression.ContinuousDynamic.EndMultiExpression;
     const offset = end?.EndOffsetFraction;
     const source = end?.SourceMeasureParent;
     const timestamp = end?.Timestamp;
-    const atBarline = offset && timestamp && source &&
-      Math.abs(timestamp.RealValue + offset.RealValue - source.Duration.RealValue) < 1e-8;
-    const measure = atBarline && osmd.GraphicSheet.MeasureList[source.measureListIndex]
-      ?.find((m: any) => m?.ParentStaff === expression.StartMeasure.ParentStaff);
-    const last = measure?.staffEntries?.filter((entry: any) =>
-      entry.relInMeasureTimestamp.RealValue < source.Duration.RealValue &&
-      entry.graphicalVoiceEntries.some((v: any) => !v.parentVoiceEntry.IsGrace)
-    ).at(-1);
-    if (!last || expression.IsSoftAccent) return calculate(expression, position);
+    const atBarline =
+      offset &&
+      timestamp &&
+      source &&
+      Math.abs(
+        timestamp.RealValue + offset.RealValue - source.Duration.RealValue,
+      ) < 1e-8;
+    const measure =
+      atBarline &&
+      osmd.GraphicSheet.MeasureList[source.measureListIndex]?.find(
+        (m: any) => m?.ParentStaff === expression.StartMeasure.ParentStaff,
+      );
+    const last = measure?.staffEntries
+      ?.filter(
+        (entry: any) =>
+          entry.relInMeasureTimestamp.RealValue < source.Duration.RealValue &&
+          entry.graphicalVoiceEntries.some(
+            (v: any) => !v.parentVoiceEntry.IsGrace,
+          ),
+      )
+      .at(-1);
+    if (!last || expression.IsSoftAccent)
+      return calculate(expression, position);
     end.Timestamp = last.relInMeasureTimestamp;
     end.EndOffsetFraction = undefined;
-    try { return calculate(expression, position); }
-    finally { end.Timestamp = timestamp; end.EndOffsetFraction = offset; }
+    try {
+      return calculate(expression, position);
+    } finally {
+      end.Timestamp = timestamp;
+      end.EndOffsetFraction = offset;
+    }
   };
 }
 

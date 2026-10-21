@@ -11,24 +11,35 @@ export function originalTempoMode(song: Song) {
 /** Explicit recording grids opt scores into tempo normalization; legacy scores stay unchanged. */
 export function recordingBeatGrid(song: Song) {
   if (song.audioPractice) {
-    const times = song.audioPractice.followTempo ? song.audioPractice.beatTimes : undefined;
-    return times ? {source: times, quarters: times.map((_, i) => i * 4 / song.audioPractice!.denominator)} : undefined;
+    const times = song.audioPractice.followTempo
+      ? song.audioPractice.beatTimes
+      : undefined;
+    return times
+      ? {
+          source: times,
+          quarters: times.map(
+            (_, i) => (i * 4) / song.audioPractice!.denominator,
+          ),
+        }
+      : undefined;
   }
-  if (!song.measures.some(m => m.beatTimes)) return;
-  const source: number[] = [], quarters: number[] = [];
-  let quarter = 0, end = song.measures[0].start;
+  if (!song.measures.some((m) => m.beatTimes)) return;
+  const source: number[] = [],
+    quarters: number[] = [];
+  let quarter = 0,
+    end = song.measures[0].start;
   for (const m of song.measures) {
-    quarter += Math.max(0, m.start - end) * song.bpm / 60;
+    quarter += (Math.max(0, m.start - end) * song.bpm) / 60;
     for (let b = 0; b <= m.beats; b++) {
       const time = beatTime(m, b);
       if (time <= (source.at(-1) ?? -1)) continue;
       source.push(time);
-      quarters.push(quarter + b * 4 / m.denominator);
+      quarters.push(quarter + (b * 4) / m.denominator);
     }
-    quarter += m.beats * 4 / m.denominator;
+    quarter += (m.beats * 4) / m.denominator;
     end = m.end;
   }
-  return {source, quarters};
+  return { source, quarters };
 }
 export function audioTimeMap(
   song: Song,
@@ -41,7 +52,7 @@ export function audioTimeMap(
   const rate = song.settings.rate,
     step = 60 / (song.bpm * rate);
   const source = [...times],
-    output = grid.quarters.map(q => times[0] / rate + q * step);
+    output = grid.quarters.map((q) => times[0] / rate + q * step);
   if (source[0] > 0) {
     source.unshift(0);
     output.unshift(0);
@@ -80,5 +91,8 @@ export function currentAudioBpm(song: Song, time: number) {
   }
   const end = lo - 1,
     start = Math.max(0, end - 4);
-  return (60 * (grid.quarters[end] - grid.quarters[start])) / (beats[end] - beats[start]);
+  return (
+    (60 * (grid.quarters[end] - grid.quarters[start])) /
+    (beats[end] - beats[start])
+  );
 }

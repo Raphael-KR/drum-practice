@@ -1,4 +1,4 @@
-import {trackedAudioMeasures, validBeatTimes} from "./audio-beat-grid";
+import { trackedAudioMeasures, validBeatTimes } from "./audio-beat-grid";
 import { t as i18nText } from "../shared/i18n/i18n";
 export interface Region {
   id: string;
@@ -72,7 +72,16 @@ export interface MeasureLyric {
 }
 export interface Song {
   /** Local audio practice has timing but no score pages or regions. */
-  audioPractice?: { duration: number; beats: number; denominator: number; peaks: number[]; beatTimes?: number[]; followTempo?: boolean; barOne?: import("./audio-bar-one").AudioBarOne; startAnalyzed?: boolean };
+  audioPractice?: {
+    duration: number;
+    beats: number;
+    denominator: number;
+    peaks: number[];
+    beatTimes?: number[];
+    followTempo?: boolean;
+    barOne?: import("./audio-bar-one").AudioBarOne;
+    startAnalyzed?: boolean;
+  };
   version: 1;
   id: string;
   title: string;
@@ -127,39 +136,55 @@ export function locate(song: Song, time: number) {
   return {
     index: i,
     measure: m,
-    beat: m
-      ? measureBeatAt(m, time)
-      : 0,
+    beat: m ? measureBeatAt(m, time) : 0,
   };
 }
 export function measureBeatAt(m: Measure, time: number) {
-  if (!m.beatTimes) return clamp(((time - m.start) / (m.end - m.start)) * m.beats, 0, m.beats);
-  if(time <= m.start)return 0;
-  for(let b=0;b<m.beats;b++) {
-    const next=m.beatTimes[b+1] ?? m.end;
-    if(time<next)return b+(time-m.beatTimes[b])/(next-m.beatTimes[b]);
+  if (!m.beatTimes)
+    return clamp(((time - m.start) / (m.end - m.start)) * m.beats, 0, m.beats);
+  if (time <= m.start) return 0;
+  for (let b = 0; b < m.beats; b++) {
+    const next = m.beatTimes[b + 1] ?? m.end;
+    if (time < next)
+      return b + (time - m.beatTimes[b]) / (next - m.beatTimes[b]);
   }
   return m.beats;
 }
 export function beatTime(m: Measure, beat: number) {
-  if(m.beatTimes) {
-    const b=clamp(beat,0,m.beats),i=Math.floor(b);
-    if(i>=m.beats)return m.end;
-    const from=m.beatTimes[i],to=m.beatTimes[i+1] ?? m.end;
-    return from+(to-from)*(b-i);
+  if (m.beatTimes) {
+    const b = clamp(beat, 0, m.beats),
+      i = Math.floor(b);
+    if (i >= m.beats) return m.end;
+    const from = m.beatTimes[i],
+      to = m.beatTimes[i + 1] ?? m.end;
+    return from + (to - from) * (b - i);
   }
   return m.start + ((m.end - m.start) * beat) / m.beats;
 }
-export function validMeasureBeatTimes(m: Pick<Measure, "beats" | "start" | "end" | "beatTimes">) {
+export function validMeasureBeatTimes(
+  m: Pick<Measure, "beats" | "start" | "end" | "beatTimes">,
+) {
   const times = m.beatTimes;
-  return times === undefined || (Array.isArray(times) && times.length === m.beats &&
-    times[0] === m.start && times.every((time, i) => Number.isFinite(time) &&
-      time >= m.start && time < m.end && (i === 0 || time > times[i - 1])));
+  return (
+    times === undefined ||
+    (Array.isArray(times) &&
+      times.length === m.beats &&
+      times[0] === m.start &&
+      times.every(
+        (time, i) =>
+          Number.isFinite(time) &&
+          time >= m.start &&
+          time < m.end &&
+          (i === 0 || time > times[i - 1]),
+      ))
+  );
 }
 /** Preserve the relative recording tempo when an editor changes a measure boundary. */
 export function setMeasureTiming(m: Measure, start: number, end: number) {
-  if (m.beatTimes) m.beatTimes = m.beatTimes.map(time =>
-    start + (time - m.start) / (m.end - m.start) * (end - start));
+  if (m.beatTimes)
+    m.beatTimes = m.beatTimes.map(
+      (time) => start + ((time - m.start) / (m.end - m.start)) * (end - start),
+    );
   m.start = start;
   m.end = end;
 }
@@ -175,11 +200,17 @@ export function reflow(song: Song) {
 }
 export function beatEvents(song: Song, start: number, end: number) {
   const out: { time: number; accent: boolean; beat: number }[] = [];
-  for (const m of song.measures.filter(m => !m.audioPrelude))
+  for (const m of song.measures.filter((m) => !m.audioPrelude))
     for (let b = 0; b < m.beats; b++) {
       const t = beatTime(m, b);
       if (t >= start - 1e-7 && t < end - 1e-7)
-        out.push({ time: t, accent: (!song.audioPractice?.followTempo || !!song.audioPractice.barOne) && b === 0, beat: b + 1 });
+        out.push({
+          time: t,
+          accent:
+            (!song.audioPractice?.followTempo || !!song.audioPractice.barOne) &&
+            b === 0,
+          beat: b + 1,
+        });
     }
   return out;
 }
@@ -189,9 +220,18 @@ export function preludeCountBeats(song: Song) {
   if (!song.audioPractice || !prelude?.audioPrelude) return [];
   const end = prelude.end;
   if (song.audioPractice.followTempo && song.audioPractice.beatTimes)
-    return song.audioPractice.beatTimes.filter(t => t < end - 1e-7).slice(-song.audioPractice.beats);
-  return Array.from({length: song.audioPractice.beats}, (_, i) => song.audioPractice!.beats - i)
-    .map(n => end - n * 60 / song.bpm * 4 / song.audioPractice!.denominator).filter(t => t >= 0);
+    return song.audioPractice.beatTimes
+      .filter((t) => t < end - 1e-7)
+      .slice(-song.audioPractice.beats);
+  return Array.from(
+    { length: song.audioPractice.beats },
+    (_, i) => song.audioPractice!.beats - i,
+  )
+    .map(
+      (n) =>
+        end - (((n * 60) / song.bpm) * 4) / song.audioPractice!.denominator,
+    )
+    .filter((t) => t >= 0);
 }
 export function xAtBeat(region: Region, m: Measure, beat: number) {
   const xs = region.beatXs;
@@ -236,14 +276,19 @@ export function makeCycle(
   observedBeatSeconds?: number,
 ): Cycle {
   const bs =
-    ((observedBeatSeconds ?? (beatTime(m, 1) - m.start)) / rate) *
+    ((observedBeatSeconds ?? beatTime(m, 1) - m.start) / rate) *
     (quarterCountOff ? m.denominator / 4 : 1);
   const count = quarterCountOff ? 4 : countBars * m.beats;
   // Count-off ends on the score's first beat, not the beginning of leading audio.
   // Preserve that audio and never schedule its buffer before the requested start.
-  const leadingSeconds = quarterCountOff ? Math.max(0, m.start - from) / rate : 0;
+  const leadingSeconds = quarterCountOff
+    ? Math.max(0, m.start - from) / rate
+    : 0;
   const musicAt = at + Math.max(0, count * bs - leadingSeconds);
-  const nextBeat = beatTime(m, Math.max(0, Math.ceil(measureBeatAt(m, from) - 1e-8)));
+  const nextBeat = beatTime(
+    m,
+    Math.max(0, Math.ceil(measureBeatAt(m, from) - 1e-8)),
+  );
   const countAt = quarterCountOff
     ? at + Math.max(0, leadingSeconds - count * bs)
     : at + Math.max(0, nextBeat - from) / rate;
@@ -299,33 +344,109 @@ export function validateSong(x: unknown): asserts x is Song {
       throw Error(i18nText("model.message382"));
   if (s.audioPractice !== undefined) {
     const a = s.audioPractice;
-    if (!a || !finite(a.duration) || a.duration <= 0 || s.firstBeat >= a.duration ||
-        !Number.isInteger(a.beats) || a.beats < 1 || a.beats > 16 || ![2,4,8,16].includes(a.denominator) ||
-        !Array.isArray(a.peaks) || a.peaks.length > 4096 || a.peaks.some(p => !finite(p) || p < 0 || p > 1) ||
-        (a.startAnalyzed !== undefined && typeof a.startAnalyzed !== 'boolean') ||
-        (a.barOne !== undefined && (!a.barOne || !finite(a.barOne.time) || a.barOne.time < 0 || a.barOne.time >= a.duration || !['manual','estimated'].includes(a.barOne.source))) ||
-        (a.followTempo !== undefined && typeof a.followTempo !== 'boolean') ||
-        (a.beatTimes !== undefined && !validBeatTimes(a.beatTimes,a.duration)) ||
-        (a.followTempo && !a.beatTimes) ||
-        s.pageCount !== 0 || s.regions.length !== 0 || s.pdfName !== "" || s.scoreFormat !== undefined ||
-        !s.measures.length || s.measures.length > 10000)
+    if (
+      !a ||
+      !finite(a.duration) ||
+      a.duration <= 0 ||
+      s.firstBeat >= a.duration ||
+      !Number.isInteger(a.beats) ||
+      a.beats < 1 ||
+      a.beats > 16 ||
+      ![2, 4, 8, 16].includes(a.denominator) ||
+      !Array.isArray(a.peaks) ||
+      a.peaks.length > 4096 ||
+      a.peaks.some((p) => !finite(p) || p < 0 || p > 1) ||
+      (a.startAnalyzed !== undefined && typeof a.startAnalyzed !== "boolean") ||
+      (a.barOne !== undefined &&
+        (!a.barOne ||
+          !finite(a.barOne.time) ||
+          a.barOne.time < 0 ||
+          a.barOne.time >= a.duration ||
+          !["manual", "estimated"].includes(a.barOne.source))) ||
+      (a.followTempo !== undefined && typeof a.followTempo !== "boolean") ||
+      (a.beatTimes !== undefined && !validBeatTimes(a.beatTimes, a.duration)) ||
+      (a.followTempo && !a.beatTimes) ||
+      s.pageCount !== 0 ||
+      s.regions.length !== 0 ||
+      s.pdfName !== "" ||
+      s.scoreFormat !== undefined ||
+      !s.measures.length ||
+      s.measures.length > 10000
+    )
       throw Error(i18nText("audioPractice.invalidTiming"));
-    if(a.followTempo) {
-      const expected=trackedAudioMeasures(a.duration,a.beatTimes!,a.barOne?.time,a.beats,a.denominator);
-      if(s.firstBeat!==(a.barOne?.time ?? a.beatTimes![0]) || s.measures.length!==expected.length || s.measures.some((m,i)=>{
-        const e=expected[i];
-        return !m || !!m.audioPrelude!==!!e.audioPrelude || m.label!==e.label || m.start!==e.start || m.end!==e.end || m.beats!==e.beats || m.denominator!==e.denominator ||
-          !Array.isArray(m.beatTimes) || m.beatTimes.length!==e.beatTimes.length || m.beatTimes.some((t,b)=>t!==e.beatTimes[b]);
-      }))throw Error(i18nText("audioPractice.invalidTiming"));
-    } else if((a.barOne && (s.firstBeat!==a.barOne.time || (s.firstBeat>0 &&
-      (!s.measures[0].audioPrelude || s.measures[0].start!==0 || s.measures[0].end!==s.firstBeat)))) ||
-      s.measures.some((m,i)=>m.audioPrelude && (!a.barOne || i!==0 || m.beats!==1 || m.label!=='0' || m.beatTimes!==undefined)) || s.measures.filter(m=>!m.audioPrelude).some((m,i)=>!m || m.beatTimes !== undefined || m.beats!==a.beats || m.denominator!==a.denominator ||
-        Math.abs(m.start-(s.firstBeat+i*a.beats*60/s.bpm*4/a.denominator))>1e-6 ||
-        Math.abs(m.end-(s.firstBeat+(i+1)*a.beats*60/s.bpm*4/a.denominator))>1e-6) ||
-        s.measures.at(-1)!.start >= a.duration || s.measures.at(-1)!.end < a.duration-1e-6)
+    if (a.followTempo) {
+      const expected = trackedAudioMeasures(
+        a.duration,
+        a.beatTimes!,
+        a.barOne?.time,
+        a.beats,
+        a.denominator,
+      );
+      if (
+        s.firstBeat !== (a.barOne?.time ?? a.beatTimes![0]) ||
+        s.measures.length !== expected.length ||
+        s.measures.some((m, i) => {
+          const e = expected[i];
+          return (
+            !m ||
+            !!m.audioPrelude !== !!e.audioPrelude ||
+            m.label !== e.label ||
+            m.start !== e.start ||
+            m.end !== e.end ||
+            m.beats !== e.beats ||
+            m.denominator !== e.denominator ||
+            !Array.isArray(m.beatTimes) ||
+            m.beatTimes.length !== e.beatTimes.length ||
+            m.beatTimes.some((t, b) => t !== e.beatTimes[b])
+          );
+        })
+      )
+        throw Error(i18nText("audioPractice.invalidTiming"));
+    } else if (
+      (a.barOne &&
+        (s.firstBeat !== a.barOne.time ||
+          (s.firstBeat > 0 &&
+            (!s.measures[0].audioPrelude ||
+              s.measures[0].start !== 0 ||
+              s.measures[0].end !== s.firstBeat)))) ||
+      s.measures.some(
+        (m, i) =>
+          m.audioPrelude &&
+          (!a.barOne ||
+            i !== 0 ||
+            m.beats !== 1 ||
+            m.label !== "0" ||
+            m.beatTimes !== undefined),
+      ) ||
+      s.measures
+        .filter((m) => !m.audioPrelude)
+        .some(
+          (m, i) =>
+            !m ||
+            m.beatTimes !== undefined ||
+            m.beats !== a.beats ||
+            m.denominator !== a.denominator ||
+            Math.abs(
+              m.start -
+                (s.firstBeat +
+                  (((i * a.beats * 60) / s.bpm) * 4) / a.denominator),
+            ) > 1e-6 ||
+            Math.abs(
+              m.end -
+                (s.firstBeat +
+                  ((((i + 1) * a.beats * 60) / s.bpm) * 4) / a.denominator),
+            ) > 1e-6,
+        ) ||
+      s.measures.at(-1)!.start >= a.duration ||
+      s.measures.at(-1)!.end < a.duration - 1e-6
+    )
       throw Error(i18nText("audioPractice.invalidTiming"));
   }
-  if (s.settings?.tempoMode !== undefined && !['original','practice'].includes(s.settings.tempoMode)) throw Error('Invalid tempo mode');
+  if (
+    s.settings?.tempoMode !== undefined &&
+    !["original", "practice"].includes(s.settings.tempoMode)
+  )
+    throw Error("Invalid tempo mode");
   const ids = new Set<string>();
   for (const r of s.regions) {
     if (
@@ -351,8 +472,17 @@ export function validateSong(x: unknown): asserts x is Song {
       if (!Array.isArray(r.lyricAnchors) || r.lyricAnchors.length > 100000)
         throw Error(i18nText("model.message383"));
       for (const a of r.lyricAnchors) {
-        if (!a || typeof a.lyricId !== "string" || !a.lyricId || lyricIds.has(a.lyricId) ||
-            !finite(a.quarterOffset) || a.quarterOffset < 0 || !finite(a.x) || a.x < 0 || a.x > 1)
+        if (
+          !a ||
+          typeof a.lyricId !== "string" ||
+          !a.lyricId ||
+          lyricIds.has(a.lyricId) ||
+          !finite(a.quarterOffset) ||
+          a.quarterOffset < 0 ||
+          !finite(a.x) ||
+          a.x < 0 ||
+          a.x > 1
+        )
           throw Error(i18nText("model.message383"));
         lyricIds.add(a.lyricId);
       }
@@ -432,16 +562,29 @@ export function validateSong(x: unknown): asserts x is Song {
     throw Error(i18nText("model.message389"));
 }
 
-export function validateMeasureLyrics(value: unknown, measureIds: Set<string>): asserts value is MeasureLyric[] | undefined {
+export function validateMeasureLyrics(
+  value: unknown,
+  measureIds: Set<string>,
+): asserts value is MeasureLyric[] | undefined {
   if (value === undefined) return;
-  if (!Array.isArray(value) || value.length > 100000) throw Error(i18nText("model.message386"));
+  if (!Array.isArray(value) || value.length > 100000)
+    throw Error(i18nText("model.message386"));
   const ids = new Set<string>();
   const assigned = new Set<string>();
   for (const l of value) {
-    if (!l || typeof l.id !== "string" || !l.id || ids.has(l.id) ||
-      typeof l.text !== "string" || !l.text.trim() ||
-      !measureIds.has(l.measureId) || assigned.has(l.measureId) || l.placement !== "measure-center")
+    if (
+      !l ||
+      typeof l.id !== "string" ||
+      !l.id ||
+      ids.has(l.id) ||
+      typeof l.text !== "string" ||
+      !l.text.trim() ||
+      !measureIds.has(l.measureId) ||
+      assigned.has(l.measureId) ||
+      l.placement !== "measure-center"
+    )
       throw Error(i18nText("model.message386"));
-    ids.add(l.id); assigned.add(l.measureId);
+    ids.add(l.id);
+    assigned.add(l.measureId);
   }
 }

@@ -25,7 +25,8 @@ export function annotateNoteHighlights(osmd: any, denominators: number[]) {
           if (!group) continue;
           group.setAttribute("data-note-measure", String(index));
           group.setAttribute("data-note-beat", String(beat));
-          if (note.sourceNote.IsGraceNote) group.setAttribute("data-note-grace", "true");
+          if (note.sourceNote.IsGraceNote)
+            group.setAttribute("data-note-grace", "true");
           const stem = note.getStemSVG?.() as SVGGraphicsElement | undefined;
           if (stem && !group.contains(stem)) {
             stem.setAttribute("data-note-measure", String(index));

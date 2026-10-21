@@ -86,7 +86,11 @@ export function installScreenControls(
   reload.onclick = () => window.location.reload();
   const sync = () => {
     const active = !!document.fullscreenElement;
-    setIconButton(full, icon(active ? "collapse" : "expand"), uiText(active ? "exitFullscreen" : "fullscreen"));
+    setIconButton(
+      full,
+      icon(active ? "collapse" : "expand"),
+      uiText(active ? "exitFullscreen" : "fullscreen"),
+    );
     full.setAttribute("aria-pressed", String(active));
   };
   full.onclick = async () => {

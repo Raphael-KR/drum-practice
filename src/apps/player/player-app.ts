@@ -1,9 +1,19 @@
-import { libraryCardHTML, libraryPresentation, syncCardTitleOrder } from "../../modules/library/library-presentation";
+import {
+  libraryCardHTML,
+  libraryPresentation,
+  syncCardTitleOrder,
+} from "../../modules/library/library-presentation";
 import { scoreCatalog } from "../../modules/library/score-catalog";
 import { confirmDuplicateAudio } from "../../modules/audio/audio-duplicate-dialog";
 import { installPracticeFileControls } from "../../modules/library/practice-file-controls";
-import { matchPracticeAudio, type PracticeFileEntry } from "../../modules/library/practice-file";
-import { checkAudioBeforeDecode, checkAudioFileSize } from "../../modules/audio/audio-import-limits";
+import {
+  matchPracticeAudio,
+  type PracticeFileEntry,
+} from "../../modules/library/practice-file";
+import {
+  checkAudioBeforeDecode,
+  checkAudioFileSize,
+} from "../../modules/audio/audio-import-limits";
 import {
   practiceFileKind,
   readAudioPractice,
@@ -13,9 +23,16 @@ import { libraryHTML } from "./player-library-view";
 import { setupAudioPractice } from "../../modules/audio/audio-practice-setup";
 import { titleOrderFieldsHTML } from "../../modules/playback/playback-forms";
 import { recordingTempoUpgrade } from "../../content/recording-tempo";
-import { readTitleOrder, saveTitleOrder, type TitleOrder } from "../../modules/library/song-title";
+import {
+  readTitleOrder,
+  saveTitleOrder,
+  type TitleOrder,
+} from "../../modules/library/song-title";
 import { downloadScore } from "../../modules/library/download-score";
-import { beginLoadTiming, recordLoadTiming } from "../../platform/browser/load-timing";
+import {
+  beginLoadTiming,
+  recordLoadTiming,
+} from "../../platform/browser/load-timing";
 import { icon } from "../../shared/ui/icon-svg";
 import { installLandscapeKeyboardGuard } from "../../platform/browser/landscape-keyboard";
 import { renderKeepingTopHeader } from "../../shared/ui/top-edge-header";
@@ -47,13 +64,15 @@ import {
   importPracticeRecord,
 } from "../../platform/storage/practice-library";
 import { mountPlaybackRuntime } from "../../modules/playback/playback-runtime";
-import { playbackInitial, type PlaybackInitial } from "../../modules/playback/playback-initial";
+import {
+  playbackInitial,
+  type PlaybackInitial,
+} from "../../modules/playback/playback-initial";
 import { songScores, useScore } from "../../modules/score/song-scores";
 import { createDialog } from "../../shared/ui/dialog-ui";
 import type { RecordData } from "../../model/record";
 
 const PLAYER_PREFERENCES_KEY = "drum-player-preferences";
-
 
 const root = document.getElementById("app")!;
 const removeKeyboardGuard = installLandscapeKeyboardGuard();
@@ -138,23 +157,37 @@ async function hasSameBundledContent(
   return matches.every(Boolean);
 }
 async function audioPracticeRecords() {
-  return (await listPracticeRecords()).filter(record => !!record.song.audioPractice);
+  return (await listPracticeRecords()).filter(
+    (record) => !!record.song.audioPractice,
+  );
 }
 async function findPracticeAudio(entries: PracticeFileEntry[]) {
-  return matchPracticeAudio(entries, (await listPracticeRecords()).map(record => record.audio));
+  return matchPracticeAudio(
+    entries,
+    (await listPracticeRecords()).map((record) => record.audio),
+  );
 }
 async function restorePracticeFile(records: RecordData[]) {
   if (working) throw Error(t("practiceFile.working"));
   working = true;
   try {
     for (const record of records)
-      await checkAudioBeforeDecode(new File([record.audio], record.song.audioName, {type: record.audio.type}));
+      await checkAudioBeforeDecode(
+        new File([record.audio], record.song.audioName, {
+          type: record.audio.type,
+        }),
+      );
     // Validate and commit the complete batch before replacing the visible screen.
     await addPracticeRecords(records);
     await showLibrary();
     const status = root.querySelector<HTMLElement>("#library-status");
-    if (status) status.textContent = t("practiceFile.restored", {count: records.length});
-  } finally { working = false; }
+    if (status)
+      status.textContent = t("practiceFile.restored", {
+        count: records.length,
+      });
+  } finally {
+    working = false;
+  }
 }
 async function openRecord(id: string) {
   if (working) return;
@@ -221,7 +254,8 @@ async function openRecord(id: string) {
     await closePlayback();
     timing.stage("conversion");
     message.textContent = t("library.loadingConvert");
-    const { prepareBrowserScore } = await import("../../modules/score/browser-score");
+    const { prepareBrowserScore } =
+      await import("../../modules/score/browser-score");
     record = await prepareBrowserScore(
       record,
       (detail) => {
@@ -256,7 +290,11 @@ async function openRecord(id: string) {
         .filter((v) => v.format !== (record.song.scoreFormat ?? "pdf"))
         .map((v) => ({ song: useScore(record, v).song, pages: v.pages })),
       initial: preferences(),
-      practiceFiles: {records: audioPracticeRecords, findAudio: findPracticeAudio, restore: restorePracticeFile},
+      practiceFiles: {
+        records: audioPracticeRecords,
+        findAudio: findPracticeAudio,
+        restore: restorePracticeFile,
+      },
       licenses: notices.entries
         .map((e) => `${e.name} ${e.version} · ${e.license}\n${e.text}`)
         .join("\n\n"),
@@ -390,7 +428,7 @@ export async function showLibrary() {
   delete document.body.dataset.ready;
   root.className = "player-library";
   renderKeepingTopHeader(root, libraryHTML(import.meta.env.DEV));
-  if(import.meta.env.DEV){
+  if (import.meta.env.DEV) {
   }
   showBuildLabel();
   root
@@ -415,7 +453,11 @@ export async function showLibrary() {
     practiceFiles.dataset.settingsPanel = "audio";
     practiceFiles.innerHTML = `<h3 class="settings-section-heading">${t("component.settings.audio.name")}</h3>`;
     dialog.append(practiceFiles);
-    installPracticeFileControls(practiceFiles, {records: audioPracticeRecords, findAudio: findPracticeAudio, restore: restorePracticeFile});
+    installPracticeFileControls(practiceFiles, {
+      records: audioPracticeRecords,
+      findAudio: findPracticeAudio,
+      restore: restorePracticeFile,
+    });
     const buttons = Array.from(
       panel.querySelectorAll<HTMLButtonElement>("[data-title-order]"),
     );
@@ -495,19 +537,29 @@ export async function showLibrary() {
   const records = await listPracticeRecords();
   if (epoch !== libraryEpoch) return;
   const catalog = scoreCatalog(records);
-  const { appendCard, sortFavorites } = libraryPresentation(catalog, sectionLists, favoriteList, report);
+  const { appendCard, sortFavorites } = libraryPresentation(
+    catalog,
+    sectionLists,
+    favoriteList,
+    report,
+  );
   for (const entry of catalog) {
     const record = entry.record;
     if (!record) {
       const template = document.createElement("template");
       template.innerHTML = libraryCardHTML(entry);
       const item = template.content.firstElementChild as HTMLElement;
-      item.querySelector(".practice-card-actions")!.append(bundledButton(entry.bundled!));
+      item
+        .querySelector(".practice-card-actions")!
+        .append(bundledButton(entry.bundled!));
       appendCard(entry.id, item);
       continue;
     }
     const template = document.createElement("template");
-    template.innerHTML = libraryCardHTML(entry, `<button class="primary" data-open title="${escapeHTML(t("library.tipOpen"))}">${escapeHTML(t("separation.open"))}</button>`);
+    template.innerHTML = libraryCardHTML(
+      entry,
+      `<button class="primary" data-open title="${escapeHTML(t("library.tipOpen"))}">${escapeHTML(t("separation.open"))}</button>`,
+    );
     const item = template.content.firstElementChild as HTMLElement;
     item.querySelector("[data-open]")!.addEventListener("click", () => {
       void openRecord(record.song.id);

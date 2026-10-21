@@ -3,7 +3,10 @@ import { Blob as NodeBlob } from "node:buffer";
 import { webcrypto } from "node:crypto";
 import { afterEach, expect, it, vi } from "vitest";
 import { installPracticeFileControls } from "../../src/modules/library/practice-file-controls";
-import { createPracticeFile, readPracticeFile } from "../../src/modules/library/practice-file";
+import {
+  createPracticeFile,
+  readPracticeFile,
+} from "../../src/modules/library/practice-file";
 import { audioMeasures } from "../../src/modules/audio/audio-practice";
 import { defaults, type Song } from "../../src/model/model";
 import { download } from "../../src/platform/browser/download";

@@ -5,5 +5,6 @@ export function showAppBuildLabel(
   source: string,
 ) {
   const title = root.querySelector<HTMLElement>("header h1");
-  if (title) title.dataset.appBuild = `v${version} · build ${source.slice(0, 8)}`;
+  if (title)
+    title.dataset.appBuild = `v${version} · build ${source.slice(0, 8)}`;
 }

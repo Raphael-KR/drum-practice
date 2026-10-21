@@ -33,10 +33,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "audio_analysis_sha256_analyzer_version_pk": {
-          "columns": [
-            "sha256",
-            "analyzer_version"
-          ],
+          "columns": ["sha256", "analyzer_version"],
           "name": "audio_analysis_sha256_analyzer_version_pk"
         }
       },

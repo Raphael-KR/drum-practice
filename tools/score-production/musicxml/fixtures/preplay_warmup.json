@@ -27,1553 +27,577 @@
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RRRRRRRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LLLLLLLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RRRRRRRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LLLLLLLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RRRRRRRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LLLLLLLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RRRRRRRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LLLLLLLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "A",
       "instruments": "SSSSSSSS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "RRLLRRLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "LLRRLLRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "RRLLRRLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "LLRRLLRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "RLRRLRLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "LRLLRLRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "RLRRLRLL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSS",
       "hands": "LRLLRLRR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "RLRLRLRLRL",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "LRLRLRLRLR",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "RLRLRLRLRL",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "LRLRLRLRLR",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "RLRLRLRLRL",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "LRLRLRLRLR",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "RLRLRLRLRL",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "B",
       "instruments": "SSSSSSSSSS",
       "hands": "LRLRLRLRLR",
-      "units": [
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SSHHHHSS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SSHHHHSS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SSHHHHSS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SSHHHHSS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "HHMMMMHH",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "HHMMMMHH",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "HHMMMMHH",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "HHMMMMHH",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "C",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "SSSSHHHHMMHH",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "SSSSHHHHMMHH",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "SSSSHHHHMMHH",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "SSSSHHHHMMHH",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "HHHHMMMMFFMM",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "HHHHMMMMFFMM",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "HHHHMMMMFFMM",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "HHHHMMMMFFMM",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "FFFFMMMMHHMM",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "FFFFMMMMHHMM",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "FFFFMMMMHHMM",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "FFFFMMMMHHMM",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "MMMMHHHHSSHH",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "MMMMHHHHSSHH",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "MMMMHHHHSSHH",
       "hands": "RLRLRLRLRLRL",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "D",
       "instruments": "MMMMHHHHSSHH",
       "hands": "LRLRLRLRLRLR",
-      "units": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "RRLRRLRRLRRL",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "LLRLLRLLRLLR",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "RRLRRLRRLRRL",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "LLRLLRLLRLLR",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "RRLRRLRRLRRL",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "LLRLLRLLRLLR",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "RRLRRLRRLRRL",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "HHHMMMFFFMMM",
       "hands": "LLRLLRLLRLLR",
-      "units": [
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1
-      ]
+      "units": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "RLRRLRRLRRLR",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "LRLLRLLRLLRL",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "RLRRLRRLRRLR",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "LRLLRLLRLLRL",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "RLRRLRRLRRLR",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "LRLLRLLRLLRL",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "RLRRLRRLRRLR",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "E",
       "instruments": "FFFMMMHHHMMM",
       "hands": "LRLLRLLRLLRL",
-      "units": [
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2,
-        1,
-        1,
-        2
-      ]
+      "units": [1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "RLRLRLRL",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SHMFFMHS",
       "hands": "LRLRLRLR",
-      "units": [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ]
+      "units": [2, 2, 2, 2, 2, 2, 2, 2]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "RLRL",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "LRLR",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "RLRL",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "LRLR",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "RLRL",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "LRLR",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "RLRL",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     },
     {
       "section": "F",
       "instruments": "SSSS",
       "hands": "LRLR",
-      "units": [
-        4,
-        4,
-        4,
-        4
-      ]
+      "units": [4, 4, 4, 4]
     }
   ],
   "expected": {

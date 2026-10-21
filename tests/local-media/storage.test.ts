@@ -1,7 +1,11 @@
 import "fake-indexeddb/auto";
 import { it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { saveRecord, allRecords, deleteRecord } from "../../src/platform/storage/storage";
+import {
+  saveRecord,
+  allRecords,
+  deleteRecord,
+} from "../../src/platform/storage/storage";
 it("round-trips blobs, edited syllables, markers, loops and 81% rate", async () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   song.id = "storage-test";
@@ -26,7 +30,10 @@ it("round-trips blobs, edited syllables, markers, loops and 81% rate", async () 
     reopened.song.settings.position = i;
     reopened.song.settings.rate = rates[i];
     await saveRecord(reopened);
-    expect((await allRecords()).find(r => r.song.id === song.id)!.song.settings.rate).toBe(rates[i]);
+    expect(
+      (await allRecords()).find((r) => r.song.id === song.id)!.song.settings
+        .rate,
+    ).toBe(rates[i]);
   }
   const reopened = (await allRecords()).find((r) => r.song.id === song.id)!;
   expect(await reopened.pages[0].text()).toBe("page");
@@ -48,22 +55,58 @@ it("round-trips blobs, edited syllables, markers, loops and 81% rate", async () 
 it("preserves the saved song when reading a media blob fails", async () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   song.id = "failed-media-save";
-  const record = { song, pdf: new Blob(["pdf"]), audio: new Blob(["audio"]), pages: [new Blob(["page"])] };
+  const record = {
+    song,
+    pdf: new Blob(["pdf"]),
+    audio: new Blob(["audio"]),
+    pages: [new Blob(["page"])],
+  };
   await saveRecord(record);
   const broken = new Blob(["missing"]);
-  broken.arrayBuffer = async () => { throw new Error("missing backing file"); };
-  await expect(saveRecord({ ...record, song: { ...song, title: "should not overwrite" }, pages: [broken] })).rejects.toThrow("missing backing file");
-  const preserved = (await allRecords()).find(r => r.song.id === song.id)!;
+  broken.arrayBuffer = async () => {
+    throw new Error("missing backing file");
+  };
+  await expect(
+    saveRecord({
+      ...record,
+      song: { ...song, title: "should not overwrite" },
+      pages: [broken],
+    }),
+  ).rejects.toThrow("missing backing file");
+  const preserved = (await allRecords()).find((r) => r.song.id === song.id)!;
   expect(preserved.song.title).toBe(song.title);
   expect(await preserved.pages[0].text()).toBe("page");
   await deleteRecord(song.id);
 });
-it('restores all records atomically and serializes rapid saves in invocation order',async()=>{
-  const {saveRecords}=await import("../../src/platform/storage/storage");
-  const song=JSON.parse(readFileSync('public/demo/song.json','utf8'));song.id='atomic-qa';
-  const r={song,pdf:new Blob(['pdf']),audio:new Blob(['audio']),pages:[new Blob(['page'])]};await saveRecord(r);
-  const broken=new Blob();broken.arrayBuffer=async()=>{throw Error('unreadable');};
-  await expect(saveRecords([{...r,song:{...song,title:'overwrite'}},{...r,song:{...song,id:'bad-qa'},audio:broken}])).rejects.toThrow('unreadable');
-  expect((await allRecords()).find(r=>r.song.id===song.id)!.song.title).toBe(song.title);
-  const first=saveRecord({...r,song:{...song,title:'first'}}),last=saveRecord({...r,song:{...song,title:'last'}});await Promise.all([first,last]);expect((await allRecords()).find(r=>r.song.id===song.id)!.song.title).toBe('last');await deleteRecord(song.id);
+it("restores all records atomically and serializes rapid saves in invocation order", async () => {
+  const { saveRecords } = await import("../../src/platform/storage/storage");
+  const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+  song.id = "atomic-qa";
+  const r = {
+    song,
+    pdf: new Blob(["pdf"]),
+    audio: new Blob(["audio"]),
+    pages: [new Blob(["page"])],
+  };
+  await saveRecord(r);
+  const broken = new Blob();
+  broken.arrayBuffer = async () => {
+    throw Error("unreadable");
+  };
+  await expect(
+    saveRecords([
+      { ...r, song: { ...song, title: "overwrite" } },
+      { ...r, song: { ...song, id: "bad-qa" }, audio: broken },
+    ]),
+  ).rejects.toThrow("unreadable");
+  expect(
+    (await allRecords()).find((r) => r.song.id === song.id)!.song.title,
+  ).toBe(song.title);
+  const first = saveRecord({ ...r, song: { ...song, title: "first" } }),
+    last = saveRecord({ ...r, song: { ...song, title: "last" } });
+  await Promise.all([first, last]);
+  expect(
+    (await allRecords()).find((r) => r.song.id === song.id)!.song.title,
+  ).toBe("last");
+  await deleteRecord(song.id);
 });

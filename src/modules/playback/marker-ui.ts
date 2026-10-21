@@ -1,4 +1,7 @@
-import { markerIcon, markerButtonBackground } from "../../shared/ui/marker-icon";
+import {
+  markerIcon,
+  markerButtonBackground,
+} from "../../shared/ui/marker-icon";
 import { sortedMarkerSlots, markedMeasureIndices } from "./marker-slots";
 import { locate, type Song } from "../../model/model";
 import { t } from "../../shared/i18n/i18n";
@@ -8,7 +11,7 @@ export function markerSlotsHTML(s: Song, attribute: string, byIndex = false) {
     .map((m, i) => {
       const label = m ? (locate(s, m.time).measure?.label ?? "") : "";
       return m
-        ? `<button type="button" ${attribute}="${escape(byIndex ? String(i) : m.id)}" title="${escape(t("tooltip.marker", {label}))}" aria-label="${escape(t("main.message272", { value2: label }))}"><span>${escape(label)}</span>${markerButtonBackground}</button>`
+        ? `<button type="button" ${attribute}="${escape(byIndex ? String(i) : m.id)}" title="${escape(t("tooltip.marker", { label }))}" aria-label="${escape(t("main.message272", { value2: label }))}"><span>${escape(label)}</span>${markerButtonBackground}</button>`
         : `<button type="button" class="empty-marker-slot" aria-label="${escape(t("marker.current.add"))}" title="${escape(t("marker.current.add"))}">${markerIcon}</button>`;
     })
     .join("");
@@ -28,12 +31,23 @@ export function bindMarkerSlots(
   seek: (time: number) => void,
   attribute: string,
   byIndex = false,
-  selection?: { current(): number; remove(id: string): void; toggleCurrent?(): void },
+  selection?: {
+    current(): number;
+    remove(id: string): void;
+    toggleCurrent?(): void;
+  },
 ) {
   const listener = (e: MouseEvent) => {
-    const empty = (e.target as Element).closest<HTMLElement>(".empty-marker-slot");
+    const empty = (e.target as Element).closest<HTMLElement>(
+      ".empty-marker-slot",
+    );
     if (empty && root.contains(empty)) {
-      if (selection && !markedMeasureIndices(song()).has(locate(song(), selection.current()).index))
+      if (
+        selection &&
+        !markedMeasureIndices(song()).has(
+          locate(song(), selection.current()).index,
+        )
+      )
         selection.toggleCurrent?.();
       return;
     }
@@ -46,7 +60,8 @@ export function bindMarkerSlots(
         : s.markers.find((m) => m.id === value);
     if (marker) {
       const target = locate(s, marker.time);
-      if (selection && locate(s, selection.current()).index === target.index) selection.remove(marker.id);
+      if (selection && locate(s, selection.current()).index === target.index)
+        selection.remove(marker.id);
       else seek(target.measure.start);
     }
   };

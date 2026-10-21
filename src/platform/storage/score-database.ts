@@ -5,7 +5,7 @@ const MIGRATION = "player-library-v1";
 export const RETIRED_SCORE_ID = "tom-moving-original-v1";
 /** User explicitly retired the 16-bar edition, including recoverable archives. */
 async function purgeRetiredScore(db: IDBDatabase): Promise<void> {
-  const stores = ["songs"].filter(name => db.objectStoreNames.contains(name));
+  const stores = ["songs"].filter((name) => db.objectStoreNames.contains(name));
   if (!stores.length) return;
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(stores, "readwrite");
@@ -20,7 +20,11 @@ async function purgeRetiredScore(db: IDBDatabase): Promise<void> {
         const record = cursor.value;
         if (record?.song?.id === RETIRED_SCORE_ID) {
           if (record.song.measures?.length !== 16) {
-            failure = new Error("Retired score ID has unexpected measure count"); tx.abort(); return;
+            failure = new Error(
+              "Retired score ID has unexpected measure count",
+            );
+            tx.abort();
+            return;
           }
           cursor.delete();
         }
@@ -31,26 +35,39 @@ async function purgeRetiredScore(db: IDBDatabase): Promise<void> {
 }
 function connect(name: string, version?: number): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = version === undefined ? indexedDB.open(name) : indexedDB.open(name, version);
+    const request =
+      version === undefined
+        ? indexedDB.open(name)
+        : indexedDB.open(name, version);
     request.onupgradeneeded = () => {
       const db = request.result;
-      if (!db.objectStoreNames.contains("songs")) db.createObjectStore("songs", { keyPath: "song.id" });
+      if (!db.objectStoreNames.contains("songs"))
+        db.createObjectStore("songs", { keyPath: "song.id" });
       // User removed playback recovery copies. Schema upgrade deletes all old copies.
-      if (db.objectStoreNames.contains("archives")) db.deleteObjectStore("archives");
+      if (db.objectStoreNames.contains("archives"))
+        db.deleteObjectStore("archives");
       if (name === SCORE_DATABASE) {
-        if (!db.objectStoreNames.contains("audioAnalyses")) db.createObjectStore("audioAnalyses", { keyPath: "sha256" });
-        if (!db.objectStoreNames.contains("migrations")) db.createObjectStore("migrations");
+        if (!db.objectStoreNames.contains("audioAnalyses"))
+          db.createObjectStore("audioAnalyses", { keyPath: "sha256" });
+        if (!db.objectStoreNames.contains("migrations"))
+          db.createObjectStore("migrations");
       }
     };
     let blocked = false;
     request.onsuccess = () => {
       const db = request.result;
-      if (blocked) { db.close(); return; }
+      if (blocked) {
+        db.close();
+        return;
+      }
       db.onversionchange = () => db.close();
       resolve(db);
     };
     request.onerror = () => reject(request.error);
-    request.onblocked = () => { blocked = true; reject(new Error(t("storage.upgradeBlocked"))); };
+    request.onblocked = () => {
+      blocked = true;
+      reject(new Error(t("storage.upgradeBlocked")));
+    };
   });
 }
 function values(db: IDBDatabase, store: string): Promise<any[]> {
@@ -65,14 +82,21 @@ export async function openScoreDatabase(): Promise<IDBDatabase> {
   const db = await connect(SCORE_DATABASE, 4);
   try {
     const migrated = await new Promise((resolve, reject) => {
-      const r = db.transaction("migrations").objectStore("migrations").get(MIGRATION);
+      const r = db
+        .transaction("migrations")
+        .objectStore("migrations")
+        .get(MIGRATION);
       r.onsuccess = () => resolve(r.result);
       r.onerror = () => reject(r.error);
     });
     if (migrated) {
       await purgeRetiredScore(db);
       const legacy = await connect("drum-practice-player", 3);
-      try { await purgeRetiredScore(legacy); } finally { legacy.close(); }
+      try {
+        await purgeRetiredScore(legacy);
+      } finally {
+        legacy.close();
+      }
       return db;
     }
     const legacy = await connect("drum-practice-player", 3);
@@ -80,13 +104,15 @@ export async function openScoreDatabase(): Promise<IDBDatabase> {
     try {
       await purgeRetiredScore(legacy);
       songs = await values(legacy, "songs");
+    } finally {
+      legacy.close();
     }
-    finally { legacy.close(); }
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(["songs", "migrations"], "readwrite");
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error ?? new Error("Score library migration aborted"));
+      tx.onabort = () =>
+        reject(tx.error ?? new Error("Score library migration aborted"));
       // Recheck under the write transaction, so simultaneous app opens migrate once.
       const marker = tx.objectStore("migrations").get(MIGRATION);
       marker.onsuccess = () => {
@@ -102,5 +128,8 @@ export async function openScoreDatabase(): Promise<IDBDatabase> {
     });
     await purgeRetiredScore(db);
     return db;
-  } catch (error) { db.close(); throw error; }
+  } catch (error) {
+    db.close();
+    throw error;
+  }
 }

@@ -54,7 +54,10 @@ export function movePlaybackScrub(
   delta: number,
 ) {
   if (!h.state) return;
-  if ((!h.state.resume || h.song.audioPractice) && h.song.settings.view === "ribbon") {
+  if (
+    (!h.state.resume || h.song.audioPractice) &&
+    h.song.settings.view === "ribbon"
+  ) {
     h.stage.scrollLeft = h.panStart - delta;
     return;
   }
@@ -117,8 +120,12 @@ export function installPlaybackKeys(
       if (e.repeat) return;
       h.cancel();
       h.toggle();
-    } else if (!e.ctrlKey && !e.altKey && !e.metaKey &&
-      (e.code === "KeyM" || e.key.toLowerCase() === "m" || e.key === "ㅡ")) {
+    } else if (
+      !e.ctrlKey &&
+      !e.altKey &&
+      !e.metaKey &&
+      (e.code === "KeyM" || e.key.toLowerCase() === "m" || e.key === "ㅡ")
+    ) {
       e.preventDefault();
       if (e.repeat) return;
       h.cancel();
@@ -127,7 +134,11 @@ export function installPlaybackKeys(
       e.preventDefault();
       h.cancel();
       h.step(e.key === "ArrowLeft" ? -1 : 1);
-    } else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && h.rows?.() && h.rowStep) {
+    } else if (
+      (e.key === "ArrowUp" || e.key === "ArrowDown") &&
+      h.rows?.() &&
+      h.rowStep
+    ) {
       e.preventDefault();
       h.cancel();
       h.rowStep(e.key === "ArrowUp" ? -1 : 1);
@@ -223,7 +234,7 @@ export function attachPlaybackGestures(
     },
     prepareAudio: h.prepare,
     pausedDoubleTap: h.pausedDoubleTap,
-    pausedTap: index => tappedMeasure && (h.pausedTap?.(index) ?? false),
+    pausedTap: (index) => tappedMeasure && (h.pausedTap?.(index) ?? false),
     pause: h.pause,
     seek: (index, resume) => {
       if (!h.ready()) return;

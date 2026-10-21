@@ -8,7 +8,10 @@ import {
 } from "../../src/modules/playback/playback-ui";
 import { iconButton } from "../../src/shared/ui/icons";
 import { download } from "../../src/platform/browser/download";
-import { encodeAsset, decodeAsset } from "../../src/platform/storage/binary-asset";
+import {
+  encodeAsset,
+  decodeAsset,
+} from "../../src/platform/storage/binary-asset";
 vi.mock("../../src/modules/score/practice-staff-layout", () => ({
   practicePage: vi.fn(async (b: Blob) => b),
   framePDFStaffs: vi.fn(),
@@ -35,7 +38,9 @@ for (const [host, binding] of [
   it(`${host}: same shell, unique controls, authoring slots retained`, () => {
     document.body.innerHTML =
       '<div id="app"><header><div class="brand"></div><div class="actions"></div></header><main><section id="practice"><div id="stage"></div></section></main></div>';
-    const markerContent = document.createElement(host === "web" ? "section" : "div"),
+    const markerContent = document.createElement(
+        host === "web" ? "section" : "div",
+      ),
       loopExtra = document.createElement(host === "web" ? "section" : "div");
     if (host === "web") markerContent.className = loopExtra.className = "panel";
     const retainedInput = document.createElement("input");
@@ -67,8 +72,12 @@ for (const [host, binding] of [
     expect(document.querySelector("#practice .repeat-controls")).not.toBeNull();
     (document.querySelector("#settings") as HTMLElement).click();
     expect(open).toHaveBeenCalledOnce();
-    expect(document.querySelector("#loop-dialog .playback-panel-content")).toBe(loopExtra);
-    expect(document.querySelector("#marker-dialog .playback-panel-content")).toBe(markerContent);
+    expect(document.querySelector("#loop-dialog .playback-panel-content")).toBe(
+      loopExtra,
+    );
+    expect(
+      document.querySelector("#marker-dialog .playback-panel-content"),
+    ).toBe(markerContent);
     expect(retainedInput.value).toBe("preserved");
   });
 it("icon updates preserve the button identity and handler; escape captions", () => {
@@ -133,7 +142,10 @@ it("asset decode failure releases all new URLs without touching current assets",
     regions: [{ id: "r", page: 0 }],
   } as Song;
   await expect(
-    preparePlaybackAssets([new NodeBlob([]) as Blob, new NodeBlob([]) as Blob], score),
+    preparePlaybackAssets(
+      [new NodeBlob([]) as Blob, new NodeBlob([]) as Blob],
+      score,
+    ),
   ).rejects.toThrow("decode");
   expect(revoke.mock.calls.flat()).toEqual(["blob:1", "blob:2"]);
 });

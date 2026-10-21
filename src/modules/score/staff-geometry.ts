@@ -52,9 +52,12 @@ export function detectStaff(
     for (let i = 0; i < peaks.length; i++) {
       for (let j = i + required - 1; j < peaks.length; j++) {
         const gap = (peaks[j] - peaks[i]) / (required - 1);
-        if (gap < 3 || (expectedGap && Math.abs(gap / expectedGap - 1) > 0.2)) continue;
+        if (gap < 3 || (expectedGap && Math.abs(gap / expectedGap - 1) > 0.2))
+          continue;
         const matches = Array.from({ length: required }, (_, k) =>
-          peaks.some(p => Math.abs(p - (peaks[i] + k * gap)) <= Math.max(1, gap * .1)),
+          peaks.some(
+            (p) => Math.abs(p - (peaks[i] + k * gap)) <= Math.max(1, gap * 0.1),
+          ),
         );
         if (matches.every(Boolean)) return { top: peaks[i], gap };
       }

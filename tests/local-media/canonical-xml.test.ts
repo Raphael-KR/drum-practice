@@ -10,7 +10,10 @@ import {
   verifyCanonicalAudio,
   vocalLyrics,
 } from "../../src/modules/score/canonical-xml";
-import { migrateLyricPositions, projectLyrics } from "../../src/modules/lyrics/lyric-score";
+import {
+  migrateLyricPositions,
+  projectLyrics,
+} from "../../src/modules/lyrics/lyric-score";
 import { parseMusicXML } from "../../src/modules/score/musicxml";
 const song = () => JSON.parse(readFileSync("public/demo/song.json", "utf8"));
 it("migrates all lyric starts and restores from XML, disregarding poisoned cache values", () => {
@@ -136,16 +139,47 @@ it("binds audio anchors to audio bytes", async () => {
   r.audio = new NativeBlob(["other"]);
   await expect(verifyCanonicalAudio(r)).rejects.toThrow("음원");
 });
-it('preserves canonical XML through format switching, storage and backup serialization',async()=>{
- vi.stubGlobal('Blob',NativeBlob);
- const {saveRecord,allRecords,deleteRecord}=await import("../../src/platform/storage/storage");
- const {packSong,unpackSong}=await import("../../src/platform/storage/record-serialization");
- const {activeScore,useScore}=await import("../../src/modules/score/song-scores");
- const {indexedDB}=await import('fake-indexeddb');vi.stubGlobal('indexedDB',indexedDB);
- const s=song();s.id='canonical-storage-qa';const r={song:s,pdf:new NativeBlob(['pdf']),audio:new NativeBlob(['audio']),pages:Array.from({length:s.pageCount},()=>new NativeBlob(['page'])),canonicalXML:writeCanonical(s)} as any;
- await saveRecord(r);const restored=(await allRecords()).find(r=>r.song.id===s.id)!;
- expect(restored.canonicalXML).toBe(r.canonicalXML);expect(unpackSong(await packSong(restored)).canonicalXML).toBe(r.canonicalXML);expect(useScore(restored,activeScore(restored)).canonicalXML).toBe(r.canonicalXML);await deleteRecord(s.id);
+it("preserves canonical XML through format switching, storage and backup serialization", async () => {
+  vi.stubGlobal("Blob", NativeBlob);
+  const { saveRecord, allRecords, deleteRecord } =
+    await import("../../src/platform/storage/storage");
+  const { packSong, unpackSong } =
+    await import("../../src/platform/storage/record-serialization");
+  const { activeScore, useScore } =
+    await import("../../src/modules/score/song-scores");
+  const { indexedDB } = await import("fake-indexeddb");
+  vi.stubGlobal("indexedDB", indexedDB);
+  const s = song();
+  s.id = "canonical-storage-qa";
+  const r = {
+    song: s,
+    pdf: new NativeBlob(["pdf"]),
+    audio: new NativeBlob(["audio"]),
+    pages: Array.from({ length: s.pageCount }, () => new NativeBlob(["page"])),
+    canonicalXML: writeCanonical(s),
+  } as any;
+  await saveRecord(r);
+  const restored = (await allRecords()).find((r) => r.song.id === s.id)!;
+  expect(restored.canonicalXML).toBe(r.canonicalXML);
+  expect(unpackSong(await packSong(restored)).canonicalXML).toBe(
+    r.canonicalXML,
+  );
+  expect(useScore(restored, activeScore(restored)).canonicalXML).toBe(
+    r.canonicalXML,
+  );
+  await deleteRecord(s.id);
 });
-it('reimports the app MusicXML into new geometry while keeping its musical IDs',async()=>{
- const {importedCanonical}=await import("../../src/modules/score/canonical-xml");const s=song(),xml=writeCanonical(s),fresh=structuredClone(s);fresh.measures.forEach((m:any,i:number)=>m.id='new-'+i);fresh.lyrics=[];const canonical=importedCanonical(xml,fresh)!;readCanonical(canonical,fresh);expect(fresh.lyrics.map((l:any)=>l.scorePosition)).toEqual(s.lyrics.map((l:any)=>l.scorePosition));
+it("reimports the app MusicXML into new geometry while keeping its musical IDs", async () => {
+  const { importedCanonical } =
+    await import("../../src/modules/score/canonical-xml");
+  const s = song(),
+    xml = writeCanonical(s),
+    fresh = structuredClone(s);
+  fresh.measures.forEach((m: any, i: number) => (m.id = "new-" + i));
+  fresh.lyrics = [];
+  const canonical = importedCanonical(xml, fresh)!;
+  readCanonical(canonical, fresh);
+  expect(fresh.lyrics.map((l: any) => l.scorePosition)).toEqual(
+    s.lyrics.map((l: any) => l.scorePosition),
+  );
 });

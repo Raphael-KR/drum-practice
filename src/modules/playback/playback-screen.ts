@@ -4,68 +4,95 @@ import { closeDialogOnBackdrop } from "../../shared/ui/dialog-ui";
 import { setIconButton } from "../../shared/ui/icon-button";
 import { audioMeasureHTML } from "../audio/audio-practice-view";
 import { originalTempoMode } from "../audio/audio-time-map";
-import { formatSongTitle,readTitleOrder,saveTitleOrder,type TitleOrder } from "../library/song-title";
+import {
+  formatSongTitle,
+  readTitleOrder,
+  saveTitleOrder,
+  type TitleOrder,
+} from "../library/song-title";
 import { gridPhase } from "../score/ribbon-timeline";
-import { sliderFromZoom,snapZoomSlider,zoomFromSlider } from "../score/score-zoom";
+import {
+  sliderFromZoom,
+  snapZoomSlider,
+  zoomFromSlider,
+} from "../score/score-zoom";
 import { mountLoopSlots } from "./loop-slots";
-import { selectPlaybackEngraving,type RibbonAsset } from "./playback-assets";
+import { selectPlaybackEngraving, type RibbonAsset } from "./playback-assets";
 import { mountPlaybackDrawer } from "./playback-drawer";
 import { syncSettingsChoices } from "./playback-forms";
 import { createPlaybackTempo } from "./playback-tempo";
 import { createPlaybackWakeLock } from "./playback-wake-lock";
 import { syncCurrentSection } from "./section-shortcuts";
 /** The single playback screen owner. Hosts supply assets, persistence and authoring hooks. */
-import { clamp,locate,uid,xAtBeat,type Loop,type Song } from "../../model/model";
-import { enterFullscreen,installScreenControls } from "../../platform/browser/fullscreen";
+import {
+  clamp,
+  locate,
+  uid,
+  xAtBeat,
+  type Loop,
+  type Song,
+} from "../../model/model";
+import {
+  enterFullscreen,
+  installScreenControls,
+} from "../../platform/browser/fullscreen";
 import { t } from "../../shared/i18n/i18n";
-import { icon,tempoNote } from "../../shared/ui/icon-svg";
-import { bindNumericDrag,installNumericInputs } from "../../shared/ui/numeric-drag";
-import { componentName,installUIStandard,uiText } from "../../shared/ui/ui-standard";
+import { icon, tempoNote } from "../../shared/ui/icon-svg";
+import {
+  bindNumericDrag,
+  installNumericInputs,
+} from "../../shared/ui/numeric-drag";
+import {
+  componentName,
+  installUIStandard,
+  uiText,
+} from "../../shared/ui/ui-standard";
 import type { Player } from "../audio/audio-core";
 import { installHelp } from "../help/help";
 import { lyricMeasureId } from "../lyrics/lyric-grid";
 import type { HighlightPage } from "../score/note-highlight";
 import type { StaffPosition } from "../score/practice-staff-layout";
 import { displayRegion } from "../score/score-view";
-import { deleteMarkerSlot,pruneMarkerOverflow,toggleMeasureMarker } from "./marker-slots";
 import {
-bindMarkerSlots,
-markerSlotsHTML,
-syncMarkerBadges,
+  deleteMarkerSlot,
+  pruneMarkerOverflow,
+  toggleMeasureMarker,
+} from "./marker-slots";
+import {
+  bindMarkerSlots,
+  markerSlotsHTML,
+  syncMarkerBadges,
 } from "./marker-ui";
 import {
-attachPlaybackGestures,
-beginPlaybackScrub,
-changePlaybackLoop,
-finishPlaybackScrub,
-installPlaybackKeys,
-installPlaybackWheel,
-movePlaybackScrub,
-seekPlaybackFreely,
-validLoop,
-type ScrubSnapshot,
+  attachPlaybackGestures,
+  beginPlaybackScrub,
+  changePlaybackLoop,
+  finishPlaybackScrub,
+  installPlaybackKeys,
+  installPlaybackWheel,
+  movePlaybackScrub,
+  seekPlaybackFreely,
+  validLoop,
+  type ScrubSnapshot,
 } from "./playback-actions";
 import {
-buildScoreTrack,
-installScoreScroll,
-updateScoreFrame,
+  buildScoreTrack,
+  installScoreScroll,
+  updateScoreFrame,
 } from "./playback-frame";
 import {
-layoutScoreLyrics,
-measurePosition,
-measureWidth,
-renderScoreRows,
-ribbonPosition,
-scoreLayout,
+  layoutScoreLyrics,
+  measurePosition,
+  measureWidth,
+  renderScoreRows,
+  ribbonPosition,
+  scoreLayout,
 } from "./playback-layout";
 import { renderMeasure } from "./playback-measure";
-import { copyPosition,playbackPosition } from "./playback-position";
-import { arrangePlaybackUI,type PlaybackBindings } from "./playback-ui";
+import { copyPosition, playbackPosition } from "./playback-position";
+import { arrangePlaybackUI, type PlaybackBindings } from "./playback-ui";
 import { scrubTime } from "./practice-controls";
-import {
-repeatPreset,
-updateRepeatControls,
-} from "./repeat-ui";
+import { repeatPreset, updateRepeatControls } from "./repeat-ui";
 
 export interface PlaybackScreenHost {
   root: HTMLElement;
@@ -168,15 +195,19 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     panStart = 0,
     copiedUntil = 0;
   let selectedIndex: number | undefined;
-  const selectionIndex = () => !h.player().playing && selectedIndex !== undefined
-    ? selectedIndex : locate(h.song(), h.player().current()).index;
-  const selectionTime = () => !h.player().playing && selectedIndex !== undefined
-    ? h.song().measures[selectedIndex].start : h.player().current();
+  const selectionIndex = () =>
+    !h.player().playing && selectedIndex !== undefined
+      ? selectedIndex
+      : locate(h.song(), h.player().current()).index;
+  const selectionTime = () =>
+    !h.player().playing && selectedIndex !== undefined
+      ? h.song().measures[selectedIndex].start
+      : h.player().current();
   function selectMeasure(index: number) {
     if (h.player().playing) seek(h.song().measures[index].start);
     else selectedIndex = index;
     frame();
-    stage.focus({preventScroll:true});
+    stage.focus({ preventScroll: true });
   }
   const offsets: number[] = [],
     widths: number[] = [];
@@ -199,14 +230,26 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     if (asset) {
       if (s.settings.uniformSpacing) {
         const m = s.measures[index];
-        return width * gridPhase(beat * 4 / m.denominator, m.beats * 4 / m.denominator);
+        return (
+          width *
+          gridPhase((beat * 4) / m.denominator, (m.beats * 4) / m.denominator)
+        );
       }
-      if (s.settings.view === "rows") return width * xAtBeat(asset.region, s.measures[index], beat);
+      if (s.settings.view === "rows")
+        return width * xAtBeat(asset.region, s.measures[index], beat);
       // Artwork may use row geometry; motion must use the continuous timeline.
       const timeline = h.assets().ribbon!.get(index)!;
-      return ribbonPosition(width, beat, s.measures[index].beats, timeline.phase);
+      return ribbonPosition(
+        width,
+        beat,
+        s.measures[index].beats,
+        timeline.phase,
+      );
     }
-    if (s.audioPractice) { const m=s.measures[index]; return width * (audioBeatTime(m,beat)-m.start)/(m.end-m.start); }
+    if (s.audioPractice) {
+      const m = s.measures[index];
+      return (width * (audioBeatTime(m, beat) - m.start)) / (m.end - m.start);
+    }
     return measurePosition(s, index, beat, width, widthOf);
   }
   function ribbonAsset(index: number) {
@@ -215,17 +258,25 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     return selectPlaybackEngraving(asset, h.song().settings.uniformSpacing);
   }
   function widthOf(m: Song["measures"][number]) {
-    if (h.song().audioPractice) return Math.max(120, stage.clientWidth / 4 * h.song().settings.zoom);
+    if (h.song().audioPractice)
+      return Math.max(120, (stage.clientWidth / 4) * h.song().settings.zoom);
     const s = h.song(),
       a = h.assets(),
-      timeline = s.scoreFormat === "musicxml" ? a.ribbon?.get(s.measures.indexOf(m)) : undefined,
+      timeline =
+        s.scoreFormat === "musicxml"
+          ? a.ribbon?.get(s.measures.indexOf(m))
+          : undefined,
       r =
         timeline?.region ??
         displayRegion(
           s,
           s.regions.find((r) => r.id === m.regionId)!,
         );
-    if (s.settings.uniformSpacing && timeline?.grid) return stage.clientWidth / 4 * (s.settings.view === "ribbon" ? s.settings.zoom : 1);
+    if (s.settings.uniformSpacing && timeline?.grid)
+      return (
+        (stage.clientWidth / 4) *
+        (s.settings.view === "ribbon" ? s.settings.zoom : 1)
+      );
     return measureWidth(
       s,
       r,
@@ -262,7 +313,9 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       pageRatio: timeline?.ratio ?? a.ratios[r.page] ?? 1.294,
       isSVG,
       positionInMeasure: (index, beat, cellWidth) =>
-        timeline && !s.settings.uniformSpacing ? cellWidth * xAtBeat(r, s.measures[index], beat) : position(index, beat, cellWidth),
+        timeline && !s.settings.uniformSpacing
+          ? cellWidth * xAtBeat(r, s.measures[index], beat)
+          : position(index, beat, cellWidth),
     });
   }
   function layoutLyrics() {
@@ -271,23 +324,49 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   let loopSlots: ReturnType<typeof mountLoopSlots> | undefined;
   function rowCellWidth() {
     const song = h.song();
-    const s: Song = {...song, settings: {...song.settings, view: "rows"}};
+    const s: Song = { ...song, settings: { ...song.settings, view: "rows" } };
     const base = stage.clientWidth / 4;
     if (!stage.clientHeight) return base;
     const assets = h.assets();
-    const naturalHeight = Math.max(s.audioPractice ? 100 : 1, ...s.regions.map(region => {
-      const staff = assets.staffs.get(region.id);
-      return staff ? scoreLayout(s, displayRegion(s, region), base, stage.clientWidth, staff)?.height || 100 : 100;
-    }));
+    const naturalHeight = Math.max(
+      s.audioPractice ? 100 : 1,
+      ...s.regions.map((region) => {
+        const staff = assets.staffs.get(region.id);
+        return staff
+          ? scoreLayout(
+              s,
+              displayRegion(s, region),
+              base,
+              stage.clientWidth,
+              staff,
+            )?.height || 100
+          : 100;
+      }),
+    );
     // Size rows from the full available width; surrounding UI must not shrink notation.
     const width = base;
-    const selectedHeight = s.settings.uniformSpacing && s.scoreFormat === "musicxml"
-      ? Math.max(...s.measures.map((_, i) => {
-          const asset = ribbonAsset(i);
-          return asset ? scoreLayout(s, asset.region, base, stage.clientWidth, asset.staff)!.height : naturalHeight;
-        })) : naturalHeight;
+    const selectedHeight =
+      s.settings.uniformSpacing && s.scoreFormat === "musicxml"
+        ? Math.max(
+            ...s.measures.map((_, i) => {
+              const asset = ribbonAsset(i);
+              return asset
+                ? scoreLayout(
+                    s,
+                    asset.region,
+                    base,
+                    stage.clientWidth,
+                    asset.staff,
+                  )!.height
+                : naturalHeight;
+            }),
+          )
+        : naturalHeight;
     const fittedHeight = Math.max(naturalHeight, selectedHeight) + 30;
-    stage.style.setProperty("--two-row-stage-height", `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`);
+    stage.style.setProperty(
+      "--two-row-stage-height",
+      `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`,
+    );
     stage.style.setProperty("--fitted-row-width", `${stage.clientWidth}px`);
     stage.style.setProperty("--row-content-height", `${fittedHeight}px`);
     stage.style.setProperty("--browse-row-pitch", `${fittedHeight + 28}px`);
@@ -321,10 +400,16 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     stage.scrollLeft = stage.scrollTop = 0;
     const s = h.song(),
       compare = s.settings.view === "compare";
-    stage.setAttribute("aria-label", s.audioPractice ? t("audioPractice.timeline") : componentName("score"));
+    stage.setAttribute(
+      "aria-label",
+      s.audioPractice ? t("audioPractice.timeline") : componentName("score"),
+    );
     get("practice").classList.toggle("two-rows", s.settings.view !== "ribbon");
     get("practice").classList.toggle("score-review", compare);
-    get("practice").classList.toggle("uniform-spacing", !!s.settings.uniformSpacing && s.scoreFormat === "musicxml");
+    get("practice").classList.toggle(
+      "uniform-spacing",
+      !!s.settings.uniformSpacing && s.scoreFormat === "musicxml",
+    );
     input("zoom").closest("label")!.hidden = s.settings.view !== "ribbon";
     if (compare) {
       stage.style.removeProperty("height");
@@ -342,14 +427,18 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function open(id: string) {
     gestures.cancel();
-    if (id === "loop" || id === "marker") { drawer.show(id); return; }
+    if (id === "loop" || id === "marker") {
+      drawer.show(id);
+      return;
+    }
     get<HTMLDialogElement>(`${id}-dialog`).showModal();
   }
   async function play(fromMeasureStart?: boolean) {
     if (!available()) return;
     h.setBusy(true);
     try {
-      if (!h.player().playing && selectedIndex !== undefined) seek(h.song().measures[selectedIndex].start);
+      if (!h.player().playing && selectedIndex !== undefined)
+        seek(h.song().measures[selectedIndex].start);
       if (h.display.fullscreen() && !document.fullscreenElement)
         await enterFullscreen(h.display.report);
       await h.player().play(true, fromMeasureStart);
@@ -377,12 +466,17 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     if (p.playing && !stage.classList.contains("is-playing")) {
       const index = locate(h.song(), p.current()).index;
       const stageRect = stage.getBoundingClientRect();
-      const cellRect = ribbon.querySelector<HTMLElement>(`[data-index="${index}"]`)?.getBoundingClientRect();
-      const startsOnLowerRow = h.song().settings.view === "rows" &&
-        stageRect.height > 0 && cellRect !== undefined &&
+      const cellRect = ribbon
+        .querySelector<HTMLElement>(`[data-index="${index}"]`)
+        ?.getBoundingClientRect();
+      const startsOnLowerRow =
+        h.song().settings.view === "rows" &&
+        stageRect.height > 0 &&
+        cellRect !== undefined &&
         cellRect.top >= stageRect.top + stageRect.height / 2 &&
         cellRect.top < stageRect.bottom;
-      rows.playbackRowOrigin = Math.floor(index / 4) - (startsOnLowerRow ? 1 : 0);
+      rows.playbackRowOrigin =
+        Math.floor(index / 4) - (startsOnLowerRow ? 1 : 0);
       rows.rowWindow = -1;
       stationary = undefined;
     }
@@ -399,12 +493,19 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     if (!h.ready()) return;
     const s = h.song();
     if (pruneMarkerOverflow(s)) h.changed();
-    updateRepeatControls(root, s, h.player().loop, radius, {
-      summary: ids.summary,
-      stop: ids.stop,
-      adjust: ids.adjust,
-      attribute: ids.radiusAttribute,
-    }, new Map([...repeatPresets].map(([key, preset]) => [key, preset.loop])));
+    updateRepeatControls(
+      root,
+      s,
+      h.player().loop,
+      radius,
+      {
+        summary: ids.summary,
+        stop: ids.stop,
+        adjust: ids.adjust,
+        attribute: ids.radiusAttribute,
+      },
+      new Map([...repeatPresets].map(([key, preset]) => [key, preset.loop])),
+    );
     get(ids.markers).innerHTML = markerSlotsHTML(s, "data-quick-marker");
     syncMarkerBadges(ribbon, s);
     loopSlots?.render();
@@ -455,9 +556,19 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       if (available()) void h.player().prepare?.().catch(h.fail);
     },
     resume: () => play(false),
-    pausedDoubleTap: index => { selectMeasure(index); loopSlots?.endpoint(index); frame(); },
-    pausedTap: index => {
-      if (!available() || h.player().playing || index !== selectionIndex() || loopSlots?.awaitingEndpoint) return false;
+    pausedDoubleTap: (index) => {
+      selectMeasure(index);
+      loopSlots?.endpoint(index);
+      frame();
+    },
+    pausedTap: (index) => {
+      if (
+        !available() ||
+        h.player().playing ||
+        index !== selectionIndex() ||
+        loopSlots?.awaitingEndpoint
+      )
+        return false;
       selectMeasure(index);
       run(() => play());
       return true;
@@ -491,9 +602,20 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   });
   disposers.push(gestures.dispose);
   loopSlots = mountLoopSlots(root, stage, {
-    song: h.song, player: () => ({loop:h.player().loop, current:selectionTime}), changed: h.changed,
-    pause: () => { gestures.cancel(); pause(); frame(); stationary = h.player().current(); },
-    use: loop => { if (loop) selectedIndex = undefined; clearPreset(); useLoop(loop); },
+    song: h.song,
+    player: () => ({ loop: h.player().loop, current: selectionTime }),
+    changed: h.changed,
+    pause: () => {
+      gestures.cancel();
+      pause();
+      frame();
+      stationary = h.player().current();
+    },
+    use: (loop) => {
+      if (loop) selectedIndex = undefined;
+      clearPreset();
+      useLoop(loop);
+    },
     ready: available,
   });
   disposers.push(loopSlots.dispose);
@@ -537,12 +659,22 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   );
   disposers.push(
     bindNumericDrag(input(ids.progress), {
-      surface: input(ids.progress).closest<HTMLElement>(".progress-number") ?? undefined,
+      surface:
+        input(ids.progress).closest<HTMLElement>(".progress-number") ??
+        undefined,
       onStart: beginScrub,
-      onPreview: (v) => previewScrub(h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]?.start ?? 0),
+      onPreview: (v) =>
+        previewScrub(
+          h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]
+            ?.start ?? 0,
+        ),
       onCommit: (v) => {
         if (scrub) finishScrub();
-        else if (h.ready()) seek(h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]?.start ?? 0);
+        else if (h.ready())
+          seek(
+            h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]
+              ?.start ?? 0,
+          );
       },
       onCancel: () => finishScrub(true),
     }),
@@ -563,7 +695,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
         const measure = h.song().measures[index];
         if (measure) selectMeasure(index);
       },
-      step: (delta) => selectMeasure(clamp(selectionIndex() + delta, 0, h.song().measures.length - 1)),
+      step: (delta) =>
+        selectMeasure(
+          clamp(selectionIndex() + delta, 0, h.song().measures.length - 1),
+        ),
     }),
   );
   stage.tabIndex = 0;
@@ -588,14 +723,17 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       v = input(ids.progress),
       time = p.current();
     if (!scrub && document.activeElement !== v)
-      v.value = String(selectionIndex() + (h.song().measures[0]?.audioPrelude ? 0 : 1));
+      v.value = String(
+        selectionIndex() + (h.song().measures[0]?.audioPrelude ? 0 : 1),
+      );
     const prelude = !!h.song().measures[0]?.audioPrelude;
-    v.min = prelude ? '0' : '1';
+    v.min = prelude ? "0" : "1";
     v.setAttribute("aria-valuemin", v.min);
     const total = h.song().measures.length - (prelude ? 1 : 0);
     v.max = String(total);
     v.setAttribute("aria-valuemax", String(total));
-    v.parentElement!.querySelector(".progress-total")!.textContent = String(total);
+    v.parentElement!.querySelector(".progress-total")!.textContent =
+      String(total);
     v.setAttribute("aria-valuenow", v.value);
     const clock = (n: number) =>
       `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
@@ -604,7 +742,23 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       `${v.value} / ${total} · ${clock(time)} / ${clock(p.duration)}`,
     );
   }
-  const {rate,headerBpm, syncHeaderBpm, originalAudioBpm, minimumPracticeBpm} = createPlaybackTempo(h, {get,input,available,isDisposed: () => disposed,sync,open,action,listen,run});
+  const {
+    rate,
+    headerBpm,
+    syncHeaderBpm,
+    originalAudioBpm,
+    minimumPracticeBpm,
+  } = createPlaybackTempo(h, {
+    get,
+    input,
+    available,
+    isDisposed: () => disposed,
+    sync,
+    open,
+    action,
+    listen,
+    run,
+  });
   function frame() {
     if (!h.ready() || !h.song().measures.length) return;
     const p = h.player(),
@@ -636,7 +790,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       position,
       rows: renderRows,
       // Progress must use the same cropped engraving as the visible measure.
-      regionAt: i => ribbonAsset(i)?.region,
+      regionAt: (i) => ribbonAsset(i)?.region,
       compare: () => h.compare?.draw(time),
     });
     syncHeaderBpm();
@@ -648,18 +802,29 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function sync() {
     if (!h.ready()) return;
     const s = h.song(),
-      bpm = originalTempoMode(s) ? s.bpm : Number((originalAudioBpm() * s.settings.rate).toFixed(3));
+      bpm = originalTempoMode(s)
+        ? s.bpm
+        : Number((originalAudioBpm() * s.settings.rate).toFixed(3));
     get(ids.title).textContent = formatSongTitle(s);
     const info = root.querySelector<HTMLElement>("#recording-tempo-info");
     if (info) {
       const recording = readRecordingTempo(h.canonicalXML?.());
       info.hidden = !recording;
-      info.textContent = recording ? t("tempo.recordingEstimate", { score: s.bpm, recording: recording.bpmEstimate, firstBeat: recording.firstBeatEstimateSeconds }) : "";
+      info.textContent = recording
+        ? t("tempo.recordingEstimate", {
+            score: s.bpm,
+            recording: recording.bpmEstimate,
+            firstBeat: recording.firstBeatEstimateSeconds,
+          })
+        : "";
     }
     const tempo = get<HTMLButtonElement>(ids.tempo);
     tempo.hidden = tempo.disabled = false;
     tempo.innerHTML = `${tempoNote}<span id="original-tempo-value">= ${headerBpm()}</span>`;
-    tempo.setAttribute("aria-label", t("main.message210", { value1: headerBpm() }));
+    tempo.setAttribute(
+      "aria-label",
+      t("main.message210", { value1: headerBpm() }),
+    );
     tempo.title = t("main.message211");
     const v = input(ids.tempoInput);
     v.value = String(bpm);
@@ -679,17 +844,25 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     input("click-volume").value = String(s.settings.clickVolume);
     for (const id of ["music-volume", "click-volume"]) {
       const output = root.querySelector(`#${id}-value`);
-      if (output) output.textContent = `${Math.round(Number(input(id).value) * 100)}%`;
+      if (output)
+        output.textContent = `${Math.round(Number(input(id).value) * 100)}%`;
     }
     input("zoom").value = String(sliderFromZoom(s.settings.zoom));
-    input("zoom").setAttribute("aria-valuetext", `${Math.round(s.settings.zoom * 100)}%`);
+    input("zoom").setAttribute(
+      "aria-valuetext",
+      `${Math.round(s.settings.zoom * 100)}%`,
+    );
     get("zoom-value").textContent = `${Math.round(s.settings.zoom * 100)}%`;
     input("view").value = s.settings.view;
     const select = get<HTMLSelectElement>("view");
     get("view-selected-text").textContent =
       select.selectedOptions[0]?.textContent || "";
     root.querySelectorAll<HTMLElement>("[data-tempo]").forEach((b) => {
-      const active = b.id === "tempo-reset" ? originalTempoMode(s) : !originalTempoMode(s) && Math.abs(Number(b.dataset.tempo) - bpm) < 0.01;
+      const active =
+        b.id === "tempo-reset"
+          ? originalTempoMode(s)
+          : !originalTempoMode(s) &&
+            Math.abs(Number(b.dataset.tempo) - bpm) < 0.01;
       b.classList.toggle("primary", active);
       b.setAttribute("aria-pressed", String(active));
     });
@@ -700,10 +873,15 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function syncDisplay() {
     syncSettingsChoices(root);
     const view = h.ready() ? h.song().settings.view : input("view").value;
-    root.querySelectorAll<HTMLButtonElement>("[data-row-view]").forEach(button => {
-      button.setAttribute("aria-pressed", String(button.dataset.rowView === view));
-      button.disabled = !h.ready() || h.busy();
-    });
+    root
+      .querySelectorAll<HTMLButtonElement>("[data-row-view]")
+      .forEach((button) => {
+        button.setAttribute(
+          "aria-pressed",
+          String(button.dataset.rowView === view),
+        );
+        button.disabled = !h.ready() || h.busy();
+      });
     const select = get<HTMLSelectElement>("view");
     get("view-selected-text").textContent =
       select.selectedOptions[0]?.textContent || "";
@@ -716,9 +894,17 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
     const pdf = h.ready() && h.song().scoreFormat !== "musicxml";
     const spacing = input("uniform-spacing");
-    spacing.disabled = !h.ready() || pdf || view === "compare" || !h.assets().ribbon?.get(0)?.grid;
+    spacing.disabled =
+      !h.ready() ||
+      pdf ||
+      view === "compare" ||
+      !h.assets().ribbon?.get(0)?.grid;
     spacing.checked = h.ready() && !!h.song().settings.uniformSpacing;
-    get("uniform-spacing-description").textContent = t(spacing.disabled ? "settings.uniformSpacingUnavailable" : "settings.uniformSpacingDescription");
+    get("uniform-spacing-description").textContent = t(
+      spacing.disabled
+        ? "settings.uniformSpacingUnavailable"
+        : "settings.uniformSpacingDescription",
+    );
     const control = input(h.display.highlightId);
     control.disabled = view === "compare" || pdf;
     control.checked = !control.disabled && h.highlight();
@@ -744,11 +930,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       ].start,
     );
   });
-  if (root.querySelector(`#${ids.position}`)) action(ids.position, async () => {
-    await copyPosition(playbackPosition(h.song(), h.player().current()).text);
-    copiedUntil = performance.now() + 1400;
-    get(ids.position).textContent = t("main.message244");
-  });
+  if (root.querySelector(`#${ids.position}`))
+    action(ids.position, async () => {
+      await copyPosition(playbackPosition(h.song(), h.player().current()).text);
+      copiedUntil = performance.now() + 1400;
+      get(ids.position).textContent = t("main.message244");
+    });
   const click = input("click");
   listen(click, click.type === "checkbox" ? "change" : "click", () => {
     if (!available()) return;
@@ -765,20 +952,23 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       if (!available()) return;
       h.song().settings[key] = clamp(Number(input(id).value), 0, 1);
       const output = root.querySelector(`#${id}-value`);
-      if (output) output.textContent = `${Math.round(h.song().settings[key] * 100)}%`;
+      if (output)
+        output.textContent = `${Math.round(h.song().settings[key] * 100)}%`;
       h.player().volumes();
       h.changed();
     };
     listen(input(id), "input", change);
     listen(input(id), "change", change);
   }
-  root.querySelectorAll<HTMLButtonElement>("[data-row-view]").forEach(button => {
-    listen(button, "click", () => {
-      if (!available()) return;
-      input("view").value = button.dataset.rowView!;
-      input("view").dispatchEvent(new Event("change"));
+  root
+    .querySelectorAll<HTMLButtonElement>("[data-row-view]")
+    .forEach((button) => {
+      listen(button, "click", () => {
+        if (!available()) return;
+        input("view").value = button.dataset.rowView!;
+        input("view").dispatchEvent(new Event("change"));
+      });
     });
-  });
   for (const id of ["view", "zoom"])
     listen(input(id), "change", () =>
       run(() => {
@@ -804,16 +994,29 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       }),
     );
   let draggingZoom = false;
-  listen(input("zoom"), "pointerdown", () => { draggingZoom = true; });
-  listen(window, "pointerup", () => { draggingZoom = false; });
-  listen(window, "pointercancel", () => { draggingZoom = false; });
-  listen(input("zoom"), "keydown", () => { draggingZoom = false; });
+  listen(input("zoom"), "pointerdown", () => {
+    draggingZoom = true;
+  });
+  listen(window, "pointerup", () => {
+    draggingZoom = false;
+  });
+  listen(window, "pointercancel", () => {
+    draggingZoom = false;
+  });
+  listen(input("zoom"), "keydown", () => {
+    draggingZoom = false;
+  });
   listen(input("zoom"), "input", () => {
     if (!available()) return;
-    if (draggingZoom) input("zoom").value = String(snapZoomSlider(Number(input("zoom").value)));
+    if (draggingZoom)
+      input("zoom").value = String(snapZoomSlider(Number(input("zoom").value)));
     h.song().settings.zoom = zoomFromSlider(Number(input("zoom").value));
-    input("zoom").setAttribute("aria-valuetext", `${Math.round(h.song().settings.zoom * 100)}%`);
-    get("zoom-value").textContent = `${Math.round(h.song().settings.zoom * 100)}%`;
+    input("zoom").setAttribute(
+      "aria-valuetext",
+      `${Math.round(h.song().settings.zoom * 100)}%`,
+    );
+    get("zoom-value").textContent =
+      `${Math.round(h.song().settings.zoom * 100)}%`;
     renderTrack();
     h.changed();
   });
@@ -845,14 +1048,20 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function quickRepeat(value: number) {
     if (!available()) return;
-    if (h.player().loop && radius === value) { repeatPresets.delete(value); stopLoop(); return; }
-    const preset = repeatPresets.get(value) ?? repeatPreset(
-      h.song(),
-      h.player().current(),
-      h.player().duration,
-      value,
-      !h.player().loop ? undefined : center,
-    );
+    if (h.player().loop && radius === value) {
+      repeatPresets.delete(value);
+      stopLoop();
+      return;
+    }
+    const preset =
+      repeatPresets.get(value) ??
+      repeatPreset(
+        h.song(),
+        h.player().current(),
+        h.player().duration,
+        value,
+        !h.player().loop ? undefined : center,
+      );
     repeatPresets.delete(value);
     repeatPresets.set(value, preset);
     center = preset.center;
@@ -860,19 +1069,17 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     useLoop(preset.loop, true);
     drawer.show("loop", false);
   }
-  listen(
-    root.querySelector(".repeat-presets")!,
-    "click",
-    (e) => {
-      const b = (e.target as Element).closest(`[${ids.radiusAttribute}]`);
-      if (b)
-        run(() => quickRepeat(Number(b.getAttribute(ids.radiusAttribute))));
-    },
-  );
+  listen(root.querySelector(".repeat-presets")!, "click", (e) => {
+    const b = (e.target as Element).closest(`[${ids.radiusAttribute}]`);
+    if (b) run(() => quickRepeat(Number(b.getAttribute(ids.radiusAttribute))));
+  });
 
   action(ids.adjust, () => {
     if (!available()) return;
-    if (h.player().loop) { stopLoop(); return; }
+    if (h.player().loop) {
+      stopLoop();
+      return;
+    }
     const recent = [...repeatPresets.entries()].at(-1);
     if (recent) quickRepeat(recent[0]);
   });
@@ -884,29 +1091,43 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     h.changed();
   }
   disposers.push(
-    bindMarkerSlots(get(ids.markers), h.song, seek, "data-quick-marker", false, {
-      current: selectionTime,
-      toggleCurrent: mark,
-      remove: id => {
-        deleteMarkerSlot(h.song(), id);
-        renderLists();
-        progress();
-        h.changed();
+    bindMarkerSlots(
+      get(ids.markers),
+      h.song,
+      seek,
+      "data-quick-marker",
+      false,
+      {
+        current: selectionTime,
+        toggleCurrent: mark,
+        remove: (id) => {
+          deleteMarkerSlot(h.song(), id);
+          renderLists();
+          progress();
+          h.changed();
+        },
       },
-    }),
+    ),
   );
-  const titleButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-title-order]"));
-  const syncTitleOrder = () => titleButtons.forEach(button => {
-    const selected = button.dataset.titleOrder === readTitleOrder();
-    button.classList.toggle("primary", selected);
-    button.setAttribute("aria-pressed", String(selected));
-  });
+  const titleButtons = Array.from(
+    root.querySelectorAll<HTMLButtonElement>("[data-title-order]"),
+  );
+  const syncTitleOrder = () =>
+    titleButtons.forEach((button) => {
+      const selected = button.dataset.titleOrder === readTitleOrder();
+      button.classList.toggle("primary", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
   syncTitleOrder();
-  titleButtons.forEach(button => listen(button, "click", () => run(() => {
-    saveTitleOrder(button.dataset.titleOrder as TitleOrder);
-    syncTitleOrder();
-    sync();
-  })));
+  titleButtons.forEach((button) =>
+    listen(button, "click", () =>
+      run(() => {
+        saveTitleOrder(button.dataset.titleOrder as TitleOrder);
+        syncTitleOrder();
+        sync();
+      }),
+    ),
+  );
   const prefs = h.preferences;
   input(prefs.restartId).checked = prefs.read().restartMeasure;
   input(prefs.countoffId).checked = prefs.read().countOff;

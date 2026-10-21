@@ -31,6 +31,8 @@ describe("staff geometry", () => {
   });
 });
 
-it('fits subpixel PDF spacing without accumulating adjacent-line rounding error', () => {
-  expect(detectStaff(pixels([67,68,76,77,86,87,96,97,105,106]),200,160)).toEqual({top:67.5,gap:9.5});
+it("fits subpixel PDF spacing without accumulating adjacent-line rounding error", () => {
+  expect(
+    detectStaff(pixels([67, 68, 76, 77, 86, 87, 96, 97, 105, 106]), 200, 160),
+  ).toEqual({ top: 67.5, gap: 9.5 });
 });

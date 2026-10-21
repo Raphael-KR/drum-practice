@@ -1,4 +1,7 @@
-import { installPracticeFileControls, type PracticeFileControlsOptions } from "../library/practice-file-controls";
+import {
+  installPracticeFileControls,
+  type PracticeFileControlsOptions,
+} from "../library/practice-file-controls";
 import { renderKeepingTopHeader } from "../../shared/ui/top-edge-header";
 import type { RibbonAsset } from "./playback-assets";
 import appVersions from "../../app-versions.json";
@@ -86,8 +89,10 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   const song = () => s;
   document.body.classList.add("has-song");
   root.classList.toggle("audio-practice", !!s.audioPractice);
-  renderKeepingTopHeader(root,
-    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML('<p id="status" role="alert" aria-atomic="true"></p>')}</section></main>`);
+  renderKeepingTopHeader(
+    root,
+    `<header><div class="brand"></div><div class="actions"></div></header><main><section id="practice">${scoreStageHTML('<p id="status" role="alert" aria-atomic="true"></p>')}</section></main>`,
+  );
   let management: ReturnType<typeof attachPracticeManagement> | undefined;
   const markerContent = document.createElement("div");
   markerContent.innerHTML = practiceMarkerHTML();
@@ -127,8 +132,14 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   $("licenses").textContent = options.licenses ?? "";
   const noticeStage = $("stage");
   const alignNotice = () => {
-    $("status").style.setProperty("--notice-scroll-x", `${noticeStage.scrollLeft}px`);
-    $("status").style.setProperty("--notice-scroll-y", `${noticeStage.scrollTop}px`);
+    $("status").style.setProperty(
+      "--notice-scroll-x",
+      `${noticeStage.scrollLeft}px`,
+    );
+    $("status").style.setProperty(
+      "--notice-scroll-y",
+      `${noticeStage.scrollTop}px`,
+    );
   };
   noticeStage.addEventListener("scroll", alignNotice);
   let noticeSource = "";
@@ -139,29 +150,49 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     alignNotice();
   };
   // The notice can scroll long errors without selecting or starting a measure.
-  for (const event of ["pointerdown", "pointerup", "click", "dblclick", "touchstart", "touchmove", "wheel"]) {
+  for (const event of [
+    "pointerdown",
+    "pointerup",
+    "click",
+    "dblclick",
+    "touchstart",
+    "touchmove",
+    "wheel",
+  ]) {
     $("status").addEventListener(event, (e) => e.stopPropagation());
   }
   const fail = (e: unknown) => {
     status(e instanceof Error ? e.message : String(e));
   };
-  const scoreReader = s.audioPractice ? {dispose() {}} : installScoreReader({
-    root,
-    controls: addSettings("score", "reader-settings", "open-reader-settings"),
-    song: s,
-    scores: variants,
-    fail,
-  });
+  const scoreReader = s.audioPractice
+    ? { dispose() {} }
+    : installScoreReader({
+        root,
+        controls: addSettings(
+          "score",
+          "reader-settings",
+          "open-reader-settings",
+        ),
+        song: s,
+        scores: variants,
+        fail,
+      });
   if (s.audioPractice && options.practiceFiles) {
-    installPracticeFileControls(addSettings("audio", "audio-settings", "open-audio-settings"), {
-      ...options.practiceFiles,
-      records: async () => {
-        // Snapshot live state before awaiting IndexedDB; it can be newer than queued autosave.
-        const current = {song: structuredClone(s), audio: data.audio};
-        const records = await options.practiceFiles!.records();
-        return [...records.filter(record => record.song.id !== s.id), current];
+    installPracticeFileControls(
+      addSettings("audio", "audio-settings", "open-audio-settings"),
+      {
+        ...options.practiceFiles,
+        records: async () => {
+          // Snapshot live state before awaiting IndexedDB; it can be newer than queued autosave.
+          const current = { song: structuredClone(s), audio: data.audio };
+          const records = await options.practiceFiles!.records();
+          return [
+            ...records.filter((record) => record.song.id !== s.id),
+            current,
+          ];
+        },
       },
-    });
+    );
   }
   const open = (id: string) => {
     scoreGestures.cancel();
@@ -319,7 +350,13 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   const ribbonAssets = new Map<number, RibbonAsset>();
   function useAssets(next: Awaited<ReturnType<typeof preparePages>>) {
     replacePlaybackAssets(
-      { urls, pageRatios, highlightPages, practiceStaffs, ribbon: ribbonAssets },
+      {
+        urls,
+        pageRatios,
+        highlightPages,
+        practiceStaffs,
+        ribbon: ribbonAssets,
+      },
       next,
     );
   }
@@ -380,7 +417,6 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     status("");
     document.body.dataset.ready = "true";
     document.body.dataset.readyMs = String(performance.now());
-
   } catch (e) {
     dispose();
     throw e;
@@ -402,7 +438,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     player.pause();
     player.worker?.terminate();
     void player.ctx.close().catch(() => {});
-    releasePlaybackAssets({urls, ribbon:ribbonAssets});
+    releasePlaybackAssets({ urls, ribbon: ribbonAssets });
     urls.length = 0;
     ribbonAssets.clear();
     for (const dialog of root.querySelectorAll<HTMLDialogElement>(

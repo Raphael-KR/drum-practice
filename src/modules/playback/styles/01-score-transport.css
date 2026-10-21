@@ -358,7 +358,9 @@
   height: 24px;
   flex: none;
 }
-:root { --playback-control-size:48px; }
+:root {
+  --playback-control-size: 48px;
+}
 button.icon-button {
   display: inline-flex;
   align-items: center;

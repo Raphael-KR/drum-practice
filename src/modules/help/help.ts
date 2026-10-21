@@ -1,6 +1,10 @@
 import { showDialogFromButton } from "../../shared/ui/dialog-transition";
 import { scoreLegendHelp } from "./help-legend";
-import { createDialog, dialogHeader, closeDialogOnBackdrop } from "../../shared/ui/dialog-ui";
+import {
+  createDialog,
+  dialogHeader,
+  closeDialogOnBackdrop,
+} from "../../shared/ui/dialog-ui";
 import { t } from "../../shared/i18n/i18n";
 import { createHelpBubble } from "../../shared/ui/help-bubble";
 import {
@@ -109,7 +113,11 @@ export function installHelp(root: HTMLElement) {
         dismissible.delete(dialog);
       }
     }
-    if (modal && !modal.classList.contains("score-reader-dialog") && !dismissible.has(modal)) {
+    if (
+      modal &&
+      !modal.classList.contains("score-reader-dialog") &&
+      !dismissible.has(modal)
+    ) {
       modal.classList.add("backdrop-dismissible");
       dismissible.set(modal, closeDialogOnBackdrop(modal));
     }

@@ -1,5 +1,12 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
-import { beatTime, measureBeatAt, locate, type Song, type Lyric, type Measure } from "../../model/model";
+import {
+  beatTime,
+  measureBeatAt,
+  locate,
+  type Song,
+  type Lyric,
+  type Measure,
+} from "../../model/model";
 export interface GridPoint {
   measureId: string;
   tick: number;

@@ -1,6 +1,9 @@
 import "fake-indexeddb/auto";
 import { expect, it, vi } from "vitest";
-import { cachedScoreRender, scoreRenderKey } from "../../src/modules/score/score-render-cache";
+import {
+  cachedScoreRender,
+  scoreRenderKey,
+} from "../../src/modules/score/score-render-cache";
 const value = () => ({
   pages: [new Blob(["svg"], { type: "image/svg+xml" })],
   regions: [{ id: "r1", page: 0, x: 0, y: 0, w: 1, h: 1, beatXs: [0, 1] }],
@@ -60,11 +63,27 @@ it("bounds cache retention to four results", async () => {
     false,
   );
 });
-it('rejects corrupted cached bytes and regenerates', async () => {
-  await cachedScoreRender('corrupt',async()=>value());
-  const db = await new Promise<IDBDatabase>((ok,no)=>{const r=indexedDB.open('drum-score-render-cache',1);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});
-  await new Promise<void>((ok,no)=>{const tx=db.transaction('renders','readwrite'),s=tx.objectStore('renders'),r=s.get('corrupt');r.onsuccess=()=>{const v=r.result;v.pages[0].bytes=new TextEncoder().encode('bad').buffer;s.put(v);};tx.oncomplete=()=>ok();tx.onerror=()=>no(tx.error);});db.close();
-  const render=vi.fn(async()=>value());
-  expect((await cachedScoreRender('corrupt',render)).hit).toBe(false);
+it("rejects corrupted cached bytes and regenerates", async () => {
+  await cachedScoreRender("corrupt", async () => value());
+  const db = await new Promise<IDBDatabase>((ok, no) => {
+    const r = indexedDB.open("drum-score-render-cache", 1);
+    r.onsuccess = () => ok(r.result);
+    r.onerror = () => no(r.error);
+  });
+  await new Promise<void>((ok, no) => {
+    const tx = db.transaction("renders", "readwrite"),
+      s = tx.objectStore("renders"),
+      r = s.get("corrupt");
+    r.onsuccess = () => {
+      const v = r.result;
+      v.pages[0].bytes = new TextEncoder().encode("bad").buffer;
+      s.put(v);
+    };
+    tx.oncomplete = () => ok();
+    tx.onerror = () => no(tx.error);
+  });
+  db.close();
+  const render = vi.fn(async () => value());
+  expect((await cachedScoreRender("corrupt", render)).hit).toBe(false);
   expect(render).toHaveBeenCalledTimes(1);
 });

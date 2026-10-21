@@ -1,6 +1,10 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
 import JSZip from "jszip";
-import { packSong, unpackSong, type PackedRecord } from "../../platform/storage/record-serialization";
+import {
+  packSong,
+  unpackSong,
+  type PackedRecord,
+} from "../../platform/storage/record-serialization";
 import { validateSong } from "../../model/model";
 import type { RecordData } from "../../model/record";
 export const preferenceKeys = [

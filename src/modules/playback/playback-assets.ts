@@ -24,7 +24,10 @@ export interface RibbonAsset {
   highlight?: HighlightPage;
 }
 /** Both views share the selected engraving; absence preserves legacy row layout. */
-export function selectPlaybackEngraving(asset: RibbonAsset | undefined, uniform = false) {
+export function selectPlaybackEngraving(
+  asset: RibbonAsset | undefined,
+  uniform = false,
+) {
   return (uniform ? asset?.grid : undefined) ?? asset?.row ?? asset;
 }
 export interface PlaybackAssets {
@@ -38,9 +41,13 @@ export function releasePlaybackAssets(
   assets: Pick<PlaybackAssets, "urls" | "ribbon">,
 ) {
   assets.urls.forEach((url) => URL.revokeObjectURL(url));
-  new Set(Array.from(assets.ribbon?.values() ?? []).flatMap(a => [a.url, ...(a.row ? [a.row.url] : []), ...(a.grid ? [a.grid.url] : [])])).forEach(
-    (url) => URL.revokeObjectURL(url),
-  );
+  new Set(
+    Array.from(assets.ribbon?.values() ?? []).flatMap((a) => [
+      a.url,
+      ...(a.row ? [a.row.url] : []),
+      ...(a.grid ? [a.grid.url] : []),
+    ]),
+  ).forEach((url) => URL.revokeObjectURL(url));
 }
 /** Prepare transactionally: callers retain their current assets until this succeeds. */
 export async function preparePlaybackAssets(
@@ -143,7 +150,11 @@ export async function preparePlaybackAssets(
     if (song.scoreFormat !== "musicxml")
       framePDFStaffs(song.regions, result.practiceStaffs);
     if (timeline) {
-      for (const data of [timeline, ...(timeline.rows ? [timeline.rows] : []), ...(timeline.grid ? [timeline.grid] : [])]) {
+      for (const data of [
+        timeline,
+        ...(timeline.rows ? [timeline.rows] : []),
+        ...(timeline.grid ? [timeline.grid] : []),
+      ]) {
         const ribbonSong = { ...song, regions: data.regions };
         const pageHeights: number[] = [];
         const ratios = data.pages.map((text: string) => {
@@ -183,18 +194,25 @@ export async function preparePlaybackAssets(
               throw Error("Missing ribbon staff geometry");
             const asset: RibbonAsset = {
               region,
-              staff: {...staff, nativePageRatio: ratios[region.page], ribbonQuarterInGaps: data.quarter / (staff.gap * pageHeights[region.page])},
+              staff: {
+                ...staff,
+                nativePageRatio: ratios[region.page],
+                ribbonQuarterInGaps:
+                  data.quarter / (staff.gap * pageHeights[region.page]),
+              },
               phase:
                 (data.offset + RIBBON_HEAD_ANCHOR) /
-                ((data.uniformQuarters ?? (song.measures[index].beats * 4) /
-                  song.measures[index].denominator) *
+                ((data.uniformQuarters ??
+                  (song.measures[index].beats * 4) /
+                    song.measures[index].denominator) *
                   data.quarter),
               url: prepared.urls[region.page],
               ratio: ratios[region.page],
               highlight: prepared.highlightPages[region.page],
             };
             if (data === timeline) result.ribbon!.set(index, asset);
-            else if (data === timeline.grid) result.ribbon!.get(index)!.grid = asset;
+            else if (data === timeline.grid)
+              result.ribbon!.get(index)!.grid = asset;
             else result.ribbon!.get(index)!.row = asset;
           });
         } catch (error) {

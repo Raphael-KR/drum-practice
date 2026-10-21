@@ -50,7 +50,8 @@ function setup() {
   management = attachPracticeManagement({
     root,
     song: () => song,
-    canonicalXML: () => '<score-partwise><part><measure><direction><direction-type><rehearsal>전주</rehearsal></direction-type></direction></measure></part></score-partwise>',
+    canonicalXML: () =>
+      "<score-partwise><part><measure><direction><direction-type><rehearsal>전주</rehearsal></direction-type></direction></measure></part></score-partwise>",
     playback: () => playback,
     player: () => player,
     changed,
@@ -76,7 +77,9 @@ it("renders independent automatic section shortcuts and seeks their starting mea
   const c = setup();
   c.management.render();
   expect(c.root.querySelectorAll("#section-shortcuts button")).toHaveLength(9);
-  expect(c.root.querySelector("#section-shortcuts")!.textContent).toContain("전주");
+  expect(c.root.querySelector("#section-shortcuts")!.textContent).toContain(
+    "전주",
+  );
   const before = c.root.querySelector("#section-shortcuts")!.innerHTML;
   c.playback.mark();
   expect(c.root.querySelector("#section-shortcuts")!.innerHTML).toBe(before);
@@ -85,35 +88,48 @@ it("renders independent automatic section shortcuts and seeks their starting mea
   expect(c.song.markers).toHaveLength(1);
 });
 it("disposes section navigation handlers", () => {
- const c = setup(); c.management.render(); c.management.dispose();
- c.click('[data-section-measure="0"]'); expect(c.playback.seek).not.toHaveBeenCalled();
+  const c = setup();
+  c.management.render();
+  c.management.dispose();
+  c.click('[data-section-measure="0"]');
+  expect(c.playback.seek).not.toHaveBeenCalled();
 });
 
 it("marks only a bookmarked section destination and restores it on removal", () => {
- const c=setup(); c.management.render();
- const button=()=>c.root.querySelector('[data-section-measure="0"]')!;
- expect(button().classList.contains('is-marked')).toBe(false);
- markMeasure(c.song,c.song.measures[0].start,'section marker',undefined);
- c.management.render();
- expect(button().classList.contains('is-marked')).toBe(true);
- expect(c.root.querySelectorAll('button.is-marked')).toHaveLength(1);
- c.click('[data-section-measure="0"]');
- expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start);
- c.song.markers=[]; c.management.render();
- expect(button().classList.contains('is-marked')).toBe(false);
+  const c = setup();
+  c.management.render();
+  const button = () => c.root.querySelector('[data-section-measure="0"]')!;
+  expect(button().classList.contains("is-marked")).toBe(false);
+  markMeasure(c.song, c.song.measures[0].start, "section marker", undefined);
+  c.management.render();
+  expect(button().classList.contains("is-marked")).toBe(true);
+  expect(c.root.querySelectorAll("button.is-marked")).toHaveLength(1);
+  c.click('[data-section-measure="0"]');
+  expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start);
+  c.song.markers = [];
+  c.management.render();
+  expect(button().classList.contains("is-marked")).toBe(false);
 });
 
 it("lights the current section through its last measure and preserves bookmark colour state", async () => {
- const {syncCurrentSection}=await import("../../src/modules/playback/section-shortcuts");
- const root=document.createElement('div');
- root.innerHTML='<button data-section-measure="2" data-section-end="5" class="is-marked"></button><button data-section-measure="5" data-section-end="8"></button><button disabled>empty</button>';
- const buttons=root.querySelectorAll('button');
- syncCurrentSection(root,1); expect(root.querySelector('[aria-current]')).toBeNull();
- for(const i of [2,4]) {syncCurrentSection(root,i);expect(buttons[0].getAttribute('aria-current')).toBe('true');}
- syncCurrentSection(root,5);
- expect(buttons[0].classList.contains('is-marked')).toBe(true);
- expect(buttons[0].hasAttribute('aria-current')).toBe(false);
- expect(buttons[1].getAttribute('aria-current')).toBe('true');
- syncCurrentSection(root,8);expect(root.querySelector('[aria-current]')).toBeNull();
- syncCurrentSection(root,2);expect(buttons[0].getAttribute('aria-current')).toBe('true');
+  const { syncCurrentSection } =
+    await import("../../src/modules/playback/section-shortcuts");
+  const root = document.createElement("div");
+  root.innerHTML =
+    '<button data-section-measure="2" data-section-end="5" class="is-marked"></button><button data-section-measure="5" data-section-end="8"></button><button disabled>empty</button>';
+  const buttons = root.querySelectorAll("button");
+  syncCurrentSection(root, 1);
+  expect(root.querySelector("[aria-current]")).toBeNull();
+  for (const i of [2, 4]) {
+    syncCurrentSection(root, i);
+    expect(buttons[0].getAttribute("aria-current")).toBe("true");
+  }
+  syncCurrentSection(root, 5);
+  expect(buttons[0].classList.contains("is-marked")).toBe(true);
+  expect(buttons[0].hasAttribute("aria-current")).toBe(false);
+  expect(buttons[1].getAttribute("aria-current")).toBe("true");
+  syncCurrentSection(root, 8);
+  expect(root.querySelector("[aria-current]")).toBeNull();
+  syncCurrentSection(root, 2);
+  expect(buttons[0].getAttribute("aria-current")).toBe("true");
 });
