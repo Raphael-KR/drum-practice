@@ -1,3 +1,9 @@
+## 2026-10-21 — 공통 0.8.9 발행 완료
+- 구현7d02417 main push 완료. 두 앱0.8.9, 소스 빌드869aa8c0c892. 제작기는 로컬 전용 유지.
+- 버전 반영 공통 검사·두 앱/배포 빌드·정적36파일 일치 통과. 직전 전체720테스트·portable410테스트 통과. GitHub Actions39539822824에서 Node22/Linux·fresh npm ci·verify:portable 성공을 확인했다.
+- Sites 버전79, 배포appgdep_6ad8343d46b08191b2c983b246ce079e succeeded(12:41:01 KST). 공개 읽기 smoke15항목 통과. 실기기·GUI·청취 검증은 실행하지 않았다.
+- 정확한 소스·버전·아카이브 해시와 증거는 docs/operations/SITES-PUBLICATION.md 참조.
+
 ## 2026-10-21 — 공통 0.8.9 릴리스 준비
 - 목표: 승인된 품질 보완을 커밋·main push·기존 Sites player 발행으로 반영한다.
 - 범위: 앞선 품질 보완과 청소 기록, 두 앱0.8.9 버전, 릴리스 문서. 기능·저장 형식 변경 없는 유지보수 patch다.

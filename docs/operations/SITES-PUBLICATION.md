@@ -40,7 +40,20 @@
 
 로컬 분석 DB/인증키는 삭제했다. 공개 DB의 3개 분석 테이블은 0.7.9 발행에서 0002 마이그레이션으로 삭제했고 DB 재조회로 확인했다. 브라우저의 기존 보관함은 로컬 주소와 공개 주소 사이에 자동 이전되지 않는다.
 
-## 최신 발행 — 0.8.8
+## 최신 발행 — 0.8.9
+
+- 개발·검사·빌드 경로 통일, 문서 정리, CI·도구/hosting 타입 검사 확대와 파일 입출력·재생 설정의 책임 분리. 기능·저장 형식을 유지하는 유지보수 patch이며 두 앱0.8.9, 공개는 player만이다.
+- 구현 커밋 `7d024173adfe838f28594514cc6475fb96cd0f98` — main push 완료. 소스 빌드 `869aa8c0c892`.
+- 직전 전체123파일720테스트, 원본 없는 사본의 portable83파일410테스트 통과. 버전 반영 공통 검사·두 앱 분리 빌드·배포 빌드·정적36파일 해시 일치 통과. 기존 번들 크기·Node localStorage 경고 유지.
+- [GitHub CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39539822824): 위 구현 SHA의 Node22/Linux fresh npm ci 및 verify:portable 성공. 로컬 검증에 더해 실제 원격 환경을 확인했다.
+- Sites 소스 `8ea58bb3a6d42718e5f4db9a3ece8a4046e25b3b`, 저장 버전79.
+- 버전 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_7d50fec553988191a957c4ee0b2a4cc9`.
+- 배포 ID: `appgdep_6ad8343d46b08191b2c983b246ce079e` — succeeded, 2026-10-21 12:41:01 KST.
+- 로컬 아카이브: `local-archives/releases/release-0.8.9.tar.gz`, SHA-256 `68db03e0942bf8af5f9864eb8dfcd5bd63a8d594358b9efc0b71648e104a5b2d`.
+- 공개 읽기 smoke15항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/Worker4파일·악보5개 SHA-256 일치, 폐기 API3경로404. 일치한 player 번들에0.8.9·빌드869aa8c0c892 포함을 확인했다.
+- 증거: `.tmp/quality-{tests,portable}.log`, `.tmp/release-0.8.9-{check,build,site-build,ci,ci-full}.log`, `.tmp/release-0.8.9-{parity,smoke}.json`. GUI·iPad 실기기·공개 청취는 이번 릴리스에서 재검증하지 않았다.
+
+## 이전 발행 — 0.8.8
 
 - ESLint 도입과 기존172오류 정리. 규칙 해제·오류 억제 없이 타입·미사용 코드를 정리한 유지보수 patch이며 기능·저장 형식은 유지한다. 두 앱0.8.8, 공개는 player만이다.
 - 구현 커밋 `80985bb92180147eebd1fae6dae01c83bfe4adf3` — main push 완료. 소스 빌드 `0883070fa845`.

@@ -24,3 +24,7 @@
 - 책임 분리: editor main의 백업/복원·패키지 이벤트를 `editor-file-transfer.ts`로, 공통 재생 화면의 설정 바인딩을 `playback-settings.ts`로 옮겼다. 기존 저장·세션·이벤트 해제 주체를 유지했다. 큰 진입 파일 전체를 분해한 것은 아니며 추가 분리는 후속 변경별로 진행한다.
 - CI: Node 22 기반 GitHub Actions를 설정했다. 원격 실행은 아직 수행하지 않았다. 실기기·GUI·청취 검증은 이번 구조 보완에서 수행하지 않았다.
 - 증거: `.tmp/quality-{check,tests,portable,build,site-build,dev-hooks}.log`. 기존 번들 크기·Node localStorage 경고는 남아 있다.
+
+## 후속 릴리스 검증
+
+사용자 후속 발행 지시로 공통0.8.9를 발행했다. 구현 SHA `7d024173adfe838f28594514cc6475fb96cd0f98`의 GitHub Actions에서 Node22/Linux·두 패키지 fresh npm ci·verify:portable이 성공했다. 위 초기 로컬 검증의 원격 환경 미확인 항목을 해소했으며 실기기·GUI·청취는 미검증으로 유지한다. [발행 기록](../operations/SITES-PUBLICATION.md)을 참조한다.
