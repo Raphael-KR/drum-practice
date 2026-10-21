@@ -212,7 +212,7 @@ MusicXML `creator type="artist"`와 `Song.artist`, 패키지의 내장 정본/�
 
 실행 환경에는 Node/package lock, Python interpreter·라이브러리, Poppler/ffmpeg, 로컬 XSD의 `musicxml.xsd/xml.xsd/xlink.xsd`, 사용한 Audiveris/OSMD 버전을 기록한다. `tools/score-production/musicxml/requirements.txt`의 기존 환경에 numpy·ffmpeg까지 포함된다고 가정하지 않는다. 이동된 venv는 별도 재생성하거나 정상 interpreter를 확인한다. [Loveholic 재현 절](LOVEHOLIC-CONVERSION.md#근거재현-경로)은 해당 곡의 정확한 선행 파일과 명령 예다.
 
-변환/저장 코드 변경에는 관련 `musicxml`, `canonical-xml`, `score-package` 테스트부터 실행하고, 영향 범위에 따라 `npm run test:drum`·TypeScript·관련 Python 검사를 수행한다. 실제 fixture가 없는 실패를 삭제로 우회하지 않는다. 기본 `npm test`의 하위 기타 프로젝트 수집 문제와 기본 빌드의 portable 템플릿 생성 여부는 기존 지침을 확인한다. 문서만 변경한 작업에는 악보 재생성·앱 빌드·청취를 실행한 것처럼 기록하지 않는다.
+변환/저장 코드 변경에는 관련 `musicxml`, `canonical-xml`, `score-package` 테스트부터 실행하고, 영향 범위에 따라 `npm run test:drum`·TypeScript·관련 Python 검사를 수행한다. 실제 fixture가 없는 실패를 삭제로 우회하지 않는다. 현재 테스트는 `tests/{unit,integration,local-media}`만 수집한다. `npm run build`는 두 앱을 분리 빌드하며 독립 HTML 내보내기 템플릿은 생성하지 않는다. 문서만 변경한 작업에는 악보 재생성·앱 빌드·청취를 실행한 것처럼 기록하지 않는다.
 
 ## 두 제작에서 확인한 근거와 재발 방지
 
@@ -221,7 +221,7 @@ MusicXML `creator type="artist"`와 `Song.artist`, 패키지의 내장 정본/�
 | 경험 | 실제 근거 | 다음 곡에 적용할 기준 |
 |---|---|---|
 | Real Paradis 벡터 구조 추출 | [변환 기록](MUSICXML-CONVERSION.md): 대표9/12/84 →110마디·441사분음표 길이,84마디5/4, 붙임줄·장식음·트레몰로·6연음. XSD/8종 오류 주입·독립 렌더 | 대표 일반 패턴만으로 전체 확장하지 말고 예외를 포함. 박 합계뿐 아니라 이벤트/표기 검사 |
-| 자동 인식의 정상 종료와 내용 정확도 차이 | [Audiveris 원시 보고서](../experiments/audiveris-20261002/REPORT.md): 5.11.0의7마디92머리 표본 시작+길이 F1 50.68%, Codex100%, Claude41.08%. Codex는 원본 교정 후 결과 | 초벌 보존·같은 표본/분모·교정 여부 공개. XSD·exit0·마디 수만으로 내용 정확도를 보증하지 않음 |
+| 자동 인식의 정상 종료와 내용 정확도 차이 | Audiveris 원시 보고서 (삭제된 과거 자료: `../experiments/audiveris-20261002/REPORT.md`): 5.11.0의7마디92머리 표본 시작+길이 F1 50.68%, Codex100%, Claude41.08%. Codex는 원본 교정 후 결과 | 초벌 보존·같은 표본/분모·교정 여부 공개. XSD·exit0·마디 수만으로 내용 정확도를 보증하지 않음 |
 | 전용 코드·삭제 worktree·이동 venv | [통합 기록](../architecture/MUSICXML-INTEGRATION.md): 재생성 XML d5033d… 동일, 원본/로컬 자료 보존. 과거 세션 `01a0b7de-deef-7572-8833-02cf6080ddb1` | 실제 프로젝트 루트 재확인, 과거 경로 재생성 불필요. 원본 해시 가드·새 출력 폴더·정상 interpreter 유지 |
 | Loveholic 다른 글꼴/좌표·영역 | [제작 기록](LOVEHOLIC-CONVERSION.md): 대표3줄→123마디492사분음표 길이·1580머리14쉼표. Opus 원점/빔/깃발·겹세로줄, PDF 세로 영역/Poppler 교정 | bbox/원점/잉크를 구별. 글꼴별 수치·crop은 원본에 묶고 새 곡에서 재측정 |
 | 제작 초기의 악기 오분류와 후속 승인 | [확정 매핑 후속 기록](SCORE-MUSICXML-OSMD-MAPPING.md#2026-10-03-최종-재확인-모든-곡에-확정-범례-적용), history의 ‘공통 악보 범례 복구’·‘범례 적용 범위 정정’: Loveholic Y89개 Crash로 교정. 킥 강제 성부 분리는 최종 결정에서 철회 | 초기 제작 문서/fixture가 현재 승인을 대신하지 않음. 악기 의미와 성부 구성·표시 정책을 구분하고 최신 승인 이력까지 확인 |

@@ -1,7 +1,10 @@
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 import { sites } from "./build/sites-vite-plugin";
-import hosting from "./.openai/hosting.json";
-export default defineConfig(async () => {
+import { readFileSync } from "node:fs";
+export default defineConfig(async (): Promise<UserConfig> => {
+  const hosting: { d1: string } = JSON.parse(
+    readFileSync(new URL("./.openai/hosting.json", import.meta.url), "utf8"),
+  );
   const { cloudflare } = await import("@cloudflare/vite-plugin");
   return {
     publicDir: false,

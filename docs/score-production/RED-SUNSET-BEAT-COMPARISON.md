@@ -81,9 +81,11 @@
 
 ## 재현 자료
 
-- [모든 532박 CSV](../../.tmp/red-sunset-full-comparison/beats.csv)
-- [모든 133마디 CSV](../../.tmp/red-sunset-full-comparison/measures.csv)
-- [집계·입력 해시 JSON](../../.tmp/red-sunset-full-comparison/summary.json)
-- [비교 스크립트](../../.tmp/red-sunset-full-comparison/compare.py)
+아래는 프로젝트 루트 기준 로컬 증거 경로이며 Git에는 포함하지 않는다. 저장소 복제만으로는 제공되지 않는다.
+
+- 모든 532박 CSV: `.tmp/red-sunset-full-comparison/beats.csv`
+- 모든 133마디 CSV: `.tmp/red-sunset-full-comparison/measures.csv`
+- 집계·입력 해시 JSON: `.tmp/red-sunset-full-comparison/summary.json`
+- 비교 스크립트: `.tmp/red-sunset-full-comparison/compare.py`
 
 분석 산출물은 로컬 `.tmp`에 보존한다. 앱·원본 음원·기기 데이터는 수정하지 않았다.

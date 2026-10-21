@@ -84,7 +84,9 @@
 
 ## 재현 자료
 
-- [박별 경쟁 후보 비교 CSV](../../.tmp/red-sunset-late-audio/candidate-comparison.csv)
-- [검사 요약 JSON](../../.tmp/red-sunset-late-audio/audit.json)
-- [12조건 박 배열·채택 이벤트·추적 계측](../../.tmp/red-sunset-late-audio/tracks.json)
-- [분석 스크립트](../../.tmp/red-sunset-late-audio/analyze.ts), [주파수대 분석](../../.tmp/red-sunset-late-audio/flux.ts), [집계](../../.tmp/red-sunset-late-audio/summarize.py)
+아래는 프로젝트 루트 기준 로컬 증거 경로이며 Git에는 포함하지 않는다. 저장소 복제만으로는 제공되지 않는다.
+
+- 박별 경쟁 후보 비교 CSV: `.tmp/red-sunset-late-audio/candidate-comparison.csv`
+- 검사 요약 JSON: `.tmp/red-sunset-late-audio/audit.json`
+- 12조건 박 배열·채택 이벤트·추적 계측: `.tmp/red-sunset-late-audio/tracks.json`
+- 분석 스크립트: `.tmp/red-sunset-late-audio/analyze.ts`, 주파수대 분석: `.tmp/red-sunset-late-audio/flux.ts`, 집계: `.tmp/red-sunset-late-audio/summarize.py`

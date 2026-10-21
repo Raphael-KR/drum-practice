@@ -1,4 +1,8 @@
 import {
+  installEditorBackup,
+  installEditorPackages,
+} from "./editor-file-transfer";
+import {
   applyEnglishLyrics,
   correctBrightSpelling,
 } from "../../content/english-lyrics";
@@ -32,10 +36,6 @@ import {
   chooseRecent,
   rememberScore,
 } from "../../modules/library/recent-score";
-import {
-  createScorePackage,
-  readScorePackage,
-} from "../../modules/library/score-package";
 import {
   preferPDF,
   savePreferPDF,
@@ -87,14 +87,9 @@ import { type StaffPosition } from "../../modules/score/practice-staff-layout";
 import {
   applyXMLTiming,
   replaceWithMusicXML,
-  scoreArchivePath,
   scoreFormat,
 } from "../../modules/score/score-import";
-import {
-  SVG_GZIP,
-  displayPage,
-  pageExtension,
-} from "../../modules/score/score-pages";
+import { SVG_GZIP, displayPage } from "../../modules/score/score-pages";
 import { correctStoredRests } from "../../modules/score/score-rest-correction";
 import {
   activeScore,
@@ -166,15 +161,7 @@ import {
   type Region,
   type Song,
 } from "../../model/model";
-import {
-  mediaIdentity,
-  verifyMedia,
-  type MediaIdentity,
-} from "../../modules/audio/media";
-import {
-  packScores,
-  unpackScores,
-} from "../../platform/storage/record-serialization";
+import { mediaIdentity } from "../../modules/audio/media";
 import { escapeHTML as esc } from "../../shared/ui/html";
 const time = (s: number) =>
   `${Math.floor(s / 60)}:${Math.floor(s % 60)
@@ -877,7 +864,7 @@ val("pdf-file").onchange = async () => {
       .map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`)
       .join("");
     $("xml-part-row").hidden = false;
-    if (!pendingRestore) {
+    if (!backup.restoring()) {
       if (info.title) val("new-title").value = info.title;
       if (info.bpm) val("new-bpm").value = String(info.bpm);
     }
@@ -894,7 +881,8 @@ val("xml-part").onchange = async () => {
         await xml.readMusicXML(file),
         val("xml-part").value,
       );
-    if (info.bpm && !pendingRestore) val("new-bpm").value = String(info.bpm);
+    if (info.bpm && !backup.restoring())
+      val("new-bpm").value = String(info.bpm);
   } catch (e) {
     error(e);
   }
@@ -1092,146 +1080,22 @@ action("original-button", async () => {
   showOriginalPage();
   openSettingsChild($<HTMLDialogElement>("original-dialog"));
 });
-action("export", async () => {
-  await persist();
-  const zip = new JSZip();
-  zip.file("song.json", JSON.stringify(song(), null, 2));
-  zip.file("canonical.musicxml", record!.canonicalXML!);
-  zip.file(
-    "media-identity.json",
-    JSON.stringify(await mediaIdentity(record!.pdf, record!.audio)),
-  );
-  zip.file("README.txt", i18nText("main.message330"));
-  if (val("include-media").checked) {
-    zip.file(scoreArchivePath(song()), record!.pdf);
-    zip.file(
-      "pages/manifest.json",
-      JSON.stringify(
-        record!.pages.map((page, i) => ({
-          path: `pages/${i}.${pageExtension(page)}`,
-          type: page.type,
-        })),
-      ),
-    );
-    record!.pages.forEach((page, i) =>
-      zip.file(`pages/${i}.${pageExtension(page)}`, page),
-    );
-    zip.file("media/audio", record!.audio);
-    zip.file(
-      "other-scores.json",
-      JSON.stringify(await packScores(record!.otherScores)),
-    );
-  }
-  const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
-  download(blob, i18nText("main.message331", { value1: song().title }));
-  tell(i18nText("main.message332"));
-});
-val("restore").onchange = async () => {
-  try {
-    const f = val("restore").files?.[0];
-    if (!f) return;
-    const zip = await JSZip.loadAsync(f);
-    const text = await zip.file("song.json")?.async("string");
-    if (!text) throw Error(i18nText("main.message333"));
-    const s = JSON.parse(text);
-    validateSong(s);
-    const canonicalXML = await zip.file("canonical.musicxml")?.async("string");
-    const identityText = await zip.file("media-identity.json")?.async("string");
-    const identity: MediaIdentity | undefined = identityText
-      ? JSON.parse(identityText)
-      : undefined;
-    let pdf = await zip.file(scoreArchivePath(s))?.async("blob"),
-      audio = await zip.file("media/audio")?.async("blob");
-    if (!pdf || !audio) {
-      const saved = (await allRecords()).find((r) => r.song.id === s.id);
-      if (saved) {
-        pdf = saved.pdf;
-        audio = saved.audio;
-      } else {
-        pendingRestore = s;
-        pendingCanonical = canonicalXML;
-        pendingMedia = identity;
-        $<HTMLDialogElement>("new-dialog").showModal();
-        val("new-title").value = s.title;
-        val("new-artist").value = s.artist || "";
-        val("new-bpm").value = String(s.bpm);
-        val("new-first").value = String(s.firstBeat);
-        tell(i18nText("main.message334"));
-        return;
-      }
-    }
-    await verifyMedia(identity, pdf, audio);
-    const manifestText = await zip.file("pages/manifest.json")?.async("string");
-    const manifest: { path: string; type: string }[] = manifestText
-      ? JSON.parse(manifestText)
-      : Array.from({ length: s.pageCount }, (_, i) => ({
-          path: `pages/${i}.png`,
-          type: "image/png",
-        }));
-    if (manifest.length !== s.pageCount)
-      throw Error(i18nText("main.message335"));
-    const savedPages = await Promise.all(
-      manifest.map(async (p) => {
-        const bytes = await zip.file(p.path)?.async("arraybuffer");
-        return bytes ? new Blob([bytes], { type: p.type }) : undefined;
-      }),
-    );
-    const pages = savedPages.every(Boolean)
-      ? (savedPages as Blob[])
-      : (await renderScore(pdf, s.scoreFormat, s.scorePartId)).pages;
-    if (pages.length !== s.pageCount) throw Error(i18nText("main.message336"));
-    const otherText = await zip.file("other-scores.json")?.async("string");
-    const otherScores = otherText
-      ? unpackScores(JSON.parse(otherText))
-      : (await allRecords()).find((r) => r.song.id === s.id)?.otherScores;
-    await activate({ song: s, pdf, audio, pages, otherScores, canonicalXML });
-    tell(i18nText("main.message337"));
-  } catch (e) {
-    error(e);
-  } finally {
-    val("restore").value = "";
-  }
+const fileTransfer = {
+  get record() {
+    return record;
+  },
+  song,
+  action,
+  persist,
+  activate,
+  renderScore,
+  tell,
+  error,
+  flushBeforeExport() {
+    if (session?.active()) flushEditorForm();
+  },
 };
-let pendingRestore: Song | undefined;
-let pendingCanonical: string | undefined;
-let pendingMedia: MediaIdentity | undefined;
-$("new-dialog").addEventListener("close", () => {
-  pendingRestore = undefined;
-  pendingCanonical = undefined;
-  pendingMedia = undefined;
-});
-// Use the same file picker for explicit reconnection; imported timing is preserved.
-const newHandler = $("new-form").onsubmit!;
-$("new-form").onsubmit = async (e) => {
-  if (!pendingRestore) {
-    return newHandler.call($("new-form"), e);
-  }
-  e.preventDefault();
-  try {
-    const pdf = val("pdf-file").files?.[0],
-      audio = val("audio-file").files?.[0];
-    if (!pdf || !audio) throw Error(i18nText("main.message338"));
-    await verifyMedia(pendingMedia, pdf, audio);
-    const { pages } = await renderScore(
-      pdf,
-      pendingRestore.scoreFormat,
-      pendingRestore.scorePartId,
-    );
-    if (pages.length !== pendingRestore.pageCount)
-      throw Error(i18nText("main.message336"));
-    await activate({
-      song: pendingRestore,
-      pdf,
-      audio,
-      pages,
-      canonicalXML: pendingCanonical,
-    });
-    pendingRestore = undefined;
-    $<HTMLDialogElement>("new-dialog").close();
-  } catch (e) {
-    error(e);
-  }
-};
+const backup = installEditorBackup(fileTransfer);
 void refreshRecentScore().catch(error);
 window.addEventListener("focus", () => {
   if (!$("welcome").hidden) void refreshRecentScore().catch(error);
@@ -1668,71 +1532,7 @@ const management: ReturnType<typeof setupScoreManagement> =
     },
   });
 
-// New-score entry uses one package-import path. The authoring database remains
-// the existing library; an existing identity is never silently overwritten.
-const packageInput = document.createElement("input");
-packageInput.type = "file";
-packageInput.accept = ".drumscore";
-packageInput.hidden = true;
-packageInput.id = "authoring-package-file";
-document.body.append(packageInput);
-for (const [host, id] of [["new-dialog", "new-package-import"]]) {
-  const button = document.createElement("button");
-  button.id = id;
-  button.type = "button";
-  button.textContent = i18nText("separation.packageImport");
-  button.onclick = () => packageInput.click();
-  $(host).querySelector(".dialoghead")?.after(button);
-  if (!button.isConnected) $(host).prepend(button);
-}
-packageInput.onchange = async () => {
-  const file = packageInput.files?.[0];
-  if (!file) return;
-  packageInput.disabled = true;
-  try {
-    const imported = await readScorePackage(file);
-    if ((await allRecords()).some((r) => r.song.id === imported.song.id)) {
-      if (!confirm(i18nText("separation.importCopy"))) return;
-      imported.song.id = crypto.randomUUID();
-      imported.song.title = i18nText("separation.copyTitle", {
-        title: imported.song.title,
-      });
-      saveCanonical(imported);
-    }
-    await saveRecord(imported);
-    await activate(imported);
-    $<HTMLDialogElement>("new-dialog").close();
-    tell(i18nText("separation.saved"));
-  } catch (e) {
-    error(e);
-  } finally {
-    packageInput.value = "";
-    packageInput.disabled = false;
-  }
-};
-const packageExport = document.createElement("button");
-packageExport.id = "export-score-package";
-packageExport.type = "button";
-packageExport.className = "management-row";
-packageExport.textContent = i18nText("separation.packageExport");
-packageExport.title = i18nText("separation.packageDetail");
-const exportDialog = $("song-export-dialog");
-exportDialog.firstElementChild?.after(packageExport);
-action("export-score-package", async () => {
-  if (!record || packageExport.disabled) return;
-  packageExport.disabled = true;
-  try {
-    // Apply the currently visible authoring values before capturing the package.
-    // Existing edit-session persistence still owns saved state and drafts.
-    if (session?.active()) flushEditorForm();
-    await persist();
-    const blob = await createScorePackage(record);
-    download(blob, `${record.song.title}.drumscore`);
-    tell(i18nText("separation.exportReady"));
-  } finally {
-    packageExport.disabled = false;
-  }
-});
+installEditorPackages(fileTransfer);
 
 // Desktop authoring tab; section edits use the existing draft/history workflow.
 const sectionPane = document.createElement("section");

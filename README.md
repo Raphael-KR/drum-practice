@@ -3,13 +3,13 @@
 악보와 음원으로 드럼을 연습하는 웹앱입니다. 악보 없이 기기의 MP3만 불러와서도 연습할 수 있습니다. 악보제작기는 로컬 전용이며 두 앱은 공통 재생 코드를 사용합니다.
 
 - 공개 드럼연습실: [drum-practice-studio.dgkma.chatgpt.site](https://drum-practice-studio.dgkma.chatgpt.site)
-- 현재 앱 버전: **0.8.4** — [버전 정책](docs/operations/APP-VERSIONS.md)
+- 앱 버전 정본: [app-versions.json](src/app-versions.json) — [버전·발행 상태](docs/operations/APP-VERSIONS.md)
 - 문서 시작점: [문서 안내](docs/README.md)
 - 제품 범위: [PRD](PRD.md), 변경 기록: [history](history.md)
 
 ## 로컬 실행
 
-Node.js **22.13 이상**이 필요합니다. 앱의 음원 분석정보는 브라우저 IndexedDB에 저장합니다. `node:sqlite`는 과거 서버 테이블 제거를 확인하는 회귀 검사에만 사용합니다.
+기준 개발 환경은 `.nvmrc`의 **Node.js 22 LTS(22.13 이상)**입니다. 지원 범위는 `package.json`의 `engines`를 따릅니다. 앱의 음원 분석정보는 브라우저 IndexedDB에 저장합니다. `node:sqlite`는 과거 서버 테이블 제거를 확인하는 회귀 검사에만 사용합니다.
 
 ```sh
 cd /Users/raphael/Playground/drum-practice
@@ -35,17 +35,16 @@ npm run dev
 `src/`가 개발 정본입니다. 생성 HTML이나 Sites 사본을 직접 고치지 않습니다.
 
 ```sh
-npm run lint
-npm run test:drum
-npm run build:apps
-npm run check:playback
+npm ci --prefix hosting
+npm run verify:portable  # 로컬 악보 없이 코드·문서·타입·회귀 검사
+npm run verify           # 로컬 악보를 포함한 전체 회귀와 두 앱 빌드
 ```
 
-ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `npm run lint:fix`는 자동 수정 가능한 ESLint 항목을 수정합니다. 설정 범위와 기존 지적 사항은 [개발 검사](docs/operations/TESTING.md#eslint)를 참고합니다.
+ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `npm run lint:fix`는 자동 수정 가능한 ESLint 항목을 수정합니다. 설정과 검사 범위는 [개발 검사](docs/operations/TESTING.md#eslint)를 참고합니다.
 
-분리 빌드는 `dist/editor/`, `dist/player/`를 생성합니다. 공개 대상은 **player만**이며 발행 절차는 [Sites 발행](docs/operations/SITES-PUBLICATION.md)을 따릅니다. 검사 범위는 이 프로젝트의 `tests/`로 한정합니다. `npm run test:portable`은 로컬 악보 없이 실행하며, 전체 `test:drum`은 로컬 자료를 포함합니다. [검사·자산 준비](docs/operations/TESTING.md)를 따릅니다.
+`npm run build`와 `build:apps`는 같은 분리 빌드로 `dist/editor/`, `dist/player/`를 생성합니다. `dev`, `dev:editor`, `dev:player`는 같은 생성 준비 단계를 사용합니다. `npm run preview`는 player 빌드를 미리 봅니다. 공개 대상은 **player만**이며 발행 절차는 [Sites 발행](docs/operations/SITES-PUBLICATION.md)을 따릅니다. 검사 범위는 이 프로젝트의 `tests/`로 한정합니다. `npm run test:portable`은 로컬 악보 없이 실행하며, 전체 `test:drum`은 로컬 자료를 포함합니다. [검사·자산 준비](docs/operations/TESTING.md)를 따릅니다.
 
-최신 릴리스의 검사 결과와 실기기 확인 범위는 [검증 현황](docs/operations/acceptance.md)에 기록합니다. 과거 테스트 개수를 현재 성공 보증으로 사용하지 않습니다.
+최신 릴리스의 자동 검사·공개 반영은 [발행 기록](docs/operations/SITES-PUBLICATION.md), 실기기 확인 범위는 [검증 현황](docs/operations/acceptance.md)에 기록합니다. 과거 테스트 개수를 현재 성공 보증으로 사용하지 않습니다.
 
 ## 제작 자료와 라이선스
 

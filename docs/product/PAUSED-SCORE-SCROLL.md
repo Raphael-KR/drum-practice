@@ -15,11 +15,11 @@
 ## 검증
 
 - 같은 Safari 1180×820, PDF 두 줄: 110마디, 표시 영역532px, 전체 스크롤 높이7504px.
-- scrollTop 1330→1830(500px 이동), 음원56.410초/22마디와 정지 상태 유지. [이전](../experiments/paused-scroll-before.png), [이후](../experiments/paused-scroll-after.png).
+- scrollTop 1330→1830(500px 이동), 음원56.410초/22마디와 정지 상태 유지. 이전 (삭제된 과거 자료: `../experiments/paused-scroll-before.png`), 이후 (삭제된 과거 자료: `../experiments/paused-scroll-after.png`).
 - Safari의 실제 DOM 스크롤을 사용해 검증했다. 물리적 트랙패드/실기 iPad 터치 동작을 대행 검증했다고 주장하지 않는다.
 - 자동 테스트는 세로 wheel 미소비·음원 위치 유지·프레임 후 스크롤 유지·좌우 wheel 이동·재생 복귀를 검사한다.
 
-- SVG에서도 110마디와 scrollTop 1330→1830, 음원56.410초 유지 확인. [SVG 캡처](../experiments/paused-scroll-svg.png).
+- SVG에서도 110마디와 scrollTop 1330→1830, 음원56.410초 유지 확인. SVG 캡처 (삭제된 과거 자료: `../experiments/paused-scroll-svg.png`).
 - 전체51파일/211테스트 및 `npm run build` 통과. 기존 빌드 청크 크기 경고는 유지된다.
 - 재생 시 8마디 따라가기 복귀는 자동 테스트로 확인했다. Safari 스크립트의 재생 클릭은 실제 재생으로 전환되지 않아 브라우저 재생 전환 검증은 미확인으로 남긴다.
 
