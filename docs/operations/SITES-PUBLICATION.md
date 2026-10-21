@@ -40,7 +40,19 @@
 
 로컬 분석 DB/인증키는 삭제했다. 공개 DB의 3개 분석 테이블은 0.7.9 발행에서 0002 마이그레이션으로 삭제했고 DB 재조회로 확인했다. 브라우저의 기존 보관함은 로컬 주소와 공개 주소 사이에 자동 이전되지 않는다.
 
-## 최신 발행 — 0.8.6
+## 최신 발행 — 0.8.7
+
+- Prettier 형식 정리280파일. 기능·저장 형식 변경 없이 유지보수 patch로 두 앱0.8.7, 공개는 player만이다.
+- 구현 커밋 `778dd9100497b8eadf5f249f89301b331020854b` — main push 완료. 소스 빌드 `69f1cf69f1ca`.
+- 형식 정리 직후 전체123파일720테스트·379개 Prettier 검사 통과. 버전 반영 후 타입·i18n·공통/재생/소스 경계·분리 빌드·배포 빌드 통과. 기존 청크 크기·Node localStorage 경고 유지.
+- Sites 소스 `d4dc3a54b546e49003d9c2278c6812b222bf6b80`, 저장 버전77.
+- 버전 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_dcfdd27b38bc8191b1a5e22fec2621fc`.
+- 배포 ID: `appgdep_6ad806887b248191abfad6edc710f133` — succeeded, 2026-10-21 09:26:01 KST.
+- 로컬 아카이브 SHA-256: `d862ab9c3cbc552ed120257753ec0df6afcf81025dd6ed48ff58fd7b1cc211de`.
+- 정적36파일 해시 일치. 공개 읽기 smoke15항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/Worker4파일·악보5개 SHA-256 일치, 폐기 API3경로404.
+- 증거: `.tmp/prettier-tests.log`, `.tmp/prettier-commit-check.log`, `.tmp/release-0.8.7-{build,site-build}.log`, `.tmp/release-0.8.7-{parity,smoke}.json`. iPad 실기기·공개 청취는 재검증하지 않았다.
+
+## 이전 발행 — 0.8.6
 
 - 공통 목록 소제목 높이·빌드 글자색·CSS 우선순위 복원, 제작기 백업 접근 수정, 두 앱 상단바 버튼 구성·크기·간격 통일. 기존 기능 보완으로 patch이며 두 앱0.8.6, 공개는 player만이다.
 - 구현 커밋 `04198d1fae7f9419863cbf95270039b0308a2bcc` — main 커밋·push 완료. 소스 빌드 `7d67e9d1f686`.
