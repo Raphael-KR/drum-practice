@@ -1,3 +1,10 @@
+## 2026-10-21 — 프로젝트 전용 릴리스 스킬 작성
+- 목표: 승인된 보완안을 반복 가능한 [release-drum-practice](.agents/skills/release-drum-practice/SKILL.md) 절차로 저장한다.
+- 범위: 프로젝트 `.agents/skills`의 SKILL.md·UI 메타데이터, 문서 안내와 Sites 발행 절차 연결. 전체 릴리스와 단계 제한 요청을 구분한다.
+- 구현: 변경 범위·저장 호환성·신규/이동 파일 점검, 공통 검사/CI, 작업 브랜치·PR 검토·main 병합, 검증한 커밋의 빌드·발행·공개 확인, 결과 기록과 병합 브랜치 정리를 명시했다. 관련 없는 작업과 미병합 변경을 보존한다.
+- 검증: skill-creator quick_validate, 79개 Markdown 상대 링크·생성 UI 문서 검사, agents/openai.yaml Prettier, diff 공백 검사 통과. 내용 검토에서 준비/커밋 한정 요청·전체 실행·병합 후 코드 변경·발행 결과 불명확 시 재개 기준을 확인했다. 실제 GitHub/Sites 릴리스 동작은 실행하지 않았다.
+- 제외: 앱 코드·버전·빌드 변경, 커밋·push·PR 생성·merge·발행·브랜치 삭제. 현재 세션의 자동 스킬 재검색 여부는 별도로 확인하지 않았다.
+
 ## 2026-10-21 — 공통 0.8.9 발행 완료
 - 구현7d02417 main push 완료. 두 앱0.8.9, 소스 빌드869aa8c0c892. 제작기는 로컬 전용 유지.
 - 버전 반영 공통 검사·두 앱/배포 빌드·정적36파일 일치 통과. 직전 전체720테스트·portable410테스트 통과. GitHub Actions39539822824에서 Node22/Linux·fresh npm ci·verify:portable 성공을 확인했다.

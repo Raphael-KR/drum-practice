@@ -1,0 +1,4 @@
+interface:
+  display_name: "드럼연습실 릴리스"
+  short_description: "변경 검토부터 PR 병합과 공개 발행까지 프로젝트 릴리스 수행"
+  default_prompt: "$release-drum-practice로 전체 릴리스를 실행해줘. 검증·버전 갱신·PR·main 병합·발행·공개 읽기 검사·병합 브랜치 정리까지 진행해줘."

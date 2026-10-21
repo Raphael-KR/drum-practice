@@ -16,6 +16,8 @@
 
 사용자가 요청한 경우에만 commit, push, 공개 발행을 수행한다. 변경 범위와 기존 dirty 파일을 확인하고 이번 릴리스에 필요한 검사를 먼저 끝낸다.
 
+전체 릴리스의 변경 검토·작업 브랜치·PR 검토·CI·main 병합·공개 확인·브랜치 정리는 [프로젝트 릴리스 스킬](../../.agents/skills/release-drum-practice/SKILL.md)을 따른다. 아래는 검증된 main 코드에 적용하는 빌드·Sites 발행 세부 절차다. 과거의 main 직접 push 기록은 앞으로의 PR 절차를 대체하지 않는다.
+
 1. `src/app-versions.json`과 [버전 정책](APP-VERSIONS.md)을 확인한다. 문서만 변경하면 버전을 올리지 않는다.
 2. 드럼 회귀와 분리 빌드를 검사한다.
 

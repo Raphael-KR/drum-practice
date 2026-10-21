@@ -18,6 +18,7 @@
 | [앱 버전](operations/APP-VERSIONS.md) | 현재 버전·증가 기준·과거 번호 정정 |
 | [검증 현황](operations/acceptance.md) | 최근 릴리스 근거와 미확인 범위 |
 | [Sites 발행](operations/SITES-PUBLICATION.md) | player 전용 발행 절차·최근 배포 |
+| [프로젝트 릴리스 스킬](../.agents/skills/release-drum-practice/SKILL.md) | 변경 검토·작업 브랜치·PR·main 병합·발행·브랜치 정리 |
 | [iPad 시뮬레이터](operations/IPAD-SIMULATOR.md) | 지정 기기와 검증 환경 |
 | [Apple 로컬 활용](operations/APPLE-LOCAL-WORKFLOW.md) | STT/AFM 실행·검증 계약 |
 | [다국어](architecture/I18N.md) | 번역 키 관리 |
