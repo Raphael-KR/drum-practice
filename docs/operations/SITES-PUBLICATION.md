@@ -40,7 +40,19 @@
 
 로컬 분석 DB/인증키는 삭제했다. 공개 DB의 3개 분석 테이블은 0.7.9 발행에서 0002 마이그레이션으로 삭제했고 DB 재조회로 확인했다. 브라우저의 기존 보관함은 로컬 주소와 공개 주소 사이에 자동 이전되지 않는다.
 
-## 최신 발행 — 0.8.7
+## 최신 발행 — 0.8.8
+
+- ESLint 도입과 기존172오류 정리. 규칙 해제·오류 억제 없이 타입·미사용 코드를 정리한 유지보수 patch이며 기능·저장 형식은 유지한다. 두 앱0.8.8, 공개는 player만이다.
+- 구현 커밋 `80985bb92180147eebd1fae6dae01c83bfe4adf3` — main push 완료. 소스 빌드 `0883070fa845`.
+- 코드 정리 직후123파일720테스트·별도 benchmark 타입 검사·수정58개 소스/설정 Prettier 통과. 버전 반영 후 ESLint0오류·0경고, 타입·i18n·공통/재생/소스 경계·두 앱 빌드·배포 빌드 통과. 기존 청크 크기·Node localStorage 경고 유지.
+- Sites 소스 `fc53dc2eeb5c5bbdc91bbb37c5ff54c85ac77c5c`, 저장 버전78.
+- 버전 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_bd5e653d8b5081918689d7797c2d5676`.
+- 배포 ID: `appgdep_6ad826e5c9988191bcef26762ae22d5a` — succeeded, 2026-10-21 11:44:06 KST.
+- 로컬 아카이브 SHA-256: `2ac7a5ebb6ef4e497d985fe6f00344f4772f8c14ccb54ebcdd4b41d67f56282f`.
+- 정적36파일 해시 일치. 공개 읽기 smoke15항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/Worker4파일·악보5개 SHA-256 일치, 폐기 API3경로404. 일치한 player 번들에0.8.8·빌드0883070fa845 포함을 확인했다.
+- 증거: `.tmp/eslint-cleanup-tests.log`, `.tmp/eslint-benchmark-types.log`, `.tmp/release-0.8.8-{lint,build,site-build}.log`, `.tmp/release-0.8.8-{parity,smoke}.json`. GUI·iPad 실기기·공개 청취는 이번 릴리스에서 재검증하지 않았다.
+
+## 이전 발행 — 0.8.7
 
 - Prettier 형식 정리280파일. 기능·저장 형식 변경 없이 유지보수 patch로 두 앱0.8.7, 공개는 player만이다.
 - 구현 커밋 `778dd9100497b8eadf5f249f89301b331020854b` — main push 완료. 소스 빌드 `69f1cf69f1ca`.
