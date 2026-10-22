@@ -1,3 +1,10 @@
+## 2026-10-22 — 공통 0.8.11 발행 완료
+- 반복 구간 시작·삭제 조작과 버튼 이동 카운트오프 개선을 [PR #3](https://github.com/Raphael-KR/drum-practice/pull/3)으로 병합했다. 구현4374088, main e0cf3ec, 두 앱0.8.11·소스 빌드dc442faf71bc. 공개는 player만이다.
+- 전체123파일739테스트·공통 검사·두 앱 빌드 통과. 최신 push/PR CI 및 병합 main CI39777345005 성공. PR/main tree가 같으며 main에서 재빌드했다.
+- Sites 소스50f9cec, 버전81, 배포appgdep_6ad9ffafed748191910532199f1de187 succeeded(21:21:21 KST). 정적36파일 대조와 공개 읽기 smoke15항목 통과.
+- 로컬 두 앱 조작과 Safari 엔진12상태 검증을 사용했다. Chromium에서 유지된 삭제 말풍선과 명시적 삭제를 재확인하고 임시 구간을 정리했다. Safari 흰 화면·Chromium CDP 캡처 시간 초과로 픽셀 외형 검수에 제한이 있고 실제 iPad 터치·공개 청취는 미검증이다.
+- 발행 후 근거는 별도 문서 PR로 반영하며 앱 버전을 다시 올리거나 재발행하지 않는다. 정확한 SHA·CI·배포 ID·해시는 [Sites 발행](docs/operations/SITES-PUBLICATION.md)을 따른다.
+
 ## 2026-10-22 — 공통 0.8.11 릴리스 준비
 - 목표: 반복 구간 시작·삭제 조작과 버튼 이동 카운트오프 개선을 검증한 뒤 PR·main 병합·Sites 발행을 완료한다.
 - 범위: 두 앱 공통 재생/도움말 변경과 설계 문서. 기존 연습 흐름의 조작 개선이므로 patch이며 두 앱0.8.11로 맞춘다.
