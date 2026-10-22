@@ -502,3 +502,18 @@ it.each([false, true])(
     expect(p.current()).toBe(5);
   },
 );
+
+it.each([true, false])(
+  "reselecting the active loop restarts at its start and preserves playing=%s",
+  (playing) => {
+    const p = player();
+    p.playing = playing;
+    const loop = p.loop;
+    changePlaybackLoop(p, loop, false, vi.fn(), vi.fn());
+    expect(p.position).toBe(loop.start);
+    expect(p.loop).toBe(loop);
+    expect(p.play).toHaveBeenCalledTimes(playing ? 1 : 0);
+    if (playing) expect(p.play).toHaveBeenCalledWith(true, false);
+    else expect(p.playing).toBe(false);
+  },
+);

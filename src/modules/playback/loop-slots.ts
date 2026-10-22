@@ -1,3 +1,4 @@
+import { setHelpAction } from "../../shared/ui/help-bubble";
 import { t } from "../../shared/i18n/i18n";
 import { escapeHTML as esc } from "../../shared/ui/html";
 import { locate, uid, type Song, type Loop } from "../../model/model";
@@ -156,6 +157,22 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
       .slice(0, LOOP_SLOT_COUNT)
       .map((loop, slot) => slotHTML(loop, slot, keyboardSlot))
       .join("");
+    const sourceSong = h.song();
+    grid.querySelectorAll<HTMLElement>("[data-loop-slot]").forEach((button) => {
+      const loop = slots[Number(button.dataset.loopSlot)];
+      if (!loop) return;
+      setHelpAction(button, {
+        label: t("main.message285"),
+        run: () => {
+          if (!button.isConnected || !h.ready() || h.song() !== sourceSong)
+            return;
+          const slot = savedLoopSlots(sourceSong).findIndex(
+            (item) => item?.id === loop.id,
+          );
+          if (slot >= 0 && slot < LOOP_SLOT_COUNT) removeSlot(slot);
+        },
+      });
+    });
     paint();
   }
   function cancel() {
@@ -341,16 +358,9 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
     const loop = savedLoopSlots(h.song())[slot];
     if (!loop) arm(slot);
     else {
-      const atStart =
-        locate(h.song(), h.player().current?.() ?? 0).index ===
-        locate(h.song(), loop.start).index;
-      if (atStart) {
-        removeSlot(slot);
-      } else {
-        cancel();
-        h.use(loop);
-        render();
-      }
+      cancel();
+      h.use(loop);
+      render();
     }
   }) as EventListener);
   function endpoint(index: number) {

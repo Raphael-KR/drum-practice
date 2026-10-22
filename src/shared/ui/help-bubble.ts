@@ -1,4 +1,10 @@
 import { placeHelpBubble, type HelpRect } from "./help-placement";
+export type HelpAction = { label: string; run: () => void };
+// Actions belong to live controls; replacing a control also retires its action.
+const actions = new WeakMap<HTMLElement, HelpAction>();
+export const setHelpAction = (target: HTMLElement, action: HelpAction) =>
+  actions.set(target, action);
+export const getHelpAction = (target: HTMLElement) => actions.get(target);
 export type ControlHelp = { title: string; body: string };
 const rectOf = (r: DOMRect): HelpRect => ({
   x: r.left,
@@ -7,7 +13,7 @@ const rectOf = (r: DOMRect): HelpRect => ({
   height: r.height,
 });
 /** One reusable bubble in viewport coordinates, shared by help mode and hold hints. */
-export function createHelpBubble(host: HTMLElement) {
+export function createHelpBubble(host: HTMLElement, action?: HelpAction) {
   const mark = document.createElement("div");
   mark.className = "help-target";
   mark.ariaHidden = "true";
@@ -23,6 +29,22 @@ export function createHelpBubble(host: HTMLElement) {
   const title = document.createElement("h3"),
     body = document.createElement("p");
   card.append(title, body);
+  let actionButton: HTMLButtonElement | undefined;
+  if (action) {
+    card.setAttribute("role", "group");
+    title.id = "active-control-help-title";
+    card.setAttribute("aria-labelledby", title.id);
+    actionButton = document.createElement("button");
+    actionButton.type = "button";
+    actionButton.className = "danger help-action";
+    actionButton.textContent = action.label;
+    actionButton.onclick = action.run;
+    // Keyboard activation must not also invoke playback/range shortcuts.
+    actionButton.addEventListener("keydown", (event) =>
+      event.stopPropagation(),
+    );
+    card.append(actionButton);
+  }
   host.append(mark, svg, card);
   const hide = () => {
     mark.hidden = card.hidden = true;
@@ -31,6 +53,7 @@ export function createHelpBubble(host: HTMLElement) {
   hide();
   return {
     hide,
+    focusAction: () => actionButton?.focus({ preventScroll: true }),
     show(
       target: HTMLElement,
       info: ControlHelp,

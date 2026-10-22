@@ -8,7 +8,7 @@ interface PlayerPort {
   loop?: Loop;
   current(): number;
   pause(): void;
-  seek(t: number): void;
+  seek(t: number, countOff?: boolean): void;
   play(countIn?: boolean, prepare?: boolean): Promise<unknown>;
 }
 export interface ScrubSnapshot<T> {
@@ -92,7 +92,7 @@ export function changePlaybackLoop(
   )
     p.position = loop.start;
   update();
-  if (resume) void p.play(false, false).catch(fail);
+  if (resume) void p.play(!!loop, false).catch(fail);
 }
 export function installPlaybackKeys(
   h: {
@@ -254,11 +254,12 @@ export function seekPlaybackFreely(
   p: PlayerPort,
   t: number,
   onExit: (loop: Loop) => void,
+  countOff = false,
 ) {
   if (p.loop && (t < p.loop.start || t >= p.loop.end)) {
     const previous = p.loop;
     p.loop = undefined;
     onExit(previous);
   }
-  p.seek(t);
+  p.seek(t, countOff);
 }

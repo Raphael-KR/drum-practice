@@ -506,15 +506,20 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     loopSlots?.render();
     h.listsChanged?.();
   }
-  function seek(time: number) {
+  function seek(time: number, countOff = false) {
     if (!h.ready()) return;
     stationary = undefined;
     selectedIndex = undefined;
-    seekPlaybackFreely(h.player(), time, (previous) => {
-      lastLoop = previous;
-      center = radius = undefined;
-      renderLists();
-    });
+    seekPlaybackFreely(
+      h.player(),
+      time,
+      (previous) => {
+        lastLoop = previous;
+        center = radius = undefined;
+        renderLists();
+      },
+      countOff,
+    );
   }
   function beginScrub() {
     if (!available()) return;
@@ -953,6 +958,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     if (loop && !validLoop(loop.start, loop.end, p.duration))
       throw Error(t("main.message265"));
     if (p.loop) lastLoop = p.loop;
+    if (loop) {
+      selectedIndex = undefined;
+      stationary = undefined;
+    }
     changePlaybackLoop(
       p,
       loop,
@@ -993,7 +1002,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     repeatPresets.set(value, preset);
     center = preset.center;
     radius = value;
-    useLoop(preset.loop, true);
+    useLoop(preset.loop);
     drawer.show("loop");
   }
   listen(root.querySelector(".repeat-presets")!, "click", (e) => {
@@ -1021,7 +1030,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     bindMarkerSlots(
       get(ids.markers),
       h.song,
-      seek,
+      (time) => seek(time, true),
       "data-quick-marker",
       false,
       {

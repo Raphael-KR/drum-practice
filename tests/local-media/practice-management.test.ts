@@ -83,7 +83,7 @@ it("renders independent automatic section shortcuts and seeks their starting mea
   c.playback.mark();
   expect(c.root.querySelector("#section-shortcuts")!.innerHTML).toBe(before);
   c.click('[data-section-measure="0"]');
-  expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start);
+  expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start, true);
   expect(c.song.markers).toHaveLength(1);
 });
 it("disposes section navigation handlers", () => {
@@ -104,7 +104,7 @@ it("marks only a bookmarked section destination and restores it on removal", () 
   expect(button().classList.contains("is-marked")).toBe(true);
   expect(c.root.querySelectorAll("button.is-marked")).toHaveLength(1);
   c.click('[data-section-measure="0"]');
-  expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start);
+  expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start, true);
   c.song.markers = [];
   c.management.render();
   expect(button().classList.contains("is-marked")).toBe(false);
