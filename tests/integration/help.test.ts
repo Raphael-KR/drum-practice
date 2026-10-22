@@ -57,6 +57,11 @@ it("has one bottom instruction and no pages; common close stays at the help open
   expect(guide().querySelector(".help-pages")).toBeNull();
   expect(guide().textContent).toContain("길게 누르고 있으면");
   expect(
+    [...guide().querySelectorAll(".help-region-name")].map(
+      (el) => el.textContent,
+    ),
+  ).toEqual(["상단바", "악보·음원 목록"]);
+  expect(
     guide().querySelector(".close-button[data-common-icon]"),
   ).not.toBeNull();
   expect(guide().querySelector<HTMLElement>(".dialoghead")!.style.left).toBe(
@@ -75,12 +80,23 @@ it("focus moves one bubble between real controls without activation", () => {
   second.focus();
   second.click();
   expect(action).not.toHaveBeenCalled();
+  expect(guide().querySelector<HTMLElement>(".help-regions")!.hidden).toBe(
+    true,
+  );
+  expect(guide().querySelector(".help-bubble h3")!.textContent).toBe("삭제");
   expect(guide().querySelectorAll(".help-bubble:not([hidden])")).toHaveLength(
     1,
   );
   expect(guide().textContent).toContain("원본 파일은 유지");
   expect(guide().textContent).not.toContain("기기의 음원을 추가");
   expect(first.hasAttribute("aria-describedby")).toBe(false);
+  document
+    .querySelector(".library-main")!
+    .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  expect(guide().querySelector<HTMLElement>(".help-regions")!.hidden).toBe(
+    false,
+  );
+  expect(guide().querySelector<HTMLElement>(".help-bubble")!.hidden).toBe(true);
   close();
   expect(second.hasAttribute("aria-describedby")).toBe(false);
   expect(document.activeElement?.id).toBe("app-help-button");

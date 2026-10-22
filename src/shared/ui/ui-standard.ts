@@ -60,7 +60,10 @@ export function installUIStandard(
       }
       if (entry.role) element.setAttribute("role", entry.role);
       // Stateful labels are managed by the state owner after initialization.
-      if (!["play", "fullscreen", "tempo", "footer"].includes(entry.id))
+      if (
+        !("dynamicLabel" in entry && entry.dynamicLabel) &&
+        !["play", "fullscreen", "tempo", "footer"].includes(entry.id)
+      )
         element.setAttribute("aria-label", componentName(entry.id, "ko", true));
     }
   }
