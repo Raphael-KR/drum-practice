@@ -1,17 +1,20 @@
+import {
+  sha,
+  saveEvidence,
+  base64,
+  createVerifiedPackage,
+  projectBase,
+  prepareCanonical,
+  bindRenderedScore,
+} from "./common/package.mjs";
+import profiles from "./profiles/songs.json";
+const config = profiles["red-sunset"];
 /* Existing local common APIs, no library/catalog or IndexedDB record writes. */
 import { renderMusicXML } from "/src/modules/score/musicxml.ts";
-import {
-  writeCanonical,
-  readCanonical,
-} from "/src/modules/score/canonical-xml.ts";
-import {
-  createScorePackage,
-  readScorePackage,
-} from "/src/modules/library/score-package.ts";
+import { readScorePackage } from "/src/modules/library/score-package.ts";
 import { defaults, validateSong } from "/src/model/model.ts";
 import { displayPage } from "/src/modules/score/score-pages.ts";
-const ROOT =
-  "/@fs/Users/raphael/Playground/drum-practice/data/production/red-sunset/";
+const ROOT = projectBase + config.root;
 const get = async (p) => {
   const r = await fetch(ROOT + p);
   if (!r.ok) throw Error("Missing " + p);
@@ -19,21 +22,7 @@ const get = async (p) => {
 };
 const blob = async (p, type) =>
   new Blob([await (await get(p)).arrayBuffer()], { type });
-const sha = async (b) =>
-  [
-    ...new Uint8Array(
-      await crypto.subtle.digest("SHA-256", await b.arrayBuffer()),
-    ),
-  ]
-    .map((x) => x.toString(16).padStart(2, "0"))
-    .join("");
-const b64 = async (b) => {
-  const a = new Uint8Array(await b.arrayBuffer());
-  let s = "";
-  for (let i = 0; i < a.length; i += 8192)
-    s += String.fromCharCode(...a.subarray(i, i + 8192));
-  return btoa(s);
-};
+const b64 = base64;
 export async function build() {
   const alignment = await (await get("audio/audio-alignment.json")).json();
   const source = await blob(
@@ -55,8 +44,8 @@ export async function build() {
     title: "붉은 노을",
     originalTitle: "붉은 노을",
     artist: "YB",
-    bpm: 134,
-    firstBeat: 11.27,
+    bpm: config.bpm,
+    firstBeat: config.firstBeat,
     measures: alignment.measures.map((m, i) => ({
       id: "red-sunset-m" + m.label,
       regionId: first.regions[i].id,
@@ -84,24 +73,18 @@ export async function build() {
     pageCount: first.pages.length,
   };
   validateSong(song);
-  const d = new DOMParser().parseFromString(
-    writeCanonical(song, await source.text(), await sha(audio)),
-    "application/xml",
+  const { canonicalXML, restored } = prepareCanonical(
+    song,
+    await source.text(),
+    await sha(audio),
+    (d) => {
+      const e = d.createElement("miscellaneous-field");
+      e.setAttribute("name", "drum-practice:recording-grid:v1");
+      e.textContent = JSON.stringify(alignment);
+      d.querySelector("identification > miscellaneous").append(e);
+    },
   );
-  if (
-    d.querySelector("movement-title")?.textContent ===
-    d.querySelector("work > work-title")?.textContent
-  )
-    d.querySelector("movement-title").remove();
-  const misc = d.querySelector("identification > miscellaneous");
-  const e = d.createElement("miscellaneous-field");
-  e.setAttribute("name", "drum-practice:recording-grid:v1");
-  e.textContent = JSON.stringify(alignment);
-  misc.append(e);
-  const canonicalXML = new XMLSerializer().serializeToString(d),
-    canonical = new Blob([canonicalXML], { type: source.type });
-  const restored = structuredClone(song);
-  readCanonical(canonicalXML, restored);
+  const canonical = new Blob([canonicalXML], { type: source.type });
   if (
     JSON.stringify(restored.measures) !== JSON.stringify(song.measures) ||
     restored.bpm !== 134 ||
@@ -113,9 +96,7 @@ export async function build() {
     (s) => (window.redSunsetProgress = s),
     "P1",
   );
-  song.regions = final.regions;
-  song.pageCount = final.pages.length;
-  song.measures.forEach((m, i) => (m.regionId = final.regions[i].id));
+  bindRenderedScore(song, final);
   if (
     final.regions.length !== 137 ||
     final.pages.length !== 4 ||
@@ -149,7 +130,7 @@ export async function build() {
     pages: final.pages,
     otherScores: [variant],
   };
-  const pack = await createScorePackage(record),
+  const pack = await createVerifiedPackage(record),
     loaded = await readScorePackage(pack);
   if (
     JSON.stringify(loaded.song) !== JSON.stringify(song) ||
@@ -166,8 +147,8 @@ export async function build() {
     quarters: 550,
     svgPages: 4,
     artist: "YB",
-    bpm: 134,
-    firstBeat: 11.27,
+    bpm: config.bpm,
+    firstBeat: config.firstBeat,
     performanceStart: 12.99,
     endingStatus:
       "provisional correspondence; nonlinear slowing candidate stored in metadata; current app uses uniform within each measure",
@@ -186,17 +167,16 @@ export async function build() {
     regions: final.regions,
     parsedMeasures: final.parsed.measures,
   };
-  const saved = await fetch("http://127.0.0.1:5191/artifacts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  await saveEvidence(
+    "artifacts",
+    {
       ...audit,
       package: await b64(pack),
       canonicalXML,
       pages: await Promise.all(final.pages.map(b64)),
-    }),
-  });
-  if (!saved.ok) throw Error("Artifact receiver " + saved.status);
+    },
+    config.evidencePort,
+  );
   window.redSunsetRecord = record;
   window.redSunsetSVG = await Promise.all(
     final.pages.map(async (p) => (await displayPage(p)).text()),

@@ -13,6 +13,13 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 - 매 제작 시작 전에 [전체 제작 프로세스](../../../docs/score-production/SCORE-PRODUCTION-PROCESS.md)와 [변환 정책](../../../docs/score-production/MUSICXML-CONVERSION-POLICY.md)을 읽는다. 매핑은 [MusicXML·OSMD 매핑](../../../docs/score-production/SCORE-MUSICXML-OSMD-MAPPING.md), 표시는 [SVG 규칙](../../../docs/architecture/SVG-SCORE-RULES.md), 저장·가사는 [canonical 계약](../../../docs/architecture/MUSICXML-CANONICAL.md), 패키지는 [완성 파일 계약](../../../docs/architecture/SCORE-PACKAGE.md)을 따른다. 이 스킬은 이 정본들의 대체 매핑을 만들지 않는다.
 - 기존 승인과 입력으로 해결할 수 있는 내용을 사용자에게 다시 묻지 않는다. 문서가 헷갈리면 구조·현재/과거 상태를 정리한다. 모순 해결은 history → 관련 문서 → 과거 악보 제작 세션 → 웹 근거 순서로 확인하고 수정 이유를 기록한다.
 
+## 공통 코드와 곡별 작업 분리
+
+- 제작 도구를 작성·수정하기 전에 [공통 제작 도구](../../../docs/score-production/COMMON-TOOLS.md)를 읽는다. `tools/score-production/musicxml/common/`의 입력 보존·규격/시간 검사·패키지 왕복·결과 저장·MIDI·드럼킷 렌더링·음원 특징·가사 후보 계산을 우선 재사용한다. 앱의 정본·렌더러·패키지 구현을 제작 도구에 복제하지 않는다.
+- 경로·BPM·첫 박·마디 수·키트·출력명 등은 `profiles/`의 곡 설정으로 분리한다. 원본 해시·기대값·구간별 교정·가사 추정 근거는 곡별 판독 자료로 유지하며, 생성 결과를 독립 대조 기대값으로 대신하지 않는다. 원본 기호·글꼴·좌표 해석과 라이브 엔딩 대응은 곡별 어댑터가 맡는다.
+- 새 곡은 기존 곡 전체 스크립트를 복사하지 않고 설정·판독 어댑터·기대값을 추가한다. 새 공통 기능이 필요하면 해당 기능만 공통 모듈에 추가한다. 기존 `*_package.mjs`와 Python 명령은 보존된 곡의 실행 진입점이며 새 곡용 범용 CLI로 간주하지 않는다.
+- 공통 코드 변경에는 기존 곡을 사용한 `test_common.py`와 `score-production-common.test.ts`를 적용한다. 변경 전 코드와 같은 입력의 재생성 결과, 보존된 최종 패키지의 XML·가사·타이밍·원본/페이지 바이트를 비교한다. ZIP 시각·실험 경로 차이와 음악 데이터 변경을 구분한다. 오래된 초벌의 승인 전 표기를 최신 결과로 되돌리지 않는다.
+
 ## 드럼 연습 악보의 가수란
 
 - 앞으로 만드는 모든 드럼 연습 악보의 가수란에 선택하여 사용하는 **드럼킷 이름을 반드시 넣는다**. 예: `SoCal 드럼킷`, `Portland 드럼킷`. 특정 곡만의 예외나 빈칸 기준을 재사용하지 않는다.

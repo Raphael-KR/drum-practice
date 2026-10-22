@@ -375,12 +375,9 @@ def write_musicxml(bars, path, provenance, cues):
 
 def verify_musicxml(bars, path, schema_path):
     from lxml import etree
-    from verify import Resolver
-    parser = etree.XMLParser(resolve_entities=False, no_network=True)
-    parser.resolvers.add(Resolver(schema_path.parent))
-    tree = etree.parse(str(path), parser)
-    schema = etree.XMLSchema(etree.parse(str(schema_path), parser))
-    schema.assertValid(tree)
+    from common.musicxml import validate_schema, read_timeline
+    tree = etree.ElementTree(validate_schema(path, schema_path))
+    read_timeline(tree.getroot())
     # The app canonical writer adds a separate hidden lyric-rest part. Verify
     # the actual percussion part without counting those auxiliary measures.
     measures = tree.xpath("/score-partwise/part[@id='P1']/measure")

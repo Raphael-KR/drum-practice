@@ -1,40 +1,28 @@
+import {
+  sha,
+  base64,
+  saveEvidence,
+  createVerifiedPackage,
+  projectBase,
+  prepareCanonical,
+} from "./common/package.mjs";
+import profiles from "./profiles/songs.json";
+const config = profiles["loveholic"];
 /* Run only through the existing localhost Vite app for this reviewed source.
  * Creates and rereads a package in memory; never modifies an IndexedDB record.
  * A loopback evidence receiver saves the new artifact under docs/experiments.
  */
 import { renderMusicXML } from "/src/modules/score/musicxml.ts";
-import {
-  writeCanonical,
-  readCanonical,
-} from "/src/modules/score/canonical-xml.ts";
-import {
-  createScorePackage,
-  readScorePackage,
-} from "/src/modules/library/score-package.ts";
+import { readScorePackage } from "/src/modules/library/score-package.ts";
 import { defaults, validateSong } from "/src/model/model.ts";
 import { displayPage } from "/src/modules/score/score-pages.ts";
 import { projectLyrics } from "/src/modules/lyrics/lyric-score.ts";
 
-const ROOT =
-  "/@fs/Users/raphael/Playground/drum-practice/data/production/loveholic/";
+const ROOT = projectBase + config.root;
 const getBlob = async (name, type) =>
   new Blob([await (await fetch(ROOT + name)).arrayBuffer()], { type });
 const getJSON = async (name) => (await fetch(ROOT + name)).json();
-const base64 = async (blob) => {
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let text = "";
-  for (let i = 0; i < bytes.length; i += 8192)
-    text += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  return btoa(text);
-};
-const hash = async (blob) =>
-  [
-    ...new Uint8Array(
-      await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()),
-    ),
-  ]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+const hash = sha;
 const lyricSignature = (lyrics) =>
   lyrics.map(({ id, text, confirmed, scorePosition, time, end }) => ({
     id,
@@ -46,14 +34,7 @@ const lyricSignature = (lyrics) =>
     time,
     end,
   }));
-const save = async (endpoint, data, port) => {
-  const r = await fetch("http://127.0.0.1:" + port + "/" + endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!r.ok) throw Error("Evidence save failed " + r.status);
-};
+const save = saveEvidence;
 
 /** Add reviewed PDF-only lyric anchors without changing musical positions. */
 export async function applyPDFLyricAnchors({
@@ -101,7 +82,7 @@ export async function applyPDFLyricAnchors({
   if (updated.reduce((n, r) => n + r.lyricAnchors.length, 0) !== 269)
     throw Error("Incomplete PDF anchors");
   variant.regions = updated;
-  const packaged = await createScorePackage(record),
+  const packaged = await createVerifiedPackage(record),
     loaded = await readScorePackage(packaged);
   if (
     loaded.canonicalXML !== beforeXML ||
@@ -166,7 +147,7 @@ export async function refresh({ packageName, evidencePort = 5187 }) {
   record.song.measures.forEach((m, i) => {
     m.regionId = result.regions[i].id;
   });
-  const packaged = await createScorePackage(record);
+  const packaged = await createVerifiedPackage(record);
   const loaded = await readScorePackage(packaged);
   if (
     loaded.canonicalXML !== record.canonicalXML ||
@@ -302,7 +283,7 @@ export async function build({
     originalTitle: "Loveholic",
     artist: "러브홀릭",
     lyricText: cues.map((c) => c.text.replace(/\s+/g, " ").trim()).join("\n"),
-    bpm: 136,
+    bpm: config.bpm,
     firstBeat: measures[0].start,
     measures,
     regions,
@@ -402,16 +383,11 @@ export async function build({
     baseXML = new XMLSerializer().serializeToString(doc);
   }
   validateSong(song);
-  let canonicalXML = writeCanonical(song, baseXML, provenance.audio_sha256);
-  // Identical work/movement titles produce duplicate headings in OSMD. The
-  // display title remains in the canonical metadata field; no music is changed.
-  const doc = new DOMParser().parseFromString(canonicalXML, "application/xml");
-  const movement = doc.querySelector("movement-title");
-  if (movement?.textContent === doc.querySelector("work-title")?.textContent)
-    movement.remove();
-  canonicalXML = new XMLSerializer().serializeToString(doc);
-  const restored = structuredClone(song);
-  readCanonical(canonicalXML, restored);
+  const { canonicalXML, restored } = prepareCanonical(
+    song,
+    baseXML,
+    provenance.audio_sha256,
+  );
   if (
     JSON.stringify(restored.measures) !== JSON.stringify(song.measures) ||
     JSON.stringify(lyricSignature(restored.lyrics)) !==
@@ -484,7 +460,7 @@ export async function build({
       },
     ],
   };
-  const packaged = await createScorePackage(record);
+  const packaged = await createVerifiedPackage(record);
   const loaded = await readScorePackage(packaged);
   if (JSON.stringify(loaded.song) !== JSON.stringify(song))
     throw Error("Package song changed");

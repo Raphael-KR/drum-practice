@@ -25,22 +25,16 @@ EXPECTED = {
 IDS = {"X": "crash", "H": "hh", "S": "snare", "L": "tom-low", "K": "kick", "R": "rest"}
 
 
-class Resolver(E.Resolver):
-    def __init__(self, directory):
-        self.directory = directory
-
-    def resolve(self, url, pubid, context):
-        local = self.directory / url.split("/")[-1]
-        if local.exists():
-            return self.resolve_filename(str(local.resolve()), context)
+from common.musicxml import Resolver, validate_schema, read_timeline
 
 
 def verify(xml, ir, schema):
-    p = E.XMLParser()
-    p.resolvers.add(Resolver(schema))
-    xsd = E.XMLSchema(E.parse(str(schema / "musicxml.xsd"), p))
-    doc = E.parse(str(xml))
-    xsd.assertValid(doc)
+    root = validate_schema(xml, schema)
+    try:
+        read_timeline(root)
+    except ValueError as error:
+        raise AssertionError(str(error)) from error
+    doc = E.ElementTree(root)
     measures = doc.findall("./part/measure")
     assert [int(m.get("number")) for m in measures] == [b["number"] for b in ir]
     assert doc.find(".//sound").get("tempo") == "94"

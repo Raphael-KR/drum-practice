@@ -1,0 +1,19 @@
+{
+  "expectedMeasures": 137,
+  "divisions": 96,
+  "defaultQuarters": 4,
+  "measureQuarters": {
+    "135": 6
+  },
+  "representatives": {
+    "7": [96, 96, 48, 48, 48, 24, 24],
+    "9": [96, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24],
+    "131": [96, 32, 32, 32, 32, 32, 32, 32, 32, 32],
+    "135": [48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48],
+    "136": [12, 12, 12, 12, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 0, 96]
+  },
+  "tupletNotes": 9,
+  "tupletEdges": 6,
+  "accents": 1,
+  "basis": "Independently read printed rhythms; measure 135 retains twelve printed eighths as six quarters. See RED-SUNSET-PRODUCTION.md."
+}

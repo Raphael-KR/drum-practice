@@ -13,10 +13,11 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 from loveholic import PDF_SHA256
 
-HEAD_CENTER = {'œ': 3.3325, '¿': 2.5575, 'Y': 3.255}
-# Source-read parallel passages. Last eighth position is printed inside a
-# quarter-note span in these four bars; a nearest-head match would move it early.
-INTERIOR = {48: ('럼', 40), 99: ('럼', 83), 107: ('럼', 91), 109: ('어', 50)}
+from common.artifacts import PROFILES
+from common.lyrics import underlay_candidates
+_REVIEW=json.loads((PROFILES/'loveholic-lyrics.json').read_text())
+HEAD_CENTER=_REVIEW['HEAD_CENTER']
+INTERIOR={int(k):tuple(v) for k,v in _REVIEW['INTERIOR'].items()}
 
 
 def build(folder, output):
@@ -30,15 +31,7 @@ def build(folder, output):
     entries = []
     for unit in printed['units']:
         bar = bars[unit['measure']-1]
-        center = (unit['bounds'][0]+unit['bounds'][2])/2
-        candidates = []
-        for event in bar['events']:
-            xs = [h['x']+HEAD_CENTER[h['glyph']] for h in event['heads']] or [event['x']]
-            anchor = min(xs, key=lambda x: abs(x-center))
-            candidates.append(dict(distancePt=abs(anchor-center), sourceX=anchor,
-                                   quarterOffset=event['onset'], durationQuarters=event['duration'],
-                                   kind='rest' if event.get('rest') else 'note'))
-        candidates.sort(key=lambda x: x['distancePt'])
+        candidates = underlay_candidates(unit,bar,HEAD_CENTER)
         first = candidates[0]
         inferred = first['distancePt'] > 4
         evidence = dict(kind='source-note-underlay', candidates=candidates[:2])

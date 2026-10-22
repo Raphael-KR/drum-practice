@@ -1,40 +1,28 @@
+import {
+  sha,
+  base64,
+  saveEvidence,
+  createVerifiedPackage,
+  projectBase,
+  prepareCanonical,
+  bindRenderedScore,
+} from "./common/package.mjs";
+import profiles from "./profiles/songs.json";
+const config = profiles["tom-moving"];
+const measureSeconds = (4 * 60) / config.bpm;
+const audioSeconds =
+  config.firstBeat + (config.quarters * 60) / config.bpm + config.tailSeconds;
 /* Current localhost common renderer/package APIs. No IndexedDB writes. */
 import { renderMusicXML } from "/src/modules/score/musicxml.ts";
-import {
-  writeCanonical,
-  readCanonical,
-} from "/src/modules/score/canonical-xml.ts";
-import {
-  createScorePackage,
-  readScorePackage,
-} from "/src/modules/library/score-package.ts";
+import { readScorePackage } from "/src/modules/library/score-package.ts";
 import { defaults, validateSong, makeCycle } from "/src/model/model.ts";
 import { displayPage } from "/src/modules/score/score-pages.ts";
 
-const BASE = "/@fs/Users/raphael/Playground/drum-practice/";
-const ROOT = BASE + "data/production/tom-moving/source/";
-const sha = async (b) =>
-  Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest("SHA-256", await b.arrayBuffer()),
-    ),
-    (v) => v.toString(16).padStart(2, "0"),
-  ).join("");
-const b64 = async (b) => {
-  const bytes = new Uint8Array(await b.arrayBuffer());
-  let s = "";
-  for (let i = 0; i < bytes.length; i += 8192)
-    s += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  return btoa(s);
-};
-const save = async (endpoint, data) => {
-  const r = await fetch("http://127.0.0.1:5190/" + endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!r.ok) throw Error("Evidence receiver " + r.status);
-};
+const BASE = projectBase;
+const ROOT = BASE + config.root + "source/";
+const b64 = base64;
+const save = (endpoint, data) =>
+  saveEvidence(endpoint, data, config.evidencePort);
 
 export async function build() {
   const source = new Blob(
@@ -82,7 +70,8 @@ export async function build() {
     (s) => (window.tomMovingProgress = s),
     "P1",
   );
-  if (render.regions.length !== 28) throw Error("Expected 28 regions");
+  if (render.regions.length !== config.expectedMeasures)
+    throw Error("Expected 28 regions");
   const song = {
     version: 1,
     id: metadata.id,
@@ -90,23 +79,23 @@ export async function build() {
     originalTitle: metadata.title,
     artist: metadata.artist,
     composer: "영상 기본 패턴 · 연습용 정리",
-    bpm: 80,
-    firstBeat: 0.25,
+    bpm: config.bpm,
+    firstBeat: config.firstBeat,
     measures: render.regions.map((r, i) => ({
       id: "tom-moving-v2-m" + (i + 1),
       regionId: r.id,
       label: String(i + 1),
       beats: 4,
       denominator: 4,
-      start: 0.25 + i * 3,
-      end: 0.25 + (i + 1) * 3,
+      start: config.firstBeat + i * measureSeconds,
+      end: config.firstBeat + (i + 1) * measureSeconds,
     })),
     regions: render.regions,
     lyrics: [],
     markers: fixture.sections.map((section, i) => ({
       id: "tom-section-" + i,
       name: section.name,
-      time: 0.25 + i * 12,
+      time: config.firstBeat + i * 4 * measureSeconds,
     })),
     loops: [],
     settings: defaults(),
@@ -117,31 +106,20 @@ export async function build() {
     pageCount: render.pages.length,
   };
   validateSong(song);
-  const doc = new DOMParser().parseFromString(
-    writeCanonical(song, await source.text(), await sha(audio)),
-    "application/xml",
+  const { canonicalXML } = prepareCanonical(
+    song,
+    await source.text(),
+    await sha(audio),
   );
-  if (
-    doc.querySelector("movement-title")?.textContent ===
-    doc.querySelector("work > work-title")?.textContent
-  )
-    doc.querySelector("movement-title").remove();
-  const canonicalXML = new XMLSerializer().serializeToString(doc);
-  const restored = structuredClone(song);
-  readCanonical(canonicalXML, restored);
-  if (JSON.stringify(restored.measures) !== JSON.stringify(song.measures))
-    throw Error("Canonical timeline changed");
   const canonical = new Blob([canonicalXML], { type: source.type });
   const finalRender = await renderMusicXML(
     canonical,
     (s) => (window.tomMovingProgress = s),
     "P1",
   );
-  if (finalRender.regions.length !== 28)
+  if (finalRender.regions.length !== config.expectedMeasures)
     throw Error("Final canonical region count");
-  song.regions = finalRender.regions;
-  song.pageCount = finalRender.pages.length;
-  song.measures.forEach((m, i) => (m.regionId = finalRender.regions[i].id));
+  bindRenderedScore(song, finalRender);
   validateSong(song);
   const record = {
     song,
@@ -150,7 +128,7 @@ export async function build() {
     audio,
     pages: finalRender.pages,
   };
-  const packaged = await createScorePackage(record),
+  const packaged = await createVerifiedPackage(record),
     loaded = await readScorePackage(packaged);
   if (
     JSON.stringify(loaded.song) !== JSON.stringify(song) ||
@@ -162,9 +140,17 @@ export async function build() {
   const cycles = [];
   for (const rate of [0.75, 1, 1.25])
     for (const enabled of [false, true]) {
-      const c = makeCycle(10, 0, 86.25, rate, 0, song.measures[0], enabled);
-      const first = c.musicAt + 0.25 / rate,
-        expected = 10 + (enabled ? 3 : 0.25) / rate;
+      const c = makeCycle(
+        10,
+        0,
+        audioSeconds,
+        rate,
+        0,
+        song.measures[0],
+        enabled,
+      );
+      const first = c.musicAt + config.firstBeat / rate,
+        expected = 10 + (enabled ? measureSeconds : config.firstBeat) / rate;
       if (Math.abs(first - expected) > 1e-9)
         throw Error("First beat/countoff mismatch");
       cycles.push({
@@ -177,7 +163,7 @@ export async function build() {
     }
   const context = new AudioContext();
   const decoded = await context.decodeAudioData(await audio.arrayBuffer());
-  if (Math.abs(decoded.duration - 86.25) > 1 / decoded.sampleRate)
+  if (Math.abs(decoded.duration - audioSeconds) > 1 / decoded.sampleRate)
     throw Error("Decoded duration mismatch");
   await context.close();
   const svgs = await Promise.all(
@@ -200,7 +186,7 @@ export async function build() {
     status: "PASS",
     scope: "mechanical roundtrip, counts, decoding and numeric timing",
     visualStatus: "pending actual SVG visual review",
-    measures: 28,
+    measures: config.expectedMeasures,
     notes: 336,
     renderedHands: hands,
     svgPages: finalRender.pages.length,

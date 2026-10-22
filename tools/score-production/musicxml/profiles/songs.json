@@ -1,0 +1,56 @@
+{
+  "preplay-warmup": {
+    "root": "data/production/preplay-warmup/",
+    "packageStem": "preplay-warmup",
+    "evidencePort": 5191,
+    "expectedMeasures": 96,
+    "bpm": 80,
+    "firstBeat": 0.25,
+    "partId": "P1",
+    "sampleRate": 44100,
+    "tailSeconds": 2,
+    "quarters": 384,
+    "hits": 880,
+    "velocity": 76,
+    "channel": 9,
+    "kit": "socal",
+    "audioTitle": "시작전 손플기 — SoCal Kit",
+    "audioStem": "preplay-warmup-socal"
+  },
+  "tom-moving": {
+    "root": "data/production/tom-moving/",
+    "packageStem": "tom-moving",
+    "evidencePort": 5190,
+    "expectedMeasures": 28,
+    "bpm": 80,
+    "firstBeat": 0.25,
+    "partId": "P1",
+    "sampleRate": 44100,
+    "tailSeconds": 2,
+    "quarters": 112,
+    "hits": 336,
+    "velocity": 76,
+    "channel": 9,
+    "kit": "portland",
+    "audioTitle": "탐탐 무빙 연습 — Portland Kit",
+    "audioStem": "tom-moving-portland"
+  },
+  "loveholic": {
+    "root": "data/production/loveholic/",
+    "packageStem": "Loveholic",
+    "evidencePort": 5187,
+    "expectedMeasures": 123,
+    "bpm": 136,
+    "firstBeat": 0.193,
+    "partId": "P1"
+  },
+  "red-sunset": {
+    "root": "data/production/red-sunset/",
+    "packageStem": "red-sunset",
+    "evidencePort": 5191,
+    "expectedMeasures": 137,
+    "bpm": 134,
+    "firstBeat": 11.27,
+    "partId": "P1"
+  }
+}

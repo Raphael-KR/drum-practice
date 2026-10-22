@@ -6,28 +6,17 @@ the independently transcribed score onsets. Never writes source audio or XML.
 import argparse
 import hashlib
 import json
-import subprocess
 from pathlib import Path
 
 import numpy as np
+from common.audio_features import spectral_flux
 
 
 def run(audio, bars_path, out):
     bars = json.loads(bars_path.read_text())
     sr, hop, nfft = 11025, 128, 1024
-    pcm = subprocess.run(["ffmpeg", "-v", "error", "-i", str(audio), "-ac", "1", "-ar", str(sr),
-                          "-f", "f32le", "pipe:1"], capture_output=True, check=True).stdout
-    wave = np.frombuffer(pcm, dtype="<f4")
-    frames = np.lib.stride_tricks.sliding_window_view(wave, nfft)[::hop]
-    spectrum = np.log1p(np.abs(np.fft.rfft(frames * np.hanning(nfft), axis=1)))
-    flux = np.maximum(np.diff(spectrum, axis=0, prepend=spectrum[:1]), 0)
-    freq = np.fft.rfftfreq(nfft, 1/sr)
-    times = (np.arange(len(frames)) * hop + nfft/2) / sr
-    features = []
-    for lo, hi in [(30, 250), (250, 3000), (3000, 5400)]:
-        f = flux[:, (freq >= lo) & (freq < hi)].mean(axis=1)
-        scale = np.percentile(f, 95)
-        features.append(np.minimum(f / max(scale, 1e-8), 4))
+    times, features, duration = spectral_flux(audio, sample_rate=sr, hop=hop, nfft=nfft,
+                                              bands=[(30,250),(250,3000),(3000,5400)])
     scores = [[], [], []]
     for bar in bars:
         for ev in bar["events"]:
@@ -96,7 +85,7 @@ def run(audio, bars_path, out):
             peaks.append(dict(time=round(float(times[i]),4),strength=round(float(overall[i]),4)))
     result=dict(method="score-onset / three-band log spectral-flux correlation; estimate only",
                 audio_sha256=hashlib.sha256(audio.read_bytes()).hexdigest(),
-                decoded_duration_seconds=len(wave)/sr,sample_rate=sr,hop=hop,
+                decoded_duration_seconds=duration,sample_rate=sr,hop=hop,
                 first_beat_estimate_seconds=offset,bpm_estimate=bpm,
                 printed_bpm=136,objective=strength,
                 windows=windows,first_ten_seconds_transients=peaks,
