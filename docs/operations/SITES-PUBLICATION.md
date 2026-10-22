@@ -42,7 +42,22 @@
 
 로컬 분석 DB/인증키는 삭제했다. 공개 DB의 3개 분석 테이블은 0.7.9 발행에서 0002 마이그레이션으로 삭제했고 DB 재조회로 확인했다. 브라우저의 기존 보관함은 로컬 주소와 공개 주소 사이에 자동 이전되지 않는다.
 
-## 최신 발행 — 0.8.11
+## 최신 발행 — 0.8.12
+
+- I.O.I 갑자기를 공통 내 악보 목록에 추가하고 제작·검수·인계 도구와 회고 개선을 함께 반영했다. 기존 연습 흐름의 곡 추가·유지보수 patch이며 두 앱0.8.12, 저장 형식 유지, player만 공개했다.
+- 구현 `7a7f5a1d2808ece502ef745d4e10bfb41ee200cb`, [PR #5](https://github.com/Raphael-KR/drum-practice/pull/5), 병합 main `902aec51f2fa6293e75230234c9d1b7dd2983f19`. PR head/main tree `0b70aad2af982f8518e2cf2d73d510faa859cba8` 동일, 의존성·설정·검사 자산 변경 없이 전체 검사 결과를 재사용하고 main에서 두 앱을 재빌드했다. 소스 빌드 `f79fd6d87894`.
+- `npm run verify`: lint·서식409파일·앱/도구/hosting 타입·다국어·문서/구조, 전체126파일756테스트와 두 앱 빌드·player 경계 통과. 기존 실제 자료를 사용하는 제작 공통 Python4검사도 통과했다. 기존 큰 청크·Node localStorage 경고는 유지한다.
+- 독립 검토는 위 구현 SHA의 카탈로그·테스트3파일과 공통 저장/다운로드 영향 경로를 대상으로 차단 지적 없음. 제작 helper는 앞선 검토 이후 변경이 없어 기존 결과를 재사용했다. PR 전체70파일의 새 독립 감사로 확대하지 않는다.
+- 최종 [push CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39825352612), [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39825417189), [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39825778001) 성공. Node22/Linux fresh npm ci·verify:portable 확인. 커넥터의 병합 커밋 실행 목록이 비어 있어 GitHub CLI의 실제 실행 상태로 확인했다.
+- 배포 빌드와 정적37파일의3곳 대조 통과(HTML은 Worker가 제공). Sites 소스 `56de1cdcf874804b1bc4706cf0c7dd03c376fce9`, 저장 버전82.
+- 버전 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_61e2fef4742c81919611c5fec3e83dd9`.
+- 배포 ID: `appgdep_6ada4d7c70188191a38e290e0228779f` — succeeded, 2026-10-23 02:53:19 KST.
+- 아카이브: `local-archives/releases/release-0.8.12.tar.gz`, SHA-256 `a59aea0a9beeea693f820d6fc8408a57d13728db92fb3c614fba0b08370bea25`. Sites 저장 tar content hash `05e39560ff122d19a1c8927fca53238ddcc95d391a38dee89540ed84e642e85e`은 로컬 gzip 파일 해시와 별개다.
+- 공개 읽기 smoke16항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/Worker4파일·악보6개 SHA-256 일치, 폐기 API3경로404. 갑자기 패키지 SHA-256 `82936aae3c92bff84d52c8ae4b3190073e63358ee3cedd4253900707aee7763a`를 포함해 공개 파일이 검증한0.8.12 산출물과 같다.
+- UI: 로컬 Safari에서 두 앱의 목록·곡명/가수·0.8.12 표시를 DOM으로 확인했다. 같은 패키지·원음·재생 구현의 기존 Safari 저장/재열기·59/140 BPM·재생·반복·카운트오프·93마디 이후 잔향 종료 증거를 재사용했다. 캡처는 player 설정 화면으로 반환되어 editor 목록의 픽셀 검수 근거로 사용하지 않는다. 새 전곡 청취·공개 청취·iPad 실기기 검증은 하지 않았다.
+- 증거: `.tmp/release-0.8.12-{verify,main-build,site-build,production-common}.log`, `.tmp/release-0.8.12-{receipt,parity,smoke}.json`, `.tmp/ioi-app-safari.json`, 로컬 상세 기록 `docs/experiments/ioi-suddenly-app-validation.md`. 발행 후 결과만 추가하는 문서 PR은 제품 소스·버전·산출물을 바꾸지 않는다.
+
+## 이전 발행 — 0.8.11
 
 - 반복 구간 시작·삭제 조작과 버튼 이동 카운트오프를 통일했다. 두 앱0.8.11, 기존 조작 개선 patch이며 저장 형식은 유지한다. player만 공개했다.
 - 구현 `4374088d5c6426008ec35df83e8dde9dfa35818d`, [PR #3](https://github.com/Raphael-KR/drum-practice/pull/3), 병합 main `e0cf3ec9e71190ad5ddf330b695c5892f310a1ca`. PR head/main tree `f975cbada22ee1a255055bff8922587c2764e636` 동일, 의존성·설정·로컬 자산 변경 없이 전체 검사 결과를 재사용하고 main에서 두 앱을 재빌드했다. 소스 빌드 `dc442faf71bc`.
