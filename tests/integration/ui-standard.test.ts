@@ -16,7 +16,7 @@ describe("shared UI standard", () => {
       if (x.parent) expect(ids).toContain(x.parent);
     }
     expect(uiText("pause", "en")).toBe("Pause");
-    expect(componentName("playback.primary")).toBe("재생1바");
+    expect(componentName("playback.primary")).toBe("재생바");
     expect(componentName("playback.primary", "ko", true)).toBe(
       "재생 및 위치 조절",
     );

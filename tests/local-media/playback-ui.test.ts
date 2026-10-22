@@ -11,6 +11,7 @@ import {
 import { renderMeasure } from "../../src/modules/playback/playback-measure";
 import { installUIStandard } from "../../src/shared/ui/ui-standard";
 import type { Song } from "../../src/model/model";
+import { describeHelpControl } from "../../src/modules/help/help-controls";
 
 for (const [surface, bindings] of [
   ["web", webPlaybackBindings],
@@ -48,6 +49,27 @@ for (const [surface, bindings] of [
       [...root.querySelector(".transport")!.children].map((e) => e.className),
     ).toEqual(["flex transport-left", "icon-button", "flex transport-right"]);
     expect(root.querySelectorAll(".repeat-presets button")).toHaveLength(4);
+    for (const [id, name] of [
+      ["play", "재생"],
+      ["home", "처음으로"],
+      [bindings.rewind, "되감을 마디 수"],
+      [bindings.progress, "현재 마디"],
+      [bindings.adjust, "구간 반복"],
+    ]) {
+      const help = describeHelpControl(document.getElementById(id)!);
+      expect(help.title).toBe(name);
+      expect(help.body).toBeTruthy();
+      expect(help.body).not.toBe(help.title);
+    }
+    const presets = [
+      ...root.querySelectorAll<HTMLButtonElement>(".repeat-presets button"),
+    ];
+    for (const [index, preset] of presets.entries()) {
+      const help = describeHelpControl(preset);
+      expect(help.title).toBe("주변 마디 반복");
+      expect(help.body).toContain(`앞뒤 ${index + 1}마디`);
+      expect(preset.hasAttribute("aria-label")).toBe(false);
+    }
     expect(root.querySelector(".repeat-actions")!.firstElementChild).toBe(
       document.getElementById(bindings.adjust),
     );

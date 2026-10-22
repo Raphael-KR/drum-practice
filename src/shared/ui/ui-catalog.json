@@ -17,7 +17,8 @@
       "accessible": {
         "ko": "component.header.accessible",
         "en": "Header"
-      }
+      },
+      "helpRegion": true
     },
     {
       "id": "score",
@@ -34,7 +35,8 @@
       "accessible": {
         "ko": "component.score.accessible",
         "en": "Score"
-      }
+      },
+      "helpRegion": true
     },
     {
       "id": "playback",
@@ -75,8 +77,8 @@
       "parent": "playback",
       "role": "group",
       "selectors": {
-        "web": "#repeat-controls",
-        "player": ".repeat-controls"
+        "web": "#playback-drawer",
+        "player": "#playback-drawer"
       },
       "name": {
         "ko": "component.playback.secondary.name",
@@ -208,7 +210,7 @@
     },
     {
       "id": "home",
-      "parent": "playback.primary",
+      "parent": "playback.actions",
       "role": "",
       "selectors": {
         "web": "#home",
@@ -225,7 +227,7 @@
     },
     {
       "id": "play",
-      "parent": "playback.primary",
+      "parent": "playback.actions",
       "role": "",
       "selectors": {
         "web": "#play",
@@ -242,7 +244,7 @@
     },
     {
       "id": "rewind",
-      "parent": "playback.primary",
+      "parent": "playback.actions",
       "role": "",
       "selectors": {
         "web": "#jump",
@@ -259,7 +261,7 @@
     },
     {
       "id": "rewindCount",
-      "parent": "playback.primary",
+      "parent": "playback.actions",
       "role": "",
       "selectors": {
         "web": "#goto",
@@ -293,7 +295,7 @@
     },
     {
       "id": "progress",
-      "parent": "playback.primary",
+      "parent": "playback.navigation",
       "role": "",
       "selectors": {
         "web": "#progress-percent",
@@ -344,7 +346,7 @@
     },
     {
       "id": "loop",
-      "parent": "playback.secondary",
+      "parent": "playback.repeat",
       "role": "",
       "selectors": {
         "web": "#open-loop-dialog",
@@ -378,7 +380,7 @@
     },
     {
       "id": "markers",
-      "parent": "playback.secondary",
+      "parent": "playback.navigation",
       "role": "",
       "selectors": {
         "web": "#quick-markers",
@@ -386,11 +388,11 @@
       },
       "name": {
         "ko": "component.markers.name",
-        "en": "Three recent markers"
+        "en": "Five marker slots"
       },
       "accessible": {
         "ko": "component.markers.accessible",
-        "en": "Three recent markers"
+        "en": "Five marker slots"
       }
     },
     {
@@ -902,6 +904,190 @@
         "ko": "component.score.pdf.accessible",
         "en": "Full PDF score"
       }
+    },
+    {
+      "id": "playback.navigation",
+      "parent": "playback.primary",
+      "role": "group",
+      "selectors": {
+        "web": ".dock-navigation",
+        "player": ".dock-navigation"
+      },
+      "name": {
+        "ko": "component.playback.navigation.name",
+        "en": "Markers and position"
+      },
+      "accessible": {
+        "ko": "component.playback.navigation.name",
+        "en": "Markers and position"
+      },
+      "helpRegion": true,
+      "helpBounds": "children"
+    },
+    {
+      "id": "playback.actions",
+      "parent": "playback.primary",
+      "role": "group",
+      "selectors": {
+        "web": ".dock-play",
+        "player": ".dock-play"
+      },
+      "name": {
+        "ko": "component.playback.actions.name",
+        "en": "Playback actions"
+      },
+      "accessible": {
+        "ko": "component.playback.actions.name",
+        "en": "Playback actions"
+      },
+      "helpRegion": true,
+      "helpBounds": "children"
+    },
+    {
+      "id": "playback.repeat",
+      "parent": "playback.primary",
+      "role": "group",
+      "selectors": {
+        "web": ".dock-repeat",
+        "player": ".dock-repeat"
+      },
+      "name": {
+        "ko": "component.playback.repeat.name",
+        "en": "Nearby measure repeat"
+      },
+      "accessible": {
+        "ko": "component.playback.repeat.name",
+        "en": "Nearby measure repeat"
+      },
+      "helpRegion": true,
+      "helpBounds": "children"
+    },
+    {
+      "id": "sections",
+      "parent": "playback.secondary",
+      "role": "group",
+      "selectors": {
+        "web": "#section-shortcuts",
+        "player": "#section-shortcuts"
+      },
+      "name": {
+        "ko": "component.sections.name",
+        "en": "Section shortcuts"
+      },
+      "accessible": {
+        "ko": "component.sections.name",
+        "en": "Section shortcuts"
+      },
+      "helpRegion": true
+    },
+    {
+      "id": "ranges",
+      "parent": "playback.secondary",
+      "role": "group",
+      "selectors": {
+        "web": "#loop-slots",
+        "player": "#loop-slots"
+      },
+      "name": {
+        "ko": "component.ranges.name",
+        "en": "Saved loops"
+      },
+      "accessible": {
+        "ko": "component.ranges.name",
+        "en": "Saved loops"
+      },
+      "helpRegion": true
+    },
+    {
+      "id": "library.list",
+      "parent": "",
+      "role": "",
+      "selectors": {
+        "web": ".library-main:not(:has(#practice))",
+        "player": ".library-main:not(:has(#practice))"
+      },
+      "name": {
+        "ko": "component.library.list.name",
+        "en": "Score and audio library"
+      },
+      "accessible": {
+        "ko": "component.library.list.name",
+        "en": "Score and audio library"
+      },
+      "helpRegion": true,
+      "dynamicLabel": true
+    },
+    {
+      "id": "markerSlot",
+      "parent": "playback.navigation",
+      "role": "",
+      "selectors": {
+        "web": ".marker-slots button",
+        "player": ".marker-slots button"
+      },
+      "name": {
+        "ko": "component.markerSlot.name",
+        "en": "Marker"
+      },
+      "accessible": {
+        "ko": "component.markerSlot.name",
+        "en": "Marker"
+      },
+      "dynamicLabel": true
+    },
+    {
+      "id": "repeatPreset",
+      "parent": "playback.repeat",
+      "role": "",
+      "selectors": {
+        "web": ".repeat-presets button",
+        "player": ".repeat-presets button"
+      },
+      "name": {
+        "ko": "component.repeatPreset.name",
+        "en": "Nearby measure repeat"
+      },
+      "accessible": {
+        "ko": "component.repeatPreset.name",
+        "en": "Nearby measure repeat"
+      },
+      "dynamicLabel": true
+    },
+    {
+      "id": "sectionShortcut",
+      "parent": "sections",
+      "role": "",
+      "selectors": {
+        "web": "#section-shortcuts button",
+        "player": "#section-shortcuts button"
+      },
+      "name": {
+        "ko": "component.sectionShortcut.name",
+        "en": "Section shortcut"
+      },
+      "accessible": {
+        "ko": "component.sectionShortcut.name",
+        "en": "Section shortcut"
+      },
+      "dynamicLabel": true
+    },
+    {
+      "id": "loopSlot",
+      "parent": "ranges",
+      "role": "",
+      "selectors": {
+        "web": "[data-loop-slot]",
+        "player": "[data-loop-slot]"
+      },
+      "name": {
+        "ko": "component.loopSlot.name",
+        "en": "Saved loop"
+      },
+      "accessible": {
+        "ko": "component.loopSlot.name",
+        "en": "Saved loop"
+      },
+      "dynamicLabel": true
     }
   ],
   "messages": {

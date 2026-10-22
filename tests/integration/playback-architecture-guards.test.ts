@@ -29,7 +29,7 @@ const run = (script: string) =>
     cwd: fixture,
     encoding: "utf8",
   });
-it("accepts the current shared composition but rejects host ownership, retired actions, and copied forms", () => {
+it("resolves source imports and leaves external packages unresolved", () => {
   const resolution = spawnSync(
     process.execPath,
     [
@@ -46,13 +46,17 @@ it("accepts the current shared composition but rejects host ownership, retired a
     { cwd: root, encoding: "utf8" },
   );
   expect(resolution.status, resolution.stderr).toBe(0);
-  for (const script of [
-    "check-playback-architecture.mjs",
-    "check-common-components.mjs",
-    "check-i18n.mjs",
-    "check-source-boundaries.mjs",
-  ])
-    expect(run(script).status).toBe(0);
+});
+it.each([
+  "check-playback-architecture.mjs",
+  "check-common-components.mjs",
+  "check-i18n.mjs",
+  "check-source-boundaries.mjs",
+])("accepts the current shared composition with %s", (script) => {
+  const result = run(script);
+  expect(result.status, `${script}\n${result.stdout}\n${result.stderr}`).toBe(
+    0,
+  );
 });
 const cases = [
   [

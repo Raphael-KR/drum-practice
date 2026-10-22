@@ -13,6 +13,7 @@ import {
   describeHelpControl,
 } from "./help-controls";
 import { bindHelpHold } from "../../shared/ui/help-hold";
+import { createHelpRegions } from "./help-regions";
 
 let disposeHelp: (() => void) | undefined;
 /** A transparent top-layer guide leaves real controls focusable without executing them. */
@@ -31,6 +32,7 @@ export function installHelp(root: HTMLElement) {
     selected: HTMLElement | undefined,
     context: HTMLElement | undefined;
   let bubble: ReturnType<typeof createHelpBubble> | undefined;
+  let regions: ReturnType<typeof createHelpRegions> | undefined;
   let legend: HTMLDialogElement | undefined;
   let oldDescription: string | null = null;
   let hint: HTMLElement | undefined;
@@ -130,6 +132,7 @@ export function installHelp(root: HTMLElement) {
     surface.remove();
     surface = undefined;
     bubble = undefined;
+    regions = undefined;
     context = undefined;
     button.setAttribute("aria-expanded", "false");
     relocate();
@@ -141,6 +144,7 @@ export function installHelp(root: HTMLElement) {
       close();
       return;
     }
+    regions?.paint(!!selected);
     const header = surface.querySelector<HTMLElement>(".dialoghead")!;
     const r = button.getBoundingClientRect();
     header.style.left = `${Math.max(0, Math.min(innerWidth - 48, r.left))}px`;
@@ -172,6 +176,12 @@ export function installHelp(root: HTMLElement) {
         })),
       );
     }
+  };
+  const clearSelection = () => {
+    restoreDescription(selected, oldDescription);
+    selected = undefined;
+    bubble?.hide();
+    paint();
   };
   const select = (control: HTMLElement) => {
     if (
@@ -215,6 +225,7 @@ export function installHelp(root: HTMLElement) {
     legendButton.hidden = root.classList.contains("audio-practice");
     footer.append(instruction, legendButton);
     surface.append(footer);
+    regions = createHelpRegions(surface, root);
     bubble = createHelpBubble(surface);
     (context || root).append(surface);
     surface.showPopover();
@@ -295,7 +306,7 @@ export function installHelp(root: HTMLElement) {
       if (target) {
         select(target);
         if (type === "pointerdown") target.focus({ preventScroll: true });
-      }
+      } else if (type === "click") clearSelection();
       // Scroll gestures retain their default, while actual controls cannot activate in help mode.
       if (type !== "pointerdown" || target) event.preventDefault();
       event.stopImmediatePropagation();
@@ -323,9 +334,7 @@ export function installHelp(root: HTMLElement) {
     if (held && !held.isConnected) hideHold();
     relocate();
     if (surface && selected && !selected.isConnected) {
-      restoreDescription(selected, oldDescription);
-      selected = undefined;
-      bubble?.hide();
+      clearSelection();
     }
   });
   observer.observe(document.body, {
