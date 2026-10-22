@@ -1,3 +1,9 @@
+## 2026-10-22 — 공통 0.8.10 발행 완료
+- 도움말 컴포넌트·버튼 명칭 개선과 릴리스 스킬을 [PR #1](https://github.com/Raphael-KR/drum-practice/pull/1)로 병합했다. 구현b74cd92, CI 보완7fad66e, main d0da58c. 두 앱0.8.10·소스 빌드3da53c88acbe, 공개는 player만이다.
+- 전체123파일724테스트·공통 검사·두 앱 빌드 통과. PR 최신 head의 push/PR CI와 병합main CI39724619926 성공. PR/main tree가 같으며 main에서 다시 빌드했다. 구조 검사 합산 timeout은 검사별 분리로 해결했고 기준을 완화하지 않았다.
+- Sites 소스aa181577, 버전80, 배포appgdep_6ad996ab4cc88191ab7032632b80708f succeeded(13:53:15 KST). 정적36파일 대조와 공개 smoke15항목 통과. 앞선 두 앱 로컬 UI 증거를 사용하며 실제 iPad Safari/공개 청취는 미검증이다.
+- 발행 후 기록은 별도 문서 PR로 반영한다. 앱 소스·버전·산출물을 바꾸지 않는다. 정확한 SHA·CI·해시·환경·검증 한계는 [Sites 발행](docs/operations/SITES-PUBLICATION.md)을 따른다.
+
 ## 2026-10-22 — 공통 0.8.10 릴리스 준비
 - 목표: 컴포넌트·버튼 명칭과 도움말 개선을 검증하고 PR·main 병합을 거쳐 기존 Sites에 발행한다.
 - 범위: 앞선 도움말 변경, 프로젝트 릴리스 스킬, 두 앱 공통0.8.10. 기존 도움말의 사용성 개선이므로 patch다.

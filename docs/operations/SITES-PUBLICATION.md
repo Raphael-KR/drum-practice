@@ -42,7 +42,21 @@
 
 로컬 분석 DB/인증키는 삭제했다. 공개 DB의 3개 분석 테이블은 0.7.9 발행에서 0002 마이그레이션으로 삭제했고 DB 재조회로 확인했다. 브라우저의 기존 보관함은 로컬 주소와 공개 주소 사이에 자동 이전되지 않는다.
 
-## 최신 발행 — 0.8.9
+## 최신 발행 — 0.8.10
+
+- 공통 도움말의 컴포넌트 테두리 이름·버튼 명칭/설명을 정리했다. 두 앱0.8.10, 기존 도움말 사용성 개선 patch이며 재생·저장 형식은 유지한다. player만 공개했다.
+- 구현 `b74cd92c3a99ba0825d2094dde00ff9da7a4657f`, CI 보완 `7fad66e4723aaa23133bb73e111b26bd59c3a40c`, [PR #1](https://github.com/Raphael-KR/drum-practice/pull/1), 병합 main `d0da58c249308d42e790bfec8e77495d85f15601`. PR head와 main의 Git tree 동일성을 확인했다. 소스 빌드 `3da53c88acbe`.
+- `npm run verify`: lint·서식394파일·앱/도구/hosting 타입·문서/구조, 전체123파일724테스트와 두 앱 빌드·player 경계 통과. PR CI의 기존 구조 테스트 직렬 CLI 합산5초 초과를 독립 검사별 사례로 분리해 해결했으며 제한·검사 범위는 유지했다. 기존 큰 청크·Node localStorage 경고는 남는다.
+- 최종 [push CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39724457240), [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39724459987), [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39724619926) 성공. Node22/Linux fresh npm ci·verify:portable 확인. 자체 diff 검토이며 독립 리뷰는 아니다.
+- 검증한 main에서 두 앱 재빌드 후 배포 빌드 성공. 정적36파일 대조 통과(HTML은 Worker가 제공). Sites 소스 `aa181577f4aa21a8166670f8141e4f2470d73e16`, 저장 버전80.
+- 버전 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_07f72c968b2c8191aa282dada80a9783`.
+- 배포 ID: `appgdep_6ad996ab4cc88191ab7032632b80708f` — succeeded, 2026-10-22 13:53:15 KST.
+- 아카이브: `local-archives/releases/release-0.8.10.tar.gz`, SHA-256 `0149b7dc4b0fd80e85bb6913af281c592c5c2022b2ef51f2af9ca95489517967`. Sites 저장 tar content hash `9155c0222fed8b35239d31c1ae69bc9887ec7530d0f4d85d2b238439c1bf4c57`은 로컬 gzip 파일 해시와 별개다.
+- 공개 읽기 smoke15항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/Worker4파일·악보5개 SHA-256 일치, 폐기 API3경로404. 일치한 player 번들에0.8.10·빌드3da53c88acbe를 확인했다.
+- UI: 같은 기능 소스로 로컬 Chromium 두 앱의 영역7개·조작10종, 빈 곳 복원·길게 누르기 해제 후 미실행 및768×1024 화면 확인. Safari MCP Transport closed로 fallback을 사용했다. 실제 iPad Safari·공개 청취 검증은 아니다.
+- 증거: `.tmp/release-0.8.10-{verify-final,main-build,pr-ci-final,main-ci}.log`, `.tmp/release-0.8.10-{receipt,parity,smoke}.json`, `.tmp/help-component-names/`. 발행 후 이 기록만 추가한 문서 PR은 앱 소스·빌드가 같으므로 재인상·재발행하지 않는다.
+
+## 이전 발행 — 0.8.9
 
 - 개발·검사·빌드 경로 통일, 문서 정리, CI·도구/hosting 타입 검사 확대와 파일 입출력·재생 설정의 책임 분리. 기능·저장 형식을 유지하는 유지보수 patch이며 두 앱0.8.9, 공개는 player만이다.
 - 구현 커밋 `7d024173adfe838f28594514cc6475fb96cd0f98` — main push 완료. 소스 빌드 `869aa8c0c892`.
