@@ -52,5 +52,14 @@
     "bpm": 134,
     "firstBeat": 11.27,
     "partId": "P1"
+  },
+  "ioi-suddenly": {
+    "root": "data/production/ioi-suddenly-20261023/",
+    "packageStem": "ioi-suddenly",
+    "evidencePort": 5192,
+    "expectedMeasures": 93,
+    "bpm": 117,
+    "firstBeat": 0.391,
+    "partId": "P1"
   }
 }

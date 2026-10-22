@@ -24,11 +24,15 @@
 | 원본 사본·해시·PDF 페이지 준비 | `prepare_inputs.py`, `common/artifacts.py` | 지정한 원본을 새 폴더에 보존. 선택한 DPI로 원본 PDF만 래스터화 |
 | 정본 조립·패키지 왕복 | `common/package.mjs` | 기존 앱 API 호출. 전체 Song/XML, 원본 음원·악보, 모든 페이지와 대체 악보 비교 |
 | 결과 파일 저장 | `common/evidence.py` | 기존 `/render`, `/package`, `/artifacts` 요청과 로컬 출력명. 앱 서버는 계속 5173이며 별도 포트는 파일 수신기 |
+| 제작 계측 | `measure_production.py`, `common/measurement.py` | 실제 시작·단계와 요청별 사용량 메타데이터를 집계. 원시 대화 보존·상시 polling 없음. 단가/로그 범위/마감 시각 명시 |
+| 공통 검수 화면 | `common/review.mjs` | 기존 앱 표시 함수와 원본 시스템 구분을 사용하는 일시 화면. 가사 앵커/배치·해제 확인, DB 쓰기 없음 |
+| 인계문 조립 | `handoff_production.py`, `common/handoff.py` | 실제 파일·해시와 후보에 결합된 기존 검증 근거. 전송·수신자 수록/청취는 별도 상태 |
 | 규격·음악적 시간 검사 | `common/musicxml.py` | 로컬 XSD, divisions·성부·backup/forward·화음·점·연음·꾸밈음의 유리수 시간. 드럼 파트만 집계 |
 | MIDI·샘플 이벤트 | `common/midi.py` | BPM·박자·해상도·세기·채널을 명시. 곡별 작곡/스티킹을 결정하지 않음 |
 | 드럼킷 음원 | `common/drum_audio.py` | 보존된 EXS/CAF, 키트별 GM 변환, 이벤트. 기존 비루프·무조율 샘플 범위. GarageBand 효과 체인을 재현하지 않음 |
 | 음원 특징 | `common/audio_features.py` | PCM 디코딩·대역별 spectral flux. 원곡 연결의 승인/청취 판단은 하지 않음 |
 | 가사 후보 | `common/lyrics.py` | 원본 음표/쉼표 좌표에서 위치 후보 반환. 애매한 후보를 자동 확정하지 않음 |
+| MScore 벡터 구조 | `common/musescore_pdf.py` | 교정된 프로필의 선·빔·기호를 추출. 알 수 없는 기호는 실패 처리하며 악기 의미·반복·가사 확정은 곡별 판독 |
 | 곡 설정 | `profiles/songs.json` | 경로·템포·첫 박·기대 마디 수·음원 설정·결과 이름·수신 포트 |
 | 키트·악기 설정 | `profiles/kits.json`, `profiles/exercise-instruments.json` | 기존 SoCal/Portland 샘플 식별과 승인된 연습곡 악기 매핑. 의미 정본은 매핑 문서 |
 | 판독 기대값·근거 | `profiles/red-sunset-review.json`, `profiles/loveholic-lyrics.json`, `fixtures/*.json` | 독립 원본 리듬, 135마디 예외, 가사 내부 위치 추정, 연습곡 구성 |
@@ -45,7 +49,11 @@
 
 네 곡의 패키지 어댑터가 이 경로를 실제 호출한다. 추가 가사 검수·스티킹 표시·청취 검사는 각 어댑터에 남는다. Loveholic의 초기 `build`와 후속 `refresh`/가사 보정은 각각의 목적을 유지한다. 기존 정본을 가져와 왕복 검사하는 것은 최신 렌더링·청취 검사와 별개다.
 
+후속 실제 변환인 [I.O.I 갑자기](IOI-SUDDENLY-CONVERSION.md)에도 적용했다. 이 곡은 `ioi_suddenly_*` 어댑터와 `profiles/ioi-suddenly-*.json`으로 원본/가사/음원 판독을 분리한다. 실제 Vite 브라우저에서 발견한 `projectBase` 끝 `/` 누락을 공통 모듈에서 보정했고, 기존 패키지 4곡의 5검사를 다시 통과했다. Node 경로 해석만으로 브라우저의 변환 URL 계약을 검증한 것으로 간주하지 않는다.
+
 ### 새 곡에서 할 일
+
+반복 계측·검수 화면·인계 준비는 [실행 안내](REUSABLE-PRODUCTION-WORKFLOW.md)를 따른다. I.O.I 회고에서 확인한 임시 화면/경로 오류와 계측 전담 비용을 줄이기 위한 공통 실행 경로이며 음악적 검증 기준을 낮추지 않는다.
 
 1. 원본·기존 결과를 식별하고, `profiles/songs.json`에 이번 작업에 필요한 설정만 추가한다. 다른 곡의 `firstBeat`나 BPM을 기본값으로 복사하지 않는다.
 2. 새로운 PDF 양식이면 대표 구간을 판독하고, 필요할 때 양식별 어댑터를 만든다. 음표 시작/길이·악기·성부를 해독한 데이터와 독립 원본 기대값을 별도로 보존한다.

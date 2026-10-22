@@ -9,7 +9,12 @@ import {
   readScorePackage,
 } from "../../../../src/modules/library/score-package.ts";
 
-export const projectBase = new URL("../../../../", import.meta.url).pathname;
+// Vite's transformed directory URL may omit its final slash. Every song path
+// below is repository-relative, so retain the directory boundary explicitly.
+export const projectBase = new URL(
+  "../../../../",
+  import.meta.url,
+).pathname.replace(/\/?$/, "/");
 export async function sha(blob) {
   return Array.from(
     new Uint8Array(
