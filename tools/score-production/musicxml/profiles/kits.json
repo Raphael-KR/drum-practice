@@ -1,0 +1,38 @@
+{
+  "socal": {
+    "exsSource": "/Library/Application Support/Logic/Sampler Instruments/03 Drums & Percussion/04 Drum Kit Designer/Drum Kit Designer/Stereo/SoCal Kit.exs",
+    "patchSource": "/Applications/GarageBand.app/Contents/Resources/Patches/Instrument/Drum Kit/SoCal.patch/#Root.cst",
+    "keys": {
+      "38": [38, "Sn1"],
+      "50": [48, "TomHi"],
+      "47": [47, "TomMidHi"],
+      "43": [43, "TomLo"]
+    },
+    "sampleFiles": {
+      "38": "SoCal Kit Snare_consolidated.caf",
+      "50": "SoCal Kit Toms_consolidated.caf",
+      "47": "SoCal Kit Toms_consolidated.caf",
+      "43": "SoCal Kit Toms_consolidated.caf"
+    },
+    "comment": "Installed GarageBand SoCal samples; dry offline render, not GarageBand project bounce"
+  },
+  "portland": {
+    "exsSource": "/Library/Application Support/Logic/Sampler Instruments/03 Drums & Percussion/04 Drum Kit Designer/Drum Kit Designer/Stereo/Portland Kit.exs",
+    "patchSource": "/Applications/GarageBand.app/Contents/Resources/Patches/Instrument/Drum Kit/Portland.patch/#Root.cst",
+    "keys": {
+      "36": [36, "Bd1"],
+      "38": [38, "Sn2"],
+      "50": [48, "TomHi"],
+      "47": [47, "TomMidHi"],
+      "43": [43, "TomLo"]
+    },
+    "sampleFiles": {
+      "36": "Portland Kit Kick_consolidated.caf",
+      "38": "Portland Kit Snare_consolidated.caf",
+      "50": "Portland Kit Toms_consolidated.caf",
+      "47": "Portland Kit Toms_consolidated.caf",
+      "43": "Portland Kit Toms_consolidated.caf"
+    },
+    "comment": "Installed GarageBand Portland samples; dry offline render, not GarageBand project bounce"
+  }
+}

@@ -53,12 +53,22 @@ function loveholicButton() {
     `[data-score-id="${record.song.id}"] [data-editor-open]`,
   )!;
 }
-it("merges the real catalog once, keeps the saved record, and groups 2 basic / 3 personal scores", () => {
+it("merges the real catalog once, keeps the saved record, and groups basic and personal scores from their catalog identities", () => {
   const entries = scoreCatalog([record]);
   expect(
     entries.filter((e) => e.category === "basic").map((e) => e.id),
   ).toEqual(bundled.filter((s) => s.category === "basic").map((s) => s.id));
-  expect(entries.filter((e) => e.category === "personal")).toHaveLength(3);
+  expect(
+    entries
+      .filter((e) => e.category === "personal")
+      .map((e) => e.id)
+      .sort(),
+  ).toEqual(
+    bundled
+      .filter((s) => s.category !== "basic")
+      .map((s) => s.id)
+      .sort(),
+  );
   expect(entries.filter((e) => e.id === record.song.id)).toHaveLength(1);
   expect(entries.find((e) => e.id === record.song.id)?.record).toBe(record);
 });
@@ -70,7 +80,7 @@ it("returns to the common home catalog without creating a second list dialog", a
   );
   expect(
     document.querySelectorAll("#editor-home-personal article"),
-  ).toHaveLength(3);
+  ).toHaveLength(bundled.filter((s) => s.category !== "basic").length);
   await library.open();
   expect(h.showHome).toHaveBeenCalledOnce();
   expect(document.getElementById("library-dialog")).toBeNull();

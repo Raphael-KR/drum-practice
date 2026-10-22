@@ -3,23 +3,16 @@
 Not a transcription of each drummer microtiming. A score bar has one period.
 Keep raw correlation evidence and competing solutions; no listening claim.
 """
-import argparse,hashlib,json,subprocess
+import argparse,hashlib,json
 from pathlib import Path
 import numpy as np
+from common.audio_features import spectral_flux
 
 def features(audio,folder):
-    sr=16000;hop=160;nfft=1024
-    pcm=subprocess.run(['ffmpeg','-v','error','-i',str(audio),'-ac','1','-ar',str(sr),'-f','f32le','pipe:1'],capture_output=True,check=True).stdout
-    wave=np.frombuffer(pcm,dtype='<f4');frames=np.lib.stride_tricks.sliding_window_view(wave,nfft)[::hop]
-    spec=np.log1p(np.abs(np.fft.rfft(frames*np.hanning(nfft),axis=1)));flux=np.maximum(np.diff(spec,axis=0,prepend=spec[:1]),0)
-    f=np.fft.rfftfreq(nfft,1/sr);times=(np.arange(len(frames))*hop+nfft/2)/sr
-    fs=[]
-    for lo,hi in [(30,180),(180,3000),(3000,7900)]:
-        vals=flux[:,(f>=lo)&(f<hi)].mean(axis=1)
-        vals=np.minimum(vals/max(np.percentile(vals,95),1e-8),4)
-        fs.append(vals)
+    times,fs,duration=spectral_flux(audio,sample_rate=16000,hop=160,nfft=1024,
+                                     bands=[(30,180),(180,3000),(3000,7900)])
     np.savez_compressed(folder/'spectral-flux.npz',times=times,features=np.array(fs))
-    return times,np.array(fs),len(wave)/sr
+    return times,np.array(fs),duration
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--root',type=Path,required=True);a=ap.parse_args();root=a.root

@@ -1,0 +1,99 @@
+{
+  "audio_sha256": "fc06ded4e04abb219401b84caf4be6a9be6dc45607e1234b5748e7aec20e8031",
+  "score_bpm": 117,
+  "printed_measures": 79,
+  "played_measures": 93,
+  "quarters_per_measure": 4,
+  "actual_order_ranges": [
+    [1, 28],
+    [21, 27],
+    [29, 54],
+    [47, 53],
+    [55, 79]
+  ],
+  "sample_rate": 16000,
+  "hop": 160,
+  "nfft": 1024,
+  "bands": [
+    [30, 180],
+    [180, 3000],
+    [3000, 7900]
+  ],
+  "pulse_quarter_range": [16, 372],
+  "coarse_bpm_range": [116, 118.001, 0.01],
+  "coarse_offset_range": [0, 0.52, 0.01],
+  "fine_bpm_deltas": [-0.015, 0.016, 0.001],
+  "fine_offset_deltas": [-0.02, 0.021, 0.001],
+  "intro_onsets_by_band": [
+    [0, 2, 4, 6, 8, 10, 12],
+    [1, 3, 5, 7, 9, 11, 13, 14.5, 15]
+  ],
+  "review_windows": [
+    [0, 16],
+    [16, 80],
+    [80, 144],
+    [144, 208],
+    [208, 272],
+    [272, 336],
+    [336, 372]
+  ],
+  "source_anchors": {
+    "4": [
+      [0, [0]],
+      [1, [0, 1]],
+      [2.5, [1]],
+      [3, [1]]
+    ],
+    "38": [
+      [0, [0, 2]],
+      [0.5, [2]],
+      [1, [0, 2]],
+      [1.5, [2]],
+      [2, [0, 1]],
+      [2.5, [1]],
+      [2.75, [1]],
+      [3, [0, 1]],
+      [3.25, [1]],
+      [3.5, [1]]
+    ],
+    "54": [
+      [0, [0, 2]],
+      [0.5, [2]],
+      [1, [0, 1, 2]],
+      [1.5, [2]],
+      [2, [0, 2]],
+      [2.25, [1]],
+      [2.5, [1]],
+      [3, [0, 1]],
+      [3.5, [1]],
+      [3.75, [1]]
+    ],
+    "79": [
+      [0, [0]],
+      [0.5, [2]],
+      [1, [0, 1]],
+      [1.5, [2]],
+      [2, [0]],
+      [2.5, [1, 2]],
+      [3, [1, 2]],
+      [3.5, [0]]
+    ]
+  },
+  "source_decisions": [
+    "The intro and m4/38/54/79 onsets were independently read from the original PDF before comparison with mixed-audio transients.",
+    "Only one fixed tempo and first-beat offset is used. Window shifts and peak deltas are diagnostics, never individual playback beat corrections.",
+    "The half-quarter pulse search covers played quarters 16..371.5. Canonical XML ORDER must agree with the reviewed repeat/ending sequence.",
+    "117 BPM is the printed tempo. Search ranges and anchors apply only to the source audio hash recorded here; 116.999 BPM does not establish a meaningful deviation from 117.",
+    "These inputs reproduce the original numerical analysis. They do not imply actual listening, source instrument isolation or count-off playback verification."
+  ],
+  "report_method": "Common three-band spectral flux; fixed half-quarter comb over quarters 16..371.5, independently transcribed intro discriminates phase. Estimate only; no listening or stem isolation.",
+  "report_limits": [
+    "Mixed recording spectral features, not isolated drum stems.",
+    "No actual listening or count-off ON/OFF playback verification was performed by this analysis.",
+    "Printed 117 BPM is authoritative for score; 116.999 BPM is a numerical recording estimate effectively consistent with 117.",
+    "First beat is a signal-window fit with 10ms feature hop, not millisecond-accurate ground truth.",
+    "Local shifts and nearby peaks are diagnostics only; never applied as individual beat or hit times.",
+    "The final 3.89s beyond the 93-measure grid is preserved in the original audio as tail.",
+    "Apple STT/AFM was considered unnecessary: this task uses numerical transients; vocal lyric timing is outside scope."
+  ]
+}

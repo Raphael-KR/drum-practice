@@ -1,15 +1,20 @@
 """Generate user-corrected S-H-M-F exercises; preserve rhythm, sticking and kick."""
-import argparse,json,struct
+import argparse,json
 from pathlib import Path
 from collections import Counter
 from lxml import etree as E
 from xml_helpers import add
-from verify import Resolver
+from common.musicxml import validate_schema, read_timeline
 
+from common.instruments import INSTRUMENTS
+from common.artifacts import profile
+from common.midi import midi as write_midi, schedule
 FIXTURE=Path(__file__).with_name('fixtures')/'tom_moving_video.json'
-INSTRUMENTS={'S':('Snare','C',5,38),'M':('Tom 2','D',5,47),
-             'H':('Tom 1','E',5,50),'F':('Floor Tom','A',4,43),'K':('Right Bass','F',4,36)}
-BPM,FIRST,SR,TAIL=80,.25,44100,2
+CONFIG=profile('tom-moving')
+BPM,FIRST,SR,TAIL=(CONFIG[k] for k in ('bpm','firstBeat','sampleRate','tailSeconds'))
+
+def midi(events,total_quarters):
+    return write_midi(events,total_quarters,bpm=BPM,velocity=CONFIG['velocity'],channel=CONFIG['channel'])
 
 def write_score(fixture):
     root=E.Element('score-partwise',version='4.0')
@@ -71,7 +76,7 @@ def read_events(xml):
     return out
 
 def verify(xml,fixture):
-    schema=Path(__file__).resolve().parents[3]/'data/reference/musicxml/schema';parser=E.XMLParser();parser.resolvers.add(Resolver(schema));E.XMLSchema(E.parse(str(schema/'musicxml.xsd'),parser)).assertValid(E.fromstring(xml))
+    schema=Path(__file__).resolve().parents[3]/'data/reference/musicxml/schema';read_timeline(validate_schema(xml,schema))
     bars=read_events(xml);assert len(bars)==fixture['expected']['measures'];counts=Counter();hands=Counter();index=0
     for s in fixture['sections']:
         for pattern in s['patterns']:
@@ -87,38 +92,20 @@ def verify(xml,fixture):
     assert (hands['R'],hands['L'])==(208,80)
     return bars,{'status':'PASS','MusicXML4XSD':True,**fixture['expected'],'instrumentHits':dict(counts)}
 
-def vlq(n):
-    data=[n&127];n>>=7
-    while n:data.insert(0,128|(n&127));n>>=7
-    return bytes(data)
-
-def midi(events,total_quarters):
-    stream=bytearray(b'\0\xff\x51\x03'+(750000).to_bytes(3,'big')+b'\0\xff\x58\x04\x04\x02\x18\x08');last=0
-    for tick,on,key in sorted(events,key=lambda e:(e[0],e[1],e[2])):
-        stream+=vlq(tick-last)+bytes([0x99 if on else 0x89,key,76 if on else 0]);last=tick
-    stream+=vlq(total_quarters*480-last)+b'\xff\x2f\0'
-    return b'MThd'+struct.pack('>IHHH',6,0,1,480)+b'MTrk'+struct.pack('>I',len(stream))+stream
-
 def main():
     p=argparse.ArgumentParser();p.add_argument('--out',type=Path,required=True);a=p.parse_args();a.out.mkdir(parents=True,exist_ok=False)
     fixture=json.loads(FIXTURE.read_text());xml,bars=write_score(fixture);_,audit=verify(xml,fixture)
     (a.out/'tom-moving-source.musicxml').write_bytes(xml);(a.out/'composition.json').write_text(json.dumps({'bpm':BPM,'firstBeat':FIRST,'bars':bars},ensure_ascii=False,indent=2))
-    es=[];ms=[]
-    for i,b in enumerate(bars):
-        for e in b['events']:
-            start=i*16+e['offsetUnits'];key=INSTRUMENTS[e['instrument']][3]
-            for on,units in [(True,start),(False,start+e['durationUnits'])]:
-                es.append({'on':on,'note':key,'velocity':76 if on else 0,'channel':9,'frame':round((FIRST+units/4*60/BPM)*SR),'measure':i+1});ms.append((units*120,on,key))
-    es.sort(key=lambda e:(e['frame'],e['on'],e['note']))
+    es,ms=schedule(bars,INSTRUMENTS,bpm=BPM,first=FIRST,sample_rate=SR,velocity=CONFIG['velocity'],channel=CONFIG['channel'])
     (a.out/'midi-events.json').write_text(json.dumps({'sampleRate':SR,'endFrame':round((FIRST+112*60/BPM+TAIL)*SR),'events':es},indent=2))
-    (a.out/'tom-moving.mid').write_bytes(midi(ms,112))
+    (a.out/'tom-moving.mid').write_bytes(midi(ms,CONFIG['quarters']))
     mutations=[]
     for path,value,attr in [('.//note/duration','1',None),('.//note/instrument','P1-H','id'),('.//direction-type/words','L',None),('.//note/unpitched/display-step','A',None),('.//backup/duration','12',None)]:
         d=E.fromstring(xml);n=d.find(path)
         if attr:n.set(attr,value)
         else:n.text=value
         try:verify(E.tostring(d),fixture)
-        except (AssertionError,E.DocumentInvalid,KeyError):mutations.append(path)
+        except (AssertionError,E.DocumentInvalid,KeyError,ValueError):mutations.append(path)
         else:raise AssertionError('Corruption undetected')
     audit.update(bpm=BPM,firstBeat=FIRST,musicalSeconds=84,audioSeconds=86.25,rejectedMutations=mutations)
     (a.out/'generation-audit.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2));print(json.dumps(audit,ensure_ascii=False))

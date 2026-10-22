@@ -1,0 +1,14 @@
+{
+  "HEAD_CENTER": {
+    "œ": 3.3325,
+    "¿": 2.5575,
+    "Y": 3.255
+  },
+  "INTERIOR": {
+    "48": ["럼", 40],
+    "99": ["럼", 83],
+    "107": ["럼", 91],
+    "109": ["어", 50]
+  },
+  "basis": "Printed source-note underlay; interior offsets remain parallel-phrase inferences, not vocal timings."
+}

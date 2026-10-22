@@ -1,0 +1,42 @@
+{
+  "pdf_sha256": "257508398e03aab7e8f567df9175cac52a438f16e7d690d6e424a7f07ac8532c",
+  "music_font": "MScore",
+  "staff_linewidth": 0.3628346447,
+  "stem_linewidth": 0.5896062981,
+  "beats_per_measure": 4,
+  "source_measures": 79,
+  "system_starts": [
+    1, 5, 9, 13, 17, 21, 25, 29, 31, 35, 39, 43, 47, 51, 56, 60, 64, 68, 72, 76
+  ],
+  "heads": {
+    "\ue0a4": { "stem_offset": 5.68 },
+    "\ue0a9": { "stem_offset": 5.69 },
+    "\ue0b3": { "stem_offset": 6.8 }
+  },
+  "rests": {
+    "\ue4e3": { "duration": 4, "type": "whole", "measure": true },
+    "\ue4e4": { "duration": 2, "type": "half" },
+    "\ue4e5": { "duration": 1, "type": "quarter" },
+    "\ue4e6": { "duration": 0.5, "type": "eighth" }
+  },
+  "flags": { "\ue240": 1 },
+  "techniques": { "\ue5e7": "open", "\ue5e5": "close" },
+  "non_rhythm_glyphs": ["\ue044", "\ue069"],
+  "source_mapping": {
+    "E0A4:7": "kick",
+    "E0A4:3": "snare",
+    "E0A4:1": "tom1",
+    "E0A4:2": "tom2",
+    "E0A4:5": "floor-tom",
+    "E0A9:-1": "closed-hi-hat",
+    "E0A9:3": "cross-stick",
+    "E0B3:-2": "crash"
+  },
+  "source_decisions": [
+    "Music font, line widths and glyph stem offsets are measured from this PDF, not copied from another song.",
+    "System starts and 79 source measures are read from the printed system numbers. The system beginning at m29 has two measures and is indented.",
+    "E4E3 is the whole-measure rest at m30-33; no duration is inferred from horizontal width.",
+    "No dotted notes, tuplets, grace notes, ties, sloped beams or down-stem voices occur in the identified source. Unsupported MScore glyphs are reported.",
+    "Open/close action glyphs retain their source event and coordinates, including close markers at beats with no hi-hat head. No additional hi-hat attack is invented."
+  ]
+}

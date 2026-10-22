@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "recipient": {
+    "title": "드럼연습실 웹앱 개발",
+    "threadId": "01a0afc9-ca21-7371-9390-06eb07c017e9",
+    "hostId": "local"
+  },
+  "productionDocument": "docs/score-production/IOI-SUDDENLY-CONVERSION.md",
+  "artifacts": {
+    "musicxml": "data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly-final.musicxml",
+    "package": "data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly.drumscore",
+    "sourceAudio": "data/production/ioi-suddenly-20261023/input/source.mp3",
+    "sourcePdf": "data/production/ioi-suddenly-20261023/input/source.pdf"
+  },
+  "evidence": [
+    {
+      "name": "MusicXML 규격·원본 대조",
+      "path": "data/production/ioi-suddenly-20261023/review/canonical-final-audit.json",
+      "scope": "전곡 IR/시간/악기 위치, 독립 원본 21마디, 오류 4종 거부. 전곡 독립 이중 전사가 아님.",
+      "expect": { "/status": "PASS" },
+      "bind": { "/xmlSHA256": "musicxml" }
+    },
+    {
+      "name": "실제 공통 API 패키지 왕복",
+      "path": "data/production/ioi-suddenly-20261023/package-v1/package-audit.json",
+      "scope": "전체 Song/XML·원본 음원/악보·모든 페이지. 실제 보관함 수록과 청취는 별도.",
+      "expect": { "/status": "PASS" },
+      "bind": {
+        "/canonicalSHA256": "musicxml",
+        "/packageSHA256": "package",
+        "/audioSHA256": "sourceAudio",
+        "/sourcePDFSHA256": "sourcePdf"
+      }
+    },
+    {
+      "name": "가사 앵커·재생 시계",
+      "path": "data/production/ioi-suddenly-20261023/review/browser-components.json",
+      "scope": "301개 PDF 가사 앵커 및 9조합 ON/OFF 수치 검사. 청취 검사 아님. 파일 해시 결합 없는 과거 관측 기록.",
+      "expect": { "/status": "PASS" }
+    }
+  ],
+  "observations": [
+    "원본 79마디를 반복 1/2번 괄호에 따라 93마디·372박으로 펼쳤다. 원본 순서 XML과 마디 대응표는 제작 폴더에 보존했다.",
+    "악보 117 BPM 유지. 원음 추정 116.999 BPM·첫 박0.391초, 일정 격자와 원본 MP3 전체/끝 여운을 보존했다.",
+    "가사301단위를 PDF 음표/쉼표에 연결하고 근거 부족7마디는 문구로 보존했다. 원문428문자와 반복2절을 대조했다."
+  ],
+  "limitations": [
+    "세부 박을 확정하지 못한 원본20,31,32,33,34,46,56마디의 가사는 measureLyrics다.",
+    "원본72–79의 일부 +는 HH 음표 없이 다른 타격에 붙는다. 새 타격을 추가하지 않았으며 stopped 및 source-hihat-actions 메타정보를 보존했다. 다른 프로그램에서 대상 하이햇을 식별하는 데 한계가 있다.",
+    "이 설정은 제작 당시 근거다. 실제 수록·저장 후 재열기·기기 청취의 현재 상태는 개발 담당의 최신 기록으로 확인한다."
+  ],
+  "nextActions": [
+    "최신 실제 수록/재열기 상태를 확인하고 미완료 범위만 처리한다.",
+    "실제 시작·끝, 배속, 반복, 카운트오프와 기기 청취를 별도 확인한다."
+  ]
+}
