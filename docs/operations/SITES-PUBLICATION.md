@@ -42,7 +42,21 @@
 
 로컬 분석 DB/인증키는 삭제했다. 공개 DB의 3개 분석 테이블은 0.7.9 발행에서 0002 마이그레이션으로 삭제했고 DB 재조회로 확인했다. 브라우저의 기존 보관함은 로컬 주소와 공개 주소 사이에 자동 이전되지 않는다.
 
-## 최신 발행 — 0.8.10
+## 최신 발행 — 0.8.11
+
+- 반복 구간 시작·삭제 조작과 버튼 이동 카운트오프를 통일했다. 두 앱0.8.11, 기존 조작 개선 patch이며 저장 형식은 유지한다. player만 공개했다.
+- 구현 `4374088d5c6426008ec35df83e8dde9dfa35818d`, [PR #3](https://github.com/Raphael-KR/drum-practice/pull/3), 병합 main `e0cf3ec9e71190ad5ddf330b695c5892f310a1ca`. PR head/main tree `f975cbada22ee1a255055bff8922587c2764e636` 동일, 의존성·설정·로컬 자산 변경 없이 전체 검사 결과를 재사용하고 main에서 두 앱을 재빌드했다. 소스 빌드 `dc442faf71bc`.
+- `npm run verify`: lint·서식394파일·앱/도구/hosting 타입·문서/구조, 전체123파일739테스트와 두 앱 빌드·player 경계 통과. 기존 큰 청크·Node localStorage 경고는 유지한다. 자체 diff 검토이며 독립 리뷰는 아니다.
+- 최종 [push CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39776612831), [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39776697367), [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39777345005) 성공. Node22/Linux fresh npm ci·verify:portable 확인.
+- 배포 빌드와 정적36파일의3곳 대조 통과(HTML은 Worker가 제공). Sites 소스 `50f9cec930bd670f7c10d586ebcf96119b9ba4b7`, 저장 버전81.
+- 버전 ID: `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_a66f624a612881919395b6f2d7496882`.
+- 배포 ID: `appgdep_6ad9ffafed748191910532199f1de187` — succeeded, 2026-10-22 21:21:21 KST.
+- 아카이브: `local-archives/releases/release-0.8.11.tar.gz`, SHA-256 `a7338e2275b9e3a604718e0428e439bd6fa7f9d068dbf52b56f9488574668952`. Sites 저장 tar content hash `a9df8bb681924d56b6bb817a24cae903a4d3624dbd4e3e10a260351fee9c5ade`은 로컬 gzip 파일 해시와 별개다.
+- 공개 읽기 smoke15항목 통과: HTML3경로 새 번들·보안 헤더, JS/CSS/Worker4파일·악보5개 SHA-256 일치, 폐기 API3경로404. 공개 파일은 검증한0.8.11 산출물과 동일하다.
+- UI: 기존 두 앱의 구간 조작 및 Safari 실제 오디오 엔진12상태 결과를 사용했다. 릴리스에서 Chromium의 길게 누르기 후 말풍선 유지·명시적 삭제와 DOM 크기를 추가 확인하고 검증용1~2마디 구간을 삭제했다. Safari 캡처는 흰 화면, Chromium 캡처는 CDP 시간 초과로 픽셀 외형 검수에는 제한이 있다. 실제 iPad 터치·공개 청취는 미검증이다.
+- 증거: `.tmp/release-0.8.11-{verify,main-build,site-build}.log`, `.tmp/release-0.8.11-{receipt,parity,smoke}.json`, `.tmp/countoff-safari.json`. 발행 후 기록만 추가하는 문서 PR은 제품 소스·버전·산출물을 바꾸지 않는다.
+
+## 이전 발행 — 0.8.10
 
 - 공통 도움말의 컴포넌트 테두리 이름·버튼 명칭/설명을 정리했다. 두 앱0.8.10, 기존 도움말 사용성 개선 patch이며 재생·저장 형식은 유지한다. player만 공개했다.
 - 구현 `b74cd92c3a99ba0825d2094dde00ff9da7a4657f`, CI 보완 `7fad66e4723aaa23133bb73e111b26bd59c3a40c`, [PR #1](https://github.com/Raphael-KR/drum-practice/pull/1), 병합 main `d0da58c249308d42e790bfec8e77495d85f15601`. PR head와 main의 Git tree 동일성을 확인했다. 소스 빌드 `3da53c88acbe`.
