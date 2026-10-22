@@ -58,6 +58,12 @@ window.scoreReview.dispose();
 
 ## 3. 인계문
 
+인계 초안을 만들기 전에 제작 JSON·스크립트의 수정을 마치고 [기존 검사 계약](../operations/TESTING.md)에 따라 `npm run format:check`와 변경 범위의 코드 검사를 완료한다. 전체 공통 검사에는 `npm run check`를 사용한다. 프로젝트 서식 검사는 Python·Markdown을 포함하지 않으므로 해당 파일까지 검사됐다고 보고하지 않는다.
+
+서식 수정 시 JSON은 수정 전후 파싱한 데이터 값을 비교하고, 스크립트는 diff에서 서식 외 변경이 없는지와 관련 집중 검사 결과를 확인한다. 보존된 제작 결과의 해시도 대조한다. 의미가 달라졌으면 영향받은 생성·음악 검증을 다시 수행한다. 이미 같은 입력/코드로 통과한 검사나 음악 검증을 인계문 작성만을 위해 반복하지 않는다.
+
+그다음 아래 `build`를 실행한다. `evidence`의 이름·범위와 곡별 제작 문서에 실행 명령, 검사 결과, 근거 경로를 연결하고, `limitations`·`nextActions`에는 남은 항목과 다음 확인을 넣는다. 코드 검사, 원본 대조, 패키지 왕복, 화면 확인, 실제 청취, 앱 수록 검증은 각각 기록한다. 일부 미완료를 숨기거나 다른 검사 통과로 대신하지 않는다.
+
 ```bash
 python3 tools/score-production/musicxml/handoff_production.py build --manifest tools/score-production/musicxml/profiles/ioi-suddenly-handoff.json --out .tmp/ioi-handoff-new
 python3 tools/score-production/musicxml/handoff_production.py receipt --help
