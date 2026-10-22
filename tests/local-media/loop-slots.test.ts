@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { getHelpAction } from "../../src/shared/ui/help-bubble";
 import { it, expect, vi, afterEach } from "vitest";
 import { readFileSync } from "node:fs";
 import {
@@ -145,6 +146,10 @@ it("empty slots show range selection; touch endpoints commit while mouse drags n
   c.click(0);
   expect(c.p.loop).toBeTruthy();
   c.click(0);
+  expect(c.p.loop).toBeTruthy();
+  expect(c.s.loops).toHaveLength(1);
+  const slot = c.root.querySelector<HTMLElement>('[data-loop-slot="0"]')!;
+  getHelpAction(slot)!.run();
   expect(c.p.loop).toBeUndefined();
   expect(c.s.loops).toHaveLength(0);
   c.control.dispose();
@@ -199,7 +204,7 @@ it("keeps tooltips for empty, selecting and saved ranges without edit instructio
   expect(title()).toContain("취소");
   c.tap(20);
   c.tap(20);
-  expect(title()).toContain("시작 마디에서 누르면 삭제");
+  expect(title()).toContain("길게 누른 뒤 삭제 버튼");
   expect(title()).not.toContain("편집");
   c.control.dispose();
 });
@@ -402,7 +407,7 @@ it("touch scroll before the first tap and Escape do not register a range", () =>
   c.control.dispose();
 });
 
-it("click goes to the range start; another click at that measure deletes without timing requirements", () => {
+it("click always goes to the range start; only the explicit action deletes", () => {
   const c = setup();
   storeLoopSlot(c.s, 0, measureLoop(c.s, 1, 2, "first"));
   storeLoopSlot(c.s, 1, measureLoop(c.s, 3, 3, "second"));
@@ -412,6 +417,9 @@ it("click goes to the range start; another click at that measure deletes without
   expect(c.s.loops).toHaveLength(2);
   vi.advanceTimersByTime(10000);
   c.click(0);
+  expect(c.s.loops).toHaveLength(2);
+  expect(c.p.position).toBe(c.s.measures[1].start);
+  getHelpAction(c.root.querySelector<HTMLElement>("[data-loop-slot]")!)!.run();
   expect(c.p.loop).toBeUndefined();
   expect(c.s.loops.map((l) => l.id)).toEqual(["second"]);
   expect(savedLoopSlots(c.s)[0]?.id).toBe("second");
@@ -431,14 +439,15 @@ it("moving away after a click makes the next click jump again rather than delete
   expect(c.p.position).toBe(c.s.measures[1].start);
   c.control.dispose();
 });
-it("click deletes immediately when already in the start measure, even without active repeat", () => {
+it("click activates the range without deleting when already in its start measure", () => {
   const c = setup();
   storeLoopSlot(c.s, 0, measureLoop(c.s, 1, 2, "first"));
   c.control.render();
   c.p.position = c.s.measures[1].start + 0.1;
   c.click(0);
-  expect(c.s.loops).toHaveLength(0);
-  expect(c.changed).toHaveBeenCalledOnce();
+  expect(c.s.loops).toHaveLength(1);
+  expect(c.p.position).toBe(c.s.measures[1].start);
+  expect(c.changed).not.toHaveBeenCalled();
   c.control.dispose();
 });
 it("pressing an empty slot twice only cancels range selection", () => {
@@ -470,5 +479,25 @@ it("mouse single clicks in range selection register endpoints, while movement an
     start: c.s.measures[1].start,
     end: c.s.measures[3].end,
   });
+  c.control.dispose();
+});
+
+it("empty and replaced controls cannot delete a range, and deleting another range keeps the active loop", () => {
+  const c = setup();
+  expect(
+    getHelpAction(c.root.querySelector<HTMLElement>("[data-loop-slot]")!),
+  ).toBeUndefined();
+  storeLoopSlot(c.s, 0, measureLoop(c.s, 0, 0, "first"));
+  storeLoopSlot(c.s, 1, measureLoop(c.s, 2, 3, "second"));
+  c.control.render();
+  const old = getHelpAction(
+    c.root.querySelector<HTMLElement>("[data-loop-slot]")!,
+  )!;
+  c.click(1);
+  old.run();
+  expect(c.s.loops).toHaveLength(2);
+  getHelpAction(c.root.querySelector<HTMLElement>("[data-loop-slot]")!)!.run();
+  expect(c.s.loops.map((loop) => loop.id)).toEqual(["second"]);
+  expect(c.p.loop?.id).toBe("second");
   c.control.dispose();
 });

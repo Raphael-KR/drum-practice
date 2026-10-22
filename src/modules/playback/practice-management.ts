@@ -52,7 +52,7 @@ export function attachPracticeManagement(h: Options) {
     );
     if (!button || button.disabled) return;
     const measure = h.song().measures[Number(button.dataset.sectionMeasure)];
-    if (measure) h.playback().seek(measure.start);
+    if (measure) h.playback().seek(measure.start, true);
   });
   function render() {
     const song = h.song(),

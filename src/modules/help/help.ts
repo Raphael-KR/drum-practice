@@ -6,7 +6,7 @@ import {
   closeDialogOnBackdrop,
 } from "../../shared/ui/dialog-ui";
 import { t } from "../../shared/i18n/i18n";
-import { createHelpBubble } from "../../shared/ui/help-bubble";
+import { createHelpBubble, getHelpAction } from "../../shared/ui/help-bubble";
 import {
   helpControl,
   helpControlAnchor,
@@ -36,6 +36,7 @@ export function installHelp(root: HTMLElement) {
   let legend: HTMLDialogElement | undefined;
   let oldDescription: string | null = null;
   let hint: HTMLElement | undefined;
+  let holdBubble: ReturnType<typeof createHelpBubble> | undefined;
   let held: HTMLElement | undefined;
   let heldDescription: string | null = null;
   const dismissible = new Map<HTMLDialogElement, () => void>();
@@ -70,28 +71,45 @@ export function installHelp(root: HTMLElement) {
     return old;
   };
   const hideHold = () => {
+    if (hint?.contains(document.activeElement) && held?.isConnected)
+      held.focus({ preventScroll: true });
     restoreDescription(held, heldDescription);
     held = undefined;
+    holdBubble = undefined;
     hint?.remove();
     hint = undefined;
   };
   const unbindHold = bindHelpHold({
     target: targetFor,
     enabled: () => !surface && !legend,
+    interactive: () => !!hint?.classList.contains("actionable-help"),
+    inside: (event) =>
+      event.target instanceof Element &&
+      !!hint?.querySelector(".help-bubble")?.contains(event.target),
+    release: () => holdBubble?.focusAction(),
     show: (target) => {
       hideHold();
       held = target;
       heldDescription = describe(target);
       hint = document.createElement("div");
       hint.id = "control-hold-help";
-      hint.className = "speech-help hold-help";
+      const action = getHelpAction(target);
+      hint.className = `speech-help hold-help${action ? " actionable-help" : ""}`;
       hint.setAttribute("popover", "manual");
       (target.closest("dialog[open]") || root).append(hint);
       hint.showPopover();
-      createHelpBubble(hint).show(
-        helpControlAnchor(target),
-        describeHelpControl(target),
+      holdBubble = createHelpBubble(
+        hint,
+        action && {
+          label: action.label,
+          run: () => {
+            if (!target.isConnected) return;
+            hideHold();
+            action.run();
+          },
+        },
       );
+      holdBubble.show(helpControlAnchor(target), describeHelpControl(target));
     },
     hide: hideHold,
   });

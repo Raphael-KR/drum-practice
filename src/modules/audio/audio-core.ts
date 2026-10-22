@@ -304,11 +304,11 @@ export class Player {
     this.timer = window.setInterval(() => this.tick(), 25);
     this.onstate();
   }
-  seek(time: number) {
+  seek(time: number, countOff = false) {
     const was = this.playing;
     this.pause();
     this.position = Math.max(0, Math.min(time, this.duration));
-    if (was) void this.play(false, false);
+    if (was) void this.play(countOff, false);
     else this.onstate();
   }
   addCycle(at: number, from: number, countOff: boolean) {

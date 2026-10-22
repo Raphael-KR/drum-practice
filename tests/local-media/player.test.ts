@@ -921,3 +921,61 @@ for (const mode of ["original", "practice", "fixed"] as const)
       vi.unstubAllGlobals();
     }
   });
+
+it.each([true, false])(
+  "button navigation replaces the active count and respects countOff=%s",
+  async (countOff) => {
+    vi.stubGlobal("AudioContext", Context);
+    vi.stubGlobal("window", { setInterval: () => 1 });
+    const p = new Player(() => ({ restartMeasure: false, countOff }));
+    const { changePlaybackLoop } =
+      await import("../../src/modules/playback/playback-actions");
+    try {
+      p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+      p.original = { duration: 296.88 } as AudioBuffer;
+      p.rendered = {} as AudioBuffer;
+      p.position = p.song!.measures[4].start;
+      await p.play();
+      const play = vi.spyOn(p, "play");
+      const oldSources = [...p.nodes] as unknown as Node[];
+      const target = p.song!.measures[8].start;
+      p.seek(target, true);
+      await play.mock.results.at(-1)!.value;
+      expect(oldSources.every((node) => node.stopped)).toBe(true);
+      expect(p.cycles).toHaveLength(1);
+      expect(p.cycles[0].from).toBe(target);
+      expect(p.cycles[0].count).toBe(countOff ? 4 : 0);
+      expect(p.playing).toBe(true);
+      const loop = {
+        id: "l",
+        name: "loop",
+        start: p.song!.measures[10].start,
+        end: p.song!.measures[12].end,
+      };
+      const fail = vi.fn();
+      changePlaybackLoop(p, loop, false, () => {}, fail);
+      await play.mock.results.at(-1)!.value;
+      expect(p.cycles).toHaveLength(1);
+      expect(p.cycles[0].from).toBe(loop.start);
+      expect(p.cycles[0].count).toBe(countOff ? 4 : 0);
+      changePlaybackLoop(p, undefined, false, () => {}, fail);
+      await play.mock.results.at(-1)!.value;
+      expect(p.cycles[0].count).toBe(0);
+      p.seek(target);
+      await play.mock.results.at(-1)!.value;
+      expect(p.cycles[0].count).toBe(0);
+      p.pause();
+      play.mockClear();
+      p.seek(target, true);
+      expect(play).not.toHaveBeenCalled();
+      expect(p.playing).toBe(false);
+      await p.play();
+      expect(p.cycles[0].count).toBe(countOff ? 4 : 0);
+      expect(fail).not.toHaveBeenCalled();
+    } finally {
+      p.pause();
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    }
+  },
+);

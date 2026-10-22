@@ -703,3 +703,11 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
   font-weight: 700;
   white-space: nowrap;
 }
+
+.hold-help.actionable-help .help-bubble {
+  pointer-events: auto;
+}
+.hold-help .help-action {
+  margin-top: 12px;
+  width: 100%;
+}

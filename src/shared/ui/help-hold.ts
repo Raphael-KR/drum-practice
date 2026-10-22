@@ -1,9 +1,12 @@
-/** Hold hints never turn into a click. Moving, scrolling, cancelling or releasing dismisses them. */
+/** Hold hints never turn into a click. Only actionable hints may survive release. */
 export function bindHelpHold(options: {
   target: (event: Event) => HTMLElement | undefined;
   show: (target: HTMLElement) => void;
   hide: () => void;
   enabled: () => boolean;
+  interactive?: () => boolean;
+  inside?: (event: Event) => boolean;
+  release?: () => void;
 }) {
   let press:
     | { target: HTMLElement; id: number; x: number; y: number; shown: boolean }
@@ -20,6 +23,7 @@ export function bindHelpHold(options: {
     options.hide();
   };
   listen("pointerdown", (event) => {
+    if (options.inside?.(event)) return;
     clear();
     suppressed = undefined;
     const e = event as PointerEvent;
@@ -51,7 +55,11 @@ export function bindHelpHold(options: {
   });
   for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
     listen(type, (event) => {
-      if (press && (event as PointerEvent).pointerId === press.id) clear();
+      if (!press || (event as PointerEvent).pointerId !== press.id) return;
+      if (type === "pointerup" && press.shown && options.interactive?.()) {
+        press = undefined;
+        options.release?.();
+      } else clear();
     });
   listen("click", (event) => {
     if (
@@ -76,8 +84,13 @@ export function bindHelpHold(options: {
   listen("blur", (event) => {
     if (event.target === event.currentTarget) clear();
   });
-  listen("keydown", () => {
+  listen("keydown", (event) => {
     suppressed = undefined;
+    if (options.interactive?.()) {
+      if ((event as KeyboardEvent).key !== "Escape") return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
     clear();
   });
   return () => {

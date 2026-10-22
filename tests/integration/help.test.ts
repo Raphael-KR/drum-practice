@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { it, expect, vi, beforeEach, afterEach } from "vitest";
+import { setHelpAction } from "../../src/shared/ui/help-bubble";
 import { installHelp } from "../../src/modules/help/help";
 import { createDialog } from "../../src/shared/ui/dialog-ui";
 beforeEach(() => {
@@ -324,4 +325,70 @@ it("keeps common close and backdrop dismissal on the same guarded cancellation p
   expect(
     document.querySelector("header .actions #app-help-button"),
   ).not.toBeNull();
+});
+
+it("actionable hold survives release, suppresses the release click and only runs its explicit action", () => {
+  vi.useFakeTimers();
+  const target = document.querySelector<HTMLButtonElement>("[data-remove]")!;
+  const run = vi.fn(),
+    click = vi.fn();
+  target.addEventListener("click", click);
+  setHelpAction(target, { label: "삭제", run });
+  pointer(target, "pointerdown");
+  vi.advanceTimersByTime(650);
+  pointer(target, "pointerup");
+  pointer(target, "lostpointercapture");
+  target.click();
+  const action = document.querySelector<HTMLButtonElement>(
+    "#control-hold-help .help-action",
+  )!;
+  expect(action).not.toBeNull();
+  expect(document.activeElement).toBe(action);
+  expect(click).not.toHaveBeenCalled();
+  expect(run).not.toHaveBeenCalled();
+  const shortcut = vi.fn();
+  document.addEventListener("keydown", shortcut);
+  action.dispatchEvent(
+    new KeyboardEvent("keydown", { key: " ", code: "Space", bubbles: true }),
+  );
+  expect(shortcut).not.toHaveBeenCalled();
+  document.removeEventListener("keydown", shortcut);
+  pointer(action, "pointerdown");
+  pointer(action, "pointerup");
+  action.click();
+  expect(run).toHaveBeenCalledOnce();
+  expect(document.querySelector("#control-hold-help")).toBeNull();
+});
+it.each(["outside", "escape", "scroll", "cancel"])(
+  "dismisses actionable hold without deletion on %s",
+  (reason) => {
+    vi.useFakeTimers();
+    const target = document.querySelector<HTMLButtonElement>("[data-remove]")!;
+    const run = vi.fn();
+    setHelpAction(target, { label: "삭제", run });
+    pointer(target, "pointerdown");
+    vi.advanceTimersByTime(650);
+    if (reason === "cancel") pointer(target, "pointercancel");
+    else {
+      pointer(target, "pointerup");
+      if (reason === "outside") pointer(document.body, "pointerdown");
+      if (reason === "escape")
+        document.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+        );
+      if (reason === "scroll") window.dispatchEvent(new Event("scroll"));
+    }
+    expect(run).not.toHaveBeenCalled();
+    expect(document.querySelector("#control-hold-help")).toBeNull();
+  },
+);
+it("help mode never exposes registered destructive actions", () => {
+  const target = document.querySelector<HTMLButtonElement>("[data-remove]")!;
+  const run = vi.fn();
+  setHelpAction(target, { label: "삭제", run });
+  open();
+  target.click();
+  expect(guide().querySelector(".help-action")).toBeNull();
+  expect(run).not.toHaveBeenCalled();
+  close();
 });

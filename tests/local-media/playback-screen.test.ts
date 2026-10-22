@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { getHelpAction } from "../../src/shared/ui/help-bubble";
 import { beforeEach, afterEach, it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import type { Player } from "../../src/modules/audio/audio-core";
@@ -356,8 +357,8 @@ for (const environment of ["web", "player"] as const) {
       root
         .querySelector<HTMLButtonElement>(`[data-radius="${radius}"]`)!
         .click();
-      expect(p.position).toBe(middle);
       const start = p.loop!.start;
+      expect(p.position).toBe(start);
       click("play");
       await Promise.resolve();
       await Promise.resolve();
@@ -724,7 +725,7 @@ for (const environment of ["web", "player"] as const)
       expect(marked()).toEqual([]);
     });
 for (const environment of ["web", "player"] as const)
-  it(`${environment}: range buttons jump from keyboard selection and delete at the selected start measure`, () => {
+  it(`${environment}: range buttons restart from keyboard selection and delete only via the explicit action`, () => {
     const { p, song, screen, root, ids } = mount(environment);
     song.loops = [
       {
@@ -754,6 +755,12 @@ for (const environment of ["web", "player"] as const)
     key("ArrowRight");
     expect(p.position).toBe(song.measures[4].start);
     root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();
+    screen.frame();
+    expect(song.loops).toHaveLength(1);
+    expect(p.position).toBe(song.measures[5].start);
+    getHelpAction(
+      root.querySelector<HTMLElement>('[data-loop-slot="0"]')!,
+    )!.run();
     screen.frame();
     expect(song.loops).toHaveLength(0);
     expect(p.loop).toBeUndefined();
@@ -1201,3 +1208,50 @@ for (const environment of ["web", "player"] as const)
       previousHeader,
     );
   });
+
+for (const environment of ["web", "player"] as const) {
+  it.each([true, false])(
+    `${environment}: navigation buttons request count-off and preserve playing=%s`,
+    (playing) => {
+      const { screen, p, song, root, ids, click } = mount(environment);
+      p.position = song.measures[20].start;
+      p.playing = playing;
+      root.querySelector<HTMLButtonElement>('[data-radius="2"]')!.click();
+      expect(p.position).toBe(song.measures[18].start);
+      expect(p.playing).toBe(playing);
+      expect(p.play).toHaveBeenCalledTimes(playing ? 1 : 0);
+      if (playing) expect(p.play).toHaveBeenLastCalledWith(true, false);
+      click(ids.adjust);
+      if (playing) expect(p.play).toHaveBeenLastCalledWith(false, false);
+      p.play.mockClear();
+      screen.mark();
+      p.position = song.measures[30].start;
+      const seek = vi.spyOn(p, "seek");
+      root.querySelector<HTMLButtonElement>("[data-quick-marker]")!.click();
+      expect(seek).toHaveBeenLastCalledWith(song.measures[18].start, true);
+      const calls = seek.mock.calls.length;
+      root.querySelector<HTMLButtonElement>("[data-quick-marker]")!.click();
+      expect(song.markers).toHaveLength(0);
+      expect(seek).toHaveBeenCalledTimes(calls);
+      const loop = {
+        id: "saved",
+        name: "saved",
+        start: song.measures[4].start,
+        end: song.measures[6].end,
+      };
+      song.loops = [loop];
+      song.repeatSlots = [loop.id];
+      screen.renderLists();
+      root.querySelector<HTMLButtonElement>("#loop-slots button")!.click();
+      expect(p.position).toBe(loop.start);
+      expect(p.playing).toBe(playing);
+      if (playing) expect(p.play).toHaveBeenLastCalledWith(true, false);
+      else expect(p.play).not.toHaveBeenCalled();
+      getHelpAction(
+        root.querySelector<HTMLElement>("#loop-slots button")!,
+      )!.run();
+      expect(p.loop).toBeUndefined();
+      if (playing) expect(p.play).toHaveBeenLastCalledWith(false, false);
+    },
+  );
+}
