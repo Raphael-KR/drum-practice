@@ -3,7 +3,7 @@ import * as prettier from "prettier";
 import { projectFiles } from "./project-files.mjs";
 
 const files = projectFiles().filter((file) =>
-  /\.(?:ts|js|mjs|json|css|html|ya?ml)$/.test(file),
+  /\.(?:ts|mts|js|mjs|json|css|html|ya?ml)$/.test(file),
 );
 const failures = [];
 for (const file of files) {

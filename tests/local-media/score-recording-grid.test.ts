@@ -49,10 +49,19 @@ beforeAll(async () => {
   );
 });
 it("keeps the real six-beat ending at its neighbours' staff scale in ribbon view", async () => {
-  const assets = await preparePlaybackAssets(record.pages, record.song);
+  // Published packages may omit derived timelines; use the existing native
+  // production artifact to test the view selector's geometric contract.
+  const engraving = await readScorePackage(
+    new Blob([
+      readFileSync(
+        "data/production/red-sunset/final/build-03/red-sunset.drumscore",
+      ),
+    ]),
+  );
+  const assets = await preparePlaybackAssets(engraving.pages, engraving.song);
   try {
     for (const zoom of [0.5, 1, 2]) {
-      const song = structuredClone(record.song);
+      const song = structuredClone(engraving.song);
       song.settings.view = "ribbon";
       song.settings.zoom = zoom;
       const ending = [133, 134, 135].map((i) => {

@@ -21,12 +21,12 @@ export default defineConfig(
     "docs/experiments/**",
   ]),
   {
-    files: ["**/*.{js,mjs,ts}"],
+    files: ["**/*.{js,mjs,ts,mts}"],
     extends: [js.configs.recommended],
     linterOptions: { reportUnusedDisableDirectives: "error" },
   },
   {
-    files: ["**/*.ts"],
+    files: ["**/*.{ts,mts}"],
     extends: [tseslint.configs.recommended],
   },
   {
@@ -40,7 +40,7 @@ export default defineConfig(
   {
     files: [
       "*.{ts,mjs}",
-      "scripts/**/*.mjs",
+      "scripts/**/*.{mjs,mts}",
       "tools/**/*.mjs",
       "server/**/*.ts",
       "hosting/**/*.{ts,mjs}",
