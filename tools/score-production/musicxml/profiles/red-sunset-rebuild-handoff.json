@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "recipient": {
+    "title": "드럼연습실 웹앱 개발",
+    "threadId": "01a0afc9-ca21-7371-9390-06eb07c017e9",
+    "hostId": "local"
+  },
+  "productionDocument": "docs/score-production/RED-SUNSET-REBUILD-20261023.md",
+  "artifacts": {
+    "musicxml": "data/production/red-sunset-rebuild-20261023/score.musicxml",
+    "fullSVG": "data/production/red-sunset-rebuild-20261023/full-score.svg",
+    "sourcePdf": "data/production/red-sunset/source/source.pdf",
+    "sourceAudio": "/Users/raphael/Documents/드럼 악보/YB - 붉은 노을.mp3"
+  },
+  "evidence": [
+    {
+      "name": "전곡 원본·규격·최신 제작 원칙",
+      "path": "data/production/red-sunset-rebuild-20261023/verification.json",
+      "scope": "137마디550사분음표·1521머리 원본 재대조, XSD/시간표/원래음표·음원연결 보존, 원본14표제·16지시와 O+6곳의 실제 공통 조판",
+      "expect": {
+        "/status": "PASS",
+        "/schema": "PASS",
+        "/timeline": "unchanged",
+        "/sourceMeasureReread": "all137 PASS"
+      },
+      "bind": {
+        "/xmlSHA256": "musicxml"
+      }
+    },
+    {
+      "name": "Safari 실제 전체 SVG 검수",
+      "path": "data/production/red-sunset-rebuild-20261023/visual-review.json",
+      "scope": "원생4쪽/35줄과 전체 표제·지시·첫마디·엔딩·O+ 표시 확인",
+      "expect": {
+        "/status": "PASS"
+      },
+      "bind": {
+        "/xmlSHA256": "musicxml",
+        "/fullSVGSHA256": "fullSVG"
+      }
+    },
+    {
+      "name": "기존 음원 연결의 실제 정본 API 재읽기",
+      "path": "data/production/red-sunset-rebuild-20261023/canonical-reopen.json",
+      "scope": "실제 현재 패키지에서 읽은 Song 복사본과 최종 저장 XML의137마디 박/시작/끝/beatTimes 비교; DB/패키지 쓰기 없음",
+      "expect": {
+        "/status": "PASS",
+        "/measures": 137,
+        "/beatTimesMeasures": 137
+      },
+      "bind": {
+        "/xmlSHA256": "musicxml"
+      }
+    }
+  ],
+  "observations": [
+    "섹션·연주 지시 최신7원칙과 harmonic·stopped O+ 공통 규칙에 따라 재제작. 표시 의도는 XML에만 저장하며 완성 SVG 좌표를 수정하지 않음.",
+    "기보된 카운트 임의 표제만 제거하고 첫마디 네 타격 유지.",
+    "현재 수록 패키지의 기존137마디 beatTimes를 보존하며 새 음원 분석이나 연결값 교정을 하지 않음."
+  ],
+  "limitations": [
+    "새 음원/패키지 생성·기존 수록본 교체·실제 저장 곡 업데이트·새 기기 청취는 수행하지 않음.",
+    "재현 기준은 동일 공통 조판기·Pretendard·인쇄 조판 폭1500이며 다른 소비자의 최소 간격을 보증하지 않음."
+  ],
+  "nextActions": [
+    "최종 MusicXML/SVG·검증과 공통 XML 위치 지원 결과를 접수하고 이전 v10/O+ 교정본과 구분.",
+    "이 인계만으로 기존 수록본 교체·커밋·push·발행을 시작하지 않음."
+  ]
+}

@@ -1,6 +1,16 @@
 import { normalizeDrumScore } from "./drum-legend";
 import { installDrumBeams } from "./drum-beams";
 import { RIBBON_TIMELINE_VERSION } from "./ribbon-timeline";
+import { installPlaybackWedges } from "./playback-wedges";
+import { installRehearsalLayout, REHEARSAL_TOP } from "./rehearsal-layout";
+import { installPlaybackWords } from "./playback-words";
+import { installTechnicalPositions } from "./technical-position";
+import { prepareWordsPositions, installWordsPositions } from "./words-position";
+import {
+  SCORE_TEXT_FONT_FAMILY,
+  loadScoreTextFonts,
+  embedScoreTextFonts,
+} from "./score-text-font";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import {
   annotateNoteHighlights,
@@ -324,6 +334,7 @@ async function renderMusicXMLPass(
   );
   progress(i18nText("musicxml.message412"));
   const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
+  const scoreFonts = await loadScoreTextFonts();
   const host = document.createElement("div");
   host.style.cssText =
     "position:fixed;left:-20000px;top:0;width:1500px;pointer-events:none;";
@@ -343,6 +354,8 @@ async function renderMusicXMLPass(
       drawPartAbbreviations: false,
     });
     // XML owns system boundaries; do not impose a fixed measure count.
+    osmd.EngravingRules.DefaultFontFamily = SCORE_TEXT_FONT_FAMILY;
+    osmd.EngravingRules.VexFlowTextFontFamily = SCORE_TEXT_FONT_FAMILY;
     osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 0;
     osmd.EngravingRules.NewSystemAtXMLNewSystemAttribute = true;
     osmd.EngravingRules.NewPageAtXMLNewPageAttribute = true;
@@ -370,6 +383,7 @@ async function renderMusicXMLPass(
     }
 
     const decorations = prepareDrumDecorations(renderDocument);
+    const wordsPositions = prepareWordsPositions(renderDocument);
     await osmd.load(renderDocument);
     // MusicXML owns first-system spacing. OSMD 2.1.2 does not apply this
     // standard value to the system position, so translate tenths to its units.
@@ -394,7 +408,14 @@ async function renderMusicXMLPass(
       );
     }
     installDrumBeams(osmd);
-    if (timeline) installRibbonEngraving(osmd, timeline);
+    const rehearsalBounds = installRehearsalLayout(osmd, renderDocument);
+    installTechnicalPositions(osmd, decorations);
+    const positionedWords = installWordsPositions(osmd, wordsPositions);
+    if (timeline) {
+      installRibbonEngraving(osmd, timeline);
+      installPlaybackWedges(osmd, timeline);
+    }
+    installPlaybackWords(osmd, rehearsalBounds, positionedWords, !!timeline);
     osmd.render();
     applyDrumDecorations(host, osmd, decorations);
     // This drum practice viewer omits percussion clef glyphs, including system
@@ -425,7 +446,10 @@ async function renderMusicXMLPass(
         !staff
       )
         continue;
-      const dy = staff.getBBox().y - 70 - Number(frame.getAttribute("y"));
+      const dy =
+        staff.getBBox().y -
+        REHEARSAL_TOP * 10 -
+        Number(frame.getAttribute("y"));
       for (const element of [frame, text]) {
         element.setAttribute(
           "y",
@@ -614,11 +638,20 @@ async function renderMusicXMLPass(
         );
         const bounds = systemBounds[page.PageNumber - 1].get(key);
         if (!bounds) continue;
-        for (const expression of g.ParentStaffLine.AbstractExpressions as {
-          Lines?: { SVGElement?: SVGGraphicsElement }[];
-          lines?: { SVGElement?: SVGGraphicsElement }[];
-        }[]) {
-          for (const line of expression.Lines ?? expression.lines ?? []) {
+        for (const expression of g.ParentStaffLine.AbstractExpressions) {
+          if (expression.Label && positionedWords.has(expression.Label)) {
+            const node = expression.Label.SVGNode as SVGGraphicsElement;
+            const box = node?.getBBox?.();
+            if (box) {
+              bounds.top = Math.min(bounds.top, box.y - 1);
+              bounds.bottom = Math.max(bounds.bottom, box.y + box.height + 1);
+            }
+          }
+          const wedge = expression as unknown as {
+            Lines?: { SVGElement?: SVGGraphicsElement }[];
+            lines?: { SVGElement?: SVGGraphicsElement }[];
+          };
+          for (const line of wedge.Lines ?? wedge.lines ?? []) {
             const box = line.SVGElement?.getBBox?.();
             if (!box) continue;
             bounds.top = Math.min(bounds.top, box.y - 1);
@@ -644,6 +677,7 @@ async function renderMusicXMLPass(
       svgs.map((svg) => {
         const copy = svg.cloneNode(true) as SVGSVGElement;
         copy.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        embedScoreTextFonts(copy, scoreFonts);
         return compressSVG(new XMLSerializer().serializeToString(copy));
       }),
     );
@@ -763,7 +797,9 @@ async function engraveMusicXML(
   const printed = await renderMusicXMLPass(blob, progress, partId);
   const ribbon = await renderMusicXMLPass(blob, progress, partId, {
     ...printed.spacing,
-    rowWidth: undefined,
+    // The ribbon widens the native stave for longer meters, never the glyphs.
+    // A four-quarter bar retains the same native width as a two-row cell.
+    quarter: printed.spacing.rowWidth! / 4,
   });
   const durations = printed.parsed.measures.map(
     (m) => (m.beats * 4) / m.denominator,
@@ -816,7 +852,7 @@ async function engraveMusicXML(
           ),
         }
       : undefined,
-    ...printed.spacing,
+    ...ribbon.spacing,
     regions: ribbon.regions,
     printStaffs: printed.staffs,
     staffs: ribbon.staffs,

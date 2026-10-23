@@ -108,44 +108,44 @@ export function installRibbonEngraving(
         format(width, parent);
         const duration = measure.parentSourceMeasure.Duration.RealValue * 4;
         const quarters = spacing.uniformQuarters ?? duration;
-        const rowEntries =
+        const targetWidth =
           spacing.uniformQuarters && spacing.rowWidth
-            ? measure.staffEntries.map((e) => {
-                let left = 0,
-                  right = 12;
-                for (const v of e.graphicalVoiceEntries) {
-                  if (v.parentVoiceEntry.IsGrace) continue;
-                  const metrics = (v as VexFlowVoiceEntry).vfStaveNote
-                    ?.getTickContext()
-                    ?.getMetrics();
-                  left = Math.max(left, metrics?.extraLeftPx || 0);
-                  right = Math.max(
-                    right,
-                    (metrics?.notePx || 12) + (metrics?.extraRightPx || 0),
-                  );
-                }
-                return {
-                  q: e.relInMeasureTimestamp.RealValue * 4,
-                  left,
+            ? spacing.rowWidth
+            : quarters * spacing.quarter;
+        const rowEntries = spacing.rowWidth
+          ? measure.staffEntries.map((e) => {
+              let left = 0,
+                right = 12;
+              for (const v of e.graphicalVoiceEntries) {
+                if (v.parentVoiceEntry.IsGrace) continue;
+                const metrics = (v as VexFlowVoiceEntry).vfStaveNote
+                  ?.getTickContext()
+                  ?.getMetrics();
+                left = Math.max(left, metrics?.extraLeftPx || 0);
+                right = Math.max(
                   right,
-                };
-              })
-            : [];
-        const points =
-          spacing.uniformQuarters && spacing.rowWidth
-            ? spacing.fixedGrid
-              ? rowEntries.map((e: { q: number }) =>
-                  gridPosition(e.q, duration, spacing.rowWidth!),
-                )
-              : rowPositions(
-                  [...rowEntries, { q: duration, left: 0, right: 0 }],
-                  spacing.offset,
-                  spacing.rowWidth,
-                )
-            : undefined;
-        measure.setWidth(
-          (points ? spacing.rowWidth! : quarters * spacing.quarter) / 10,
-        );
+                  (metrics?.notePx || 12) + (metrics?.extraRightPx || 0),
+                );
+              }
+              return {
+                q: e.relInMeasureTimestamp.RealValue * 4,
+                left,
+                right,
+              };
+            })
+          : [];
+        const points = spacing.rowWidth
+          ? spacing.fixedGrid
+            ? rowEntries.map((e: { q: number }) =>
+                gridPosition(e.q, duration, targetWidth),
+              )
+            : rowPositions(
+                [...rowEntries, { q: duration, left: 0, right: 0 }],
+                spacing.offset,
+                targetWidth,
+              )
+          : undefined;
+        measure.setWidth(targetWidth / 10);
         const stave = measure.getVFStave(),
           contexts = new Set();
         for (const [entryIndex, entry] of measure.staffEntries.entries())

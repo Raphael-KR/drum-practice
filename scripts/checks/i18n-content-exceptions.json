@@ -212,14 +212,14 @@
     "reason": "Approved drum legend SVG text; exact content digest, not a directory exemption.",
     "literals": [],
     "sha256": [
-      "3d2a4cdd64bf59894e529ecb703c3f0454f720f833acc122e84f0c62d7605b30"
+      "380e3be469953cdaa671b48dac7c19ff62a68556d7933bcfa4c20da581249611"
     ]
   },
   "modules/score/vendor/score-legend-portrait-svg.ts": {
     "reason": "Approved drum legend SVG text; exact content digest, not a directory exemption.",
     "literals": [],
     "sha256": [
-      "7f8f4a3ed2e6d25485d3f3600be0dd14d65bf50e9b3337a737d2fa4c7a871070"
+      "150eaacf2f1f01eefd12882eb29098ce07edea1e14219a0dffd2bc113a41a1e2"
     ]
   }
 }

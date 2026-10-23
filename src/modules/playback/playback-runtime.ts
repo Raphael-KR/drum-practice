@@ -35,6 +35,7 @@ import {
   scoreStageHTML,
 } from "./playback-ui";
 import { type StaffPosition } from "../score/practice-staff-layout";
+import { isEmbeddedScoreTextFontStyle } from "../score/score-text-font";
 
 export interface PlaybackRuntimeOptions {
   root: HTMLElement;
@@ -331,19 +332,35 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
           ? async (page) => {
               const text = await page.text(),
                 doc = new DOMParser().parseFromString(text, "image/svg+xml");
+              for (const style of doc.querySelectorAll(
+                "style[data-score-font]",
+              ))
+                if (await isEmbeddedScoreTextFontStyle(style))
+                  style.textContent = "";
+              const inspected = new XMLSerializer().serializeToString(doc);
+              const unsafeAttribute = [...doc.querySelectorAll("*")]
+                .flatMap((el) => [...el.attributes])
+                .find(
+                  (a) =>
+                    /^on/i.test(a.name) ||
+                    (/(href|src)$/i.test(a.name) && !a.value.startsWith("#")),
+                );
+              const unsafe = {
+                cssURL: /url\(\s*['"]?(?!#)/i.test(inspected),
+                cssImport: /@import/i.test(inspected),
+                element: doc.querySelector("script,foreignObject,parsererror")
+                  ?.localName,
+                attribute: unsafeAttribute?.name,
+              };
               if (
-                /url\(\s*['"]?(?!#)/i.test(text) ||
-                /@import/i.test(text) ||
-                doc.querySelector("script,foreignObject,parsererror") ||
-                [...doc.querySelectorAll("*")].some((el) =>
-                  [...el.attributes].some(
-                    (a) =>
-                      /^on/i.test(a.name) ||
-                      (/(href|src)$/i.test(a.name) && !a.value.startsWith("#")),
-                  ),
-                )
-              )
+                unsafe.cssURL ||
+                unsafe.cssImport ||
+                unsafe.element ||
+                unsafe.attribute
+              ) {
+                console.error("Unsafe score SVG", unsafe);
                 throw Error(i18nText("playback.message468"));
+              }
             }
           : undefined,
     });

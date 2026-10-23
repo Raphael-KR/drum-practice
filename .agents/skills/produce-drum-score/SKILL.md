@@ -5,25 +5,33 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 
 # 악보 제작
 
-역할은 **악보제작자**다. 악보 출력은 MusicXML로 만들며, 음원·재생용 패키지는 요청 범위에 따라 준비한다. 인쇄용 PDF와 독립 HTML 재생 파일은 생성하지 않는다.
+[제작 범위·출력 Rule](../../../docs/reference/score/production.md#score-production-rules--접수와-출력)을 확인하고 요청된 입력·산출물에 맞춰 아래 절차를 수행한다.
 
 ## 시작과 정본
 
-- 기본 원본 폴더는 `/Users/raphael/Documents/드럼 악보`다(사용자 결정 2026-10-23). 곡명만 주어지면 이 폴더에서 일치하는 PDF·음원을 먼저 찾는다. 한글 파일명은 NFC/NFD 정규화를 고려하고, 사용자가 별도 경로를 지정하면 그 경로를 우선한다. 원본은 읽기만 하며 프로젝트의 Git 제외 제작 폴더에 사본과 해시를 보존한다. 후보가 여러 개이거나 자료가 없을 때만 필요한 확인을 요청한다.
+- 곡명만 주어지면 [접수 Rule의 원본 폴더](../../../docs/reference/score/production.md#score-production-rules--접수와-출력)에서 일치하는 PDF·음원을 먼저 찾는다. 한글 파일명은 NFC/NFD 정규화를 고려하고, 사용자가 별도 경로를 지정하면 그 경로를 우선한다. 원본은 읽기만 하며 프로젝트의 Git 제외 제작 폴더에 사본과 해시를 보존한다. 후보가 여러 개이거나 자료가 없을 때만 필요한 확인을 요청한다.
 - 실제 프로젝트 루트에서 작업한다. [전역 지침](/Users/raphael/AGENTS.md), [프로젝트 지침](../../../AGENTS.md), cwd·Git 상태·HEAD를 먼저 확인하고 기존 변경과 로컬 자료를 보존한다.
-- 매 제작 시작 전에 [전체 제작 프로세스](../../../docs/score-production/SCORE-PRODUCTION-PROCESS.md)와 [변환 정책](../../../docs/score-production/MUSICXML-CONVERSION-POLICY.md)을 읽는다. 매핑은 [MusicXML·OSMD 매핑](../../../docs/score-production/SCORE-MUSICXML-OSMD-MAPPING.md), 표시는 [SVG 규칙](../../../docs/architecture/SVG-SCORE-RULES.md), 저장·가사는 [canonical 계약](../../../docs/architecture/MUSICXML-CANONICAL.md), 패키지는 [완성 파일 계약](../../../docs/architecture/SCORE-PACKAGE.md)을 따른다. 이 스킬은 이 정본들의 대체 매핑을 만들지 않는다.
-- 기존 승인과 입력으로 해결할 수 있는 내용을 사용자에게 다시 묻지 않는다. 문서가 헷갈리면 구조·현재/과거 상태를 정리한다. 모순 해결은 history → 관련 문서 → 과거 악보 제작 세션 → 웹 근거 순서로 확인하고 수정 이유를 기록한다.
+- 매 제작 시작 전에 [전체 제작 프로세스](../../../docs/how-to/produce-score.md#score-production-process--악보-제작-프로세스)와 [변환 정책](../../../docs/reference/score/production.md#musicxml-conversion-policy--pdf--musicxml-변환-정책)을 읽는다. 매핑은 [MusicXML·OSMD 매핑](../../../docs/reference/score/notation.md#score-musicxml-osmd-mapping--악보의-musicxml--osmd-매핑-규칙), 표시는 [SVG 규칙](../../../docs/reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙), 저장·가사는 [canonical 계약](../../../docs/reference/score/musicxml.md#musicxml-canonical--musicxml-정본-계약), 패키지는 [완성 파일 계약](../../../docs/reference/score/file-formats.md#score-package--완성-악보-파일-계약--drumscore-v1)을 따른다. 이 스킬은 이 정본들의 대체 매핑을 만들지 않는다.
+- 입력이나 문서가 불명확하면 [문제·모순 확인 기준](../../../docs/reference/score/production.md#musicxml-conversion-policy--막힘과-문서-모순)으로 근거를 대조하고 수정 이유를 기록한다.
+
+## 섹션·연주 지시 7가지 최종 원칙
+
+[섹션·연주 지시 Rule](../../../docs/reference/score/rendering.md#svg-score-rules--4-구간-시작-표시)을 읽고 [조판 검수 단계](../../../docs/how-to/review-score.md#score-production-process--6-svg-조판재생-캐시완성-패키지)를 수행한다. 원본 표제·지시 목록과 높이를 판독한 뒤 `common/direction-offset.mjs`로 표시 위치 후보를 평가하고 XML 재열기 결과를 대조한다. 단위·여백·줄 제한·위치 속성은 정본에서 읽는다. 재열기 비교에서는 자동 생성된 vf-auto ID와 실제 기호/좌표의 변화를 구별한다.
+
+## 하이햇 O+ 복합 지시
+
+원본의 해당 음표와 별도 열기·닫기 표기를 구분한 뒤 [O+ 승인 매핑](../../../docs/reference/score/notation.md#score-musicxml-osmd-mapping--o-복합-지시의-승인-범위)을 적용한다. 저장한 XML을 공통 조판기로 다시 읽고 실제 기호 경계·주변 주법과의 간격, 음악 데이터 보존을 각각 검사한다. 다른 곡의 좌표를 기본값으로 복사하지 않는다.
 
 ## 공통 코드와 곡별 작업 분리
 
-- 제작 도구를 작성·수정하기 전에 [공통 제작 도구](../../../docs/score-production/COMMON-TOOLS.md)를 읽는다. `tools/score-production/musicxml/common/`의 입력 보존·규격/시간 검사·패키지 왕복·결과 저장·MIDI·드럼킷 렌더링·음원 특징·가사 후보 계산을 우선 재사용한다. 앱의 정본·렌더러·패키지 구현을 제작 도구에 복제하지 않는다.
+- 제작 도구를 작성·수정하기 전에 [공통 제작 도구](../../../docs/reference/score/tools.md#common-tools--공통-제작-도구-계약과-곡별-판독)를 읽는다. `tools/score-production/musicxml/common/`의 입력 보존·규격/시간 검사·패키지 왕복·결과 저장·MIDI·드럼킷 렌더링·음원 특징·가사 후보 계산을 우선 재사용한다. 앱의 정본·렌더러·패키지 구현을 제작 도구에 복제하지 않는다.
 - 경로·BPM·첫 박·마디 수·키트·출력명 등은 `profiles/`의 곡 설정으로 분리한다. 원본 해시·기대값·구간별 교정·가사 추정 근거는 곡별 판독 자료로 유지하며, 생성 결과를 독립 대조 기대값으로 대신하지 않는다. 원본 기호·글꼴·좌표 해석과 라이브 엔딩 대응은 곡별 어댑터가 맡는다.
 - 새 곡은 기존 곡 전체 스크립트를 복사하지 않고 설정·판독 어댑터·기대값을 추가한다. 새 공통 기능이 필요하면 해당 기능만 공통 모듈에 추가한다. 기존 `*_package.mjs`와 Python 명령은 보존된 곡의 실행 진입점이며 새 곡용 범용 CLI로 간주하지 않는다.
 - 공통 코드 변경에는 기존 곡을 사용한 `test_common.py`와 `score-production-common.test.ts`를 적용한다. 변경 전 코드와 같은 입력의 재생성 결과, 보존된 최종 패키지의 XML·가사·타이밍·원본/페이지 바이트를 비교한다. ZIP 시각·실험 경로 차이와 음악 데이터 변경을 구분한다. 오래된 초벌의 승인 전 표기를 최신 결과로 되돌리지 않는다.
 
 ## 반복 준비·검수·보고 줄이기
 
-- [계측·검수·인계 실행 안내](../../../docs/score-production/REUSABLE-PRODUCTION-WORKFLOW.md)의 공통 도구를 사용한다. 같은 목적의 집계 스크립트·임시 검수 화면·인계문을 곡마다 새로 만들지 않는다.
+- [계측·검수·인계 실행 안내](../../../docs/how-to/produce-score.md#reusable-production-workflow--제작-계측검수인계-재사용)의 공통 도구를 사용한다. 같은 목적의 집계 스크립트·임시 검수 화면·인계문을 곡마다 새로 만들지 않는다.
 - 시간·토큰 측정이 요청되면 `measure_production.py start`로 실제 작업 시작을 기록하고, `mark`로 의미 있는 단계의 결과만 남긴 뒤 인계 직후 `finish`로 한 번 집계한다. 계측만을 위한 하위 에이전트·반복 polling은 쓰지 않는다. 명시한 로그 범위·종료 시각과 비용 미확인 부분을 보고한다. 별도 날짜에 시작한 수신자 채팅에도 같은 root turn이 전파될 수 있으므로 생산 담당과 인계 후 수신자 비용의 범위를 구분한다.
 - 독립 원본 판독 등 병행할 가치가 있는 일만 위임한다. 필요한 정본 경로·입력·범위·출력 계약과 미확정 판단을 짧게 전달하고, 전체 대화 이력의 불필요한 복사를 줄인다. 파일/해시 집계·확정 보고서 조립은 코드로 처리한다.
 - 대표 2~3줄에서 반복·주법·가사 예외를 먼저 판독한다. 원본 독립 기대값을 유지하며, 가사 배치 근거가 없는 위치를 임의 박으로 채우지 않는다. 조판·패키지 생성 전 관련 코드/설정 수정을 마쳐 Vite 재로드로 진행 중 결과를 잃지 않게 한다.
@@ -32,16 +40,14 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 
 ## 드럼 연습 악보의 가수란
 
-- 앞으로 만드는 모든 드럼 연습 악보의 가수란에 선택하여 사용하는 **드럼킷 이름을 반드시 넣는다**. 예: `SoCal 드럼킷`, `Portland 드럼킷`. 특정 곡만의 예외나 빈칸 기준을 재사용하지 않는다.
-- [드럼킷 선택 기준](../../../docs/score-production/GARAGEBAND-DRUM-KITS.md)에 따라 키트를 정하고, [메타정보 저장 계약](../../../docs/architecture/MUSICXML-CANONICAL.md#저장-계약)에 따라 MusicXML `creator type="artist"`와 `Song.artist` 및 패키지의 내장 정본을 동일하게 기록한다. 저장 후 재읽기에서 누락·불일치를 확인한다.
-- 일반 곡 악보는 실제 가수명을 유지한다. 이 규칙으로 요청하지 않은 음원 제작을 추가하지 않는다.
+[메타정보 계약](../../../docs/reference/score/musicxml.md#musicxml-canonical--저장-계약)으로 일반 곡/연습 악보의 입력값을 확인한다. 키트 선택이 필요하면 [선택 기준](../../../docs/reference/score/drum-kits.md#garageband-drum-kits--드럼킷-선택과-보존-라이브러리)을 읽는다. 저장 후 MusicXML `creator type="artist"`, `Song.artist`, 요청된 패키지의 내장 정본을 재읽어 선택한 값과 대조한다.
 
 ## 입력별 경로
 
-- **PDF:** 변환 정책의 벡터 구조 추출 또는 스캔·사진 Audiveris 초벌/교정 경로를 적용한다. 새 양식은 대표 구간을 먼저 평가하고 원본·자동 초벌·기존 결과를 보존한다.
+- **PDF:** [유형 평가 단계](../../../docs/how-to/produce-score.md#score-production-process--2-pdf-유형과-변환-경로-결정)에서 대표 구간과 오류 목록을 만들고 선택한 변환 경로를 기록한다.
 - **유튜브:** 아래 절을 적용한다. 기존 요청에서 실제 연주 채보인지 새 연습곡 제작인지 먼저 판별한다. 문맥으로 결정할 수 없고 결과가 실질적으로 달라지면 그 차이만 확인한다.
 - **음원:** 제공/요청된 버전과 악보의 길이·반복·첫 박·템포를 연결한다. 악보 가사 underlay와 실제 가창 시각을 혼동하지 않는다. 가창 타이밍 검색은 제작의 필수 단계가 아니다.
-- **새 드럼 음원 제작:** [GarageBand 드럼킷 소개·선택 기준](../../../docs/score-production/GARAGEBAND-DRUM-KITS.md)을 먼저 읽고 현재 프로젝트에 보존된 키트 중 곡·연습 목적에 맞게 선택한다. 현재 보유 목록은 연결 문서를 정본으로 따른다. 선택 이유·샘플 출처·매핑·검증을 곡별 문서에 남긴다. MusicXML만 요청된 작업에 음원 제작을 추가하지 않는다.
+- **새 드럼 음원 제작:** [GarageBand 드럼킷 소개·선택 기준](../../../docs/reference/score/drum-kits.md#garageband-drum-kits--드럼킷-선택과-보존-라이브러리)을 먼저 읽고 현재 프로젝트에 보존된 키트 중 곡·연습 목적에 맞게 선택한다. 현재 보유 목록은 연결 문서를 정본으로 따른다. 선택 이유·샘플 출처·매핑·검증을 곡별 문서에 남긴다. MusicXML만 요청된 작업에 음원 제작을 추가하지 않는다.
 
 ## 유튜브로 제작
 
@@ -56,19 +62,17 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 - 마디별 시작·음가·동시음·악기·주법·손과 독립 fixture, MusicXML XSD 및 재읽기를 검사한다. 드럼 파트만으로 전곡 길이를 집계한다. 별도 가사 파트의 마디를 더하지 않는다.
 - 요청된 음원은 악보 이벤트·첫 박·카운트오프 OFF/ON·배속을 검사한다. 수치 scheduling, 디코딩, 실제 청취를 각각 기록한다. 합성 결과는 가능하면 동일 입력 재생성도 확인한다.
 - 실제 앱 공통 renderer와 패키지 API를 사용한다. 전체 Song·XML·음원 왕복과 실제 SVG를 확인한다. R/L 개수가 맞아도 위치가 틀릴 수 있으므로 빔·줄기·머리와의 배치를 시각 대조한다. 과거 곡의 전용 helper·해시 가드·고정 경로를 새 입력에 그대로 사용하지 않는다.
-- 막히면 프로젝트 정본 → 과거 제작 세션 → 웹 자료 순서로 조사한다. 원인을 고치고 관련 검증을 반복해 요청한 완료 조건까지 진행한다. 같은 실패를 근거 없이 반복하지 않는다. 해결한 문제는 원인·해결·검증·다음 적용 기준을 [문제 해결 기록](../../../docs/score-production/MUSICXML-TROUBLESHOOTING.md) 또는 곡별 문서에 남기고 history에 연결한다.
+- 막히면 [문제 조사·기록 절차](../../../docs/how-to/produce-score.md#score-production-process--문제-조사와-과거-근거)로 근거를 확인하고 교정한다. 관련 검증 결과와 다음 적용 기준을 곡별 또는 공통 도구 기록에 남긴다.
 - 생성 완료, 표시 검수, 실제 앱 수록/저장·재열기, 청취를 구분한다. 악보 제작을 마치면 아래 자동 인계 절차까지 수행한다. 자동 commit·push·공개 배포는 하지 않는다.
 
 ## 제작 완료 후 자동 개발 인계
 
-- **사용자 상시 위임(2026-10-15): 앞으로 악보를 다 만들면 별도 요청이나 재승인 없이 기존 드럼웹앱 제작자에게 넘긴다.** 새 악보와 교정·재제작한 수정본에 적용한다. 최종 응답에 파일 링크만 남기고 인계를 생략하지 않는다.
-- 전달 대상은 기존 **드럼연습실 웹앱 개발** 담당이다. 현재 연락 경로와 상세 절차는 [제작 프로세스 8단계](../../../docs/score-production/SCORE-PRODUCTION-PROCESS.md#8-결과-인계와-제작-종료)를 따른다. 실제 담당 채팅을 확인하고 `send_message_to_thread`로 전달한다.
-- 요청 범위에서 만든 최신 산출물의 절대경로·식별자·해시, 검증 근거, 변경점, 음원 연결 상태, 남은 앱 문제·추정·미검증과 다음 조치를 함께 보낸다. 앱 반영이 남아 있어도 제작 결과와 한계를 명시해 인계한다.
-- [공통 인계 준비 순서](../../../docs/score-production/REUSABLE-PRODUCTION-WORKFLOW.md#3-인계문)의 서식·관련 코드 검사와 데이터/제작 결과 보존 확인을 마친 뒤 `handoff_production.py build`로 실제 파일·검사 보고서에서 인계 초안을 조립한다. 곡별 설정에는 판독·한계·다음 조치만 정리하고 경로/해시는 도구가 읽게 한다. 출력의 `passed`는 후보 해시와 기존 검사 결과가 일치한다는 뜻이며 검사를 새로 실행했다는 뜻이 아니다. `recorded`·`unverified`·`failed`를 완료로 고쳐 쓰지 않는다. 생성된 본문을 검토한 뒤 기존 전달 도구로 실제 전송한다.
-- 전송 결과와 수신자의 접수·처리 상태를 확인해 기록한다. 전송 접수, 수신자 검토 착수, 앱 반영 완료를 구분해 사용자에게 보고한다. 전달 본문과 확인 근거는 곡별 제작 기록에 보존한다.
-- 접수 기록은 `handoff_production.py receipt`에 실제 관측한 수신자·시각·접수 식별자를 넣어 본문 해시와 연결한다. 초안 생성이나 접수 기록 명령을 실제 전송으로 간주하지 않는다.
-- 이 위임은 기존 개발자에게 해당 악보 제작 결과를 전달하는 범위다. 신규 담당자 배정·무관한 메시지·시험·커밋·배포 권한으로 확대하지 않는다. 연락 경로를 확인할 수 없거나 전송이 거부되면 준비된 인계 내용과 차단 사유를 남기고 사용자에게 알린다.
+[완성 악보의 상시 인계 Rule](../../../docs/reference/score/production.md#score-production-rules--완성-악보의-상시-인계)에 따라 [제작 프로세스 8단계](../../../docs/how-to/produce-score.md#score-production-process--8-결과-인계와-제작-종료)를 실행한다. 승인 날짜·경위는 Rule에 연결된 ADR에서 확인한다.
+
+1. 담당 채팅·최종 파일·검증 보고서를 확인하고 [공통 인계 준비 순서](../../../docs/how-to/produce-score.md#reusable-production-workflow--3-인계문)의 검사와 `handoff_production.py build`로 초안을 준비한다.
+2. 본문의 경로·해시·실제 검증 상태·한계·다음 조치를 검토한 뒤 `send_message_to_thread`로 전달한다.
+3. 실제 전송/접수 근거를 확인하고 `handoff_production.py receipt`와 곡별 기록에 남긴다. 접수·수신자 처리·앱 반영 상태를 각각 보고한다. 전송이 막히면 준비된 본문·차단 사유·다음 조치를 알린다.
 
 ## 확인된 적용 사례
 
-[탐탐 무빙 제작 기록](../../../docs/score-production/TOM-MOVING-PRODUCTION.md): 웹 조회 실패를 승인된 Safari 본문/스크립트 확인으로 해결하고, 영상 교육 개념을 참고한 새 MusicXML·합성 음원·패키지를 제작했다. 실제 영상 전곡 채보·전곡 청취 검증 사례는 아니다. 구체적 마디 수·템포·탐 구성은 이 사례의 값이며 다음 곡에 고정하지 않는다.
+[곡별 제작 기록 목록](../../../docs/records/README.md#곡별-제작-기록)에서 입력 종류·판독 문제·검증 범위가 유사한 사례를 찾아 참고한다. 개별 사례의 수치·이전 표기를 새 입력의 기본값으로 사용하지 않는다.

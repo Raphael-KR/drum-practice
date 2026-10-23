@@ -1,50 +1,34 @@
 # 프로젝트 문서 안내
 
-현재 제품 기준은 [PRD](../PRD.md), 최근 변경은 [개발 기록](../history.md)에서 확인한다. 이 목록은 현재 작업의 진입점이다.
+현재 요구사항은 [Rule 목록](RULES-INDEX.md), 선택 이유는 [결정 이력](decisions/README.md), 실제 수행 결과는 [기록](records/README.md)에서 찾는다. 작업 전 [프로젝트 지침](../AGENTS.md)을 적용한다.
 
-## 개발·운영
+| 할 일 | 시작 절차 | 필요한 정본 |
+| --- | --- | --- |
+| PDF·음원·유튜브로 악보 제작 | [접수부터 인계까지](how-to/produce-score.md) | [제작 기준](reference/score/production.md) → [MusicXML](reference/score/musicxml.md) → [악기·주법](reference/score/notation.md) → [조판](reference/score/rendering.md) |
+| 악보·패키지 검수 | [검수 절차](how-to/review-score.md) | [파일 형식](reference/score/file-formats.md), [검증 기준](reference/engineering/verification.md) |
+| 가사 교정 | [교정 절차](how-to/correct-lyrics.md) | [음악적 가사 위치](reference/score/musicxml.md), [선택적 수동 교정 범위](reference/score/production.md) |
+| 요청된 드럼 음원 제작 | [음원 제작](how-to/render-drum-audio.md) | [드럼킷](reference/score/drum-kits.md), [공통 도구](reference/score/tools.md) |
+| 앱 개발 | [개발 절차](how-to/develop.md) | [구조](reference/engineering/architecture.md) → [UX](reference/product/ux.md) → [재생](reference/product/playback.md)·[음원](reference/product/audio-practice.md)·[제작기](reference/product/editor.md) |
+| 코드·화면 검사 | [검사 절차](how-to/verify.md), [iPad](how-to/verify-ipad.md) | [검증 기준](reference/engineering/verification.md) |
+| Apple 로컬 분석 | [로컬 도구 사용](how-to/use-apple-local-tools.md) | [도구 계약](reference/score/tools.md) |
+| 승인된 릴리스 | [버전·발행 절차](how-to/release.md) | [릴리스](reference/engineering/release.md), [보안](reference/engineering/security.md), [고지](reference/engineering/third-party-notices.md) |
+| 과거 근거 찾기 | [곡·주제별 기록](records/README.md), [ADR 목록](decisions/README.md) | [문서 관리](reference/engineering/documentation.md) |
 
-| 문서 | 용도 |
-| --- | --- |
-| [프로젝트 README](../README.md) | 실행 주소·명령·앱 역할 |
-| [프로젝트 구조](architecture/PROJECT-STRUCTURE.md) | 앱·기능·저장·공통 계층과 의존 규칙 |
-| [검사 실행 방법](operations/TESTING.md) | 전체·휴대 가능한 검사·로컬 자료 준비 |
-| [UX 원칙](product/UX-PRINCIPLES.md) | 승인된 UI와 도움말 기준 |
-| [음원 연습](product/AUDIO-PRACTICE.md) | 자동 곡 정보·박자·로컬 캐시·연주 시작·카운트오프 |
-| [설정과 재생](product/SETTINGS-PLAYBACK.md) | 기본값·설정 범위·BPM·재개 정책 |
-| [마커 슬롯](product/MARKER-SLOTS.md) | 5개 슬롯과 추가/삭제 동작 |
-| [공통 화면 목록](plans/PLAYBACK-SCREEN-INVENTORY.md) | 코드 검사에서 사용하는 화면·컴포넌트 ID |
-| [UI 컴포넌트](product/UI-COMPONENTS.md) | 소스에서 생성하는 컴포넌트 목록 |
-| [앱 버전](operations/APP-VERSIONS.md) | 현재 버전·증가 기준·과거 번호 정정 |
-| [검증 현황](operations/acceptance.md) | 최근 릴리스 근거와 미확인 범위 |
-| [Sites 발행](operations/SITES-PUBLICATION.md) | player 전용 발행 절차·최근 배포 |
-| [프로젝트 릴리스 스킬](../.agents/skills/release-drum-practice/SKILL.md) | 변경 검토·작업 브랜치·PR·main 병합·발행·브랜치 정리 |
-| [iPad 시뮬레이터](operations/IPAD-SIMULATOR.md) | 지정 기기와 검증 환경 |
-| [Apple 로컬 활용](operations/APPLE-LOCAL-WORKFLOW.md) | STT/AFM 실행·검증 계약 |
-| [다국어](architecture/I18N.md) | 번역 키 관리 |
-| [오픈소스 고지](operations/OPEN-SOURCE-NOTICES.md) | 의존성 라이선스 |
+악보 제작은 첫 행의 네 정본을 기본으로 읽고, 드럼킷·도구·특수 검수는 해당 작업이 필요할 때 추가한다. 과거 후보·검증 수치는 현행 Rule이나 이번 실행의 성공을 대신하지 않는다.
 
-## 악보 제작·표시 정본
+## 유지하는 특수 경로
 
-1. [제작 프로세스](score-production/SCORE-PRODUCTION-PROCESS.md)에서 입력·원본·검증 순서를 확인한다.
-2. 변환은 [변환 정책](score-production/MUSICXML-CONVERSION-POLICY.md), 표기는 [MusicXML/OSMD 매핑](score-production/SCORE-MUSICXML-OSMD-MAPPING.md)을 따른다.
-3. 저장은 [MusicXML 정본](architecture/MUSICXML-CANONICAL.md), 출력은 [SVG 규칙](architecture/SVG-SCORE-RULES.md), 인계는 [악보 패키지](architecture/SCORE-PACKAGE.md)를 따른다.
-4. 문제 해결은 [변환 문제 기록](score-production/MUSICXML-TROUBLESHOOTING.md), 드럼킷 선택은 [GarageBand 드럼킷](score-production/GARAGEBAND-DRUM-KITS.md)을 확인한다.
+- [화면 소유권 표](plans/PLAYBACK-SCREEN-INVENTORY.md): 검사 코드가 직접 읽는 유일한 표. `plans/`의 기계 입력 예외다.
+- [UI 컴포넌트 목록](product/UI-COMPONENTS.md): 코드 카탈로그에서 생성하는 참조다.
+- [범례 자산 안내](design/legend-diagram/README.md), [Pretendard 배치·라이선스](../src/modules/score/vendor/pretendard/README.md): 생성·자산 경로를 유지한다.
+- 통합 때 만든 이전 주소 안내는 코드·인계 설정이 참조하는 6개만 유지한다. 삭제한 주소의 새 목적지는 [원문 이전표](records/documentation-migration.md)에서 찾는다. 통합 전부터 있던 이력 진입점 7개는 별도로 유지하며 새 작업에서는 위 정본을 사용한다.
 
-2026-10-13 실험 자료를 삭제했다. 최신 제작 원본은 `data/production/`, 변환 입력·MusicXML 스키마·회귀 검사 입력은 `data/reference/`에 보존했다. 곡별 제작 문서는 유지한다. 예: [시작전 손풀기](score-production/PREPLAY-WARMUP-PRODUCTION.md), [탐탐 무빙](score-production/TOM-MOVING-PRODUCTION.md), [Loveholic](score-production/LOVEHOLIC-CONVERSION.md), [바람과 언덕의 발라드](score-production/MUSICXML-CONVERSION.md).
+<details>
+<summary>이전 문단 주소</summary>
 
-## 기록 유지 규칙
+- <a id="개발운영"></a>[이전 개발운영](records/archive/documentation-reorganization.md#docs-readme--개발운영)
+- <a id="악보-제작표시-정본"></a>[이전 악보-제작표시-정본](records/archive/documentation-reorganization.md#docs-readme--악보-제작표시-정본)
+- <a id="보존한-제작-자료"></a>[이전 보존한-제작-자료](records/archive/documentation-reorganization.md#docs-readme--보존한-제작-자료)
+- <a id="기록-유지-규칙"></a>[이전 기록-유지-규칙](records/archive/documentation-reorganization.md#docs-readme--기록-유지-규칙)
 
-- 현재 동작을 바꾸면 해당 정본과 `history.md`를 함께 갱신한다. 이전 결정을 새 지시와 섞지 않는다.
-- 2026-10-13 사용자 요청으로 기존 문서 보관본을 모두 삭제했다. 현재 문서에서 삭제된 자료를 필수 참조로 사용하지 않는다.
-- 반복 설명은 현재 정본을 연결한다. 자동 생성 문서는 생성 스크립트를 통해 갱신한다.
-- 소스·문서와 원본 미디어·생성 파일의 보존 정책을 구분한다. 악보 원본·사용자 저장소는 유지한다. 실험 출력은 이번 사용자 요청에 따라 삭제했다.
-
-## 보존한 제작 자료
-
-- `data/production/loveholic/`: source(PDF·변환 XML·가사 매핑), audio(MP3·박자 분석), final(최종 MusicXML·패키지).
-- `data/production/preplay-warmup/`: source(작곡 원본·MIDI), audio(SoCal WAV·MP3), final(최종 악보·패키지).
-- `data/production/tom-moving/`: source(작곡 입력·MIDI·reference 참고 영상), audio(Portland 음원), final(최종 MusicXML·패키지).
-- `data/reference/`: 실제 변환 입력·MusicXML XSD·자동 회귀 검사에서 사용하는 악보.
-
-생성 검증 보고서도 삭제했다. 시작전 손풀기·탐탐 무빙 패키지를 다시 제작할 때는 사용자 시험 허가를 받은 뒤 해당 생성기를 먼저 실행해 `generation-audit.json`을 재생성한다. 기존 PASS 기록을 임의로 복구하거나 검사를 생략하지 않는다. 현재 배포 악보 재생에는 이 보고서가 필요하지 않다.
+</details>

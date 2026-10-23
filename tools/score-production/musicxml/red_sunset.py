@@ -101,8 +101,9 @@ INSTRUMENTS={
     ('\ue0a9',-1):('hh','Closed Hi-Hat',42,'G',5,'x'),
     ('\ue0b3',-2):('crash','Crash cymbal',49,'A',5,'x'),
 }
-SECTIONS={1:'기보된 카운트',2:'Intro',18:'Verse 1',26:'Chorus 1',34:'Verse 2',50:'Chorus 2',58:'Interlude',66:'Verse 3',74:'Chorus 3',82:'Verse 4',98:'Chorus 4',106:'Chorus 5',114:'Chorus 6',122:'Interlude',134:'Ending'}
+SECTIONS={2:'Intro',18:'Verse 1',26:'Chorus 1',34:'Verse 2',50:'Chorus 2',58:'Interlude',66:'Verse 3',74:'Chorus 3',82:'Verse 4',98:'Chorus 4',106:'Chorus 5',114:'Chorus 6',122:'Interlude',134:'Ending'}
 OPEN_RANGES=[(26,33),(50,65),(74,81),(105,121)]
+OPEN_CLOSE_DISPLAY=json.loads((Path(__file__).parent/'profiles/red-sunset-open-close.json').read_text())['display']
 
 def instrument(h,n):
     result=INSTRUMENTS[h['glyph'],h['pos']]
@@ -140,12 +141,7 @@ def write_xml(bars,path):
         if n in SECTIONS:add(add(add(m,'direction',placement='above'),'direction-type'),'rehearsal',SECTIONS[n])
         for text in ({26:'H.H OPEN (o) →',30:'H.H OPEN (o) →',34:'H.H CLOSE (+) →',50:'H.H OPEN (o) →',54:'H.H OPEN (o) →',58:'H.H OPEN (o) →',66:'H.H CLOSE (+) →',74:'H.H OPEN (o) →',78:'H.H OPEN (o) →',82:'H.H CLOSE (+) →',105:'H.H OPEN (o) →',106:'H.H OPEN (o) →',114:'H.H OPEN (o) →',118:'H.H OPEN (o) →',134:'손발 안맞춰도 좋으니 맘껏 후려주세요!',136:'횟수 관계 없이 점점 느려지게 연주해주시면 됩니다.'}.get(n),):
             if text:
-                if n in SECTIONS:
-                    rehearsal=m.find('direction/direction-type/rehearsal')
-                    if rehearsal is None:raise ValueError('Missing section')
-                    rehearsal.text=SECTIONS[n]+' · '+text
-                else:
-                    d=add(m,'direction',placement='above');add(add(d,'direction-type'),'words',text,font_size=10)
+                d=add(m,'direction',placement='above');add(add(d,'direction-type'),'words',text,font_size=10)
         # Source wedges span the noted systems; use music offsets, not pixels.
         for typ,off in ({48:[('crescendo',0)],49:[('stop',4)],96:[('crescendo',0)],97:[('stop',4)],110:[('crescendo',.5)],111:[('stop',4)],112:[('diminuendo',0),('stop',4)]}.get(n,[])):
             d=add(m,'direction',placement='above');add(add(d,'direction-type'),'wedge',type=typ,number=1);add(d,'offset',int(off*96))
@@ -177,7 +173,10 @@ def write_xml(bars,path):
                     if e.get('accent') and not hi:add(add(no,'articulations'),'accent',placement='above')
                     if tech:
                         t=add(no,'technical')
-                        for kind in tech:add(t,'open-string' if kind=='open' else 'stopped',placement='above')
+                        if len(tech)==2 and set(tech)=={'open','close'}:
+                            for name,attributes in OPEN_CLOSE_DISPLAY.items():add(t,name,**attributes)
+                        else:
+                            for kind in tech:add(t,'open-string' if kind=='open' else 'stopped',placement='above')
                     if e.get('tuplet') and ei in [1,3,4,6,7,9]:add(no,'tuplet',type='start' if ei in [1,4,7] else 'stop',number=1,bracket='no')
         if n==137:add(add(m,'barline',location='right'),'bar-style','light-heavy')
         previous=b

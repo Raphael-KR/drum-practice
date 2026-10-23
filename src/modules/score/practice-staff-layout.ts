@@ -73,9 +73,9 @@ export function measurePageStaff(
   }
   return result;
 }
-/** Keep every PDF crop (including printed lyrics) inside one shared staff frame.
+/** Keep every crop (including lyrics and directions) inside one shared staff frame.
  * Partial detection falls back for the whole score to avoid mixed scales. */
-export function framePDFStaffs(
+export function framePracticeStaffs(
   regions: Region[],
   staffs: Map<string, StaffPosition>,
 ) {

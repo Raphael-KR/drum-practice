@@ -3,11 +3,16 @@ import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { applyDrumLegend } from "./drum-legend";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import halfOpenGlyph from "./vendor/pict-half-open.json";
+import {
+  technicalPositions,
+  type TechnicalPosition,
+} from "./technical-position";
 /** Approved SCORE-MUSICXML-OSMD-MAPPING.md: render-only annotations retain XML semantics. */
 export type NoteDecoration = {
   ghost: boolean;
   sticking?: string;
   halfOpen?: boolean;
+  technical?: TechnicalPosition[];
   color: string;
 };
 const kids = (e: Element, tag: string) =>
@@ -88,7 +93,8 @@ export function prepareDrumDecorations(
       const halfOpen = !!node.querySelector(
         'notations > technical > half-muted[smufl="pictHalfOpen1"]',
       );
-      if (!ghost && !sticking && !halfOpen) continue;
+      const technical = technicalPositions(node);
+      if (!ghost && !sticking && !halfOpen && !technical.length) continue;
       const color =
         head?.getAttribute("color") || node.getAttribute("color") || "#000000";
       if (!head) {
@@ -111,6 +117,7 @@ export function prepareDrumDecorations(
         sticking,
         color,
         ...(halfOpen ? { halfOpen: true } : {}),
+        ...(technical.length ? { technical } : {}),
       });
     }
   }

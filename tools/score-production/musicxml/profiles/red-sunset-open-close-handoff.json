@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "recipient": {
+    "title": "드럼연습실 웹앱 개발",
+    "threadId": "01a0afc9-ca21-7371-9390-06eb07c017e9",
+    "hostId": "local"
+  },
+  "productionDocument": "docs/score-production/RED-SUNSET-OPEN-CLOSE-20261023.md",
+  "artifacts": {
+    "musicxml": "data/production/red-sunset-open-close-20261023/score.musicxml",
+    "fullSVG": "data/production/red-sunset-open-close-20261023/full-score.svg",
+    "previewSVG": "data/production/red-sunset-open-close-20261023/open-close-six.svg",
+    "visualEvidence": "data/production/red-sunset-open-close-20261023/open-close-six.png",
+    "sourcePdf": "data/production/red-sunset/source/source.pdf"
+  },
+  "evidence": [
+    {
+      "name": "MusicXML 규격·전체 시간표·대상 외 XML",
+      "path": "data/production/red-sunset-open-close-20261023/xml-audit.json",
+      "scope": "137마디/550박·전체 음가/박·화음/성부/타격 수와6개 technical 외 전체 XML 보존",
+      "expect": {
+        "/status": "PASS",
+        "/timeline": "unchanged",
+        "/otherXML": "unchanged"
+      },
+      "bind": {
+        "/xmlSHA256": "musicxml"
+      }
+    },
+    {
+      "name": "실제 공통 조판·Safari 독립 확대 SVG",
+      "path": "data/production/red-sunset-open-close-20261023/verification.json",
+      "scope": "네 조판 경로24쌍 잉크 경계/중심Y와 실제 Safari 확대6곳·합본/개별4페이지",
+      "expect": {
+        "/status": "PASS",
+        "/pathChecks": 24,
+        "/printPages": 4,
+        "/visualReview/status": "PASS"
+      },
+      "bind": {
+        "/xmlSHA256": "musicxml",
+        "/artifacts/full-score.svg/sha256": "fullSVG",
+        "/artifacts/open-close-six.svg/sha256": "previewSVG",
+        "/visualReview/screenshotSHA256": "visualEvidence"
+      }
+    },
+    {
+      "name": "공통 native 조판 지원·코드 검사 결합",
+      "path": "data/production/red-sunset-open-close-20261023/developer-code-receipt.json",
+      "scope": "기존 개발 담당이 실행한25집중검사·126파일756검사/두 앱 빌드; 제작 담당이 현재4소스·로그·입력 SHA를 직접 확인",
+      "expect": {
+        "/validation/exitCode": 0,
+        "/inputMatchesAudit": true
+      },
+      "bind": {
+        "/inputSHA256": "musicxml"
+      }
+    }
+  ],
+  "observations": [
+    "사용자의 최신 지시 harmonic+stopped를 같은 원래 음표에 기록. harmonic x2.6/y50, stopped x13/y50; profile은 제작 입력일 뿐 조판은 XML 속성만 읽음.",
+    "기존 quarter/duration96·137마디550박·6곳 외 XML은 유지. 음원/패키지/보관함 교체 없음.",
+    "SVG 인쇄 export는 비시각 재생 metadata만 제외하며 음표/기호 도형은 native 출력 그대로. 확대본은 해당 마디 그룹과 viewBox 자르기/검수 라벨만 사용.",
+    "기존 담당의 공통 지원을 실제 공개 renderMusicXML로 직접 재확인했고 최종 파일을 전달함."
+  ],
+  "limitations": [
+    "기존 수록 패키지/저장 곡 교체·실제 재생 소리/기기 청취는 이번 범위가 아님.",
+    "기존 첫 조판 stem 끝점0.25 차이는 adapter 없는 baseline에서도 재현되며 이번에 수정하지 않음. 같은 VoiceEntry의 동일 articulation 중복 합치기 제한 유지.",
+    "최종7원칙 전체 구현·기보된 카운트 표제 제거 등 대상 외 편집은 수행하지 않음."
+  ],
+  "nextActions": [
+    "최신 O+ 교정 XML/SVG를 제작 결과로 접수하고 현재 수록본과 구분해 기록.",
+    "이 인계만으로 추가 구현·같은 검사 반복·수록 교체·커밋·push·배포를 시작하지 않음. 사용자 후속 요청이 있으면 이 XML과 공통v27 조판을 기준으로 사용."
+  ]
+}

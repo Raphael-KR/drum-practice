@@ -25,6 +25,15 @@ import {
 } from "../../src/model/model";
 import { scrubTime } from "../../src/modules/playback/practice-controls";
 import type { RecordData } from "../../src/model/record";
+import {
+  preparePlaybackAssets,
+  releasePlaybackAssets,
+  selectPlaybackEngraving,
+} from "../../src/modules/playback/playback-assets";
+import {
+  measureWidth,
+  scoreLayout,
+} from "../../src/modules/playback/playback-layout";
 
 // Real production artifact, including the six-beat free-ending measure.
 let record: RecordData;
@@ -33,11 +42,58 @@ beforeAll(async () => {
   Object.assign(globalThis, {
     DOMParser: window.DOMParser,
     XMLSerializer: window.XMLSerializer,
+    document: window.document,
   });
   record = await readScorePackage(
     new Blob([readFileSync("public/scores/red-sunset.drumscore")]),
   );
 });
+it("keeps the real six-beat ending at its neighbours' staff scale in ribbon view", async () => {
+  const assets = await preparePlaybackAssets(record.pages, record.song);
+  try {
+    for (const zoom of [0.5, 1, 2]) {
+      const song = structuredClone(record.song);
+      song.settings.view = "ribbon";
+      song.settings.zoom = zoom;
+      const ending = [133, 134, 135].map((i) => {
+        const timeline = assets.ribbon!.get(i)!;
+        const artwork = selectPlaybackEngraving(timeline, false, "ribbon")!;
+        const width = measureWidth(
+          song,
+          timeline.region,
+          1024,
+          timeline.ratio,
+          timeline.staff,
+        );
+        const layout = scoreLayout(
+          song,
+          artwork.region,
+          width,
+          1024,
+          artwork.staff,
+        )!;
+        const [pageWidth, pageHeight] = layout.size.split(" ").map(parseFloat);
+        expect(pageHeight / pageWidth).toBeCloseTo(artwork.ratio);
+        return {
+          width,
+          gap: artwork.staff.gap * pageHeight,
+          baseline:
+            artwork.staff.top * pageHeight +
+            parseFloat(layout.position.split(" ")[1]),
+        };
+      });
+      expect(ending[1].width / ending[0].width).toBeCloseTo(1.5);
+      expect(ending[1].gap).toBeCloseTo(ending[0].gap);
+      expect(ending[2].gap).toBeCloseTo(ending[0].gap);
+      expect(ending[1].baseline).toBeCloseTo(ending[0].baseline);
+      expect(ending[2].baseline).toBeCloseTo(ending[0].baseline);
+    }
+  } finally {
+    releasePlaybackAssets(assets);
+  }
+}, 30000);
+// The real package now includes embedded fonts and all playback engravings.
+// Use the same binary-roundtrip budget as the other complete package tests.
 it("preserves the actual recording grid through package and canonical XML readback", async () => {
   const loaded = await readScorePackage(await createScorePackage(record));
   await verifyCanonicalAudio(loaded);
@@ -57,7 +113,7 @@ it("preserves the actual recording grid through package and canonical XML readba
   expect(s.measures[134].beatTimes).toEqual([
     246.8, 247.303333, 248.008, 248.914, 250.021333, 251.33,
   ]);
-});
+}, 30000);
 it("uses the same nonuniform ending positions for clicks, cursor, seeking and fixed practice beats", () => {
   const s = structuredClone(record.song),
     m = s.measures[134];

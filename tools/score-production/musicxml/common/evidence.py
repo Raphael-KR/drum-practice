@@ -33,11 +33,11 @@ def write_artifacts(output, route, payload, stem):
         (output / 'package-audit.json').write_text(json.dumps(data, ensure_ascii=False, indent=2))
 
 
-def serve(output, port, song):
+def serve(output, port, song, routes=None):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     config = profile(song)
-    routes = ('/artifacts',) if song == 'red-sunset' else ('/render', '/package')
+    routes = routes or (('/artifacts',) if song == 'red-sunset' else ('/render', '/package'))
     origin = 'http://127.0.0.1:5173'
 
     class Handler(BaseHTTPRequestHandler):
@@ -78,5 +78,6 @@ def cli(song):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--port', type=int, default=profile(song)['evidencePort'])
+    parser.add_argument('--render-only', action='store_true', help='Save SVG evidence without creating an audio package')
     args = parser.parse_args()
-    serve(args.out, args.port, song)
+    serve(args.out, args.port, song, routes=('/render',) if args.render_only else None)

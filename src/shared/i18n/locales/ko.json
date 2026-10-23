@@ -812,6 +812,8 @@
   "help.legend.opening.body": "하이햇 음표 위의 빈 원 ○. 오픈 하이햇 음표머리와 별도의 동작 지시입니다.",
   "help.legend.closing.name": "하이햇 닫기",
   "help.legend.closing.body": "하이햇 음표 위의 ＋.",
+  "help.legend.openClose.name": "하이햇 열었다 닫기",
+  "help.legend.openClose.body": "같은 하이햇 음표 위의 ○＋. 열어서 친 뒤 곧바로 닫습니다. 원 안 ＋인 반열림과 구별합니다.",
   "help.legend.half.name": "하이햇 반열림",
   "help.legend.half.body": "하이햇 음표 위의 원 안 ＋. 반쯤 열어 연주합니다.",
   "help.legend.cross.name": "크로스 스틱 / 림 클릭",

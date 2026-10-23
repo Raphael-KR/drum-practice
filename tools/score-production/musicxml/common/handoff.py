@@ -80,6 +80,16 @@ def inspect_artifacts(spec, root):
     if sound is not None:
         summary['scoreBpm'] = sound.get('tempo')
     checks = ['XML metadata read; schema and musical correctness require their own evidence']
+    canonical = xml.findtext("identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v1']")
+    if canonical:
+        try:
+            metadata = json.loads(canonical)
+            first = metadata.get('measures', [{}])[0].get('start')
+            if type(first) in (int, float):
+                summary['firstBeat'] = first
+                summary['firstBeatOrigin'] = 'canonical first measure start'
+        except (ValueError, TypeError, IndexError, AttributeError) as error:
+            checks.append(f'Canonical first beat unavailable: expected=valid score metadata, actual={type(error).__name__}: {error}')
     if 'package' in artifacts:
         with zipfile.ZipFile(artifacts['package']['path']) as archive:
             bad = archive.testzip()

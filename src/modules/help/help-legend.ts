@@ -103,6 +103,11 @@ export const legendItems = [
     symbol: "＋",
   },
   {
+    id: "openClose",
+    group: "techniques",
+    symbol: "○＋",
+  },
+  {
     id: "half",
     group: "techniques",
     symbol: "⊕",

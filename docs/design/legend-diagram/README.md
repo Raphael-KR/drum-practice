@@ -1,5 +1,15 @@
 # 공통 범례 그림 시안 — 2026-10-04
 
+## 현재 앱 범례 — 2026-10-23
+
+- 두 앱 공통 범례는 가로 4줄(8+8+6+6), 세로 8줄의 28개 항목이다. 아래 27개 시안 기록은 과거 상태다.
+- ‘하이햇 열었다 닫기’를 닫기와 반열림 사이에 둔다. 같은 음표 위 ○＋는 열어서 친 뒤 곧바로 닫는 뜻이며 반열림 ⊕와 구별한다.
+- `hi-hat-open-close.svg`는 확정 XML의 harmonic·stopped를 OSMD 2.2.1로 출력한 native 글리프다. 경로를 그대로 보존하고 음표 왼쪽·오선 위 선을 원점으로 옮겨 범례에서 재사용한다. 원본 출력 SHA와 XML 위치 예시는 SVG 주석에 기록했다. 새 곡의 조판 좌표를 고정하는 규칙은 아니다.
+- `bravura-outlines.json`은 기존 승인 그림에 포함된 Bravura 윤곽 8종과 원래 unitsPerEm를 보존한다. 기본 재생성에는 외부 폰트·fontTools 설치가 필요 없다. 별도 Bravura.otf 경로 인수를 주는 기존 생성 방식도 유지한다. SIL OFL은 `Bravura-OFL.txt`를 따른다.
+- 재생성: 프로젝트 루트에서 `python3 docs/design/legend-diagram/draw-four-staves.py`, `node tools/score-production/build-portrait-legend.mjs` 순서로 실행하고 두 vendor TS에 Prettier를 적용한다. SVG 문자열이 바뀌면 i18n의 문자열 SHA도 갱신한다. 세로 생성기는 서식 적용 전후의 TS 문자열을 동일하게 읽는다.
+
+## 최초 시안 기록
+
 사용자 요청: 모든 범례를 오선 위에 그리고 연결선으로 명칭과 설명을 붙인다.
 
 - 정본: docs/score-production/SCORE-MUSICXML-OSMD-MAPPING.md 확정 범례 27개.
