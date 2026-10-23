@@ -22,6 +22,11 @@
 
 ## 완료 계획·연구·과거 시안
 
+- [연습 지시문의 마디 전체 폭 사용](archive/playback-words-full-width-20261023.md)
+- [연습 조판의 지시문 겹침 수정](archive/playback-words-layout-20261023.md)
+- [한 줄 보기 변박 마디의 오선 크기 수정](archive/ribbon-meter-size-20261024.md)
+- [두 곡 최신 교정본의 앱 수록 반영](archive/two-song-bundle-update-20261023.md)
+- [0.8.13 릴리스](archive/release-0.8.13.md)
 - [문서 재구성 계획과 실행 이력](archive/documentation-reorganization.md)
 - [가사 연구와 판독 기록](archive/lyrics-research.md)
 - [MusicXML 비교·통합·문제 해결 기록](archive/musicxml-evaluation.md)
