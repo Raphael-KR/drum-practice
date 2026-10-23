@@ -3,7 +3,7 @@
 - 목표: 악보제작기와 드럼연습실이 하나의 재생 화면·조작 구현을 사용한다.
 - 범위: main.ts와 player-app.ts → playback-runtime.ts, 공통 재생 UI 및 자산 처리.
 - 완료 조건: 두 호스트가 createPlaybackScreen을 각각 한 번 호출하고 아래 기능 소유권을 유지한다.
-- 제외: 독립 HTML 내보내기는 2026-10-13에 폐기했다. 제작 데이터와 .drumscore 저장은 유지한다.
+- 제외: 독립 HTML 내보내기는 제공하지 않는다. 제작 데이터와 .drumscore 저장은 유지한다.
 - 검증: playback-screen·공통 UI·저장 왕복 테스트, 타입 검사, 앱 빌드와 경계 검사. 실행 결과는 history.md에 기록한다.
 
 ## 현재 호출 구조

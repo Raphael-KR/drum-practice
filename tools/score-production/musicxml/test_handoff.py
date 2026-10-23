@@ -2,6 +2,7 @@
 import json
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from common.artifacts import ROOT
@@ -33,6 +34,10 @@ class HandoffTests(unittest.TestCase):
         artifacts, summary, checks = inspect_artifacts({'musicxml':self.config['artifacts']['musicxml']}, ROOT)
         self.assertEqual(list(artifacts), ['musicxml'])
         self.assertEqual(summary['title'], '갑자기')
+        with zipfile.ZipFile(ROOT/self.config['artifacts']['package']) as archive:
+            expected = json.loads(archive.read('manifest.json'))['song']['firstBeat']
+        self.assertEqual(summary['firstBeat'], expected)
+        self.assertEqual(summary['firstBeatOrigin'], 'canonical first measure start')
         self.assertEqual(len(checks), 1)
 
     def test_record_observed_real_delivery_without_resending(self):

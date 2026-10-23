@@ -1,0 +1,16 @@
+{
+  "measures": [3, 5, 7, 127, 129, 131],
+  "display": {
+    "harmonic": {
+      "placement": "above",
+      "default-x": "2.6",
+      "default-y": "50"
+    },
+    "stopped": {
+      "placement": "above",
+      "default-x": "13",
+      "default-y": "50"
+    }
+  },
+  "basis": "User approved harmonic + stopped on the same original note. Source PDF glyph origins are about 8.3 tenths apart on one baseline. Coordinates are written into MusicXML; rendering must not read this profile."
+}

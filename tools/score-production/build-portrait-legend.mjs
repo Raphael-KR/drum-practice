@@ -1,12 +1,20 @@
 // Reflow the approved vector artwork; never substitute its notation glyphs.
 import { readFileSync, writeFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
-const source = JSON.parse(
-  readFileSync("src/modules/score/vendor/score-legend-svg.ts", "utf8")
-    .split("export const scoreLegendSVG = ")[1]
-    .trim()
-    .slice(0, -1),
+import ts from "typescript";
+const module = ts.createSourceFile(
+  "score-legend-svg.ts",
+  readFileSync("src/modules/score/vendor/score-legend-svg.ts", "utf8"),
+  ts.ScriptTarget.Latest,
+  true,
 );
+const declaration = module.statements
+  .filter(ts.isVariableStatement)
+  .flatMap((statement) => statement.declarationList.declarations)
+  .find((entry) => entry.name.getText(module) === "scoreLegendSVG");
+if (!declaration || !ts.isStringLiteral(declaration.initializer))
+  throw new Error("Expected the bundled scoreLegendSVG string");
+const source = declaration.initializer.text;
 const document = new JSDOM(source, { contentType: "image/svg+xml" }).window
   .document;
 const svg = document.documentElement;

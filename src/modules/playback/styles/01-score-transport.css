@@ -1,3 +1,5 @@
+@import "../../score/score-text-font.css";
+
 /* Canonical playback presentation. Both hosts load this after their adapters. */
 
 .stage {

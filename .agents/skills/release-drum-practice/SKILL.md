@@ -16,11 +16,11 @@ description: 드럼연습실 프로젝트의 변경 검토·호환성 검증·�
 | 단계 | 정본 |
 | --- | --- |
 | 범위·기능 | [프로젝트 지침](../../../AGENTS.md), [PRD](../../../PRD.md), [변경 기록](../../../history.md) |
-| 구조·코드 | [프로젝트 구조](../../../docs/architecture/PROJECT-STRUCTURE.md) |
-| 검증·저장 호환성 | [검사 실행 방법](../../../docs/operations/TESTING.md), [실제 npm 명령](../../../package.json), [CI 설정](../../../.github/workflows/check.yml) |
-| 버전 | [버전 정책](../../../docs/operations/APP-VERSIONS.md), [앱 버전 정본](../../../src/app-versions.json) |
-| UI 변경 | [UX 원칙](../../../docs/product/UX-PRINCIPLES.md), iPad 관련 시 [기기 검증](../../../docs/operations/IPAD-SIMULATOR.md) |
-| 발행 | [Sites 발행](../../../docs/operations/SITES-PUBLICATION.md)와 현재 사용 가능한 Sites 스킬·도구 계약 |
+| 구조·코드 | [프로젝트 구조](../../../docs/reference/engineering/architecture.md#project-structure--프로젝트-구조) |
+| 검증·저장 호환성 | [검사 실행 방법](../../../docs/how-to/verify.md#testing--개발-검사와-로컬-자산-준비), [실제 npm 명령](../../../package.json), [CI 설정](../../../.github/workflows/check.yml) |
+| 버전 | [버전 정책](../../../docs/reference/engineering/release.md#app-versions--앱-공통-버전), [앱 버전 정본](../../../src/app-versions.json) |
+| UI 변경 | [UX 원칙](../../../docs/reference/product/ux.md#ux-principles--팀-ux-원칙과-맥락형-도움말), iPad 관련 시 [기기 검증](../../../docs/how-to/verify-ipad.md#ipad-simulator--ipad-mini-검증-실행-절차) |
+| 발행 | [Sites 발행](../../../docs/how-to/release.md#sites-publication--sites-발행-절차)와 현재 사용 가능한 Sites 스킬·도구 계약 |
 
 ## 실행 순서
 

@@ -253,8 +253,22 @@ it("opens approved drum symbols and returns to the same guide", () => {
   button.click();
   const legend =
     document.querySelector<HTMLDialogElement>("#app-legend-dialog")!;
-  expect(legend.querySelectorAll("dt")).toHaveLength(27);
+  const names = Array.from(legend.querySelectorAll("dt"), (e) => e.textContent);
+  expect(names).toHaveLength(28);
+  const closing = names.indexOf("하이햇 닫기");
+  expect(names.slice(closing, closing + 3)).toEqual([
+    "하이햇 닫기",
+    "하이햇 열었다 닫기",
+    "하이햇 반열림",
+  ]);
   expect(legend.querySelectorAll(".help-legend svg")).toHaveLength(2);
+  for (const artwork of legend.querySelectorAll(".help-legend svg")) {
+    expect(artwork.textContent).toContain("하이햇 열었다 닫기");
+    expect(artwork.querySelectorAll(".hi-hat-open-close path")).toHaveLength(2);
+  }
+  expect(legend.querySelectorAll("dd")[closing + 1].textContent).toContain(
+    "열어서 친 뒤 곧바로 닫습니다",
+  );
   expect(legend.querySelector("h2")).toBeNull();
   expect(legend.querySelector(".close-button")).not.toBeNull();
   expect(legend.textContent).toContain("크로스 스틱");

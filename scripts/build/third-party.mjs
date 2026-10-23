@@ -78,6 +78,13 @@ export async function writeThirdParty() {
     url: "https://github.com/steinbergmedia/bravura",
     text: await readFile("src/modules/score/vendor/Bravura-OFL.txt", "utf8"),
   });
+  entries.push({
+    name: "Pretendard Regular/Bold webfonts",
+    version: "1.3.9",
+    license: "OFL-1.1",
+    url: "https://github.com/orioncactus/pretendard",
+    text: await readFile("src/modules/score/vendor/pretendard/OFL.txt", "utf8"),
+  });
   // PDF.js ships these notices for bundled font, CMap and image decoder assets.
   for (const dir of ["standard_fonts", "cmaps", "wasm", "iccs"]) {
     const root = `node_modules/pdfjs-dist/${dir}`;

@@ -99,8 +99,9 @@ def write_score(bars, order, path, digest, printed=False):
             metro = add(add(direction, 'direction-type'), 'metronome')
             add(metro, 'beat-unit', 'quarter'); add(metro, 'per-minute', 117); add(direction, 'sound', tempo=117)
         if number in SECTIONS:
-            label = SECTIONS[number] + (' · Closed H.H →' if number == 5 else '')
-            add(add(add(measure, 'direction', placement='above'), 'direction-type'), 'rehearsal', label)
+            add(add(add(measure, 'direction', placement='above'), 'direction-type'), 'rehearsal', SECTIONS[number])
+        if number == 5:
+            add(add(add(measure, 'direction', placement='above'), 'direction-type'), 'words', 'Closed H.H →')
         if number in (1, 4):
             direction = add(measure, 'direction', placement='below')
             add(add(direction, 'direction-type'), 'wedge', type='crescendo' if number == 1 else 'stop', number=1)

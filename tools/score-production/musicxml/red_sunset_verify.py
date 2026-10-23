@@ -39,7 +39,7 @@ def run(path,bars,schema):
         headcount+=len(heads);total+=cursor/96
     if len(doc.findall('.//time-modification'))!=REVIEW['tupletNotes'] or len(doc.findall('.//tuplet'))!=REVIEW['tupletEdges']:raise ValueError('Tuplet ratio/edges')
     if len(doc.findall('.//accent'))!=REVIEW['accents']:raise ValueError('Source accent')
-    return dict(file=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest(),schema='MusicXML4.0 PASS',sourceMeasureReread='all137 PASS',manualRepresentativeRhythms=[7,9,131,135,136],measures=137,quarters=int(total),noteheads=headcount,graceNotes=1,tuplets=9,sourceEditorialMeasure135=6,limits=['This is structural validation, not listening verification.','Current OSMD suppresses the third consecutive tuplet number; source XML retains three groups.'])
+    return dict(file=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest(),schema='MusicXML4.0 PASS',sourceMeasureReread='all137 PASS',manualRepresentativeRhythms=[7,9,131,135,136],measures=137,quarters=int(total),noteheads=headcount,graceNotes=1,tuplets=9,sourceEditorialMeasure135=6,limits=['This is structural validation, not listening verification.','Source XML retains three tuplet groups; actual SVG numeral coverage is checked separately.'])
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--xml',type=Path,required=True);ap.add_argument('--root',type=Path,default=Path('data/production/red-sunset'));ap.add_argument('--out',type=Path,required=True);a=ap.parse_args()
