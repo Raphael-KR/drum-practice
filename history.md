@@ -1,3 +1,9 @@
+## 2026-10-24 — 0.8.15 발행 완료
+
+- release-drum-practice로 성능·메모리 개선 커밋951dca6을 push하고 [PR #12](https://github.com/Raphael-KR/drum-practice/pull/12)의 CI/자체 검토 뒤 main d046536에 병합했다. 두 앱0.8.15·빌드4eba91c4f6d5, 전체129파일767검사·최신 PR/main CI·main 두 앱 재빌드가 통과했다.
+- 기존 공개 범위로 player만 Sites 버전85에 발행했다. 배포 appgdep_6adbcc6488848191a0e0b10d4d96fee2는2026-10-24 06:06:59 KST succeeded.38파일 세 곳 해시 대조와 공개 읽기42항목·수록6곡 전체 해시가 통과했다. editor/개인 저장곡·원본 자료와 기존 Site ID를 유지한다.
+- [전체 발행 근거·한계](docs/records/releases.md#release-0-8-15-20261024)와 [완료 계획](docs/records/archive/release-0.8.15.md)을 기록했다. 공개 파일 일치를 공개 청취·iPad·RSS 고정 절감·Safari 충돌 완치로 확대하지 않는다. 개발용Vite audit 경고는 공개 Worker 실행과 분리해 기록했다. 후속 문서 반영은 제품 소스·버전·발행을 반복하지 않는다.
+
 ## 2026-10-24 — 0.8.15 릴리스 준비
 
 - release-drum-practice 요청으로 성능·메모리 개선을 함께 검토하고 두 앱0.8.14→0.8.15 patch로 기록한다. 기존 재생 동작의 실행 부담을 줄이는 보완이며 새 기능·저장 계약 변경은 없다. [릴리스 계획](docs/plans/release-0.8.15.md)을 따른다.
