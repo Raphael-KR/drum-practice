@@ -4,12 +4,21 @@
 
 <a id="release-0-8-14-20261024"></a>
 
-## 0.8.14 — 공통 끝점·두 줄 표시 갱신 개선 · 로컬 커밋
+## 0.8.14 — 공통 끝점·두 줄 표시 갱신 개선 · 2026-10-24 발행
 
 - 사용자 커밋 요청으로 두 앱0.8.13→0.8.14를 맞췄다. 기존 크레센도/표시 동작의 오류·성능 보완이므로 patch이며 저장 형식·DB·키는 유지한다.
 - 공통 native 크레센도 끝점, 붉은 노을112마디2박→113마디2.5박 교정 및 실제 수록본 회귀, 두 앱 공통 텍스트·beam clip의 동일 값 재기록 감소를 포함한다. [끝점](archive/wedge-endpoint-20261024.md) · [수록](archive/red-sunset-crescendo-bundle-20261024.md) · [스크롤](archive/safari-two-row-scroll-20261024.md).
-- 원본/수록 파일·실측 fixture는 Git 제외 정책으로 로컬에 보존한다. 버전 인상과 커밋은 push·발행을 뜻하지 않는다. 공개0.8.13을 유지하며 PR·CI·공개 사이트 확인은 이번 범위에 없다. Safari native 충돌의 최종 해결도 미확정이다.
+- 원본/수록 파일·실측 fixture는 Git 제외 정책으로 로컬에 보존한다. 최초 사용자 커밋 단계는 로컬만 진행했고, 후속 release-drum-practice 실행에서 아래 push·병합·발행·공개 확인을 수행했다. Safari native 충돌의 최종 해결은 미확정이다.
 - 두 앱0.8.14·소스 빌드15ce6955d5d1에서 전체129파일765검사·lint/서식433파일·타입/문서/구조·두 앱 빌드/경계 통과. 버전 인상 전 실제 Safari 관측과 입력/범위는 위 실행 기록을 따른다. 생성기 문법 검사와 수록6곡 보존을 확인했고 실행 로그는 `.tmp/commit-0.8.14/`에 있다.
+- 구현 `339e8162a27e12e9c23b12629e7ddacd56dd979d`, 릴리스 계획 `158e9b0b676cc3f8195ffadb486c4730025048c0`를 `codex/release-0.8.14`로 push하고 [PR #10](https://github.com/Raphael-KR/drum-practice/pull/10)을 병합했다. 제품 main `9603dcc834c05289d2e37d7ed6618a81e7ac87e8`. 기존 로컬 커밋·이력은 재작성하지 않았다. 검토는 자체 검토이며 독립 승인으로 표현하지 않는다.
+- [최신 PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40009280589)와 [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40009776809)가 성공했다. 구현339e816에서 main까지 릴리스 계획 문서 외 파일이 같고 의존성/설정·실제6곡/fixture가 같아 위 전체 검사 결과를 재사용했다. main에서 두 앱을 다시 빌드해 소스 빌드15ce6955d5d1·타입/문서/공통 경계를 확인했다.
+- 기존 public audience·Site ID를 유지하고 player만 발행했다. 정적38파일은 `dist/player`·배포 사본·Worker 산출물 세 곳에서 SHA256이 같다. editor는 로컬 전용이며 개인 저장곡을 자동 교체하지 않는다.
+- Sites 소스 `1e8c2143dd1552f8c2a0a3947ac8c0991907c6dd`, 저장 버전84 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_b7696c11234c8191bf961c9e3827b45b`), 배포 `appgdep_6adbb2723e70819199de01069c130e02`: **succeeded**, **2026-10-24 04:16:23 KST** / 2026-10-23T19:16:23.384927+00:00. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.8.14.tar.gz` SHA256 `b2ab92facc970088d006d916baa858dd4398727fd6e967ba8fd5163adb74b532`. Sites tar content hash `sha256:bd5ea9f6468f0c9bf283d7b4e4f73c53e8b7e411a5e5b7db43da22c1913bbf36`는 gzip 파일 해시와 별개다.
+- 공개 읽기 smoke42항목 통과: HTML3경로의 새 번들·nosniff/프레임/CSP/HSTS, 정적36파일 전체 SHA256(악보6개·렌더러·폰트·JS/CSS·Worker 포함), 폐기 API3경로404. 교정된 붉은 노을13,559,217bytes/SHA256 `cf57783b65f512ccd67506481971044495952bdc088a41e986b544773496af14`도 일치한다.
+- UI는 버전만 다른 같은 제품 소스fbac2388f3bf의 실제 Safari 두 줄 스크롤·112–137마디 재생·한 줄/두 줄 복귀 증거를 재사용했다. 정지 화면1.2초 DOM 변경258→0건을 확인했지만 수정 전후 제한 재생에서 native 충돌이 재현되지 않아 해결 확정으로 보고하지 않는다. 공개 파일 일치는 공개 청취·iPad 실기기 검증을 뜻하지 않는다. Vite 청크 크기·Node localStorage·Actions 환경 이행 안내는 비차단 경고다.
+- 근거: `.tmp/commit-0.8.14/`, `.tmp/safari-reload-20261024/`와 `.tmp/release-0.8.14/`의 PR/main CI·main 빌드 로그, `site-package.json`, `parity.json`, `site-version.json`, `site-deployment.json`, `smoke.json`, `receipt.json`. [완료 계획](archive/release-0.8.14.md)을 이관하고 이전 주소/문단 안내를 유지한다. 발행 후 결과 문서도 작업 브랜치·PR로 반영하며 제품 소스 불변이면 버전 재인상·재발행하지 않는다.
+
 
 <a id="release-0-8-13-20261024"></a>
 

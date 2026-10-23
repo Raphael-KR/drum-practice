@@ -1,3 +1,9 @@
+## 2026-10-24 — 0.8.14 공개 발행 완료
+
+- release-drum-practice로 기존0.8.14 커밋을 작업 브랜치에 push하고 [PR #10](https://github.com/Raphael-KR/drum-practice/pull/10)을 최신 CI 성공 후 병합했다. 제품 main `9603dcc834c05289d2e37d7ed6618a81e7ac87e8`·소스 빌드 `15ce6955d5d1`이며 버전은 중복 인상하지 않았다. 자체 검토·기존 전체129파일765검사 입력 동일성과 main CI·두 앱 재빌드를 확인했다.
+- 정적38파일의 세 곳 SHA256 대조 후 player만 기존 [공개 주소](https://drum-practice-studio.dgkma.chatgpt.site)에 발행했다. Sites 버전84·배포 `appgdep_6adbb2723e70819199de01069c130e02`는2026-10-24 04:16:23 KST succeeded. 공개 읽기42항목과 악보6곡 전체 해시가 일치했고 교정 붉은 노을도 반영됐다. editor·로컬 자료·개인 저장본과 기존 공개 범위를 유지했다.
+- 실제 로컬 Safari 동작 근거는 같은 제품 소스의 앞선 검수에서 재사용했다. Safari native 충돌의 정확한 앱 유발 조건과 최종 해결은 미확정이며 공개 청취·iPad 검증은 하지 않았다. [전체 SHA·배포/검증·한계](docs/records/releases.md#release-0-8-14-20261024)와 [완료 계획](docs/records/archive/release-0.8.14.md)을 기록했다. 후속 문서 PR은 제품 소스·버전·발행물을 바꾸지 않는다.
+
 ## 2026-10-24 — 0.8.14 로컬 커밋
 
 - 사용자 커밋 지시에 따라 공통 크레센도 끝점·붉은 노을 교정/수록 검증·두 줄 표시 갱신 개선과 관련 제작 코드/문서를 함께 기록한다. 기존 기능의 조판/성능 보완이므로 두 앱0.8.13→0.8.14 patch다. 새 기능·저장 형식 변경은 없다.
