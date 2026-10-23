@@ -2,6 +2,7 @@ import { normalizeDrumScore } from "./drum-legend";
 import { installDrumBeams } from "./drum-beams";
 import { RIBBON_TIMELINE_VERSION } from "./ribbon-timeline";
 import { installPlaybackWedges } from "./playback-wedges";
+import { installWedgeEndpoints } from "./wedge-endpoints";
 import { installRehearsalLayout, REHEARSAL_TOP } from "./rehearsal-layout";
 import { installPlaybackWords } from "./playback-words";
 import { installTechnicalPositions } from "./technical-position";
@@ -408,6 +409,7 @@ async function renderMusicXMLPass(
       );
     }
     installDrumBeams(osmd);
+    installWedgeEndpoints(osmd);
     const rehearsalBounds = installRehearsalLayout(osmd, renderDocument);
     installTechnicalPositions(osmd, decorations);
     const positionedWords = installWordsPositions(osmd, wordsPositions);

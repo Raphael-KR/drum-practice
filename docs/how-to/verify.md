@@ -66,6 +66,7 @@
 | `data/reference/grid_verified.json` | 보존된 가사/박자 검수 입력. |
 | `data/reference/test-fixtures/musicxml-candidate.musicxml` | 쉼표 보정 회귀 입력. |
 | `data/reference/test-fixtures/tom-moving-28-portland.drumscore` | 구형 패키지 교체 호환 회귀 입력. |
+| `data/reference/test-fixtures/red-sunset-wedge-native-20261024.json` | 실제 Safari/OSMD2.2.1의 붉은 노을113마디 인쇄·한 줄·두 줄·균등 조판 좌표. `data/production/red-sunset-crescendo-20261024/score.musicxml`(SHA256 `27cd2812c64eaa455399a7e8400e5feb4d26ffe06cdd6b5e233eb64bbebd1a68`)의 실측이며 생성한 합성 악보가 아니다. 기존 검증 자료에서 복사하며 측정 전후 근거는 `.tmp/wedge-endpoint-20261024/`다. |
 
 player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons/`가 필요하다. 로컬 미디어가 없는 환경은 portable 검사까지만 검증됐다고 보고한다. 패키지 회귀나 player 빌드를 통과했다고 보고하지 않는다.
 

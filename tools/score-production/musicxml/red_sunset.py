@@ -143,7 +143,7 @@ def write_xml(bars,path):
             if text:
                 d=add(m,'direction',placement='above');add(add(d,'direction-type'),'words',text,font_size=10)
         # Source wedges span the noted systems; use music offsets, not pixels.
-        for typ,off in ({48:[('crescendo',0)],49:[('stop',4)],96:[('crescendo',0)],97:[('stop',4)],110:[('crescendo',.5)],111:[('stop',4)],112:[('diminuendo',0),('stop',4)]}.get(n,[])):
+        for typ,off in ({48:[('crescendo',0)],49:[('stop',4)],96:[('crescendo',0)],97:[('stop',4)],110:[('crescendo',.5)],111:[('stop',4)],112:[('crescendo',1)],113:[('stop',1.5)]}.get(n,[])):
             d=add(m,'direction',placement='above');add(add(d,'direction-type'),'wedge',type=typ,number=1);add(d,'offset',int(off*96))
         for ei,e in enumerate(b['events']):
             for hi,h in enumerate(e['heads'] or [None]):

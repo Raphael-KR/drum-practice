@@ -277,8 +277,12 @@ export function updateNoteHighlights(
         left = beamProgressX(points, beat - pulseBeats);
       // A moving light band, rather than accumulating color behind the playhead.
       const clip = beam.querySelector("[data-highlight-clip]");
-      clip?.setAttribute("x", String(left));
-      clip?.setAttribute("width", String(Math.max(0, x - left)));
+      for (const [name, value] of [
+        ["x", String(left)],
+        ["width", String(Math.max(0, x - left))],
+      ])
+        if (clip && clip.getAttribute(name) !== value)
+          clip.setAttribute(name, value);
     }
   }
 }

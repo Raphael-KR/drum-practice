@@ -39,6 +39,15 @@ it("switches simultaneous notes at onset; resets on rewind, bar changes and coun
   expect(
     host.querySelector("[data-highlight-clip]")!.getAttribute("width"),
   ).toBe("25");
+  const clip = host.querySelector("[data-highlight-clip]")!;
+  const observer = new MutationObserver(() => {});
+  observer.observe(clip, { attributes: true });
+  updateNoteHighlights(host, 0, 0.5);
+  expect(observer.takeRecords()).toHaveLength(0);
+  updateNoteHighlights(host, 0, 0.75);
+  expect(observer.takeRecords().map((m) => m.attributeName)).toEqual(["x"]);
+  expect(clip.getAttribute("x")).toBe("60");
+  observer.disconnect();
   updateNoteHighlights(host, 0, 1.25);
   expect(
     host.querySelector("[data-highlight-clip]")!.getAttribute("width"),

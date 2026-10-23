@@ -740,8 +740,9 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const total = h.song().measures.length - (prelude ? 1 : 0);
     v.max = String(total);
     v.setAttribute("aria-valuemax", String(total));
-    v.parentElement!.querySelector(".progress-total")!.textContent =
-      String(total);
+    const totalElement = v.parentElement!.querySelector(".progress-total")!;
+    if (totalElement.textContent !== String(total))
+      totalElement.textContent = String(total);
     v.setAttribute("aria-valuenow", v.value);
     const clock = (n: number) =>
       `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
