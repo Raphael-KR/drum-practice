@@ -2,6 +2,26 @@
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](README.md)와 [현행 정본](../RULES-INDEX.md)을 구분한다.
 
+<a id="release-0-8-13-20261024"></a>
+
+## 0.8.13 — 공통 악보 조판 보완 · 2026-10-24 발행
+
+- 연속 크레센도·섹션/연주 지시문·Pretendard·하이햇 주법 위치·한 줄 변박 오선 크기와 최신 교정 악보를 반영했다. 기존 연습 흐름의 오류·제작/검수·문서 보완이므로 patch이며 두 앱0.8.13이다. DB·저장 키·파일 형식·원음원·박 시각은 유지한다. 공개는 player뿐이고 editor는 로컬 전용이다.
+- 구현 `1e40272be03a27d0aeebbc1289e5e225497afca1`, CI 문서 보완 `e9bb085174a882f2c0dd0b27a0b6039783f76297`, [PR #7](https://github.com/Raphael-KR/drum-practice/pull/7) main `4fbb16b73a2cf6fd75e6e1f1db40ccdee74fe721`. 패키지 보완 `e2556c73039ffc008fa034b02537a382fe4d4f76`, [PR #8](https://github.com/Raphael-KR/drum-practice/pull/8), 최종 제품 main `2a856fbd3c77750550e3dc8c40070f42ec08d9b7`. PR #8 head/main tree `f1c3f274099c44bcdcf1b9b74bdcd9e1cedbcff3` 동일, 소스 빌드 `f6dd74f66c92`다.
+- 로컬 최종 `npm run verify`:127파일758검사·lint·서식430파일·앱/도구/hosting 타입·문서/구조·두 앱 빌드/경계 통과. 실제 제작 공통/검증/인계18검사도 번들 Python으로 통과했다. PR #7/#8 head와 각 main CI 성공을 확인하고 최종 main에서 두 앱을 재빌드했다. [최종 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/39986542431). 검토는 자체 검토이며 독립 승인으로 표현하지 않는다.
+- 최초 CI는 Git 제외 로컬 자료의 상대 링크66개 때문에 실패했다. 같은 캡션·경로를 로컬 보존 기록으로 바꾸고 공통 문서 검사가 실제 존재와 Git 소스 포함 여부를 함께 확인하도록 수정했다. 기준을 끄거나 원본 미디어를 Git에 넣지 않았다.
+- 최초 Sites push는 `pack member exceeds aggregate working-memory limit`로 거부됐다. canonical XML에서 재생성하는 버전1 timeline metadata만 배포 패키지에서 제외했다. 세 실제 파일의 source/XML·음원·Song·나머지 ZIP 엔트리가 정확히 같고 인쇄 SVG 잉크/글꼴도 동일하다. Safari에서137/93/110개 native 자산 복원을 확인했다. 새 CLI·타입 선언도 공통 검사에 포함했다.
+- 원래 세 패키지는 `local-archives/releases/0.8.13-package-inputs/`, 실패한 사본과 미발행 Site 커밋 `945b6f52a9840e04fcfe217e8bfca00a0309a019`는 `local-archives/releases/sites-upload-failed-0.8.13/`에 보존했다. 원격 Site의 실제56de1cd에서 새 사본을 열었으며 reset·강제 push·공개 버전 롤백은 하지 않았다.
+- 정적38파일을 정본 빌드·배포 사본·Worker 산출물 세 곳에서 대조했다. HTML 두 파일은 Worker가 제공한다. Sites 소스 `e584b5497b80ba02aaedc79417012c899f2bd192`, 저장 버전83 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_0b66f929c1908191b39df6492212810b`).
+- 배포 `appgdep_6adb8b1492b88191b51e8e05b4401523`: **succeeded**, **2026-10-24 01:28:31 KST** / 2026-10-23T16:28:31.067153+00:00. 기존 공개 범위와 [드럼연습실 주소](https://drum-practice-studio.dgkma.chatgpt.site)를 유지했다.
+- 아카이브 `local-archives/releases/release-0.8.13.tar.gz`, SHA256 `f795bd4819d95af9c1c4592e9e85bc96128b9ad6c71d26abf85f93a9aaca5255`. Sites tar content hash `sha256:397cf13e5fe99e2a7b7e919970429ddb1d74f692166fb07789c2cbe0a689c399`는 로컬 gzip 파일 해시와 별개다.
+- 공개 읽기 smoke42항목 통과: HTML3경로의 새 번들·nosniff/프레임/CSP/HSTS, 정적36파일 전체 SHA256(악보6개·렌더러·폰트·JS/CSS·Worker 포함), 폐기 API3경로404. 공개 파일은 검증한0.8.13 산출물과 같다.
+- `red-sunset` 패키지: 56,373,182→13,557,768바이트, 발행 SHA256 `1e59302e2e439eb8bd69a8dff0c92d61ede25d201d8648894304b0584a85b670`. 원본/음악 정보와 인쇄 글꼴·잉크는 유지한다.
+- `ioi-suddenly` 패키지: 25,515,619→7,966,184바이트, 발행 SHA256 `d3a64dcf9512cf849801acc9535f7f748ba0cd29f247d36611d7d438738c3323`. 원본/음악 정보와 인쇄 글꼴·잉크는 유지한다.
+- `real-paradis` 패키지: 30,113,720→11,476,951바이트, 발행 SHA256 `ac0e9f0828237928993836e01cac1163d8df494b6bae434a01ecf325a154d5cc`. 원본/음악 정보와 인쇄 글꼴·잉크는 유지한다.
+- UI는 같은 조판 소스의 로컬 Safari 한 줄/두 줄·확대50/100/200%·지시문 경계·인쇄 음표1,935개 보존과 경량 패키지의 실제 공통 재읽기/복원 근거를 사용했다. 공개 파일 일치를 공개 재생·전곡 청취·iPad 실기기 검증으로 확대하지 않는다. Vite 청크 크기·Node localStorage·Actions 환경 이행 안내는 비차단 경고다.
+- 근거: `.tmp/release-0.8.13/`의 `verify-packaging-restored.log`, `production-tests-final.log`, PR/main CI·main/배포 빌드 로그, `compact-evidence.json`, `compact-browser.json`, `parity.json`, `site-version.json`, `site-deployment.json`, `smoke.json`, `receipt.json`. 발행 후 기록/완료 계획 이관 PR은 제품 소스·빌드를 바꾸지 않으며 버전 재인상·재발행하지 않는다.
+
 <a id="app-version-history--앱-릴리스-번호와-정정-기록"></a>
 
 ## 앱 릴리스 번호와 정정 기록

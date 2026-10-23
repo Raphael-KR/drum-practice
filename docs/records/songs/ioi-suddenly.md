@@ -144,7 +144,7 @@ python3 tools/score-production/musicxml/verify_ioi_suddenly.py --xml data/produc
 
 ## 최신v10의 로컬 수록·저장본 갱신 — 2026-10-23
 
-- 사용자 메시지 `01a168ed-594b-73b3-93fa-cce77ffd68a9`를 직접 확인하고 [계획](../../plans/playback-words-layout-20261023.md)에 따라 최신 제작v10을 반영했다. 제작 입력은 `data/production/section-direction-review-20261023/full-v10/ioi-suddenly/score.musicxml`이며 source/canonical SHA256은 `8f3ad3a47aa4453dc19fb71a514761f0665d9a429327478712c352852de6eaaf`다. 앞 절의 앱 미반영은 이전 제작 단계의 상태다.
+- 사용자 메시지 `01a168ed-594b-73b3-93fa-cce77ffd68a9`를 직접 확인하고 [계획](../archive/playback-words-layout-20261023.md)에 따라 최신 제작v10을 반영했다. 제작 입력은 `data/production/section-direction-review-20261023/full-v10/ioi-suddenly/score.musicxml`이며 source/canonical SHA256은 `8f3ad3a47aa4453dc19fb71a514761f0665d9a429327478712c352852de6eaaf`다. 앞 절의 앱 미반영은 이전 제작 단계의 상태다.
 - `public/scores/ioi-suddenly.drumscore`는 공통v29 조판/패키지 API로 생성했다. 패키지 SHA256 `326f2897ba5cd2d00e632bfcc3af629619f6826934587b481c1c0e3ccd38ae10`,25,515,619bytes.93마디·2쪽·301가사·12섹션·BPM117·첫 박0.391을 유지한다. 원음원/PDF/대체 페이지와 Song의 기하 외 전체 데이터는 기존 패키지와 같음을 왕복/독립 ZIP 대조로 확인했다.
 - 실제 Safari 저장 목록에는 구형 XML SHA256 `aa0714c8a9c4b0d4b54938f97b056009b4e23f6169631535a345056ce7612072`가 남아 있었다. 실제 저장본 전체를 `before/ioi-user-before.drumscore`로 백업(SHA256 `c83b173ca9c0b181371609e8230a7622934631fcd23b57cf66c609fde475cede`)한 뒤 최신 악보/기하만 교체했다. 갱신 직후 마커5개·반복0개·모든 설정(당시 rows/41.52769999999998초)·가사/시간표·대체 PDF 동일성을 재조회했다. 사용자 수정 draft/revisions는 당시 없었으며 임의 생성하지 않았다.
 - 실제 목록에서 다시 열어 ready 상태·93마디·A와 Closed H.H의 별도 표시를 확인했다. source/canonical 재조회는 최신v10과 일치했다. 캡처 `ioi-v10-reopened.png`. 검수 후 재생 위치가8.596198초로 바뀐 것을 재조회했으나 갱신 직후의 동일성 검사와 구분하며, 검수 중 별도 조작 여부를 확정할 수 없어 그 위치를 임의로 덮어쓰지 않았다. 마커·반복·위치 외 설정은 그대로다.

@@ -1,13 +1,20 @@
+## 2026-10-24 — 0.8.13 공개 발행 완료
+
+- release-drum-practice로 이번 조판 수정·최신 악보·문서/제작 보완을 검토하고 두 앱0.8.13으로 커밋·push했다. [PR #7](https://github.com/Raphael-KR/drum-practice/pull/7)과 패키지 보완 [PR #8](https://github.com/Raphael-KR/drum-practice/pull/8)을 CI 통과 후 병합했다. 최종 제품 main `2a856fbd3c77750550e3dc8c40070f42ec08d9b7`, 소스 빌드 `f6dd74f66c92`다.
+- 최종127파일758검사·lint·서식430파일·타입/문서/구조·두 앱 빌드/경계와 제작 Python18검사 통과. PR/main CI·정적38파일의 세 곳 대조를 확인했다. 문서 링크/패키지 메모리 문제는 원인을 수정해 다시 검증했고 원본·실패 사본을 보존했다.
+- Sites 소스 `e584b5497b80ba02aaedc79417012c899f2bd192`, 버전83·배포 `appgdep_6adb8b1492b88191b51e8e05b4401523`가2026-10-24 01:28:31 KST에 succeeded. 공개 읽기42항목·정적36파일 전체/악보6개 해시가 일치했다. player만 기존 [공개 주소](https://drum-practice-studio.dgkma.chatgpt.site)에 발행했고 editor는 로컬 전용이다.
+- 자세한 SHA·크기 보완·아카이브·공개 확인·한계는 [릴리스 기록](docs/records/releases.md#release-0-8-13-20261024)을 따른다. 공개 청취·iPad 검증은 하지 않았다. 완료 계획5개를 records/archive로 이관하고 이전 주소·문단 안내를 보존했다. 후속 기록 정리는 제품 소스·버전·발행물을 바꾸지 않는다.
+
 ## 2026-10-24 — 0.8.13 배포 패키지의 중복 렌더 캐시 제거
 
-- 검증된 첫 main의 Sites 소스 push가 `pack member exceeds aggregate working-memory limit`로 거부됐다. 공개 버전은 아직0.8.12이며 강제 push·롤백은 하지 않았다. [릴리스 보완 계획](docs/plans/release-0.8.13.md)에 따라 canonical XML에서 재생성 가능한 버전1 timeline metadata만 배포 패키지에서 제외하는 CLI를 추가했다. 앱의 저장/로드 구현은 바꾸지 않는다.
+- 검증된 첫 main의 Sites 소스 push가 `pack member exceeds aggregate working-memory limit`로 거부됐다. 공개 버전은 아직0.8.12이며 강제 push·롤백은 하지 않았다. [릴리스 보완 계획](docs/records/archive/release-0.8.13.md)에 따라 canonical XML에서 재생성 가능한 버전1 timeline metadata만 배포 패키지에서 제외하는 CLI를 추가했다. 앱의 저장/로드 구현은 바꾸지 않는다.
 - 붉은 노을56,373,182→13,557,768, 갑자기25,515,619→7,966,184, 바람과 언덕의 발라드30,113,720→11,476,951바이트. ZIP의 page0/size 외 엔트리·Song·원본/XML·원음원이 정확히 같고 인쇄 SVG의 음표·글꼴을 보존했다. Safari에서 줄인 세 파일의 재읽기와137/93/110개 native 자산 재생성을 확인했다.
 - 원래 패키지와 실패한 배포 사본/미발행 커밋945b6f5를 local-archives에 보존했다. 같은 Site의 실제 원격56de1cd에서 새 사본을 열어 이전 큰 blob 이력을 새 후보에 섞지 않는다. 파일 형식·버전은 유지하고 첫 공개 전이므로 앱 버전0.8.13을 재인상하지 않는다. 실제 제작 패키지에 대한 잉크/엔트리·재읽기·멱등성 회귀와 `.d.mts` 서식/ESLint 포함을 추가했다.
-- 소스 빌드 `f6dd74f66c92`에서 최종127파일758검사·lint·서식428파일·타입/문서/구조·두 앱 빌드/경계 통과. 실패한 사본 이동으로 hosting 의존성 링크 대상도 이동했으므로 동일 lockfile의 새 사본에 의존성을 설치한 뒤 최종 전체 검사를 재실행했다. 최초 lxml 큰 텍스트 제한은 표준 XML 파서로 실제 캐시 포함 SVG를 독립 대조해 해결했다. 공개 발행 결과는 실제 실행 후 기록한다.
+- 소스 빌드 `f6dd74f66c92`에서 최종127파일758검사·lint·서식430파일·타입/문서/구조·두 앱 빌드/경계 통과. 실패한 사본 이동으로 hosting 의존성 링크 대상도 이동했으므로 동일 lockfile의 새 사본에 의존성을 설치한 뒤 최종 전체 검사를 재실행했다. 최초 lxml 큰 텍스트 제한은 표준 XML 파서로 실제 캐시 포함 SVG를 독립 대조해 해결했다. 공개 발행 결과는 실제 실행 후 기록한다.
 
 ## 2026-10-24 — 0.8.13 릴리스 준비
 
-- 사용자 요청에 따라 [release-drum-practice](.agents/skills/release-drum-practice/SKILL.md)로 [전체 릴리스](docs/plans/release-0.8.13.md)를 진행한다. 두 앱0.8.12→0.8.13은 기존 악보 조판·제작/검수·유지보수 보완의 patch다. 연속 크레센도, native 섹션/지시문, Pretendard, 한 줄 변박 크기와 최신 악보 교정본·정본 문서 정리를 포함한다.
+- 사용자 요청에 따라 [release-drum-practice](.agents/skills/release-drum-practice/SKILL.md)로 [전체 릴리스](docs/records/archive/release-0.8.13.md)를 진행한다. 두 앱0.8.12→0.8.13은 기존 악보 조판·제작/검수·유지보수 보완의 patch다. 연속 크레센도, native 섹션/지시문, Pretendard, 한 줄 변박 크기와 최신 악보 교정본·정본 문서 정리를 포함한다.
 - 공통 모듈·저장 호환성·소스/검사 경계를 검토했다. DB·키·저장 형식은 유지하며, 기존 미커밋 변경을 보존해 포함한다. 공개 대상은 player만이고 editor는 로컬 전용이다.
 - 0.8.13·소스 빌드 `f1ba6ed5d98e`에서 최종 `npm run verify`126파일757검사, lint·서식425파일·타입·문서/구조·두 앱 빌드/경계 통과. 제작 도구의 기존 공통/검증/인계18검사도 번들 Python으로 통과했다. 기본 Python은lxml이 없어 실패한 기록을 남기고 확인된 번들 환경으로 재실행했다. UI는 직전 Safari 한 줄/두 줄/크레센도/지시문 근거를 같은 제품 소스에서 재사용한다. PR·main·발행·공개 결과는 실행 후 발행 기록에 추가한다.
 - [PR #7](https://github.com/Raphael-KR/drum-practice/pull/7)의 최초 CI는 두 기록 문서에 남은 Git 제외 로컬 자료 링크66개 때문에 실패했다. 같은 캡션·경로를 로컬 보존 기록으로 정정하고 원본은 보존했다. 공통 문서 검사도 Git 추적/비제외 신규 소스 스냅샷 기준을 적용해 수정 전 로컬에서 같은66개를 검출했다. 기준을 끄거나 미디어를 Git에 넣지 않았으며 최종 후보로 다시 검사한다.
@@ -15,21 +22,21 @@
 
 ## 2026-10-24 — 한 줄 변박 마디의 오선·음표 확대 수정
 
-- 붉은 노을135마디의6/4 시간축 폭에 고정 폭 row 그림을 표시해 두 축이1.5배 커지는 원인을 수정했다. [계획과 결과](docs/plans/ribbon-meter-size-20261024.md). 공통 native 간격 계산으로 한 줄용 폭을 조판하고 해당 자산을 사용한다. 두 줄·균등 모드는 유지한다.
+- 붉은 노을135마디의6/4 시간축 폭에 고정 폭 row 그림을 표시해 두 축이1.5배 커지는 원인을 수정했다. [계획과 결과](docs/records/archive/ribbon-meter-size-20261024.md). 공통 native 간격 계산으로 한 줄용 폭을 조판하고 해당 자산을 사용한다. 두 줄·균등 모드는 유지한다.
 - 실제137마디의 두 보기·50/100/200%에서 오선 크기·기준선·종횡비를 확인했다.100%에서134/135/136마디 폭은256/384/256px, 오선 간격은 모두8px다. Safari 두 보기·다른 수록곡3개 렌더/배치·기존 지시문 경계와 인쇄 음표1,935개 보존도 확인했다.
 - 실제 수록 패키지 회귀 검사를 추가했다. 초기5초 준비 시간 초과를 동종 실제 패키지 검사와 같은30초 예산으로 수정한 뒤 최종 `npm run verify`126파일757검사·lint·서식425파일·타입/구조/문서·두 앱 빌드/경계 통과. [곡별 기록](docs/records/songs/red-sunset.md#red-sunset-ribbon-meter-size-20261024).
 - 파생 정책v35·소스 빌드 `9d10a66f473e`, 두 앱0.8.12 유지. XML/source·미디어·public 패키지 바이트는 보존했고 곡 저장본을 직접 수정하지 않았다. 커밋·push·발행 없음. 실행 근거 `.tmp/ribbon-meter-size-20261024/`.
 
 ## 2026-10-24 — 연주 지시문을 섹션 크기와 전체 여백에 맞춤
 
-- 사용자 원본 대조에 따라 중앙 앵커의 좁은 폭에 강제 줄바꿈하던 배치를 수정했다. [계획·추가 결정](docs/plans/playback-words-full-width-20261023.md). 연주 지시문은 Pretendard를 유지하고 섹션10pt와 같은13⅓px로 줄였다. 원래 문구 왼쪽을 기준으로 크기를 바꾼다.
+- 사용자 원본 대조에 따라 중앙 앵커의 좁은 폭에 강제 줄바꿈하던 배치를 수정했다. [계획·추가 결정](docs/records/archive/playback-words-full-width-20261023.md). 연주 지시문은 Pretendard를 유지하고 섹션10pt와 같은13⅓px로 줄였다. 원래 문구 왼쪽을 기준으로 크기를 바꾼다.
 - 마디 전체 폭을 사용하고 섹션 오른쪽에 들어가면 옆에 둔다.66·134마디는 섹션 옆 한 줄,136마디는 마디 처음 한 줄이다. 실제 경계/글꼴 아래쪽·native pt/px 환산을 적용했고 두 줄의 마디 번호 배경은 기존28px 예약 영역으로 올렸다.
 - MusicXML/source·음원·가사·박 시각과 public 패키지는 변경하지 않았다. 공통 조판/파생 캐시 정책v34로 인쇄·연습 출력을 갱신한다. 붉은 노을16개 지시문 글꼴/크기와 인쇄 음표 노드1,935개의 자동 ID 외 동일성, 갑자기·바람과 언덕의 발라드·Loveholic 실제 렌더를 확인했다.
 - [곡별 결과](docs/records/songs/red-sunset.md#red-sunset-direction-font-20261024). 두 앱0.8.12 유지. 커밋·push·발행 없음. 실행 근거는 `.tmp/playback-words-full-width-20261023/`에 있다.
 
 ## 2026-10-23 — 좁은 연습 지시문 조판과 갑자기v10 반영
 
-- [계획](docs/plans/playback-words-layout-20261023.md)에 따라 공통 native 조판에서 지시문을 실제 폭에 맞게 줄바꿈하고 섹션과¼오선 간격 이상 분리했다. Safari에서 드러난 위쪽 잘림도 실제 crop을 수용하는 공통 프레임 확장으로 해결했다. 완성 SVG 좌표나 원본 XML은 수정하지 않는다.
+- [계획](docs/records/archive/playback-words-layout-20261023.md)에 따라 공통 native 조판에서 지시문을 실제 폭에 맞게 줄바꿈하고 섹션과¼오선 간격 이상 분리했다. Safari에서 드러난 위쪽 잘림도 실제 crop을 수용하는 공통 프레임 확장으로 해결했다. 완성 SVG 좌표나 원본 XML은 수정하지 않는다.
 - 붉은 노을134마디는 한 줄·두 줄 실제 화면에서 전체 문구·Ending·음표 분리를 확인했다. source/canonical·offset168 sound=no·원음원·시간표를 보존했다. 같은v29 파생 캐시로 세 수록 패키지를 갱신했다. [곡별 결과](docs/records/songs/red-sunset.md#red-sunset-playback-words-20261023).
 - 갑자기는 제작v10 XML을 public 패키지와 현재 Safari 로컬 저장본에 반영했다. 실제 저장본 백업·갱신 직후 설정/마커/반복 보존·재열기와 source/canonical 해시를 확인했다. [결과와 검수 후 위치 차이](docs/records/songs/ioi-suddenly.md#ioi-suddenly-v10-bundle-20261023).
 - `npm run verify` 최종126파일756검사, lint·서식425파일·타입/구조/문서·두 앱 빌드/경계 통과. 실제 인쇄4쪽의 fresh 전후 비교는 자동 ID 외 동일했다. 초기 구형 패키지 해시 검사와 큰 바이너리 왕복5초 초과는 새 정본 해시 대조 및 동종30초 예산으로 교정하고 전체 재검사했다.
@@ -37,7 +44,7 @@
 
 ## 2026-10-23 — 두 곡 최신 교정본의 로컬 앱 수록
 
-- 목표·범위: 제작 채팅의 사용자 요청을 직접 확인하고 붉은 노을·바람과 언덕의 발라드 최신 XML을 기존 공통 패키지·정본·조판 경로로 수록했다. [실행 계획](docs/plans/two-song-bundle-update-20261023.md). 두 public 패키지와 player 빌드에 반영했으며 정본/source는 접수 해시와 같다.
+- 목표·범위: 제작 채팅의 사용자 요청을 직접 확인하고 붉은 노을·바람과 언덕의 발라드 최신 XML을 기존 공통 패키지·정본·조판 경로로 수록했다. [실행 계획](docs/records/archive/two-song-bundle-update-20261023.md). 두 public 패키지와 player 빌드에 반영했으며 정본/source는 접수 해시와 같다.
 - 보존·완료: 패키지 왕복/디스크 대조에서 원음원·대체 PDF/페이지와 Song의 기하 외 전체 데이터(가사·ID·박 시각·마커·반복·설정)를 유지했다. Safari에서 두 실제 패키지 불러오기·저장·새로고침·재열기와 한 줄/두 줄 화면을 확인했다. 이전 패키지와 기존 dirty 변경을 보존했다.
 - 발견·수정: 최신 SVG의 내장 Pretendard CSS를 기존 URL 검사에서 외부 참조로 오인해 열기를 막았다. 공통 글꼴 모듈의 실제 동봉 바이트와 CSS 전체가 일치하는 경우만 구분하고 기존 외부 URL·실행 코드 차단은 유지했다. 검사 복제본만 다루므로 원본/캐시 SVG와 조판 정책은 유지한다.
 - 검증·남은 문제: check·lint·서식424파일·타입/경계·집중10검사·전체126파일756검사와 두 앱 빌드 통과. 붉은 노을134마디의 긴 지시문은 인쇄 경로와 달리 연습 두 보기에서 Ending과 겹쳐 **표시 수용 미완료**로 기록했다. 최신 XML 유실은 아니며 제작 담당도 기존 계측이 인쇄 경로에 한정됨을 확인했다. [붉은 노을 결과](docs/records/songs/red-sunset.md#red-sunset-bundle-update-20261023) · [바람과 언덕의 발라드 결과](docs/records/songs/real-paradis.md#real-paradis-bundle-update-20261023).
