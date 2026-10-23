@@ -14,7 +14,7 @@ import {
 } from "../../src/platform/storage/binary-asset";
 vi.mock("../../src/modules/score/practice-staff-layout", () => ({
   practicePage: vi.fn(async (b: Blob) => b),
-  framePDFStaffs: vi.fn(),
+  framePracticeStaffs: vi.fn(),
   measurePageStaff: vi.fn(() => new Map([["r", { top: 1 }]])),
 }));
 vi.mock("../../src/modules/score/note-highlight", () => ({

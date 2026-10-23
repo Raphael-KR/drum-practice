@@ -1,8 +1,16 @@
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import type { SourceMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/VoiceData/SourceMeasure";
+import type { GraphicalMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalMeasure";
 import { SCORE_TEXT_FONT_FAMILY } from "./score-text-font";
 
 type Alignment = "left" | "center" | "right";
+export const REHEARSAL_TOP = 7;
+export interface RehearsalBounds {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
 interface Position {
   x?: number;
   relativeX: number;
@@ -113,5 +121,36 @@ export function installRehearsalLayout(
         return draw(currentStave, frameX - section.x);
       };
     }
+  };
+  // Native sections exist after calculateRehearsalMarks and before SVG drawing.
+  // Use their real font metrics and the same XML frame anchor as native draw.
+  return (
+    measure: GraphicalMeasure,
+    textWidth: (text: string, font: Section["font"]) => number,
+  ): RehearsalBounds | undefined => {
+    const position = positions.get(
+      measure.parentSourceMeasure.measureListIndex,
+    );
+    if (!position || position.x === undefined) return;
+    const stave = (
+      measure as unknown as { getVFStave(): Stave | undefined }
+    ).getVFStave();
+    const section = stave?.getModifiers().find((item) => item.section);
+    if (!stave || !section?.section) return;
+    const scale = stave.getSpacingBetweenLines() / 10;
+    const width =
+      Math.max(textWidth(section.section, section.font) + 6, 18) + 2;
+    const anchor = stave.getX() + (position.x + position.relativeX) * scale;
+    const factor = { left: 0, center: 0.5, right: 1 }[position.alignment];
+    const staffX =
+      measure.ParentStaffLine.PositionAndShape.AbsolutePosition.x * 10;
+    const left = (anchor - width * factor - staffX) / 10;
+    return {
+      left,
+      right: left + width / 10,
+      top: -REHEARSAL_TOP - 0.1,
+      // VexFlow's native frame is 1.6 * point-size SVG units, plus its stroke.
+      bottom: -REHEARSAL_TOP + (section.font.size * 1.6 + 1) / 10,
+    };
   };
 }

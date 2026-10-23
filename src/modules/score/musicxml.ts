@@ -2,7 +2,8 @@ import { normalizeDrumScore } from "./drum-legend";
 import { installDrumBeams } from "./drum-beams";
 import { RIBBON_TIMELINE_VERSION } from "./ribbon-timeline";
 import { installPlaybackWedges } from "./playback-wedges";
-import { installRehearsalLayout } from "./rehearsal-layout";
+import { installRehearsalLayout, REHEARSAL_TOP } from "./rehearsal-layout";
+import { installPlaybackWords } from "./playback-words";
 import { installTechnicalPositions } from "./technical-position";
 import { prepareWordsPositions, installWordsPositions } from "./words-position";
 import {
@@ -407,13 +408,14 @@ async function renderMusicXMLPass(
       );
     }
     installDrumBeams(osmd);
-    installRehearsalLayout(osmd, renderDocument);
+    const rehearsalBounds = installRehearsalLayout(osmd, renderDocument);
     installTechnicalPositions(osmd, decorations);
     const positionedWords = installWordsPositions(osmd, wordsPositions);
     if (timeline) {
       installRibbonEngraving(osmd, timeline);
       installPlaybackWedges(osmd, timeline);
     }
+    installPlaybackWords(osmd, rehearsalBounds, positionedWords, !!timeline);
     osmd.render();
     applyDrumDecorations(host, osmd, decorations);
     // This drum practice viewer omits percussion clef glyphs, including system
@@ -444,7 +446,10 @@ async function renderMusicXMLPass(
         !staff
       )
         continue;
-      const dy = staff.getBBox().y - 70 - Number(frame.getAttribute("y"));
+      const dy =
+        staff.getBBox().y -
+        REHEARSAL_TOP * 10 -
+        Number(frame.getAttribute("y"));
       for (const element of [frame, text]) {
         element.setAttribute(
           "y",
@@ -792,7 +797,9 @@ async function engraveMusicXML(
   const printed = await renderMusicXMLPass(blob, progress, partId);
   const ribbon = await renderMusicXMLPass(blob, progress, partId, {
     ...printed.spacing,
-    rowWidth: undefined,
+    // The ribbon widens the native stave for longer meters, never the glyphs.
+    // A four-quarter bar retains the same native width as a two-row cell.
+    quarter: printed.spacing.rowWidth! / 4,
   });
   const durations = printed.parsed.measures.map(
     (m) => (m.beats * 4) / m.denominator,
@@ -845,7 +852,7 @@ async function engraveMusicXML(
           ),
         }
       : undefined,
-    ...printed.spacing,
+    ...ribbon.spacing,
     regions: ribbon.regions,
     printStaffs: printed.staffs,
     staffs: ribbon.staffs,

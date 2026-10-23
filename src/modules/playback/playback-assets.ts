@@ -10,7 +10,7 @@ import { highlightPage, type HighlightPage } from "../score/note-highlight";
 import {
   practicePage,
   measurePageStaff,
-  framePDFStaffs,
+  framePracticeStaffs,
   type StaffPosition,
 } from "../score/practice-staff-layout";
 export interface RibbonAsset {
@@ -23,12 +23,16 @@ export interface RibbonAsset {
   ratio: number;
   highlight?: HighlightPage;
 }
-/** Both views share the selected engraving; absence preserves legacy row layout. */
+/** Select native geometry matching the view's bar widths; retain legacy fallbacks. */
 export function selectPlaybackEngraving(
   asset: RibbonAsset | undefined,
   uniform = false,
+  view = "rows",
 ) {
-  return (uniform ? asset?.grid : undefined) ?? asset?.row ?? asset;
+  return (
+    (uniform ? asset?.grid : undefined) ??
+    (view === "ribbon" ? asset : (asset?.row ?? asset))
+  );
 }
 export interface PlaybackAssets {
   urls: string[];
@@ -150,7 +154,7 @@ export async function preparePlaybackAssets(
         result.practiceStaffs.set(id, staff);
     }
     if (song.scoreFormat !== "musicxml")
-      framePDFStaffs(song.regions, result.practiceStaffs);
+      framePracticeStaffs(song.regions, result.practiceStaffs);
     if (timeline) {
       for (const data of [
         timeline,
@@ -190,8 +194,11 @@ export async function preparePlaybackAssets(
           false,
         );
         try {
+          // Native words can extend above the default seven-space frame.
+          // Keep complete source-system crops visible without changing glyph scale.
+          framePracticeStaffs(data.regions, prepared.practiceStaffs);
           data.regions.forEach((region: Region, index: number) => {
-            const staff = data.staffs[index] as StaffPosition;
+            const staff = prepared.practiceStaffs.get(region.id);
             if (!staff || !Number.isFinite(staff.top) || !(staff.gap > 0))
               throw Error("Missing ribbon staff geometry");
             const asset: RibbonAsset = {

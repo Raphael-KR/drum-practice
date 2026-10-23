@@ -62,7 +62,7 @@ it("removes marked headings only from practice pages, retaining musical labels",
   expect(await blob.text()).toContain("Title");
 });
 
-import { framePDFStaffs } from "../../src/modules/score/practice-staff-layout";
+import { framePracticeStaffs } from "../../src/modules/score/practice-staff-layout";
 it("aligns PDF staves while retaining the full lyric-bearing crop", () => {
   const regions: Region[] = [
     { id: "a", page: 0, x: 0.1, y: 0.1, w: 0.3, h: 0.12, beatXs: [0, 1] },
@@ -72,7 +72,7 @@ it("aligns PDF staves while retaining the full lyric-bearing crop", () => {
     ["a", { top: 0.15, gap: 0.006 }],
     ["b", { top: 0.45, gap: 0.006 }],
   ]);
-  framePDFStaffs(regions, staffs);
+  framePracticeStaffs(regions, staffs);
   let gap: number | undefined, baseline: number | undefined;
   for (const r of regions) {
     const s = staffs.get(r.id)!;
@@ -92,7 +92,7 @@ it("aligns PDF staves while retaining the full lyric-bearing crop", () => {
 });
 it("keeps unreadable or non-five-line PDFs on their existing crop layout", () => {
   const staffs = new Map([["a", { top: 0.15, gap: 0.006 }]]);
-  framePDFStaffs([{ id: "a" }, { id: "undetected" }] as Region[], staffs);
+  framePracticeStaffs([{ id: "a" }, { id: "undetected" }] as Region[], staffs);
   expect(staffs.size).toBe(0);
 });
 

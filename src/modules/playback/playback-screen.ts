@@ -232,7 +232,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       }
       if (s.settings.view === "rows")
         return width * xAtBeat(asset.region, s.measures[index], beat);
-      // Artwork may use row geometry; motion must use the continuous timeline.
+      // Ribbon motion retains the continuous musical timeline.
       const timeline = h.assets().ribbon!.get(index)!;
       return ribbonPosition(
         width,
@@ -250,7 +250,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function ribbonAsset(index: number) {
     if (h.song().scoreFormat !== "musicxml") return undefined;
     const asset = h.assets().ribbon?.get(index);
-    return selectPlaybackEngraving(asset, h.song().settings.uniformSpacing);
+    return selectPlaybackEngraving(
+      asset,
+      h.song().settings.uniformSpacing,
+      h.song().settings.view,
+    );
   }
   function widthOf(m: Song["measures"][number]) {
     if (h.song().audioPractice)

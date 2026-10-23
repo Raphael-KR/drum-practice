@@ -99,7 +99,7 @@ it("aligns 32nd grid positions independently of other notes in a bar", async () 
   expect(gridPosition(2, 4, 320)).toBe(positions[16]);
   expect(gridPosition(0.25, 4, 320)).toBe(positions[2]);
 });
-it("selects grid artwork without changing the legacy row artwork", async () => {
+it("selects native widths for ribbon and rows while preserving grid selection", async () => {
   const { selectPlaybackEngraving } =
     await import("../../src/modules/playback/playback-assets");
   const row = { url: "row" },
@@ -109,6 +109,9 @@ it("selects grid artwork without changing the legacy row artwork", async () => {
     >[0];
   expect(selectPlaybackEngraving(asset, true)).toBe(grid);
   expect(selectPlaybackEngraving(asset, false)).toBe(row);
+  expect(selectPlaybackEngraving(asset, false, "ribbon")).toBe(asset);
+  expect(selectPlaybackEngraving(asset, true, "ribbon")).toBe(grid);
+  expect(selectPlaybackEngraving(undefined, false, "ribbon")).toBeUndefined();
 });
 
 it("places barlines midway between adjacent 32nd centres without fixed padding", async () => {

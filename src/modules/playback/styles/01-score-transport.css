@@ -251,7 +251,7 @@
 }
 
 .two-rows .measure .label {
-  top: -10px;
+  top: -26px;
   font-size: 11px;
   background: white;
   padding: 0 4px;
@@ -302,7 +302,7 @@
   font-weight: 400;
 }
 .two-rows .measure.active .label {
-  top: -22px;
+  top: -26px;
   font-size: 12px;
 }
 #practice:not(.two-rows) .measure-beat {

@@ -5,6 +5,7 @@ import "./score-text-font.css";
 import { encodeAsset } from "../../platform/storage/binary-asset";
 
 export const SCORE_TEXT_FONT_FAMILY = "Pretendard";
+const EMBEDDED_FONT_VERSION = "Pretendard-1.3.9";
 const weights = [400, 700] as const;
 type FontData = Record<(typeof weights)[number], string>;
 let ready: Promise<FontData> | undefined;
@@ -40,6 +41,32 @@ export function loadScoreTextFonts(): Promise<FontData> {
   return ready;
 }
 
+function embeddedFontCSS(fonts: FontData, used: Iterable<400 | 700>) {
+  return (
+    `/* ${license} */\n` +
+    [...used]
+      .map(
+        (weight) =>
+          `@font-face{font-family:"${SCORE_TEXT_FONT_FAMILY}";font-style:normal;font-weight:${weight};src:url("${fonts[weight]}") format("woff2")}`,
+      )
+      .join("\n")
+  );
+}
+
+/** Recognize only CSS containing the app's exact bundled font bytes. */
+export async function isEmbeddedScoreTextFontStyle(style: Element) {
+  if (
+    style.childElementCount ||
+    style.getAttribute("data-score-font") !== EMBEDDED_FONT_VERSION
+  )
+    return false;
+  const fonts = await loadScoreTextFonts();
+  const combinations: (400 | 700)[][] = [[400], [700], [400, 700], [700, 400]];
+  return combinations.some(
+    (used) => style.textContent === embeddedFontCSS(fonts, used),
+  );
+}
+
 /** Keep standalone SVG/image rendering on the same bytes used for measurement. */
 export function embedScoreTextFonts(svg: SVGSVGElement, fonts: FontData) {
   const used = new Set<400 | 700>();
@@ -54,14 +81,7 @@ export function embedScoreTextFonts(svg: SVGSVGElement, fonts: FontData) {
     "http://www.w3.org/2000/svg",
     "style",
   );
-  style.setAttribute("data-score-font", "Pretendard-1.3.9");
-  style.textContent =
-    `/* ${license} */\n` +
-    [...used]
-      .map(
-        (weight) =>
-          `@font-face{font-family:"${SCORE_TEXT_FONT_FAMILY}";font-style:normal;font-weight:${weight};src:url("${fonts[weight]}") format("woff2")}`,
-      )
-      .join("\n");
+  style.setAttribute("data-score-font", EMBEDDED_FONT_VERSION);
+  style.textContent = embeddedFontCSS(fonts, used);
   svg.insertBefore(style, svg.firstChild);
 }
