@@ -40,6 +40,8 @@ SCORE_PACKAGE_EXTENSION // ".drumscore"
 
 엔트리 경로는 `score/source`, `score/pages/0`, `audio/source`, `alternates/0/source`, `alternates/0/pages/0` 형식이다. DEFLATE로 압축한다. 편집 중 draft와 수정 이력은 완성 파일의 대상이 아니며 제작 보관함에 남긴다.
 
+배포용 MusicXML 패키지는 canonical XML에서 재생성하는 `metadata[data-ribbon-timeline="1"]` 캐시를 SVG 페이지에서 생략할 수 있다. 원본/XML·음원·Song 전체·대체 악보·인쇄 SVG의 글꼴/잉크는 유지하고 변경된 page 자산의 size만 갱신한다. 파일 형식과 버전은 그대로다. 기존 캐시 포함 패키지도 지원하며 앱은 두 경우 모두 canonical XML과 현재 조판 정책으로 표시를 준비한다.
+
 <a id="score-package--유효성-및-자원-제한"></a>
 
 ### 유효성 및 자원 제한

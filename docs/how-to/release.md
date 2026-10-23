@@ -44,6 +44,8 @@
 1. `src/app-versions.json`과 [버전 정책](../reference/engineering/release.md#app-versions--앱-공통-버전)을 확인한다. 문서만 변경하면 버전을 올리지 않는다.
 2. 드럼 회귀와 분리 빌드를 검사한다.
 
+   패키지의 반복 렌더 캐시가 배포 크기를 늘리는 경우 먼저 `scripts/release/compact-score-packages.mjs <새 출력 폴더> <실제 패키지>...`로 후보를 만든다. 원본 패키지를 보존하고 ZIP 엔트리·manifest·인쇄 잉크·공통 재읽기를 대조한 뒤 수록본에 적용한다. canonical XML이 있는 MusicXML 페이지의 알려진 버전1 timeline metadata만 생략하며 동봉 글꼴·원음원·가사는 제거하지 않는다. 변경한 패키지 해시와 실제 회귀 입력을 갱신하고 아래 검사를 수행한다.
+
    ```sh
    npm run test:drum
    npm run build:apps
