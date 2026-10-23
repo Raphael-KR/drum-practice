@@ -122,7 +122,8 @@ export function updateScoreFrame(h: {
   if (s.settings.view === "compare") h.compare?.();
   else if (s.settings.view === "rows") {
     native = false;
-    stage.classList.remove("paused-ribbon-scroll");
+    if (stage.classList.contains("paused-ribbon-scroll"))
+      stage.classList.remove("paused-ribbon-scroll");
     h.rows(selected);
   } else {
     const x = h.offsets[index] + h.position(index, beat, h.widths[index]);
@@ -247,9 +248,11 @@ export function updateScoreFrame(h: {
     );
     e.classList.toggle("active", active);
     if (active) {
-      e.querySelector(".measure-beat")!.textContent = bar.audioPrelude
+      const element = e.querySelector(".measure-beat")!;
+      const text = bar.audioPrelude
         ? ""
         : `${count && selected === index ? i18nText("main.message246") : ""}${selected !== index ? 1 : count || Math.min(m.beats, Math.floor(beat) + 1)}`;
+      if (element.textContent !== text) element.textContent = text;
     }
   });
   return native;

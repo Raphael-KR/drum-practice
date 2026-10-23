@@ -3,7 +3,7 @@ import type { GraphicalMeasure } from "opensheetmusicdisplay/build/dist/src/Musi
 import type { GraphicalContinuousDynamicExpression } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalContinuousDynamicExpression";
 import type { ContinuousDynamicExpression } from "opensheetmusicdisplay/build/dist/src/MusicalScore/VoiceData/Expressions/ContinuousExpressions/ContinuousDynamicExpression";
 import type { RibbonSpacing } from "./ribbon-engraving";
-import { RIBBON_HEAD_ANCHOR } from "./ribbon-timeline";
+import { wedgeAnchor } from "./wedge-endpoints";
 
 interface Piece {
   expression: GraphicalContinuousDynamicExpression;
@@ -25,36 +25,6 @@ export function installPlaybackWedges(
     align();
     layoutPlaybackWedges(osmd, spacing);
   };
-}
-
-/** Use the same native timed entries as beatXs; interpolate interior offsets. */
-function anchor(measure: GraphicalMeasure, time: number, width: number) {
-  const duration = measure.parentSourceMeasure.Duration.RealValue;
-  if (time >= duration - 1e-8) return width;
-  const staffX = measure.ParentStaffLine.PositionAndShape.AbsolutePosition.x;
-  const points = measure.staffEntries
-    .filter((entry) =>
-      entry.graphicalVoiceEntries.some(
-        (voice) => !voice.parentVoiceEntry.IsGrace,
-      ),
-    )
-    .map((entry) => ({
-      time: entry.relInMeasureTimestamp.RealValue,
-      x:
-        entry.PositionAndShape.AbsolutePosition.x -
-        staffX +
-        RIBBON_HEAD_ANCHOR / 10,
-    }));
-  points.push({ time: duration, x: width });
-  points.sort((a, b) => a.time - b.time);
-  const right = points.findIndex((p) => p.time >= time - 1e-8);
-  const b = points[Math.max(0, right)];
-  const a = points[Math.max(0, right - 1)];
-  const x =
-    a.time === b.time
-      ? b.x
-      : a.x + ((b.x - a.x) * (time - a.time)) / (b.time - a.time);
-  return Math.max(0, Math.min(width, x));
 }
 
 /** Playback engraves one measure per native system, then joins those cells.
@@ -109,10 +79,12 @@ export function layoutPlaybackWedges(
       return {
         ...piece,
         left:
-          i === 0 ? anchor(piece.measure, start.Timestamp.RealValue, width) : 0,
+          i === 0
+            ? wedgeAnchor(piece.measure, start.Timestamp.RealValue, width)
+            : 0,
         right:
           i === pieces.length - 1
-            ? anchor(
+            ? wedgeAnchor(
                 piece.measure,
                 end.Timestamp.RealValue +
                   (end.EndOffsetFraction?.RealValue ?? 0),

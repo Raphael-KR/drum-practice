@@ -172,6 +172,8 @@
 - 연습용 trim은 같은 시스템의 실제 음표·쉼표·표제 경계에 상하5 SVG단위를 확보한다. 원래 시스템 밖 잉크는 clip-path로 가린다. 제목은 전체 SVG에 두고 연습 복제본에서만 제거한다.
 - words 실제 경계와 마디 바깥 native wedge도 포함한다. 음표·빔 잘림이나 옆줄 기호 유입은 좌표·변환을 고쳐 해결하며 리듬을 바꾸지 않는다.
 - beatXs는 실제 timestamp를 박자 분모로 변환하고 인접 좌표를 보간한다. 연음을 정수 박으로 반올림하지 않는다. 페이지와 대응 마디 영역을 함께 갱신한다.
+- wedge의 명시된 마디 내부 stop은 native `Timestamp + EndOffsetFraction`에 있는 음표 머리 오른쪽 앵커를 사용한다. 음표 사이의 분수 박은 실제 인접 앵커 사이를 보간한다. 직전 음가·다음 음표와 섞은 native 여백 계산으로 종료 박을 당기지 않는다.
+- 인쇄·한 줄·두 줄·균등 조판은 같은 wedge 앵커를 사용한다. native 선·경계·skyline을 SVG 그리기 전에 갱신하며 원본 XML·음악 시각은 유지한다. 마디 끝 stop의 기존 경계 처리·soft accent·verbal dynamic은 유지한다.
 - PDF 상하 프레임은 인쇄 가사까지 포함하는 공통 오선 배율/기준선을 구한다. 일부 검출이 실패하면 전체를 종전 crop으로 유지한다. 같은 인쇄 줄은 한 번 검출하고 원본 PDF·박 좌표는 보존한다.
 - PDF/MusicXML 비교의 오선도 같은 페이지·y·높이의 인쇄 줄 전체에서 검출해 공유한다. 오선 없는 영역은 검수 오류로 남긴다.
 - 곡별 prefix crop은 곡 ID·영역·박 앵커가 검증된 경우에만 displayRegion에 적용한다. 오른쪽 경계·원래 음표/박 절대좌표를 유지하며 표제는 재생 복제본에서만 함께 조정한다.
@@ -255,7 +257,7 @@
 | XML·SVG·영역 생성 | src/modules/score/musicxml.ts |
 | 섹션·words·O+ native 위치 | rehearsal-layout.ts·words-position.ts·technical-position.ts |
 | 범례·쉼표·압축 | drum-notation.ts·whole-rest-layout.ts·score-rest-correction.ts·score-pages.ts |
-| beam·wedge·시간축 | drum-beams.ts·playback-wedges.ts·ribbon-engraving.ts·ribbon-timeline.ts |
+| beam·wedge·시간축 | drum-beams.ts·wedge-endpoints.ts·playback-wedges.ts·ribbon-engraving.ts·ribbon-timeline.ts |
 | 연습 배치·효과 | practice-staff-layout.ts·playback-layout.ts·playback-frame.ts·note-highlight.ts |
 
 이 표는 코드 참조이며 곡별 검증/수록 완료를 뜻하지 않는다. 변경 이유·과거 버전·특정 곡의 수치와 결과는 [ADR 목록](../../decisions/README.md), 최근 수행 결과는 [개발 기록](../../../history.md)에서 찾는다.
@@ -274,7 +276,7 @@
 2. 두 줄은 한 줄4마디. 인쇄 SVG는 XML 페이지·시스템 구성을 보존.
 3. PDF와 원본 XML/PDF를 보존. 표시 자산은 원본에 덮어쓰지 않는다.
 4. 현재 마디·박/재생 시각/반복/마커는 조판과 독립. 렌더 결과에서 연습 상태를 복원하거나 초기화하지 않는다.
-5. 매 프레임 재조판 금지. 벡터 좌표는 화면 크기와 독립적으로 조판하고, 화면 크기·보기 변경은 공통 화면 배치만 갱신한다. 조판에 영향을 주는 조건은 캐시 키에 포함한다.
+5. 매 프레임 재조판 금지. 벡터 좌표는 화면 크기와 독립적으로 조판하고, 화면 크기·보기 변경은 공통 화면 배치만 갱신한다. 조판에 영향을 주는 조건은 캐시 키에 포함한다. 공통 재생 표시는 텍스트·가시성·SVG clip 값이 달라질 때만 DOM에 기록하며, 정지 중 native 스크롤에 같은 값의 노드 교체를 반복하지 않는다.
 6. 제작앱과 재생앱의 렌더러·표기 보완은 같은 구현. 재생앱은 공통 렌더러를 사용하되 편집/제작/원본 저장 모듈을 포함하지 않는다.
 
 <a id="browser-musicxml-rendering--캐시와-입력-권위"></a>

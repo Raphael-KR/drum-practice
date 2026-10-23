@@ -22,6 +22,9 @@
 
 ## 완료 계획·연구·과거 시안
 
+- [Safari 두 줄 스크롤 진단과 표시 갱신 개선](archive/safari-two-row-scroll-20261024.md)
+- [붉은 노을 크레센도 교정본의 앱 수록](archive/red-sunset-crescendo-bundle-20261024.md)
+- [명시된 크레센도 끝점의 박 위치](archive/wedge-endpoint-20261024.md)
 - [연습 지시문의 마디 전체 폭 사용](archive/playback-words-full-width-20261023.md)
 - [연습 조판의 지시문 겹침 수정](archive/playback-words-layout-20261023.md)
 - [한 줄 보기 변박 마디의 오선 크기 수정](archive/ribbon-meter-size-20261024.md)

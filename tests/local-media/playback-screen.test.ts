@@ -169,6 +169,31 @@ function mount(
   return { screen, p, song, root, ids, input, click, fail, changed, prefs };
 }
 for (const environment of ["web", "player"] as const) {
+  it(`${environment}: unchanged paused row frames retain text nodes and scroll position`, () => {
+    const { screen, root, input, p, song, ids } = mount(environment);
+    input("view").value = "rows";
+    input("view").dispatchEvent(new Event("change"));
+    screen.frame();
+    const stage = root.querySelector<HTMLElement>("#stage")!;
+    stage.scrollTop = 125;
+    const elements = [
+      ...root.querySelectorAll(
+        "#playhead-status > *, .measure.active .measure-beat, .progress-total",
+      ),
+    ];
+    expect(elements).toHaveLength(5);
+    const nodes = elements.map((e) => e.firstChild);
+    for (let i = 0; i < 3; i++) screen.frame();
+    elements.forEach((e, i) => expect(e.firstChild).toBe(nodes[i]));
+    expect(stage.scrollTop).toBe(125);
+    p.position = song.measures[1].start;
+    screen.frame();
+    expect(input(ids.progress).value).toBe("2");
+    expect(root.querySelector("#playhead-bar")!.textContent).toContain("2");
+    expect(root.querySelector('.measure[data-index="1"]')!.classList).toContain(
+      "active",
+    );
+  });
   it(`${environment}: same transport validates rewind, copies full quarter-beat context and reports progress`, async () => {
     const { screen, p, song, ids, input, click, fail } = mount(environment);
     p.position = song.measures[10].start + 0.3;

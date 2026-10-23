@@ -137,18 +137,31 @@ export function updatePlayhead(
   count: number,
   ribbon: boolean,
 ) {
-  root.querySelector<HTMLElement>("#playhead-status")!.hidden = !ribbon;
-  root.querySelector("#playhead-bar")!.textContent = measure.audioPrelude
-    ? t("audioPractice.prelude")
-    : t("main.message245", {
-        value1: measure.label,
-      });
-  root.querySelector("#playhead-beat")!.textContent = measure.audioPrelude
-    ? ""
-    : `${count ? t("main.message246") : ""}${count || Math.min(measure.beats, Math.floor(beat) + 1)}`;
-  root.querySelector("#playhead-signature")!.textContent = measure.audioPrelude
-    ? ""
-    : `${measure.beats}/${measure.denominator}`;
+  const status = root.querySelector<HTMLElement>("#playhead-status")!;
+  if (status.hidden !== !ribbon) status.hidden = !ribbon;
+  // Unchanged text must retain its nodes: replacing them every frame forces
+  // layout while Safari is running native scroll/snap animations.
+  for (const [id, text] of [
+    [
+      "playhead-bar",
+      measure.audioPrelude
+        ? t("audioPractice.prelude")
+        : t("main.message245", { value1: measure.label }),
+    ],
+    [
+      "playhead-beat",
+      measure.audioPrelude
+        ? ""
+        : `${count ? t("main.message246") : ""}${count || Math.min(measure.beats, Math.floor(beat) + 1)}`,
+    ],
+    [
+      "playhead-signature",
+      measure.audioPrelude ? "" : `${measure.beats}/${measure.denominator}`,
+    ],
+  ]) {
+    const element = root.querySelector(`#${id}`)!;
+    if (element.textContent !== text) element.textContent = text;
+  }
   const stage = root.querySelector<HTMLElement>("#stage")!;
   stage.style.setProperty(
     "--scroll-x",
