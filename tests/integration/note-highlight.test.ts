@@ -40,11 +40,15 @@ it("switches simultaneous notes at onset; resets on rewind, bar changes and coun
     host.querySelector("[data-highlight-clip]")!.getAttribute("width"),
   ).toBe("25");
   const clip = host.querySelector("[data-highlight-clip]")!;
+  const svg = host.querySelector("svg")!;
+  const query = vi.spyOn(svg, "querySelectorAll");
   const observer = new MutationObserver(() => {});
   observer.observe(clip, { attributes: true });
   updateNoteHighlights(host, 0, 0.5);
   expect(observer.takeRecords()).toHaveLength(0);
   updateNoteHighlights(host, 0, 0.75);
+  expect(query).not.toHaveBeenCalled();
+  query.mockRestore();
   expect(observer.takeRecords().map((m) => m.attributeName)).toEqual(["x"]);
   expect(clip.getAttribute("x")).toBe("60");
   observer.disconnect();

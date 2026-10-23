@@ -58,7 +58,7 @@ export async function preparePlaybackAssets(
   pages: Blob[],
   song: Song,
   options: {
-    validate?: (page: Blob) => Promise<void>;
+    validate?: (page: Blob, svg?: Document) => Promise<void>;
     decodeError?: (cause: unknown, index: number) => Error;
     nativeStaffs?: Map<string, StaffPosition>;
   } = {},
@@ -75,12 +75,13 @@ export async function preparePlaybackAssets(
     pages = await Promise.all(pages.map(displayPage));
     let timeline: import("../score/ribbon-timeline").RibbonTimeline | undefined;
     let nativeStaffs = options.nativeStaffs;
+    let firstSVG: Document | undefined;
     if (allowRibbon && song.scoreFormat === "musicxml" && pages[0]) {
-      const source = await displayPage(pages[0]);
       const doc = new DOMParser().parseFromString(
-        await source.text(),
+        await pages[0].text(),
         "image/svg+xml",
       );
+      firstSVG = doc;
       const metadata = doc.querySelector(
         `metadata[data-ribbon-timeline="${RIBBON_TIMELINE_VERSION}"]`,
       );
@@ -89,9 +90,6 @@ export async function preparePlaybackAssets(
         validateRibbonTimeline(parsed, song.measures.length);
         timeline = parsed;
         metadata.remove();
-        pages[0] = new Blob([new XMLSerializer().serializeToString(doc)], {
-          type: "image/svg+xml",
-        });
         const printStaffs = timeline.printStaffs;
         if (
           Array.isArray(printStaffs) &&
@@ -107,14 +105,30 @@ export async function preparePlaybackAssets(
       }
     }
     for (const [index, blob] of pages.entries()) {
+      const svg =
+        index === 0 && firstSVG
+          ? firstSVG
+          : blob.type === "image/svg+xml"
+            ? new DOMParser().parseFromString(
+                await blob.text(),
+                "image/svg+xml",
+              )
+            : undefined;
+      firstSVG = undefined;
+      // Extract highlights before practice-only heading/prefix adjustments.
+      const highlight = await highlightPage(blob, svg);
       const page = await practicePage(
         blob,
         song.regions
           .filter((r) => r.page === index)
           .map((r) => ({ source: r, display: displayRegion(song, r) })),
+        svg,
       );
-      await options.validate?.(page);
-      result.highlightPages.push(await highlightPage(blob));
+      // Drop the large decoded metadata container once the practice copy exists.
+      // This array is local; stored/source pages remain untouched.
+      pages[index] = page;
+      await options.validate?.(page, svg);
+      result.highlightPages.push(highlight);
       const url = URL.createObjectURL(page);
       result.urls.push(url);
       const regions = song.regions.filter((r) => r.page === index);
@@ -123,11 +137,7 @@ export async function preparePlaybackAssets(
         nativeStaffs &&
         regions.every((r) => nativeStaffs.has(r.id))
       ) {
-        const svg = new DOMParser().parseFromString(
-          await page.text(),
-          "image/svg+xml",
-        ).documentElement;
-        const view = (svg.getAttribute("viewBox") || "")
+        const view = (svg?.documentElement.getAttribute("viewBox") || "")
           .trim()
           .split(/\s+/)
           .map(Number);
@@ -162,21 +172,6 @@ export async function preparePlaybackAssets(
         ...(timeline.grid ? [timeline.grid] : []),
       ]) {
         const ribbonSong = { ...song, regions: data.regions };
-        const pageHeights: number[] = [];
-        const ratios = data.pages.map((text: string) => {
-          const svg = new DOMParser().parseFromString(
-            text,
-            "image/svg+xml",
-          ).documentElement;
-          const view = (svg.getAttribute("viewBox") || "")
-            .trim()
-            .split(/\s+/)
-            .map(Number);
-          if (view.length !== 4 || !(view[2] > 0 && view[3] > 0))
-            throw Error("Invalid ribbon viewBox");
-          pageHeights.push(view[3]);
-          return view[3] / view[2];
-        });
         const prepared = await preparePlaybackAssets(
           data.pages.map(
             (s: string) => new Blob([s], { type: "image/svg+xml" }),
@@ -194,6 +189,7 @@ export async function preparePlaybackAssets(
           false,
         );
         try {
+          const ratios = prepared.pageRatios;
           // Native words can extend above the default seven-space frame.
           // Keep complete source-system crops visible without changing glyph scale.
           framePracticeStaffs(data.regions, prepared.practiceStaffs);
@@ -207,7 +203,8 @@ export async function preparePlaybackAssets(
                 ...staff,
                 nativePageRatio: ratios[region.page],
                 ribbonQuarterInGaps:
-                  data.quarter / (staff.gap * pageHeights[region.page]),
+                  data.quarter /
+                  (staff.gap * prepared.highlightPages[region.page]!.height),
               },
               phase:
                 (data.offset + RIBBON_HEAD_ANCHOR) /

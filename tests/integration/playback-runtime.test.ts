@@ -185,6 +185,15 @@ it("validates SVG content before rendering and permits internal glyph references
     '<style>@import "https://example.invalid/a.css";</style>',
   ]) {
     await expect(validate!(svg(unsafe))).rejects.toThrow();
+    const blob = svg(unsafe);
+    const doc = new DOMParser().parseFromString(
+      await blob.text(),
+      "image/svg+xml",
+    );
+    const parse = vi.spyOn(DOMParser.prototype, "parseFromString");
+    await expect(validate!(blob, doc)).rejects.toThrow();
+    expect(parse).not.toHaveBeenCalled();
+    parse.mockRestore();
   }
   await expect(
     validate!(

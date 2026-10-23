@@ -78,8 +78,11 @@ export function mapTime(time: number, from: number[], to: number[]) {
   );
 }
 /** Completed intervals only: one display update at each beat, without future tempo leakage. */
-export function currentAudioBpm(song: Song, time: number) {
-  const grid = recordingBeatGrid(song);
+export function currentAudioBpm(
+  song: Song,
+  time: number,
+  grid = recordingBeatGrid(song),
+) {
   if (!grid || time < grid.source[1]) return song.bpm;
   const beats = grid.source;
   let lo = 0,

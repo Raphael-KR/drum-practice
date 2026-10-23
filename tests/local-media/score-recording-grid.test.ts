@@ -1,4 +1,4 @@
-import { beforeAll, expect, it } from "vitest";
+import { beforeAll, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import {
@@ -58,8 +58,28 @@ it("keeps the real six-beat ending at its neighbours' staff scale in ribbon view
       ),
     ]),
   );
-  const assets = await preparePlaybackAssets(engraving.pages, engraving.song);
+  const parse = vi.spyOn(DOMParser.prototype, "parseFromString");
+  let parseCount = 0;
+  const assets = await preparePlaybackAssets(engraving.pages, engraving.song, {
+    validate: async (page, svg) => {
+      expect(svg).toBeDefined();
+      expect(new XMLSerializer().serializeToString(svg!)).toBe(
+        await page.text(),
+      );
+    },
+  }).finally(() => {
+    parseCount = parse.mock.calls.length;
+    parse.mockRestore();
+  });
   try {
+    // One preparation document per SVG, including the metadata-bearing page.
+    const urls = new Set(assets.urls);
+    assets.ribbon?.forEach((a) => {
+      urls.add(a.url);
+      if (a.row) urls.add(a.row.url);
+      if (a.grid) urls.add(a.grid.url);
+    });
+    expect(parseCount).toBe(urls.size);
     for (const zoom of [0.5, 1, 2]) {
       const song = structuredClone(engraving.song);
       song.settings.view = "ribbon";

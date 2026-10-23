@@ -185,10 +185,15 @@ it("loads demo, exposes fixed range slots and applies the selected BPM", async (
       "89",
     ),
   );
-  await vi.waitFor(async () => {
-    const r = (await allRecords()).find((r) => r.song.id === "real-paradis")!;
-    expect(r.song.settings.rate).toBeCloseTo(89 / 94, 12);
-  });
+  // The editor debounces persistence for 400ms, then serializes the real media.
+  // Allow that save to finish under the full suite's worker/IO load.
+  await vi.waitFor(
+    async () => {
+      const r = (await allRecords()).find((r) => r.song.id === "real-paradis")!;
+      expect(r.song.settings.rate).toBeCloseTo(89 / 94, 12);
+    },
+    { timeout: 5000 },
+  );
 });
 it("renders the boundary ru once in measure 11, never at the end of measure 10", () => {
   const text = (index: number) =>
@@ -406,6 +411,15 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   click("home");
   animationFrame(0);
   expect(seek.getAttribute("aria-valuetext")).toBe("1 마디");
+  const stoppedReadouts = new MutationObserver(() => {});
+  for (const id of ["elapsed", "editor-time", "seek"])
+    stoppedReadouts.observe(document.getElementById(id)!, {
+      childList: true,
+      attributes: true,
+    });
+  for (let i = 0; i < 3; i++) animationFrame(0);
+  expect(stoppedReadouts.takeRecords()).toHaveLength(0);
+  stoppedReadouts.disconnect();
   click("metadata-button");
   set("edit-artist", "Real Paradis");
   const before = (await allRecords()).find((r) => r.song.id === "real-paradis")!
