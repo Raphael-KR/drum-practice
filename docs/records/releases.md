@@ -2,6 +2,23 @@
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](README.md)와 [현행 정본](../RULES-INDEX.md)을 구분한다.
 
+<a id="release-0-8-15-20261024"></a>
+
+## 0.8.15 — 공통 재생 성능·메모리 개선 · 2026-10-24 발행
+
+- 두 앱0.8.14→0.8.15 patch. 기존 재생의 반복 계산·DOM 쓰기·메모리 복사를 줄이는 보완이며 새로운 사용자 기능·의존성·DB/키·저장 형식 변경은 없다. editor는 로컬 전용이고 player만 공개한다.
+- 화면 geometry/BPM snapshot과 SVG 강조 자료를 수명 안에서 재사용하고, 클릭 목록은 cycle당 한 번 준비한다. SVG 준비도 한 문서를 공유해 파싱169→36회, 명시적 바이트 읽기297,635,989→7,992,669bytes로 줄였다. 약276.2MiB는 반복 읽기/복사 총량이며 고정 RSS 감소량이 아니다. [성능](archive/runtime-performance-20261024.md) · [메모리](archive/runtime-memory-20261024.md).
+- 릴리스 자체 검토에서 PNG는 Safari의 구형 IndexedDB Blob 복원을 위해 기존 바이트 materialization을 유지하도록 범위를 좁혔다. SVG34장의 출력 해시·내장 글꼴·오선/강조와 수록6곡 SHA256은 유지한다. 개인 저장곡을 교체하거나 원본 자료를 삭제하지 않았다.
+- 최초 전체 검사의 BPM 저장 대기1건은 단독25검사에서 통과했다.400ms debounce 뒤 실제 미디어 직렬화가 끝나도록 동일한 엄격 저장값 비교의 한도를 인접 BPM 검사와 같은5초로 맞추고 전체를 재검증했다. 실패 로그를 보존했다. 최종4eba91c4f6d5에서 전체129파일767검사·lint/서식433파일·앱/도구/hosting 타입·문서/구조·두 앱 빌드/경계를 통과했다.
+- 구현 `951dca6dfd9fc582042bc177a74ce0bc0bbe80b3`, [PR #12](https://github.com/Raphael-KR/drum-practice/pull/12), 제품 main `d0465365048b146dcec96ac86d6dd0a388aa0743`. [최신 PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40023822225), [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40024010159)가 성공했다. 자체 검토이며 독립 승인으로 표현하지 않는다. head/main tree·의존성/설정·검사 입력이 같아 전체 결과를 재사용하고 main에서 두 앱을 재빌드했다. 최종 소스 빌드 `4eba91c4f6d5`.
+- 기존 public audience·Site ID를 유지하고 player만 발행했다. 정본 `dist/player`·배포 사본·Worker 산출물38파일의 SHA256이 같다. HTML 두 파일은 Worker가 제공한다.
+- Sites 소스 `7011b12979f256af6983b42dd38a657b6c2a8a99`, 저장 버전85 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_0749775bc87c81918e402f8722534501`), 배포 `appgdep_6adbcc6488848191a0e0b10d4d96fee2`: **succeeded**, **2026-10-24 06:06:59 KST** / 2026-10-23T21:06:59.810536+00:00. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.8.15.tar.gz` SHA256 `2c8f28d1b4774bb66f5a942d31d364afb771a531e63ddb0703c07ef2ff81cd38`. Sites tar content hash `sha256:df9f66baf42068487325febcb3504e1f45bb1a1cdb17db7cdc6b7f8a611998a0`는 gzip 파일 해시와 별개다.
+- 공개 읽기 smoke42항목 통과: HTML3경로의 새 번들·nosniff/프레임/CSP/HSTS, 정적36파일 전체 해시(수록6곡·폰트·renderer·JS/CSS·Worker), 폐기 API3경로404. 수록 패키지를 바꾸지 않았다.
+- 실제 Safari의 두 줄/한 줄·재생5초360프레임/최대20ms와 출력 동일성 검수는 source2884c75bbd2c다. 두 파일의 직전 바이트로 소스 해시를 재현해 릴리스 후보와의 차이가 앱 버전과 PNG의 기존 호환 복원뿐임을 확인했으며 SVG 경로 관측을 재사용했다. 공개 재생·청취·iPad 실기기·Safari native 충돌 완치·RSS 고정 절감량은 미확정이다.
+- Vite 청크 크기·Node localStorage·Actions 환경 이행 안내는 비차단 경고다. 배포 준비 audit은 기존 개발 의존성Vite8.0.16에 high1개 패키지/5개 advisory를 반환했다. 개발 서버/launch-editor 경로이며 공개2804bytes Worker에는 Vite/launch-editor가 없음을 확인했다. 별도 개발 도구 보완 후보로 남기며 audit 통과로 보고하거나 force 업데이트하지 않았다.
+- 근거: `.tmp/release-0.8.15/`의 verify/단독 재현·최종 검사·PR/main CI·main 빌드·input-proof·parity·site-package/version/deployment·smoke·hosting-audit·receipt. [완료 계획](archive/release-0.8.15.md)을 이관하고 이전 주소를 유지한다. 후속 결과 문서도 작업 브랜치/PR로 반영하며 제품 소스가 같으면 버전·발행을 반복하지 않는다.
+
 <a id="release-0-8-14-20261024"></a>
 
 ## 0.8.14 — 공통 끝점·두 줄 표시 갱신 개선 · 2026-10-24 발행
