@@ -126,13 +126,14 @@ export function practiceStaffLayout(
 export async function practicePage(
   blob: Blob,
   crops: { source: Region; display: Region }[] = [],
+  svg?: Document,
 ): Promise<Blob> {
-  const page = await displayPage(blob);
+  const page = svg ? blob : await displayPage(blob);
   if (page.type !== "image/svg+xml") return page;
-  const doc = new DOMParser().parseFromString(
-    await page.text(),
-    "image/svg+xml",
-  );
+  // The preparation pipeline owns this document; standalone callers still parse
+  // a separate copy and never mutate their immutable source Blob.
+  const doc =
+    svg ?? new DOMParser().parseFromString(await page.text(), "image/svg+xml");
   doc
     .querySelectorAll("metadata[data-ribbon-timeline]")
     .forEach((e) => e.remove());

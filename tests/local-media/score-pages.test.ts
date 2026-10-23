@@ -31,13 +31,16 @@ it("compresses SVG losslessly through storage and backup serialization", async (
     const image = await displayPage(p);
     expect(image.type).toBe("image/svg+xml");
     expect(await image.text()).toBe(svg);
+    expect(await displayPage(image)).toBe(image);
   }
 });
 it("keeps legacy PNG bytes and rejects broken compressed data", async () => {
   const png = new Blob([new Uint8Array([137, 80, 78, 71])], {
     type: "image/png",
   });
-  expect(new Uint8Array(await (await displayPage(png)).arrayBuffer())).toEqual(
+  const materialized = await displayPage(png);
+  expect(materialized).not.toBe(png);
+  expect(new Uint8Array(await materialized.arrayBuffer())).toEqual(
     new Uint8Array([137, 80, 78, 71]),
   );
   await expect(

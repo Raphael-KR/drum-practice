@@ -637,17 +637,24 @@ function renderTrack() {
 }
 function updateEditorPlayback(t: number) {
   const loc = locate(song(), t);
-  $("elapsed").textContent = time(t);
+  const elapsed = $("elapsed"),
+    clock = time(t);
+  if (elapsed.textContent !== clock) elapsed.textContent = clock;
   if (!scrubbing) {
-    val("seek").value = String(t);
-    val("seek").setAttribute(
-      "aria-valuetext",
-      i18nText("main.message245", { value1: loc.measure?.label || "1" }),
-    );
+    const seek = val("seek"),
+      value = String(t),
+      label = i18nText("main.message245", {
+        value1: loc.measure?.label || "1",
+      });
+    if (seek.value !== value) seek.value = value;
+    if (seek.getAttribute("aria-valuetext") !== label)
+      seek.setAttribute("aria-valuetext", label);
   }
-  $("editor-time").textContent = i18nText("main.message247", {
-    value1: t.toFixed(2),
-  });
+  const editorTime = $("editor-time"),
+    label = i18nText("main.message247", {
+      value1: t.toFixed(2),
+    });
+  if (editorTime.textContent !== label) editorTime.textContent = label;
 }
 const toggle = () => playback.toggle();
 

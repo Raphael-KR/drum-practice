@@ -212,6 +212,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     renderedBrowseWidth: NaN,
     playbackRowOrigin: 0,
   };
+  let fittedRowWidth: number | undefined;
   let scrub: ScrubSnapshot<{ center?: number; radius?: number }> | undefined;
   let center: number | undefined,
     radius: number | undefined,
@@ -322,6 +323,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
 
   function rowCellWidth() {
+    if (
+      fittedRowWidth !== undefined &&
+      fittedRowWidth === stage.clientWidth / 4
+    )
+      return fittedRowWidth;
     const song = h.song();
     const s: Song = { ...song, settings: { ...song.settings, view: "rows" } };
     const base = stage.clientWidth / 4;
@@ -369,6 +375,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     stage.style.setProperty("--fitted-row-width", `${stage.clientWidth}px`);
     stage.style.setProperty("--row-content-height", `${fittedHeight}px`);
     stage.style.setProperty("--browse-row-pitch", `${fittedHeight + 28}px`);
+    fittedRowWidth = width;
     return width;
   }
   function renderRows(index: number) {
@@ -390,10 +397,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function renderTrack() {
     if (!h.ready()) return;
+    refreshSources();
     gestures.cancel();
     native = false;
     stationary = undefined;
     rows.rowWindow = rows.pausedBrowseIndex = -1;
+    fittedRowWidth = undefined;
     stage.classList.remove("paused-score-scroll", "paused-ribbon-scroll");
     stage.style.setProperty("--scroll-x", "0px");
     stage.scrollLeft = stage.scrollTop = 0;
@@ -415,8 +424,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       h.compare?.render();
     } else {
       // Both views share the two-row outer geometry; track rendering sets its own content height.
-      rowCellWidth();
+      if (s.settings.view !== "rows") rowCellWidth();
       buildScoreTrack(stage, ribbon, s, offsets, widths, widthOf, measureHTML);
+      // Crop sizing also writes row CSS variables. Apply the fitted row
+      // geometry afterwards so the cached first frame matches later frames.
+      if (s.settings.view === "rows") rowCellWidth();
       layoutLyrics();
       if (!s.measures.length)
         ribbon.innerHTML = `<p>${t("main.message243")}</p>`;
@@ -730,26 +742,32 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const p = h.player(),
       v = input(ids.progress),
       time = p.current();
-    if (!scrub && document.activeElement !== v)
-      v.value = String(
+    if (!scrub && document.activeElement !== v) {
+      const value = String(
         selectionIndex() + (h.song().measures[0]?.audioPrelude ? 0 : 1),
       );
+      if (v.value !== value) v.value = value;
+    }
     const prelude = !!h.song().measures[0]?.audioPrelude;
-    v.min = prelude ? "0" : "1";
-    v.setAttribute("aria-valuemin", v.min);
+    const min = prelude ? "0" : "1";
+    if (v.min !== min) v.min = min;
     const total = h.song().measures.length - (prelude ? 1 : 0);
-    v.max = String(total);
-    v.setAttribute("aria-valuemax", String(total));
+    if (v.max !== String(total)) v.max = String(total);
     const totalElement = v.parentElement!.querySelector(".progress-total")!;
     if (totalElement.textContent !== String(total))
       totalElement.textContent = String(total);
-    v.setAttribute("aria-valuenow", v.value);
     const clock = (n: number) =>
       `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
-    v.setAttribute(
-      "aria-valuetext",
-      `${v.value} / ${total} · ${clock(time)} / ${clock(p.duration)}`,
-    );
+    for (const [name, value] of [
+      ["aria-valuemin", min],
+      ["aria-valuemax", String(total)],
+      ["aria-valuenow", v.value],
+      [
+        "aria-valuetext",
+        `${v.value} / ${total} · ${clock(time)} / ${clock(p.duration)}`,
+      ],
+    ])
+      if (v.getAttribute(name) !== value) v.setAttribute(name, value);
   }
   const {
     rate,
@@ -757,6 +775,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     syncHeaderBpm,
     originalAudioBpm,
     minimumPracticeBpm,
+    refreshSources,
   } = createPlaybackTempo(h, {
     get,
     input,
@@ -773,13 +792,15 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const p = h.player(),
       s = h.song(),
       time = p.current();
-    const label =
-      performance.now() < copiedUntil
-        ? t("main.message244")
-        : playbackPosition(s, selectionTime()).label;
     const positionButton = root.querySelector<HTMLElement>(`#${ids.position}`);
-    if (positionButton && positionButton.textContent !== label)
-      positionButton.textContent = label;
+    if (positionButton) {
+      const label =
+        performance.now() < copiedUntil
+          ? t("main.message244")
+          : playbackPosition(s, selectionTime()).label;
+      if (positionButton.textContent !== label)
+        positionButton.textContent = label;
+    }
     native = updateScoreFrame({
       root,
       stage,
@@ -810,6 +831,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function sync() {
     if (!h.ready()) return;
+    refreshSources();
     const s = h.song(),
       bpm = originalTempoMode(s)
         ? s.bpm
@@ -1081,6 +1103,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     lastLoop = undefined;
     stationary = undefined;
     native = false;
+    fittedRowWidth = undefined;
     rows.rowWindow = rows.pausedBrowseIndex = -1;
   }
   function dispose() {

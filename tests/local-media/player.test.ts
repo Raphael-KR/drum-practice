@@ -1,6 +1,7 @@
 import { it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { Player } from "../../src/apps/editor/audio";
+import * as model from "../../src/model/model";
 class Node {
   gain = {
     value: 1,
@@ -546,6 +547,8 @@ it.each([1, 0.8, 1.25])(
       p.position = 1.18;
       p.loop = { id: "l", name: "l", start: 1.18, end: 3.64 };
       const pulses = vi.spyOn(p, "pulse").mockImplementation(() => {});
+      const events = vi.spyOn(model, "beatEvents");
+      const cycles = vi.spyOn(p, "addCycle");
       await p.play(false, false);
       const first = p.cycles[0];
       const ctx = p.ctx as unknown as Context;
@@ -553,6 +556,7 @@ it.each([1, 0.8, 1.25])(
         ctx.currentTime = now;
         p.tick();
       }
+      expect(events).toHaveBeenCalledTimes(cycles.mock.calls.length);
       if (rate !== 1) {
         const calls = pulses.mock.calls.filter(
           (c) => c[0] >= first.musicAt && c[0] < first.endAt,
@@ -578,6 +582,7 @@ it.each([1, 0.8, 1.25])(
       pulses.mockClear();
       await p.play(false, false);
       expect(p.cycles[0].from).toBe(2.5);
+      expect(events).toHaveBeenCalledTimes(cycles.mock.calls.length);
     } finally {
       p.pause();
       vi.unstubAllGlobals();

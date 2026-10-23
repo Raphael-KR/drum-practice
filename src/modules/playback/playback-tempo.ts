@@ -1,6 +1,10 @@
 import type { PlaybackScreenHost } from "./playback-screen";
 import { clamp, type Song } from "../../model/model";
-import { currentAudioBpm, originalTempoMode } from "../audio/audio-time-map";
+import {
+  currentAudioBpm,
+  originalTempoMode,
+  recordingBeatGrid,
+} from "../audio/audio-time-map";
 import { readRecordingTempo } from "../../content/recording-tempo";
 import { t } from "../../shared/i18n/i18n";
 interface TempoControls {
@@ -23,15 +27,50 @@ export function createPlaybackTempo(
   const { get, input, available, isDisposed, sync, open, action, listen, run } =
     controls;
   let tempoSong: Song | undefined, liveBpm: number | undefined;
+  let sourceSong: Song | undefined,
+    tempoGrid: ReturnType<typeof recordingBeatGrid>,
+    baseAudioBpm = 0,
+    sourceBpm = 0,
+    sourceMeasures: Song["measures"] | undefined,
+    sourceXML: string | undefined;
+  // Timing edits/settings sync invalidate this screen-owned snapshot. Never
+  // retain a global cache of mutable Song objects or parse XML on each frame.
+  function refreshSources() {
+    const song = h.song();
+    sourceSong = song;
+    sourceBpm = song.bpm;
+    sourceMeasures = song.measures;
+    sourceXML = h.canonicalXML?.();
+    tempoGrid = recordingBeatGrid(song);
+    const recording = song.measures.some((m) => m.beatTimes)
+      ? undefined
+      : readRecordingTempo(sourceXML);
+    baseAudioBpm =
+      recording?.scoreBpm === song.bpm ? recording.bpmEstimate : song.bpm;
+  }
+  function ensureSources() {
+    const song = h.song();
+    if (
+      sourceSong !== song ||
+      sourceBpm !== song.bpm ||
+      sourceMeasures !== song.measures ||
+      sourceXML !== h.canonicalXML?.()
+    )
+      refreshSources();
+  }
   function headerBpm() {
     const s = h.song();
+    ensureSources();
     if (tempoSong !== s) {
       tempoSong = s;
       liveBpm = undefined;
     }
     if (!originalTempoMode(s))
       return String(Number((originalAudioBpm() * s.settings.rate).toFixed(3)));
-    if (h.player().playing) liveBpm = currentAudioBpm(s, h.player().current());
+    if (h.player().playing)
+      liveBpm = tempoGrid
+        ? currentAudioBpm(s, h.player().current(), tempoGrid)
+        : s.bpm;
     return (liveBpm ?? s.bpm).toFixed(1);
   }
   function syncHeaderBpm() {
@@ -47,10 +86,8 @@ export function createPlaybackTempo(
     }
   }
   function originalAudioBpm() {
-    const song = h.song();
-    if (song.measures.some((m) => m.beatTimes)) return song.bpm;
-    const recording = readRecordingTempo(h.canonicalXML?.());
-    return recording?.scoreBpm === song.bpm ? recording.bpmEstimate : song.bpm;
+    ensureSources();
+    return baseAudioBpm;
   }
   function minimumPracticeBpm() {
     // Keep integer BPM presets at or above the supported 0.5 playback rate.
@@ -77,7 +114,10 @@ export function createPlaybackTempo(
           original,
           report,
         );
-      if (original) liveBpm = currentAudioBpm(h.song(), h.player().current());
+      if (original)
+        liveBpm = tempoGrid
+          ? currentAudioBpm(h.song(), h.player().current(), tempoGrid)
+          : h.song().bpm;
       h.changed();
     } catch (error) {
       notice.classList.add("error");
@@ -133,5 +173,6 @@ export function createPlaybackTempo(
     syncHeaderBpm,
     originalAudioBpm,
     minimumPracticeBpm,
+    refreshSources,
   };
 }

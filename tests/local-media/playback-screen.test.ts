@@ -29,6 +29,7 @@ import {
   setAudioBarOne,
 } from "../../src/modules/audio/audio-practice";
 import { playbackPosition } from "../../src/modules/playback/playback-position";
+import * as playbackLayout from "../../src/modules/playback/playback-layout";
 const disposers: (() => void)[] = [];
 beforeEach(() => {
   vi.stubGlobal(
@@ -183,16 +184,53 @@ for (const environment of ["web", "player"] as const) {
     ];
     expect(elements).toHaveLength(5);
     const nodes = elements.map((e) => e.firstChild);
+    const progressObserver = new MutationObserver(() => {});
+    progressObserver.observe(input(ids.progress), { attributes: true });
     for (let i = 0; i < 3; i++) screen.frame();
+    expect(progressObserver.takeRecords()).toHaveLength(0);
     elements.forEach((e, i) => expect(e.firstChild).toBe(nodes[i]));
     expect(stage.scrollTop).toBe(125);
     p.position = song.measures[1].start;
     screen.frame();
     expect(input(ids.progress).value).toBe("2");
+    expect(progressObserver.takeRecords().length).toBeGreaterThan(0);
+    progressObserver.disconnect();
     expect(root.querySelector("#playhead-bar")!.textContent).toContain("2");
     expect(root.querySelector('.measure[data-index="1"]')!.classList).toContain(
       "active",
     );
+  });
+  it(`${environment}: row geometry is reused between frames and refreshed with track layout`, () => {
+    const { screen, root, song } = mount(environment, true);
+    const stage = root.querySelector<HTMLElement>("#stage")!;
+    Object.defineProperty(stage, "clientHeight", { value: 600 });
+    song.settings.view = "rows";
+    screen.renderTrack();
+    expect(
+      Number.parseFloat(stage.style.getPropertyValue("--two-row-stage-height")),
+    ).toBe(
+      Math.ceil(
+        Number.parseFloat(
+          stage.style.getPropertyValue("--row-content-height"),
+        ) *
+          2 +
+          58,
+      ),
+    );
+    screen.frame();
+    const layout = vi.spyOn(playbackLayout, "scoreLayout");
+    try {
+      for (let i = 0; i < 3; i++) screen.frame();
+      expect(layout).not.toHaveBeenCalled();
+      Object.defineProperty(stage, "clientWidth", { value: 600 });
+      screen.frame();
+      expect(layout).toHaveBeenCalled();
+      layout.mockClear();
+      screen.renderTrack();
+      expect(layout).toHaveBeenCalled();
+    } finally {
+      layout.mockRestore();
+    }
   });
   it(`${environment}: same transport validates rewind, copies full quarter-beat context and reports progress`, async () => {
     const { screen, p, song, ids, input, click, fail } = mount(environment);
@@ -487,6 +525,13 @@ it("shows recording estimates in app info and resets audio to exactly 1 after ma
   ).toContain("오른쪽·위로");
   await screen.rate(100);
   expect(song.settings.rate).toBeCloseTo(100 / 136.232);
+  const parse = vi.spyOn(DOMParser.prototype, "parseFromString");
+  try {
+    for (let i = 0; i < 3; i++) screen.frame();
+    expect(parse).not.toHaveBeenCalled();
+  } finally {
+    parse.mockRestore();
+  }
   expect(
     document.getElementById(ids.tempoInput)!.getAttribute("aria-valuenow"),
   ).toBe("100");

@@ -14,6 +14,9 @@ export async function displayPage(page: Blob): Promise<Blob> {
     ).arrayBuffer();
     return new Blob([bytes], { type: "image/svg+xml" });
   }
+  // SVG preparation serializes its own practice copy. Reuse decoded SVG bytes,
+  // but retain raster materialization for Safari's legacy IndexedDB Blob URLs.
+  if (page.type === "image/svg+xml") return page;
   return new Blob([await page.arrayBuffer()], { type: page.type });
 }
 export const pageExtension = (page: Blob) =>

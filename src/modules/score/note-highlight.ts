@@ -158,13 +158,12 @@ export interface HighlightPage {
 }
 export async function highlightPage(
   blob: Blob,
+  svg?: Document,
 ): Promise<HighlightPage | undefined> {
-  const page = await displayPage(blob);
+  const page = svg ? blob : await displayPage(blob);
   if (page.type !== "image/svg+xml") return;
-  const doc = new DOMParser().parseFromString(
-    await page.text(),
-    "image/svg+xml",
-  );
+  const doc =
+    svg ?? new DOMParser().parseFromString(await page.text(), "image/svg+xml");
   const view = doc.documentElement
     .getAttribute("viewBox")
     ?.split(/[ ,]+/)
@@ -236,6 +235,17 @@ export async function highlightPage(
   return { width: view[2], height: view[3], measures };
 }
 
+// Engraved glyph/beam data is immutable for an SVG's lifetime. Row/view
+// replacement creates new SVG keys; WeakMap entries do not retain old rows.
+const highlightGeometry = new WeakMap<
+  SVGSVGElement,
+  {
+    notes: { element: SVGElement; onset: number; next: number }[];
+    beams: { points: Point[]; clip: Element | null }[];
+    beat?: number;
+    pulse?: number;
+  }
+>();
 export function updateNoteHighlights(
   container: HTMLElement,
   index: number,
@@ -249,34 +259,56 @@ export function updateNoteHighlights(
   )) {
     const active =
       enabled && Number(svg.dataset.highlightMeasure) === index && !countOff;
-    svg.style.display = active ? "block" : "none";
+    const display = active ? "block" : "none";
+    if (svg.style.display !== display) svg.style.display = display;
     if (!active) continue;
-    const notes = Array.from(
-      svg.querySelectorAll<SVGElement>("[data-highlight-beat]"),
-    );
-    const onsets = [
-      ...new Set(notes.map((n) => Number(n.dataset.highlightBeat))),
-    ].sort((a, b) => a - b);
-    for (const note of notes) {
-      const onset = Number(note.dataset.highlightBeat);
-      const next = onsets.find((b) => b > onset) ?? Infinity;
+    let geometry = highlightGeometry.get(svg);
+    if (!geometry) {
+      const notes = Array.from(
+        svg.querySelectorAll<SVGElement>("[data-highlight-beat]"),
+      );
+      const onsets = [
+        ...new Set(notes.map((n) => Number(n.dataset.highlightBeat))),
+      ].sort((a, b) => a - b);
+      geometry = {
+        notes: notes.map((element) => {
+          const onset = Number(element.dataset.highlightBeat);
+          return {
+            element,
+            onset,
+            next: onsets.find((b) => b > onset) ?? Infinity,
+          };
+        }),
+        beams: Array.from(
+          svg.querySelectorAll<SVGElement>("[data-highlight-beam]"),
+          (beam) => ({
+            points: JSON.parse(beam.dataset.highlightBeam!) as Point[],
+            clip: beam.querySelector("[data-highlight-clip]"),
+          }),
+        ),
+      };
+      highlightGeometry.set(svg, geometry);
+    }
+    if (geometry.beat === beat && geometry.pulse === pulseBeats) continue;
+    geometry.beat = beat;
+    geometry.pulse = pulseBeats;
+    for (const { element: note, onset, next } of geometry.notes) {
       const end = Math.min(onset + pulseBeats, next);
       const progress = Math.max(
         0,
         Math.min(1, (beat - onset) / Math.max(0.001, end - onset)),
       );
-      note.style.opacity = String(1 - progress * progress);
-      note.style.visibility =
+      const opacity = String(1 - progress * progress);
+      if (note.style.opacity !== opacity) note.style.opacity = opacity;
+      const visibility =
         beat + 1e-7 >= onset && beat < end - 1e-7 ? "visible" : "hidden";
+      if (note.style.visibility !== visibility)
+        note.style.visibility = visibility;
     }
-    for (const beam of svg.querySelectorAll<SVGElement>(
-      "[data-highlight-beam]",
-    )) {
-      const points: Point[] = JSON.parse(beam.dataset.highlightBeam!);
+    for (const { points, clip } of geometry.beams) {
       const x = beamProgressX(points, beat),
         left = beamProgressX(points, beat - pulseBeats);
       // A moving light band, rather than accumulating color behind the playhead.
-      const clip = beam.querySelector("[data-highlight-clip]");
       for (const [name, value] of [
         ["x", String(left)],
         ["width", String(Math.max(0, x - left))],

@@ -329,15 +329,29 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     return preparePlaybackAssets(pages, score, {
       validate:
         score.scoreFormat === "musicxml"
-          ? async (page) => {
-              const text = await page.text(),
-                doc = new DOMParser().parseFromString(text, "image/svg+xml");
+          ? async (page, svg) => {
+              const doc =
+                svg ??
+                new DOMParser().parseFromString(
+                  await page.text(),
+                  "image/svg+xml",
+                );
+              const fonts: { style: Element; css: string }[] = [];
               for (const style of doc.querySelectorAll(
                 "style[data-score-font]",
               ))
-                if (await isEmbeddedScoreTextFontStyle(style))
+                if (await isEmbeddedScoreTextFontStyle(style)) {
+                  fonts.push({ style, css: style.textContent || "" });
                   style.textContent = "";
-              const inspected = new XMLSerializer().serializeToString(doc);
+                }
+              let inspected: string;
+              try {
+                inspected = new XMLSerializer().serializeToString(doc);
+              } finally {
+                // Validation borrows the preparation document. Its trusted font
+                // bytes must remain intact for subsequent image rendering.
+                fonts.forEach(({ style, css }) => (style.textContent = css));
+              }
               const unsafeAttribute = [...doc.querySelectorAll("*")]
                 .flatMap((el) => [...el.attributes])
                 .find(

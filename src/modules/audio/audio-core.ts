@@ -34,6 +34,10 @@ export class Player {
   nodes = new Set<AudioScheduledSourceNode>();
   timer = 0;
   nextClick = new Map<Cycle, number>();
+  private clickEvents = new Map<
+    Cycle,
+    { at: number; accent: boolean; count: boolean }[]
+  >();
   generation = 0;
   private playRequest = 0;
   private stickSound?: AudioBuffer;
@@ -141,6 +145,7 @@ export class Player {
     this.nodes.clear();
     this.cycles = [];
     this.nextClick.clear();
+    this.clickEvents.clear();
     if (notify) this.onstate();
   }
   outputTime(source: number) {
@@ -352,6 +357,24 @@ export class Player {
         .map((t) => c.musicAt + this.outputTime(t) - this.outputTime(from));
     this.cycles.push(c);
     this.nextClick.set(c, 0);
+    const fromOutput = this.outputTime(c.from);
+    this.clickEvents.set(c, [
+      ...(c.preludeClicks ?? []).map((at) => ({
+        at,
+        accent: false,
+        count: true,
+      })),
+      ...Array.from({ length: c.count }, (_, i) => ({
+        at: c.countAt + i * c.countBeatSeconds,
+        accent: i % c.beats === 0,
+        count: true,
+      })),
+      ...beatEvents(s, c.from, c.to).map((b) => ({
+        at: c.musicAt + this.outputTime(b.time) - fromOutput,
+        accent: b.accent,
+        count: false,
+      })),
+    ]);
     const source = this.ctx.createBufferSource();
     source.buffer = this.rendered!;
     source.connect(this.music);
@@ -415,23 +438,9 @@ export class Player {
       last = this.cycles.at(-1)!;
     }
     for (const c of this.cycles) {
-      const events = [
-        ...(c.preludeClicks ?? []).map((at) => ({
-          at,
-          accent: false,
-          count: true,
-        })),
-        ...Array.from({ length: c.count }, (_, i) => ({
-          at: c.countAt + i * c.countBeatSeconds,
-          accent: i % c.beats === 0,
-          count: true,
-        })),
-        ...beatEvents(this.song, c.from, c.to).map((b) => ({
-          at: c.musicAt + this.outputTime(b.time) - this.outputTime(c.from),
-          accent: b.accent,
-          count: false,
-        })),
-      ];
+      // Cycle timing is fixed when its audio source is scheduled. Only the
+      // cursor advances every 25ms; seek/rate/loop changes create new cycles.
+      const events = this.clickEvents.get(c)!;
       let i = this.nextClick.get(c) || 0;
       while (i < events.length && events[i].at < now + 0.15) {
         const e = events[i++];
@@ -442,6 +451,7 @@ export class Player {
     }
     while (this.cycles.length > 1 && this.cycles[0].endAt < now) {
       this.nextClick.delete(this.cycles[0]);
+      this.clickEvents.delete(this.cycles[0]);
       this.cycles.shift();
     }
     if (!this.loop && now >= last.endAt) {
