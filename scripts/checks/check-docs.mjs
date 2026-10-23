@@ -2,7 +2,17 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { projectFiles } from "./project-files.mjs";
 
-const files = projectFiles().filter((file) => file.endsWith(".md"));
+const sourceFiles = projectFiles();
+const available = new Set(sourceFiles);
+for (const file of sourceFiles) {
+  let directory = path.posix.dirname(file);
+  while (directory !== ".") {
+    available.add(directory);
+    directory = path.posix.dirname(directory);
+  }
+}
+available.add(".");
+const files = sourceFiles.filter((file) => file.endsWith(".md"));
 const missing = [];
 for (const file of files) {
   // Check inline relative file links, not remote URLs, absolute local paths or anchors.
@@ -16,8 +26,15 @@ for (const file of files) {
         match[1].split(' "')[0].replace(/^<|>$/g, "").split("#")[0],
       );
       if (!target || /^(?:[a-z][\w+.-]*:|\/)/i.test(target)) continue;
-      if (!existsSync(path.resolve(path.dirname(file), target)))
+      const resolved = path.resolve(path.dirname(file), target);
+      const relative =
+        path.relative(process.cwd(), resolved).split(path.sep).join("/") || ".";
+      if (!existsSync(resolved))
         missing.push(`${file}:${index + 1}: missing ${target}`);
+      else if (!available.has(relative))
+        missing.push(
+          `${file}:${index + 1}: target not in source snapshot ${target}`,
+        );
     }
   }
 }

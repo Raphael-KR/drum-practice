@@ -2,6 +2,8 @@
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](../README.md)와 [현행 정본](../../RULES-INDEX.md)을 구분한다.
 
+아래 `data/production/` 자료는 로컬에 보존한 Git 제외 증거다. CI나 원격 저장소에서 열 수 있는 링크로 제공하지 않으며, 원래 경로와 당시 검증 의미를 기록한다.
+
 <a id="red-sunset-app-integration--붉은-노을-앱-반영"></a>
 
 ## 붉은 노을 앱 반영
@@ -583,7 +585,7 @@ Python 명령은 lxml·pdfplumber가 설치된 `/Users/raphael/.cache/codex-runt
 
 ### 최종 결과와 검증
 
-- [MusicXML](../../../data/production/red-sunset-rebuild-20261023/score.musicxml):720,083bytes, SHA256 `4c45ae6ed0443a79e65dc095971b564f501a9afd4dcd4472f7b809ce9c909c89`. [전체 SVG4쪽](../../../data/production/red-sunset-rebuild-20261023/full-score.svg)과 원생 page-1~4.svg, Safari page-1~4.png를 같은 폴더에 보존한다.
+- MusicXML (로컬 `data/production/red-sunset-rebuild-20261023/score.musicxml`):720,083bytes, SHA256 `4c45ae6ed0443a79e65dc095971b564f501a9afd4dcd4472f7b809ce9c909c89`. 전체 SVG4쪽 (로컬 `data/production/red-sunset-rebuild-20261023/full-score.svg`)과 원생 page-1~4.svg, Safari page-1~4.png를 같은 폴더에 보존한다.
 - MusicXML4.0 XSD·원본 전137마디 재읽기·대표7/9/131/135/136 리듬·550사분음표·1521머리·꾸밈음1·셋잇음표9/숫자 경로3을 확인했다. 음표·박·성부/화음·O+·원래 템포134·메타정보를 유지했다. 허용한 차이는 임의 표제1개 제거와 words의 source default-y/표시 offset/필요시 relative-y다.
 - 원본 표제14개만 있으며 모두 자기 마디 오선 시작에 테두리 바깥선을 정렬했다.16지시의 적용 박은 모두 원래0이다. 실제 공통 조판23회 격자 탐색,179개 더 작은 후보의 실패 근거와 선택값 바로 직전의 개별 재조판, 최종 XML 재열기를 확인했다. 글자·테두리·음표/줄기/빔/주법과 지시문 사이에 오선 간격¼인2.5 SVG단위 여백을 확보했고 같은 줄 안에 표시한다.
 - 원본의 지시 높이는 대체로51.733tenths,114마디44.233358,134마디52.061066,136마디47.061114다. 정확한16값과 원본 baseline/오선 근거는 source-word-positions.json에 있다. **이번 최종 입력은 이 기본 높이에서 모두 가로 배치가 가능해 relative-y 높이 분기는 발동하지 않았다.** 공간 부족 분기와 세로 속성 지원은 구현/진단 결과와 실제 적용 범위를 구별한다.

@@ -35,7 +35,7 @@
 - `npm run build`는 `build:apps`와 동일하다. 구형 통합 dist 빌드는 사용하지 않는다. 빌드 중 문서는 수정하지 않고 `check:docs`로 생성 문서의 일치를 확인한다.
 - `npm run typecheck`: 앱(`tsconfig.json`), 브라우저 제작 도구(`tsconfig.tools.json`), hosting 빌드 설정(`hosting/tsconfig.json`)을 각각 검사한다. hosting의 설치된 Vite/Cloudflare 타입을 사용한다.
 - `npm run format:check`: Git 추적 파일과 아직 추가하지 않은 비제외 파일 중 JS/TS/JSON/CSS/HTML/YAML을 검사한다. Markdown·Python은 서식 검사 대상이 아니다. `.prettierrc.json`과 고정한 Prettier 버전을 사용한다.
-- `npm run check:docs`: 생성 UI 문서와 Markdown의 상대 파일 링크만 검사한다. 외부 URL·절대 로컬 경로·앵커 내용은 검사하지 않는다. 삭제된 실험 증거는 클릭 링크 대신 과거 경로와 삭제 상태로 기록한다.
+- `npm run check:docs`: 생성 UI 문서와 Markdown의 상대 파일 링크만 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 외부 URL·절대 로컬 경로·앵커 내용은 검사하지 않는다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
 - 원격 CI 결과는 push 이후 별도로 확인한다. 로컬 통과를 원격 CI 실행 성공으로 기록하지 않는다.
 
 <a id="testing--eslint"></a>

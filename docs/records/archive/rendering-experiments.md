@@ -2,6 +2,8 @@
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](../README.md)와 [현행 정본](../../RULES-INDEX.md)을 구분한다.
 
+아래 `data/production/` 자료는 로컬에 보존한 Git 제외 증거다. CI나 원격 저장소에서 열 수 있는 링크로 제공하지 않으며, 원래 경로와 당시 검증 의미를 기록한다.
+
 <a id="musicxml-troubleshooting--독립-svg에서-섹션-끝-숫자가-박스를-벗어남-2026-10-23"></a>
 
 ### 독립 SVG에서 섹션 끝 숫자가 박스를 벗어남 (2026-10-23)
@@ -247,8 +249,8 @@ OSMD가 mood/unknown 텍스트로 조판하는 일반 연주 지시를 지원한
 
 | 곡 | 전체 SVG | MusicXML | 드럼 파트 길이 | 섹션·지시문 |
 |---|---|---|---|---|
-| 갑자기 | [전체 2쪽](../../../data/production/section-direction-review-20261023/full-v10/ioi-suddenly/full-score.svg) | [정본](../../../data/production/section-direction-review-20261023/full-v10/ioi-suddenly/score.musicxml) | 93마디·372사분음표 | 12·1 |
-| 붉은 노을 | [전체 4쪽](../../../data/production/section-direction-review-20261023/full-v10/red-sunset/full-score.svg) | [정본](../../../data/production/section-direction-review-20261023/full-v10/red-sunset/score.musicxml) | 137마디·550사분음표 | 15·16 |
+| 갑자기 | 전체 2쪽 (로컬 `data/production/section-direction-review-20261023/full-v10/ioi-suddenly/full-score.svg`) | 정본 (로컬 `data/production/section-direction-review-20261023/full-v10/ioi-suddenly/score.musicxml`) | 93마디·372사분음표 | 12·1 |
+| 붉은 노을 | 전체 4쪽 (로컬 `data/production/section-direction-review-20261023/full-v10/red-sunset/full-score.svg`) | 정본 (로컬 `data/production/section-direction-review-20261023/full-v10/red-sunset/score.musicxml`) | 137마디·550사분음표 | 15·16 |
 
 `full-score.svg`는 원생 페이지를 세로로 연결한 열람용 합본이다. 원생 `page-N.svg`와 Safari `page-N.png`, 공통 가사/마디 표시 `review.png`를 각 곡 폴더에 보존했다. 음표·글자 좌표를 곡별로 후처리하지 않았다. 실제 수록 패키지는 유지했다.
 
@@ -258,7 +260,7 @@ OSMD가 mood/unknown 텍스트로 조판하는 일반 연주 지시를 지원한
 
 사용자는 악보의 섹션·연주 지시·가사·제목을 Pretendard로 통일하기로 확정했다. 공통 조판기는 공식 1.3.9 Regular/Bold 원본 WOFF2를 측정 전에 로딩하고 native rehearsal도 같은 글꼴로 측정·출력한다. HTML 가사도 같은 글꼴이다. 음악 기호는 전용 글리프를 유지한다.
 
-v8의 generic sans-serif는 한국어 앱에서 `Chorus 1` 폭49.859375였으나 독립 SVG에서는57.796875였다. 문서 언어에 따른 실제 선택 글꼴 차이가 박스를 벗어나는 원인이다. v10은 같은 문자열이 ko/en/언어 미지정에서 모두55.171875이고 테두리 안에 들어간다. 자세한 원인·코드/자산·재현은 [글꼴 수정 기록](rendering-experiments.md#rehearsal-font-fix-20261023--섹션-테두리의-글꼴-측정출력-일치), [수정 전](../../../data/production/section-direction-review-20261023/full-v10/chorus-1-before.png)·[수정 후](../../../data/production/section-direction-review-20261023/full-v10/chorus-1-pretendard.png) 화면을 따른다.
+v8의 generic sans-serif는 한국어 앱에서 `Chorus 1` 폭49.859375였으나 독립 SVG에서는57.796875였다. 문서 언어에 따른 실제 선택 글꼴 차이가 박스를 벗어나는 원인이다. v10은 같은 문자열이 ko/en/언어 미지정에서 모두55.171875이고 테두리 안에 들어간다. 자세한 원인·코드/자산·재현은 [글꼴 수정 기록](rendering-experiments.md#rehearsal-font-fix-20261023--섹션-테두리의-글꼴-측정출력-일치), 수정 전 (로컬 `data/production/section-direction-review-20261023/full-v10/chorus-1-before.png`)·수정 후 (로컬 `data/production/section-direction-review-20261023/full-v10/chorus-1-pretendard.png`) 화면을 따른다.
 
 MusicXML은 word-font/lyric-font와 rehearsal/words/lyric text의 font-family에 선택을 저장한다. XML에는 글꼴 바이너리를 넣지 않는다. 프로젝트 SVG는 사용한 굵기의 WOFF2와 OFL 고지를 내장해 독립 파일에서도 같은 바이트로 표시한다. 두 로컬 폰트는 합계1,557,048바이트이며, 내장 후 원생6쪽 SVG는 합계17,426,633바이트다. SVG 이식성을 위해 파일 크기가 늘었다. 외부 앱이 MusicXML을 조판할 때는 해당 글꼴 지원/설치가 필요하다.
 
@@ -345,8 +347,8 @@ XML SHA-256: 갑자기 `8f3ad3a47aa4453dc19fb71a514761f0665d9a429327478712c35285
 
 | 곡 | 해당 마디 | 실제 수록 패키지에서 추출한 SVG |
 |---|---|---|
-| 갑자기 | 5: `A · Closed H.H →` | [1쪽](../../../data/production/section-direction-review-20261023/current/ioi-suddenly/page-1.svg) |
-| 붉은 노을 | 26·34 / 50·58·66·74 / 82·106·114 / 134 | [1쪽](../../../data/production/section-direction-review-20261023/current/red-sunset/page-1.svg) · [2쪽](../../../data/production/section-direction-review-20261023/current/red-sunset/page-2.svg) · [3쪽](../../../data/production/section-direction-review-20261023/current/red-sunset/page-3.svg) · [4쪽](../../../data/production/section-direction-review-20261023/current/red-sunset/page-4.svg) |
+| 갑자기 | 5: `A · Closed H.H →` | 1쪽 (로컬 `data/production/section-direction-review-20261023/current/ioi-suddenly/page-1.svg`) |
+| 붉은 노을 | 26·34 / 50·58·66·74 / 82·106·114 / 134 | 1쪽 (로컬 `data/production/section-direction-review-20261023/current/red-sunset/page-1.svg`) · 2쪽 (로컬 `data/production/section-direction-review-20261023/current/red-sunset/page-2.svg`) · 3쪽 (로컬 `data/production/section-direction-review-20261023/current/red-sunset/page-3.svg`) · 4쪽 (로컬 `data/production/section-direction-review-20261023/current/red-sunset/page-4.svg`) |
 
 붉은 노을 134마디에는 `Ending · 손발 안맞춰도 좋으니 맘껏 후려주세요!`도 포함된다. H.H 표기만의 문제가 아니다.
 
@@ -358,13 +360,13 @@ build-01은 분리 표기와 겹침이 남아 있는 초기 출력이다. build-
 
 | 곡/보존 버전 | 상태 | SVG 전체 링크 |
 |---|---|---|
-| 붉은 노을 build-01 | 분리 표기·겹침 원인 비교 | [1쪽](../../../data/production/red-sunset/final/build-01/osmd-render/page-1.svg) · [2쪽](../../../data/production/red-sunset/final/build-01/osmd-render/page-2.svg) · [3쪽](../../../data/production/red-sunset/final/build-01/osmd-render/page-3.svg) · [4쪽](../../../data/production/red-sunset/final/build-01/osmd-render/page-4.svg) |
-| 붉은 노을 build-02 | 합친 표제 비교 | [1쪽](../../../data/production/red-sunset/final/build-02/osmd-render/page-1.svg) · [2쪽](../../../data/production/red-sunset/final/build-02/osmd-render/page-2.svg) · [3쪽](../../../data/production/red-sunset/final/build-02/osmd-render/page-3.svg) · [4쪽](../../../data/production/red-sunset/final/build-02/osmd-render/page-4.svg) |
-| 붉은 노을 build-03 | 합친 표제 비교 | [1쪽](../../../data/production/red-sunset/final/build-03/osmd-render/page-1.svg) · [2쪽](../../../data/production/red-sunset/final/build-03/osmd-render/page-2.svg) · [3쪽](../../../data/production/red-sunset/final/build-03/osmd-render/page-3.svg) · [4쪽](../../../data/production/red-sunset/final/build-03/osmd-render/page-4.svg) |
-| 붉은 노을 app-01 | 합친 표제 비교 | [1쪽](../../../data/production/red-sunset/final/app-01/page-1.svg) · [2쪽](../../../data/production/red-sunset/final/app-01/page-2.svg) · [3쪽](../../../data/production/red-sunset/final/app-01/page-3.svg) · [4쪽](../../../data/production/red-sunset/final/app-01/page-4.svg) |
-| 갑자기 package-v1 | 합친 표제, 5마디 | [1쪽](../../../data/production/ioi-suddenly-20261023/package-v1/osmd-render/page-1.svg) |
+| 붉은 노을 build-01 | 분리 표기·겹침 원인 비교 | 1쪽 (로컬 `data/production/red-sunset/final/build-01/osmd-render/page-1.svg`) · 2쪽 (로컬 `data/production/red-sunset/final/build-01/osmd-render/page-2.svg`) · 3쪽 (로컬 `data/production/red-sunset/final/build-01/osmd-render/page-3.svg`) · 4쪽 (로컬 `data/production/red-sunset/final/build-01/osmd-render/page-4.svg`) |
+| 붉은 노을 build-02 | 합친 표제 비교 | 1쪽 (로컬 `data/production/red-sunset/final/build-02/osmd-render/page-1.svg`) · 2쪽 (로컬 `data/production/red-sunset/final/build-02/osmd-render/page-2.svg`) · 3쪽 (로컬 `data/production/red-sunset/final/build-02/osmd-render/page-3.svg`) · 4쪽 (로컬 `data/production/red-sunset/final/build-02/osmd-render/page-4.svg`) |
+| 붉은 노을 build-03 | 합친 표제 비교 | 1쪽 (로컬 `data/production/red-sunset/final/build-03/osmd-render/page-1.svg`) · 2쪽 (로컬 `data/production/red-sunset/final/build-03/osmd-render/page-2.svg`) · 3쪽 (로컬 `data/production/red-sunset/final/build-03/osmd-render/page-3.svg`) · 4쪽 (로컬 `data/production/red-sunset/final/build-03/osmd-render/page-4.svg`) |
+| 붉은 노을 app-01 | 합친 표제 비교 | 1쪽 (로컬 `data/production/red-sunset/final/app-01/page-1.svg`) · 2쪽 (로컬 `data/production/red-sunset/final/app-01/page-2.svg`) · 3쪽 (로컬 `data/production/red-sunset/final/app-01/page-3.svg`) · 4쪽 (로컬 `data/production/red-sunset/final/app-01/page-4.svg`) |
+| 갑자기 package-v1 | 합친 표제, 5마디 | 1쪽 (로컬 `data/production/ioi-suddenly-20261023/package-v1/osmd-render/page-1.svg`) |
 
-갑자기의 합치기 전 SVG 파일은 이번 보존 경로에서 찾지 못했다. 현재 코드를 바꿔 과거 SVG인 것처럼 재생성하지 않는다. 원본 표기는 [원본 확대 이미지](../../../data/production/ioi-suddenly-20261023/review/page1-upper.png)에서 `A`와 그 오른쪽 지시문으로 구분된다.
+갑자기의 합치기 전 SVG 파일은 이번 보존 경로에서 찾지 못했다. 현재 코드를 바꿔 과거 SVG인 것처럼 재생성하지 않는다. 원본 표기는 원본 확대 이미지 (로컬 `data/production/ioi-suddenly-20261023/review/page1-upper.png`)에서 `A`와 그 오른쪽 지시문으로 구분된다.
 
 <a id="section-direction-layout-review--추가-의미-검토-후보"></a>
 
@@ -374,8 +376,8 @@ build-01은 분리 표기와 겹침이 남아 있는 초기 출력이다. build-
 
 | 곡 | 현재 표제 예 | SVG 전체 링크 |
 |---|---|---|
-| 시작전 손플기 | `A. 부드럽게 · 고르게 · 자연스러운 반동`, B–F 설명형 표제 | [1쪽](../../../data/production/section-direction-review-20261023/current/preplay-warmup/page-1.svg) · [2쪽](../../../data/production/section-direction-review-20261023/current/preplay-warmup/page-2.svg) · [3쪽](../../../data/production/section-direction-review-20261023/current/preplay-warmup/page-3.svg) · [4쪽](../../../data/production/section-direction-review-20261023/current/preplay-warmup/page-4.svg) · [5쪽](../../../data/production/section-direction-review-20261023/current/preplay-warmup/page-5.svg) · [6쪽](../../../data/production/section-direction-review-20261023/current/preplay-warmup/page-6.svg) |
-| 탐탐 무빙 연습 | `A · 한 손 8분`, `B · 오른손→양손 16분` 등 | [1쪽](../../../data/production/section-direction-review-20261023/current/tom-moving/page-1.svg) |
+| 시작전 손플기 | `A. 부드럽게 · 고르게 · 자연스러운 반동`, B–F 설명형 표제 | 1쪽 (로컬 `data/production/section-direction-review-20261023/current/preplay-warmup/page-1.svg`) · 2쪽 (로컬 `data/production/section-direction-review-20261023/current/preplay-warmup/page-2.svg`) · 3쪽 (로컬 `data/production/section-direction-review-20261023/current/preplay-warmup/page-3.svg`) · 4쪽 (로컬 `data/production/section-direction-review-20261023/current/preplay-warmup/page-4.svg`) · 5쪽 (로컬 `data/production/section-direction-review-20261023/current/preplay-warmup/page-5.svg`) · 6쪽 (로컬 `data/production/section-direction-review-20261023/current/preplay-warmup/page-6.svg`) |
+| 탐탐 무빙 연습 | `A · 한 손 8분`, `B · 오른손→양손 16분` 등 | 1쪽 (로컬 `data/production/section-direction-review-20261023/current/tom-moving/page-1.svg`) |
 
 Loveholic과 바람과 언덕의 발라드는 현재 수록 XML의 섹션명에서 이번과 같은 연주 지시 합침을 찾지 못했다. 모든 종류의 SVG 겹침이 없다는 판정은 아니다.
 
@@ -394,11 +396,11 @@ Loveholic과 바람과 언덕의 발라드는 현재 수록 XML의 섹션명에�
 
 후속 사용자 요청으로 5마디만 검토했다. 아래는 위 초기 목록 조사와 구분되는 새 검토용 렌더이며 최종 악보/앱 적용본은 아니다.
 
-- 입력: 보존된 최종 XML의 5마디 `A · Closed H.H →`를 `rehearsal=A`와 별도 `words=Closed H.H →`로 분리했다. [검토용 MusicXML](../../../data/production/section-direction-review-20261023/ioi-m5-right-v1/candidate.musicxml).
+- 입력: 보존된 최종 XML의 5마디 `A · Closed H.H →`를 `rehearsal=A`와 별도 `words=Closed H.H →`로 분리했다. 검토용 MusicXML (로컬 `data/production/section-direction-review-20261023/ioi-m5-right-v1/candidate.musicxml`).
 - 기존 공통 조판기로 93마디·2쪽을 렌더했다. 5마디 words에 준 표준 위치 속성(default-x/default-y/relative-x)이 이 경로에서 의도한 오른쪽 위치로 반영되지 않아 A와 겹쳤다. XML 속성만으로 해결됐다고 보고하지 않는다.
-- 시안은 실제 SVG의 A 테두리 경계를 읽어 원생 words 텍스트 2노드(엔진 중복 출력)를 모두 오른쪽으로 이동했다. 지시문 세로 중심을 테두리에 맞췄고 다른 음표·마디·섹션을 이동하지 않았다. A 테두리의 stroke를 포함한 오른쪽 끝 x=90, 지시문 왼쪽 x=102, 간격=12 SVG 단위. [배치 측정](../../../data/production/section-direction-review-20261023/ioi-m5-right-v1/layout-check.json).
-- 결과: [실제 화면 PNG](../../../data/production/section-direction-review-20261023/ioi-m5-right-v1/preview.png), [5–8마디 확대 SVG](../../../data/production/section-direction-review-20261023/ioi-m5-right-v1/measure-5-8.svg), [1쪽 전체 SVG 시안](../../../data/production/section-direction-review-20261023/ioi-m5-right-v1/page-1-right.svg). XML 분리와 SVG 위치 보정은 각각의 단계다.
-- 검증: 기존 common.musicxml의 로컬 schema resolver로 MusicXML 4.0 검사 통과. 분리한 direction을 메모리에서 되돌린 구조가 기존 XML과 완전히 동일함을 확인했다([XML 검사](../../../data/production/section-direction-review-20261023/ioi-m5-right-v1/xml-check.json)). schema를 resolver 없이 직접 읽으면 xml:lang 선언을 못 찾으므로 기존 공통 검사기를 사용한다.
+- 시안은 실제 SVG의 A 테두리 경계를 읽어 원생 words 텍스트 2노드(엔진 중복 출력)를 모두 오른쪽으로 이동했다. 지시문 세로 중심을 테두리에 맞췄고 다른 음표·마디·섹션을 이동하지 않았다. A 테두리의 stroke를 포함한 오른쪽 끝 x=90, 지시문 왼쪽 x=102, 간격=12 SVG 단위. 배치 측정 (로컬 `data/production/section-direction-review-20261023/ioi-m5-right-v1/layout-check.json`).
+- 결과: 실제 화면 PNG (로컬 `data/production/section-direction-review-20261023/ioi-m5-right-v1/preview.png`), 5–8마디 확대 SVG (로컬 `data/production/section-direction-review-20261023/ioi-m5-right-v1/measure-5-8.svg`), 1쪽 전체 SVG 시안 (로컬 `data/production/section-direction-review-20261023/ioi-m5-right-v1/page-1-right.svg`). XML 분리와 SVG 위치 보정은 각각의 단계다.
+- 검증: 기존 common.musicxml의 로컬 schema resolver로 MusicXML 4.0 검사 통과. 분리한 direction을 메모리에서 되돌린 구조가 기존 XML과 완전히 동일함을 확인했다(XML 검사 (로컬 `data/production/section-direction-review-20261023/ioi-m5-right-v1/xml-check.json`)). schema를 resolver 없이 직접 읽으면 xml:lang 선언을 못 찾으므로 기존 공통 검사기를 사용한다.
 - 환경/한계: Safari MCP는 Transport closed로 실패해 승인된 ego-browser/Chromium으로 실제 SVG를 확인했다. 병행 앱 수정의 HMR로 임시 검토 DOM이 초기화되어, 저장한 SVG를 정적 페이지로 열어 배치·캡처를 이어갔다. Safari·iPad 검증, 앱 공통 충돌 처리 구현, 현재 패키지 교체는 하지 않았다. 이번 시안의 12단위 간격을 모든 곡의 확정 규칙으로 확대하지 않는다.
 
 <a id="section-direction-layout-review--두-곡-전체-v2--음표-앵커-배치"></a>
@@ -409,8 +411,8 @@ Loveholic과 바람과 언덕의 발라드는 현재 수록 XML의 섹션명에�
 
 | 곡 | MusicXML | 전체 SVG | 대표 화면 |
 |---|---|---|---|
-| 갑자기 93마디 | [XML](../../../data/production/section-direction-review-20261023/full-v2/ioi-suddenly/score.musicxml) | [1쪽](../../../data/production/section-direction-review-20261023/full-v2/ioi-suddenly/page-1.svg) · [2쪽](../../../data/production/section-direction-review-20261023/full-v2/ioi-suddenly/page-2.svg) | [5마디](../../../data/production/section-direction-review-20261023/full-v2/ioi-suddenly/section-preview.png) |
-| 붉은 노을 137마디 | [XML](../../../data/production/section-direction-review-20261023/full-v2/red-sunset/score.musicxml) | [1쪽](../../../data/production/section-direction-review-20261023/full-v2/red-sunset/page-1.svg) · [2쪽](../../../data/production/section-direction-review-20261023/full-v2/red-sunset/page-2.svg) · [3쪽](../../../data/production/section-direction-review-20261023/full-v2/red-sunset/page-3.svg) · [4쪽](../../../data/production/section-direction-review-20261023/full-v2/red-sunset/page-4.svg) | [26마디](../../../data/production/section-direction-review-20261023/full-v2/red-sunset/section-preview.png) |
+| 갑자기 93마디 | XML (로컬 `data/production/section-direction-review-20261023/full-v2/ioi-suddenly/score.musicxml`) | 1쪽 (로컬 `data/production/section-direction-review-20261023/full-v2/ioi-suddenly/page-1.svg`) · 2쪽 (로컬 `data/production/section-direction-review-20261023/full-v2/ioi-suddenly/page-2.svg`) | 5마디 (로컬 `data/production/section-direction-review-20261023/full-v2/ioi-suddenly/section-preview.png`) |
+| 붉은 노을 137마디 | XML (로컬 `data/production/section-direction-review-20261023/full-v2/red-sunset/score.musicxml`) | 1쪽 (로컬 `data/production/section-direction-review-20261023/full-v2/red-sunset/page-1.svg`) · 2쪽 (로컬 `data/production/section-direction-review-20261023/full-v2/red-sunset/page-2.svg`) · 3쪽 (로컬 `data/production/section-direction-review-20261023/full-v2/red-sunset/page-3.svg`) · 4쪽 (로컬 `data/production/section-direction-review-20261023/full-v2/red-sunset/page-4.svg`) | 26마디 (로컬 `data/production/section-direction-review-20261023/full-v2/red-sunset/section-preview.png`) |
 
 <a id="section-direction-layout-review--구현검증"></a>
 
@@ -457,11 +459,11 @@ Loveholic과 바람과 언덕의 발라드는 현재 수록 XML의 섹션명에�
 
 | 표본 | 0박 | +0.5박 | +1박 | +2박 | SVG 비교판 |
 |---|---|---|---|---|---|
-| 갑자기 5마디, A / Closed H.H → | 겹침 | 겹침 | 겹침 없음 | 겹침 없음 | [4안 비교](../../../data/production/section-direction-review-20261023/offset-native-v3/ioi-suddenly-m5-comparison.svg) |
-| 붉은 노을 26마디, Chorus 1 / H.H OPEN (o) → | 겹침 | 겹침 | 겹침 | 겹침 없음 | [4안 비교](../../../data/production/section-direction-review-20261023/offset-native-v3/red-sunset-m26-comparison.svg) |
-| 붉은 노을 134마디, Ending / 긴 한국어 지시 | 겹침 | 겹침 | 겹침 | 겹침 없음 | [4안 비교](../../../data/production/section-direction-review-20261023/offset-native-v3/red-sunset-m134-comparison.svg) |
+| 갑자기 5마디, A / Closed H.H → | 겹침 | 겹침 | 겹침 없음 | 겹침 없음 | 4안 비교 (로컬 `data/production/section-direction-review-20261023/offset-native-v3/ioi-suddenly-m5-comparison.svg`) |
+| 붉은 노을 26마디, Chorus 1 / H.H OPEN (o) → | 겹침 | 겹침 | 겹침 | 겹침 없음 | 4안 비교 (로컬 `data/production/section-direction-review-20261023/offset-native-v3/red-sunset-m26-comparison.svg`) |
+| 붉은 노을 134마디, Ending / 긴 한국어 지시 | 겹침 | 겹침 | 겹침 | 겹침 없음 | 4안 비교 (로컬 `data/production/section-direction-review-20261023/offset-native-v3/red-sunset-m134-comparison.svg`) |
 
-[선택한 세 표본 한눈에 보기](../../../data/production/section-direction-review-20261023/offset-native-v3/selected.svg). 갑자기 +1박, 붉은 노을 두 곳 +2박은 **시험한 값 중** 겹침이 사라진 검토값이다. 더 작은 값의 한계 탐색이나 전곡 공통값 확정은 하지 않았다. 원본의 개별 음표·악기/주법은 동일하며, 텍스트에 sound/listening 명령을 새로 넣지 않았다. 표시는 뒤에 오므로 정확한 적용 시작을 텍스트 위치만으로 전달해야 하는 다른 지시에 기계적으로 적용하지 않는다.
+선택한 세 표본 한눈에 보기 (로컬 `data/production/section-direction-review-20261023/offset-native-v3/selected.svg`). 갑자기 +1박, 붉은 노을 두 곳 +2박은 **시험한 값 중** 겹침이 사라진 검토값이다. 더 작은 값의 한계 탐색이나 전곡 공통값 확정은 하지 않았다. 원본의 개별 음표·악기/주법은 동일하며, 텍스트에 sound/listening 명령을 새로 넣지 않았다. 표시는 뒤에 오므로 정확한 적용 시작을 텍스트 위치만으로 전달해야 하는 다른 지시에 기계적으로 적용하지 않는다.
 
 현재 공통 renderer를 수정 없이 사용했다. 추가 SVG 작업은 해당 줄의 복사·viewBox 자르기, 비교용 제목과 행 배치뿐이며 섹션·지시문의 x/y·글꼴·크기를 고치지 않았다. 섹션 오선 시작점 좌측 정렬의 제작용 v2 보정도 이번 표본에는 적용하지 않았다. 기존 renderer 자체의 섹션 Y 보정은 그대로다.
 
@@ -477,9 +479,9 @@ Safari MCP는 이번 실행에서 연결이 정상으로 돌아와 Safari로 렌
 
 사용자 추가 요청으로 붉은 노을 26·134마디만 `offset=144`(divisions=96, `sound="no"`)로 시험했다. 이전 +1/+2박의 원생 SVG는 재사용했고 변경된 +1.5박만 현재 공통 renderer에서 새로 조판했다. 두 곳 모두 섹션과 겹치지 않았다. 섹션 테두리 오른쪽부터 지시문 글자 왼쪽까지의 수평 여백은 26마디 **21.58**, 134마디 **33.98 SVG 단위**다. +2박보다 왼쪽에 놓이면서 겹침을 해소한 추가 검토값이며 전곡 공통값 확정은 아니다.
 
-- [26마디 +1 / +1.5 / +2박 SVG 비교](../../../data/production/section-direction-review-20261023/offset-native-v4/red-sunset-m26-comparison.svg)
-- [134마디 +1 / +1.5 / +2박 SVG 비교](../../../data/production/section-direction-review-20261023/offset-native-v4/red-sunset-m134-comparison.svg)
-- [+1.5박 두 표본 SVG](../../../data/production/section-direction-review-20261023/offset-native-v4/selected.svg)
+- 26마디 +1 / +1.5 / +2박 SVG 비교 (로컬 `data/production/section-direction-review-20261023/offset-native-v4/red-sunset-m26-comparison.svg`)
+- 134마디 +1 / +1.5 / +2박 SVG 비교 (로컬 `data/production/section-direction-review-20261023/offset-native-v4/red-sunset-m134-comparison.svg`)
+- +1.5박 두 표본 SVG (로컬 `data/production/section-direction-review-20261023/offset-native-v4/selected.svg`)
 
 Safari MCP로 새 표본 두 곳을 렌더하고 합본을 열어 화면을 확인했다. SVG 좌표 추가 보정 없음. 전체 XML 1개의 XSD·음표 시간표·두 표시 offset 외 구조 동일성을 확인했다. 근거: `offset-native-v4/report.json`, `red-sunset-offset-1.5.musicxml`, `selected.png`, 원생 시스템 SVG 2개와 `run.mjs`. 기존 악보·음원·패키지·앱 코드는 유지했다.
 
@@ -489,7 +491,7 @@ Safari MCP로 새 표본 두 곳을 렌더하고 합본을 열어 화면을 확�
 
 사용자가 섹션은 오선 시작점에 좌측 정렬하라고 재확인했다. 기존 공통 제작 함수 `layoutSectionDirections`에 sections만 전달하고 directions는 빈 목록으로 두어, v3 갑자기 5마디(+1박)와 v4 붉은 노을 26·134마디(+1.5박)의 섹션 테두리·글자만 함께 이동했다. 지시문 원생 SVG 노드와 음표 노드의 변경 전/후 outerHTML이 동일함을 확인했다. MusicXML과 음원은 바꾸지 않았다.
 
-세 곳 모두 오선 시작 x=50, 테두리 stroke 포함 왼쪽 x=50으로 오차 0이다. 지시문 겹침 없음과 Safari 실제 화면을 확인했다. [최신 검토 SVG](../../../data/production/section-direction-review-20261023/section-left-v5/selected.svg). 개별 SVG 3개·`report.json`·화면 `selected.png`는 같은 폴더에 보존한다. 섹션은 승인된 SVG 공통 보정을 적용했고 지시문은 XML offset에 따른 원생 배치를 유지했으므로, 이 교정본 전체를 ‘SVG 좌표 보정 없음’ 또는 ‘현재 앱에서 XML만으로 재현됨’으로 보고하지 않는다. 앱 소스·기존 완성 패키지 교체는 하지 않았다.
+세 곳 모두 오선 시작 x=50, 테두리 stroke 포함 왼쪽 x=50으로 오차 0이다. 지시문 겹침 없음과 Safari 실제 화면을 확인했다. 최신 검토 SVG (로컬 `data/production/section-direction-review-20261023/section-left-v5/selected.svg`). 개별 SVG 3개·`report.json`·화면 `selected.png`는 같은 폴더에 보존한다. 섹션은 승인된 SVG 공통 보정을 적용했고 지시문은 XML offset에 따른 원생 배치를 유지했으므로, 이 교정본 전체를 ‘SVG 좌표 보정 없음’ 또는 ‘현재 앱에서 XML만으로 재현됨’으로 보고하지 않는다. 앱 소스·기존 완성 패키지 교체는 하지 않았다.
 
 <a id="section-direction-layout-review--xml-위치-속성-입력과-조판기-미지원-재현--v6"></a>
 
@@ -497,7 +499,7 @@ Safari MCP로 새 표본 두 곳을 렌더하고 합본을 열어 화면을 확�
 
 사용자 최신 목표는 **섹션도 SVG 보정 대신 MusicXML 속성으로 지정해 XML만으로 재현**하는 것이다. [W3C rehearsal](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/rehearsal/)은 마디 시작 기준 `default-x`, 기본 위치에서의 `relative-x`, `halign`·`justify`를 제공한다. `direction directive="yes"`는 박자표/첫 표기와의 정렬이므로 오선 시작과 항상 같다고 간주하지 않는다. 텍스트 정렬점과 enclosure의 padding/외곽은 구분해 검증해야 한다.
 
-갑자기 12개·붉은 노을 15개 rehearsal에 `default-x="0" halign="left" justify="left"`를 넣은 검토 후보를 만들었다. [갑자기 XML](../../../data/production/section-direction-review-20261023/xml-position-v6/ioi-suddenly.musicxml), [붉은 노을 XML](../../../data/production/section-direction-review-20261023/xml-position-v6/red-sunset.musicxml). XSD·음표 시간표·위 세 속성 외 전체 XML 내용 동일성을 확인했다. 이는 **입력 작성 완료이며 현행 앱에서 배치 재현 완료가 아니다.** 이전 대표 지시문 offset(갑자기 5마디 +1박, 붉은 노을 26/134마디 +1.5박)은 유지한다.
+갑자기 12개·붉은 노을 15개 rehearsal에 `default-x="0" halign="left" justify="left"`를 넣은 검토 후보를 만들었다. 갑자기 XML (로컬 `data/production/section-direction-review-20261023/xml-position-v6/ioi-suddenly.musicxml`), 붉은 노을 XML (로컬 `data/production/section-direction-review-20261023/xml-position-v6/red-sunset.musicxml`). XSD·음표 시간표·위 세 속성 외 전체 XML 내용 동일성을 확인했다. 이는 **입력 작성 완료이며 현행 앱에서 배치 재현 완료가 아니다.** 이전 대표 지시문 offset(갑자기 5마디 +1박, 붉은 노을 26/134마디 +1.5박)은 유지한다.
 
 설치 OSMD 2.1.2의 `interpretRehearsalMark`는 text/placement만 RehearsalExpression에 저장하고 위치·정렬 속성을 읽지 않는다. 실제 Safari 공통 renderer에서 붉은 노을 26·134마디의 default-x를 0과 100으로 비교해도 모두 **오선 시작 x=50, 섹션 외곽 left=70, text x=74**로 동일했다. 별도 SVG 보정은 사용하지 않았다. 따라서 현행 엔진에서는 XML 속성만 바꿔 원하는 정렬을 얻었다고 보고할 수 없다. 올바른 해결은 XML 속성을 읽는 공통 조판 지원이며, 곡별 완성 SVG나 외부 좌표표가 아니다.
 
@@ -518,4 +520,4 @@ Safari MCP로 새 표본 두 곳을 렌더하고 합본을 열어 화면을 확�
 
 현재 제작 SVG의 musical offset은 0.0625박 단위로 표현·반영된다. 이는 화면 픽셀 단위가 아니며 조판 폭에 따라 SVG 이동량은 다르다. 왼쪽 넘침 보정 등으로 최종 x가 고정되는 영역과 분해능 자체를 구분한다. 별도의 최소 단위로 양자화하거나 새 음표를 추가하지 않았다.
 
-근거: `offset-fine-v7/report.json`, offset별 전체 XML 3개(XSD·음표 시간표·offset 값 이외 XML 내용 동일성 통과), 원생 시스템 SVG 6개. [26마디 비교](../../../data/production/section-direction-review-20261023/offset-fine-v7/red-sunset-m26-comparison.svg), [134마디 비교](../../../data/production/section-direction-review-20261023/offset-fine-v7/red-sunset-m134-comparison.svg). Safari 실제 렌더와 26마디 비교 화면을 확인한다. 이 표본은 offset 분해능 검증이며 v6의 섹션 속성 미지원까지 해결한 결과는 아니다. 섹션 XML 지원 보완은 기존 앱 개발자가 별도로 진행 중이다.
+근거: `offset-fine-v7/report.json`, offset별 전체 XML 3개(XSD·음표 시간표·offset 값 이외 XML 내용 동일성 통과), 원생 시스템 SVG 6개. 26마디 비교 (로컬 `data/production/section-direction-review-20261023/offset-fine-v7/red-sunset-m26-comparison.svg`), 134마디 비교 (로컬 `data/production/section-direction-review-20261023/offset-fine-v7/red-sunset-m134-comparison.svg`). Safari 실제 렌더와 26마디 비교 화면을 확인한다. 이 표본은 offset 분해능 검증이며 v6의 섹션 속성 미지원까지 해결한 결과는 아니다. 섹션 XML 지원 보완은 기존 앱 개발자가 별도로 진행 중이다.
