@@ -23,7 +23,7 @@ it("migrates only the verified Loveholic recording and preserves song/timing/set
     "",
   );
   const audio = new NodeBlob([
-    await zip.file(manifest.audio.path)!.async("uint8array"),
+    await zip.file(manifest.audio.path)!.async("arraybuffer"),
   ]);
   const record = {
     song: manifest.song,

@@ -29,7 +29,7 @@ for (const [file, oldArtist, title, artist] of [
     const record = {
       song,
       canonicalXML: m.canonicalXML,
-      audio: new NodeBlob([await zip.file(m.audio.path)!.async("uint8array")]),
+      audio: new NodeBlob([await zip.file(m.audio.path)!.async("arraybuffer")]),
       pdf: new NodeBlob(["source-preserved"]),
       pages: [],
     } as unknown as RecordData;

@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import ko from "./src/shared/i18n/locales/ko.json";
+import ko from "./src/shared/i18n/locales/ko.json" with { type: "json" };
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 export default defineConfig(({ mode }) => {
   const separate = mode === "editor" || mode === "player";
@@ -12,8 +12,9 @@ export default defineConfig(({ mode }) => {
           publicDir: false,
           base: "./",
           build: {
+            target: ["chrome107", "edge107", "firefox104", "safari16"],
             outDir: `dist/${mode}`,
-            rollupOptions: { input: `${mode}.html` },
+            rolldownOptions: { input: `${mode}.html` },
           },
         }
       : {}),
