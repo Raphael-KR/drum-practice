@@ -1,3 +1,9 @@
+## 2026-10-24 — 0.8.16 발행 완료
+
+- release-drum-practice로 의존성·보안 업데이트를 커밋caf6f0b·push하고 [PR #14](https://github.com/Raphael-KR/drum-practice/pull/14)를 최신 CI/자체 검토 뒤 main1beda44에 병합했다. 두 앱0.8.16·빌드de75f325f873, 새 전체129파일767검사·lint/서식/타입·두 앱 빌드·양쪽 audit0건과 Node22 PR/main CI·main 재빌드가 통과했다.
+- player만 기존 public Sites 버전86에 발행했다. 배포 appgdep_6adc626d43ec819183229195534ed7e9는2026-10-24 16:47:10 KST succeeded.45파일 세 곳 해시·공개 읽기49항목·수록6곡 해시가 통과했고 editor·개인 저장/원본을 보존했다.
+- [전체 발행 근거·한계](docs/records/releases.md#release-0-8-16-20261024), [완료 계획](docs/records/archive/release-0.8.16.md), [보안 보완](docs/records/archive/vite-security-update-20261024.md)·[의존성 검증](docs/records/archive/dependency-updates-20261024.md)을 기록했다. 이전 문서 주소/명시 앵커를 유지한다. 공개 청취/iPad/장기 안정성을 확인한 것으로 확대하지 않는다. 후속 문서 반영은 제품 버전·발행을 반복하지 않는다.
+
 ## 2026-10-24 — 0.8.16 릴리스 준비
 
 - release-drum-practice 요청으로 기존 의존성·보안 업데이트와 관련 호환성/문서를 함께 포함한다. [릴리스 계획](docs/plans/release-0.8.16.md). 기존 기능의 보안·빌드 보완이며 새 사용자 기능/저장 계약 변경이 없어 두 앱0.8.15→0.8.16 patch를 선택했다.
