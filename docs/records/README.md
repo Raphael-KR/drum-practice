@@ -22,6 +22,7 @@
 
 ## 완료 계획·연구·과거 시안
 
+- [공통 YAML 버전 목록 분리와 CI 입력 검증](archive/shared-catalog-20261025.md)
 - [0.8.16 의존성·보안 릴리스](archive/release-0.8.16.md)
 - [의존성 업데이트와 Vite8 호환성 검증](archive/dependency-updates-20261024.md)
 - [Vite·Vitest·Undici 보안 수정 과정](archive/vite-security-update-20261024.md)

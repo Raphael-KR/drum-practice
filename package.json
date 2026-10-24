@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "catalog:sync": "node scripts/dependencies/sync-catalog.mjs && pnpm install",
+    "catalog:check": "node scripts/dependencies/sync-catalog.mjs --check",
     "dev": "vite --host 127.0.0.1",
     "build": "pnpm run build:apps",
     "test": "vitest run",

@@ -52,7 +52,7 @@
    pnpm run check:playback
    ```
 
-3. 정본의 `scripts/release/prepare-sites.mjs`로 기존 사본을 준비한다. pnpm이 중앙 카탈로그를 해석하고 hosting 전용 manifest·잠금 파일·설정을 내보낸다. 사본에서 의존성 버전을 독립 수정하지 않는다. 이 스크립트는 이전 생성 사본을 교체하므로 프로젝트 ID·경로와 사본의 별도 수정 유무를 먼저 확인한다.
+3. 정본의 `scripts/release/prepare-sites.mjs`로 기존 사본을 준비한다. pnpm이 검증된 커밋의 `config/shared-catalog.yaml` 사본과 lockfile을 해석하고 hosting 전용 manifest·잠금 파일·설정을 내보낸다. 개인 중앙 YAML을 이 단계에서 다시 동기화하지 않는다. 사본에서 의존성 버전을 독립 수정하지 않는다. 이 스크립트는 이전 생성 사본을 교체하므로 프로젝트 ID·경로와 사본의 별도 수정 유무를 먼저 확인한다.
 
    ```sh
    node scripts/release/prepare-sites.mjs

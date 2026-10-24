@@ -34,6 +34,7 @@ export async function writeBuildInfo() {
     "package.json",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
+    "config/shared-catalog.yaml",
     "tsconfig.json",
     "index.html",
     "editor.html",
