@@ -1,3 +1,36 @@
+## 2026-10-24 — 0.8.16 릴리스 준비
+
+- release-drum-practice 요청으로 기존 의존성·보안 업데이트와 관련 호환성/문서를 함께 포함한다. [릴리스 계획](docs/plans/release-0.8.16.md). 기존 기능의 보안·빌드 보완이며 새 사용자 기능/저장 계약 변경이 없어 두 앱0.8.15→0.8.16 patch를 선택했다.
+- 개발/Sites Vite8.3.5·Vitest5.0.5·Node 타입26.6.5와 미디어/시험/서식·Undici 보안 업데이트를 보존한다. 기존 브라우저 target, NodeBlob 테스트 두 곳의 실제 ArrayBuffer 입력, 앱 기능·원본·수록곡·사용자 저장 정보와 editor 로컬 전용 범위를 유지한다.
+- 두 앱0.8.16·소스 빌드de75f325f873에서 새 전체129파일767검사·lint/서식433파일·세 타입/문서/구조·두 앱 빌드/경계와 양쪽 audit0건·peer 정합성을 확인했다. 이전 앱 버전 바이트로 Safari 검수 소스20585a52b084가 재현되고 수록6곡/실제 검사 자산을 보존한다. 근거 `.tmp/release-0.8.16/`. 현재는 로컬 후보이며 PR/CI/main·Sites 발행·공개 확인은 별도로 기록한다.
+
+## 2026-10-24 — Vite8·Node26 타입의 추가 승인 반영과 최종 검증
+
+- 사용자 메이저 업그레이드 승인에 따라 개발용 Vite8.3.5·@types/node26.6.5를 적용했다. [최종 계획·결과](docs/plans/dependency-updates-20261024.md#vite8-node26-update-20261024). 앞선 여섯 패키지/Vitest5.0.5·Undici 보안 수정과 hosting 세 파일을 보존했다. Vite 설정을 Rolldown/JSON import 속성으로 맞추고 기존 build/css 브라우저 하한을 유지했다.
+- Node26 BlobPart 타입 오류는 테스트 두 곳의 실제 ZIP 바이트 출력을 ArrayBuffer로 명확히 해 해결했다. 앱/저장/재생·검사 규칙은 바꾸지 않았다. 최종 빌드20585a52b084에서 lint·서식433파일·세 타입 검사·문서/구조·전체129파일767검사·두 앱/경계·Sites 로컬 빌드 통과, 양쪽 audit0건·peer 오류 없음.
+- canonical player45파일/Worker HTML과 수록6곡 해시·5173 HTTP5항목을 대조했다. Safari에서 두 앱 개발/빌드 목록 초기화와 화면, 실제 MP3 읽기·PDF3페이지 렌더·MusicXML1SVG 표시를 확인했다. 근거 `.tmp/vite8-node26-20261024/`. 기존 빌드 경고·개발용 source map/HMR 로그와 측정 도우미 보완·한계는 위 기록에 남겼다.
+- 두 앱0.8.15와 main HEAD를 유지한다. 공개/Worker 실행·청취/iPad·Node22/CI 검증, 커밋·push·PR·발행은 수행하지 않았다.
+
+## 2026-10-24 — 남은 여섯 의존성 업데이트 완료
+
+- 사용자 전달 요청과 [실행 계획·결과](docs/plans/dependency-updates-20261024.md)에 따라 music-metadata12.2.3, pdfjs-dist6.4.299, @types/node22.20.5, fake-indexeddb6.2.6, Prettier3.9.10, Vitest/동반 패키지5.0.5를 실제 설치·lockfile에 반영했다. 기존 Vite/Undici 보안 버전과 hosting 미커밋 변경을 보존했다.
+- 최종 개발용/Sites audit0건·peer 의존성 일치와 소스 빌드3aea0c4afd76에서 lint·서식433파일·세 타입 검사·문서/구조·전체129파일767검사·두 앱 빌드/경계·Sites 빌드가 통과했다. 앱/테스트 소스·검사 규칙의 추가 수정은 필요하지 않았다.
+- 실제 MP3의 선택 메타정보가 같고 PDF3페이지의 크기가 같다. Node 렌더 PNG의 미세한 차이는 실제 픽셀의 최대2/255로 확인했다. music-metadata의 EmbeddedID3v2 동적 청크 추가를 포함한 player39파일/Worker HTML·기존 수록6곡 해시와5173의5개 HTTP 응답도 확인했다. 근거 `.tmp/dependency-updates-20261024/`.
+- 두 앱0.8.15·기존 저장/원본/미커밋 작업을 유지했다. 공개·GitHub CI·실제 브라우저 가져오기/청취·iPad 검증, 커밋·push·PR·발행은 수행하지 않았다.
+
+## 2026-10-24 — Vitest 및 하위 빌드 의존성 취약점 해소
+
+- [후속 계획·결과](docs/plans/vite-security-update-20261024.md#vitest-security-update-20261024)에 따라 Vitest/`@vitest/mocker`를5.0.1→5.0.3으로 갱신했다. 재감사에서 추가 검출된 기존 Undici도 개발용6.28.1→6.29.1, Sites7.29.1→7.30.1로 수정했다. 최신 Cloudflare가 고정한 Miniflare 하위 버전에만 override를 적용하며 기존 Vite7.3.7/8.3.5·hosting 직접 의존성 변경을 보존했다.
+- 최종 개발용·Sites audit0건과 양쪽 peer 의존성 일치를 확인했다. 소스 빌드6fdd8220c513에서 lint·서식433파일·세 타입 검사·문서/구조·전체129파일767검사·두 앱 빌드/경계가 통과했고, fresh lockfile 설치를 이용한 Sites 빌드도 통과했다.
+- canonical player38파일/Worker HTML·수록6곡 해시와5173서버의5개 HTTP 응답을 확인했다. 두 앱0.8.15·기존 저장/재생/시험 소스를 유지하며 검사 규칙을 바꾸지 않았다. 근거 `.tmp/vitest-security-20261024/`. 공개 확인·새 화면/청취/iPad 검증, 커밋·push·PR·발행은 수행하지 않았다.
+
+## 2026-10-24 — 개발·Sites Vite 보안 수정 버전 검증
+
+- [작업 계획·결과](docs/plans/vite-security-update-20261024.md)에 따라 프로젝트 로컬 Vite를7.3.6→7.3.7로 갱신했다. 시작 시 이미 존재한 Sites Vite8.3.5/관련 의존성의 미커밋 변경을 보존해 검증하고, Sites 설정의 로컬 플러그인 import에 `.ts`를 명시해 새 Vite의 native loader 호환성 경고를 해소했다.
+- 소스 빌드760770bea8a0에서 최종 lint·서식433파일·앱/도구/hosting 타입·문서/구조·전체129파일767검사·두 앱 빌드/경계와 별도 로컬 Sites 빌드가 통과했다. player38파일/Worker HTML과 기존 수록6곡의 해시가 일치하고5173개발 서버를7.3.7로 재시작한 뒤5개 HTTP 검사를 통과했다.
+- Vite audit 경고는 양쪽에서 해소됐다. Sites 전체0건이며 개발용에는 기존 Vitest/@vitest/mocker5.0.1의 별도 moderate2패키지가 남아 있다. 전체 개발 의존성의 취약점0건으로 확대하지 않는다. 근거 `.tmp/vite-security-20261024/`.
+- 두 앱0.8.15·저장/원본/재생 소스와 기존 hosting 패키지 파일을 보존했다. 새 화면·청취/iPad·공개 확인, 커밋·push·PR·발행은 수행하지 않았다.
+
 ## 2026-10-24 — 0.8.15 발행 완료
 
 - release-drum-practice로 성능·메모리 개선 커밋951dca6을 push하고 [PR #12](https://github.com/Raphael-KR/drum-practice/pull/12)의 CI/자체 검토 뒤 main d046536에 병합했다. 두 앱0.8.15·빌드4eba91c4f6d5, 전체129파일767검사·최신 PR/main CI·main 두 앱 재빌드가 통과했다.

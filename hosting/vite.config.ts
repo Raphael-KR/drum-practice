@@ -1,5 +1,5 @@
 import { defineConfig, type UserConfig } from "vite";
-import { sites } from "./build/sites-vite-plugin";
+import { sites } from "./build/sites-vite-plugin.ts";
 import { readFileSync } from "node:fs";
 export default defineConfig(async (): Promise<UserConfig> => {
   const hosting: { d1: string } = JSON.parse(
