@@ -1,3 +1,9 @@
+## 2026-10-25 — 다른 프로젝트의 공통 pnpm·중앙 YAML 전환 안내
+
+- [전환 안내문](docs/how-to/adopt-shared-pnpm-catalog.md)을 작성하고 문서 목록·개발 절차에서 연결했다. 공통 저장소와 프로젝트 연결의 역할, 기존 lockfile 가져오기, 중앙 사본·include·동기화 도구 이식, CI 재현성, 호환성 검사·지속 업데이트와 담당자 전달용 지시문을 담았다.
+- 현재 pnpm12.15.0·store 경로·중앙/사본 일치와 실제 동기화 코드의 manifest 목록을 확인했다. pnpm 공식 문서의 include 지원·설정 소유권·catalog·import·링크 구조를 대조했다. 상대 파일 링크 140개 문서 검사와 diff 공백 검사를 통과했다. 다른 프로젝트 전환이나 기능 검증을 수행한 결과로 확대하지 않는다.
+- 문서만 변경했다. 중앙 YAML·앱 코드·버전·lockfile·다른 프로젝트는 수정하지 않았다. 후속 사용자 요청에 따라 안내문과 관련 문서를 로컬 커밋하며, 푸시·발행은 포함하지 않는다.
+
 ## 2026-10-25 — 0.8.18 중앙 버전 YAML 분리 릴리스 완료
 
 - 중앙 버전 목록 분리와 프로젝트 사본·동기화·CI 재현성을 [PR #18](https://github.com/Raphael-KR/drum-practice/pull/18)로 병합했다. 두 앱 0.8.18·빌드 `8c4041613211`, 구현 `790b8748`, 제품 main `880a2cae`다. [전체 식별자·근거](docs/records/releases.md#release-0-8-18-20261025), [완료 계획](docs/records/archive/release-0.8.18.md).

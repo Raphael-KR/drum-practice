@@ -9,6 +9,7 @@
 | 가사 교정 | [교정 절차](how-to/correct-lyrics.md) | [음악적 가사 위치](reference/score/musicxml.md), [선택적 수동 교정 범위](reference/score/production.md) |
 | 요청된 드럼 음원 제작 | [음원 제작](how-to/render-drum-audio.md) | [드럼킷](reference/score/drum-kits.md), [공통 도구](reference/score/tools.md) |
 | 앱 개발 | [개발 절차](how-to/develop.md) | [구조](reference/engineering/architecture.md) → [UX](reference/product/ux.md) → [재생](reference/product/playback.md)·[음원](reference/product/audio-practice.md)·[제작기](reference/product/editor.md) |
+| 다른 프로젝트의 pnpm 전환 | [공통 저장소·중앙 YAML 연결](how-to/adopt-shared-pnpm-catalog.md) | [공유 의존성 결정](decisions/0028-shared-dependency-store-and-catalog.md) |
 | 코드·화면 검사 | [검사 절차](how-to/verify.md), [iPad](how-to/verify-ipad.md) | [검증 기준](reference/engineering/verification.md) |
 | Apple 로컬 분석 | [로컬 도구 사용](how-to/use-apple-local-tools.md) | [도구 계약](reference/score/tools.md) |
 | 승인된 릴리스 | [버전·발행 절차](how-to/release.md) | [릴리스](reference/engineering/release.md), [보안](reference/engineering/security.md), [고지](reference/engineering/third-party-notices.md) |
