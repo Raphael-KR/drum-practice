@@ -1,3 +1,10 @@
+## 2026-10-25 — 0.8.17 pnpm 전환 릴리스 완료
+
+- pnpm 공유 저장소·중앙 catalog·공용 lockfile·CI/Sites 준비 전환을 [PR #16](https://github.com/Raphael-KR/drum-practice/pull/16)으로 병합했다. 구현 `0f8060c1`, 제품 main `7894821a`, 두 앱0.8.17·빌드 `e4d576e55da5`다. [식별자·검증·한계](docs/records/releases.md#release-0-8-17-20261025), [완료 계획](docs/records/archive/release-0.8.17.md).
+- 로컬 전체129파일767테스트·lint/서식/세 타입/구조/문서·두 앱 빌드/경계, PR/main CI portable83파일422테스트가 통과했다. main과 검증본의 소스/자료 동일성, Sites 독립 frozen 설치·빌드·audit0건·player45파일 대조를 확인했다.
+- 기존 공개 Site의 버전87·배포 `appgdep_6adcd691cdf48191b961785255a5d07f`가2026-10-25 01:02:42 KST succeeded다. HTML/헤더·정적43파일(6곡 포함)·폐기 API의 공개 읽기49항목이 통과했다. editor는 로컬 전용이며 개인 저장곡·원본·기존 서버를 보존했다.
+- 이번 후속 문서 PR은 제품 버전과 발행물을 바꾸지 않는다. 공개 청취·장기 재생·iPad 검증은 포함하지 않는다. 자체 검토를 독립 승인으로 표현하지 않으며 기존 OSMD/Node/Actions 경고를 기록했다.
+
 ## 2026-10-25 — 0.8.17 릴리스 준비
 
 - 사용자 전체 릴리스 요청에 따라 pnpm 전환을 포함해 두 앱을 0.8.16 → 0.8.17로 올렸다. 기능·저장 계약 변경 없이 개발/배포 의존성 관리 개선이므로 patch다. [릴리스 계획](docs/plans/release-0.8.17.md).
