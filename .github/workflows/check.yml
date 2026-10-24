@@ -13,5 +13,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
+      # The committed include and lockfile are sufficient; no personal catalog path.
+      - name: Install from repository catalog and lockfile
+        run: pnpm install --frozen-lockfile
       - run: pnpm run verify:portable

@@ -30,7 +30,8 @@
 | `src/shared/` | 도메인 규칙 없는 UI·스타일·번역 |
 | `src/content/` | 수록곡 목록과 승인된 곡별 보정 |
 | `src/generated/` | 생성하는 라이선스·빌드번호; Git 제외 |
-| `scripts/{build,checks,release}/` | 제품 빌드·검사·릴리스 도구 |
+| `config/shared-catalog.yaml` | 중앙 의존성 버전 목록의 Git 사본; CI·설치 입력 |
+| `scripts/{build,checks,dependencies,release}/` | 제품 빌드·검사·의존성 동기화·릴리스 도구 |
 | `tools/` | 악보 제작·벤치마크·Apple 로컬 보조 도구 |
 
 HTML 주소는 `index.html`, `editor.html`, `player.html`을 유지한다. `src/app-versions.json`이 버전 정본이다. 독립 HTML 내보내기는 추가하지 않는다.
@@ -39,7 +40,9 @@ HTML 주소는 `index.html`, `editor.html`, `player.html`을 유지한다. `src/
 
 ### 의존 규칙
 
-개발 패키지는 pnpm workspace로 관리한다. 루트 앱과 `hosting`의 직접 의존성은 `pnpm-workspace.yaml`의 정확한 `catalog` 버전을 참조한다. 실제 그래프는 `pnpm-lock.yaml` 하나에 기록한다. pnpm 사용자 공통 저장소의 파일을 공유하고 프로젝트에는 필요한 연결을 구성한다. 보안 수정과 일반 업데이트는 중앙 목록 갱신·호환성 수정·검증을 함께 수행한다. 과거 검증 버전에 장기간 고정하는 운영으로 사용하지 않는다. 다른 저장소의 전환은 별도 범위이며 실행 방법은 [개발 절차](../../how-to/develop.md#공유-의존성과-중앙-버전-갱신), 선택 이유는 [ADR-0028](../../decisions/0028-shared-dependency-store-and-catalog.md)을 따른다.
+개발 패키지는 pnpm workspace로 관리한다. 중앙 버전 정본은 사용자 공통 YAML `/Users/raphael/Library/Preferences/pnpm/shared-catalog.yaml`이며 프로젝트의 `config/shared-catalog.yaml`은 검증·Git 기록용 사본이다. 루트 앱과 `hosting`은 `pnpm-workspace.yaml`이 include한 사본의 정확한 `catalog` 버전을 참조한다. 실제 그래프는 `pnpm-lock.yaml` 하나에 기록한다. 일반 설치·CI·Sites 준비는 사본과 잠금 파일만 읽고 개인 중앙 파일에 의존하지 않는다. 프로젝트별 override·설치 정책은 workspace에 둔다.
+
+pnpm 사용자 공통 저장소의 파일을 공유하고 프로젝트에는 필요한 연결을 구성한다. 보안 수정과 일반 업데이트는 중앙 목록 갱신·사본 및 lockfile 동기화·호환성 수정·검증을 함께 수행한다. 과거 검증 버전에 장기간 고정하는 운영으로 사용하지 않는다. 다른 저장소의 전환은 별도 범위이며 실행 방법은 [개발 절차](../../how-to/develop.md#공유-의존성과-중앙-버전-갱신), 선택 이유는 [ADR-0028](../../decisions/0028-shared-dependency-store-and-catalog.md)을 따른다.
 
 제작기와 연습실은 서로 import하지 않는다. 앱은 공통 모듈을 조립하며, 재생 화면의 소유자는 `playback-screen.ts` 하나다. 분리한 BPM 모듈과 `playback-settings.ts`의 음량·보기·사용자 설정 바인딩은 같은 host와 이벤트 등록·해제 경로를 사용한다. 설정 모듈이 별도 화면 상태나 저장소를 만들지 않는다.
 

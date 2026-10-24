@@ -1,3 +1,15 @@
+## 2026-10-25 — 0.8.18 중앙 버전 YAML 분리 릴리스 준비
+
+- 사용자 전체 릴리스 요청에 따라 중앙 버전 목록 분리·저장소 사본·명시적 동기화·CI 재현성 변경을 포함하고 두 앱0.8.17→0.8.18로 갱신했다. 새 사용자 기능이나 저장 계약 변경이 없는 개발/발행 개선이므로 patch다. [릴리스 계획](docs/plans/release-0.8.18.md).
+- 기존 의존성 버전·lockfile·보안 override·앱/저장/수록 자료와 개인 중앙 정본을 보존한다. 전체 로컬 검사·PR/main CI를 확인한 main으로 player만 기존 Site에 발행하고 공개 읽기 결과를 기록한다.
+- 후보 빌드`8c4041613211`에서 frozen 설치·중앙/사본 대조·audit0건·전체 `pnpm run verify`가 통과했다. lint·434개 서식·세 타입·문서/구조·129파일767테스트·두 앱 빌드/경계를 포함한다. 소스/설정547파일·수록6곡 해시를 `.tmp/release-0.8.18/input-proof.json`에 기록했다. 아직 공개 발행 결과로 취급하지 않는다.
+
+## 2026-10-25 — 프로젝트 밖 중앙 YAML과 재현 가능한 카탈로그 사본
+
+- 사용자 지정 `/Users/raphael/Library/Preferences/pnpm/shared-catalog.yaml`에 중앙 목록을 분리하고 `config/shared-catalog.yaml`을 Git 사본으로 연결했다. workspace의 pnpm `include`·`catalog:sync`·`catalog:check`를 사용하며 프로젝트별 설치 정책과 공통 store를 유지한다. [운영 절차](docs/how-to/develop.md#공유-의존성과-중앙-버전-갱신), [설계·실행 기록](docs/records/archive/shared-catalog-20261025.md).
+- 기존 25개 버전과 lockfile 바이트, 앱/수록 자료 220파일을 보존했다. 중앙/사본 대조·실패 시 사본 보존·개인 중앙 입력 없는 독립 frozen 설치, 전체 `pnpm run verify`(129파일 767테스트·lint/434개 서식/세 타입/구조/문서·두 앱 빌드), 독립 Sites frozen 설치·빌드와 player45파일 대조가 통과했다.
+- 두 앱0.8.17·main HEAD를 유지하고 소스 빌드`ded505d776b6`를 생성했다. 다른 프로젝트·기존 배포 checkout·전역 pnpm 설정은 변경하지 않았다. 원격 CI·GUI·공개 확인, 커밋·push·PR·발행은 수행하지 않았다. 근거 `.tmp/shared-catalog-20261025/`.
+
 ## 2026-10-25 — 0.8.17 pnpm 전환 릴리스 완료
 
 - pnpm 공유 저장소·중앙 catalog·공용 lockfile·CI/Sites 준비 전환을 [PR #16](https://github.com/Raphael-KR/drum-practice/pull/16)으로 병합했다. 구현 `0f8060c1`, 제품 main `7894821a`, 두 앱0.8.17·빌드 `e4d576e55da5`다. [식별자·검증·한계](docs/records/releases.md#release-0-8-17-20261025), [완료 계획](docs/records/archive/release-0.8.17.md).

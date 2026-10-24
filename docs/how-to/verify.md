@@ -27,7 +27,7 @@
 
 ### 공통 검사와 CI
 
-- 최초 준비: `pnpm install --frozen-lockfile`. 루트와 hosting을 한 번에 설치하며 중앙 카탈로그와 공용 잠금 파일을 사용한다.
+- 최초 준비: `pnpm install --frozen-lockfile`. 루트와 hosting을 한 번에 설치하며 Git에 보관한 `config/shared-catalog.yaml` 사본과 공용 잠금 파일을 사용한다. 개인 중앙 경로는 필요하지 않다. 버전 갱신과 로컬 정본 대조는 [카탈로그 동기화 절차](develop.md#공유-의존성과-중앙-버전-갱신)를 따른다.
 - `pnpm run generate`: 라이선스·소스 빌드번호 생성. 모든 개발 진입점과 테스트·앱/도구 타입 검사의 pre 단계가 재사용한다.
 - `pnpm run check`: ESLint, 코드/설정 서식, 앱·도구·hosting 타입, i18n, 모듈 경계, 생성 UI 문서·상대 파일 링크 검사.
 - `pnpm run verify:portable`: 공통 검사와 portable 테스트. `.github/workflows/check.yml`도 같은 명령을 실행한다. CI는 원본 미디어를 업로드/생성하지 않으며 두 앱 빌드·local-media 회귀를 대체하지 않는다.
