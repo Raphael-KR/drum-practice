@@ -22,6 +22,9 @@
 
 ## 완료 계획·연구·과거 시안
 
+- [0.8.16 의존성·보안 릴리스](archive/release-0.8.16.md)
+- [의존성 업데이트와 Vite8 호환성 검증](archive/dependency-updates-20261024.md)
+- [Vite·Vitest·Undici 보안 수정 과정](archive/vite-security-update-20261024.md)
 - [Safari 두 줄 스크롤 진단과 표시 갱신 개선](archive/safari-two-row-scroll-20261024.md)
 - [붉은 노을 크레센도 교정본의 앱 수록](archive/red-sunset-crescendo-bundle-20261024.md)
 - [명시된 크레센도 끝점의 박 위치](archive/wedge-endpoint-20261024.md)

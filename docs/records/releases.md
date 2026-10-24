@@ -2,6 +2,22 @@
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](README.md)와 [현행 정본](../RULES-INDEX.md)을 구분한다.
 
+<a id="release-0-8-16-20261024"></a>
+
+## 0.8.16 — 의존성 보안 업데이트·Vite8 호환성 · 2026-10-24 발행
+
+- 두 앱0.8.15→0.8.16 patch. 기존 기능의 의존성·보안·빌드 호환성 보완이며 새 사용자 기능·저장 계약 변경은 없다. 개발용/Sites Vite8.3.5, Vitest/mocker/spy5.0.5, Node 타입26.6.5, 승인된 미디어/저장소 시험/서식 도구와 Undici6.29.1/7.30.1을 반영했다. editor는 로컬 전용이며 player만 공개한다.
+- Vite의 Rolldown/JSON import/native 경로와 기존 build/css 브라우저 target을 맞췄다. NodeBlob 입력의 테스트 두 곳은 같은 ZIP 바이트를 ArrayBuffer로 받도록 했다. 앱 기능·DB/키·직렬화·검사 규칙·기대값·시간 제한을 바꾸지 않았고 수록6곡 SHA256과 원본/개인 저장 정보를 유지했다.
+- 소스 빌드 `de75f325f873`, Node26.12.1/npm12.2.1의 새 전체129파일767검사·lint/서식433파일·앱/도구/hosting 타입·문서/구조·두 앱 빌드/경계가 통과했다. 개발용/Sites audit 모두0건·peer 오류 없음. 같은 lockfile의 fresh Sites 설치와 로컬 빌드도 통과했다.
+- 구현 `caf6f0b7b9e3e3ec0bd2853fb11446de9b020463`, [PR #14](https://github.com/Raphael-KR/drum-practice/pull/14), 제품 main `1beda44ec0693b114017fb09a1eed8b74e0725b9`. [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40074905780), [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40075122870)가 성공했다. PR CI는 Node22.23.3/npm10.9.9에서 공통 검사·portable83파일422검사를 실행했다. 자체 검토이며 독립 승인으로 표현하지 않는다. PR head/main tree·실제 검사 자산이 같아 로컬 전체 결과를 재사용하고 main에서 두 앱을 재빌드했다.
+- 기존 public audience·Site ID·주소를 유지했다. 정본 player→배포 사본→Worker 출력의 실제 manifest45파일 SHA256이 같고 HTML 두 파일은 Worker가 전달한다. 청크 분할 변화로 파일 수가 달라졌으며 고정 개수를 성공 기준으로 사용하지 않았다.
+- Sites 소스 `f7606bd4cc0ed6f1b09aae0aab3d915f75ba0dd9`, 저장 버전86 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_b9b2aaf6b5408191b0a5fa338bb1cc21`), 배포 `appgdep_6adc626d43ec819183229195534ed7e9`: **succeeded**, **2026-10-24 16:47:10 KST** / 2026-10-24T07:47:10.011650+00:00. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.8.16.tar.gz` SHA256 `1b86915ab3249de7c46c41576c4909cbe4bdd6e9813192b730bd5c9ee1da51b9`. Sites tar content hash `sha256:a39971b8b5a9d37b06dff9a7ae85f43fe92e5f2a9af64d55dc55b0087fb43b59`는 gzip 파일 해시와 별개다.
+- 공개 읽기 smoke49항목 통과: HTML3경로의 최신 번들·nosniff/프레임/CSP/HSTS, 정적43파일 전체 SHA256(악보6개·폰트·renderer·JS/CSS·Worker), 폐기 API3경로404. 개인 음원 업로드나 서버 분석 API를 추가하지 않았다.
+- 실제 Safari 두 앱 목록/화면과 MP3/PDF/MusicXML 처리는 의존성 최종 조합 `20585a52b084`의 검수다. 이전 앱 버전 바이트로 이 해시를 재현해 이번 후보와의 제품 차이가 앱 버전뿐임을 확인했다. 공개 파일 일치를 공개 재생·청취·iPad 실기기·Safari 장기 안정성으로 확대하지 않는다.
+- 기존 OSMD 정적/동적 import·500kB 청크·Node localStorage·npm12 설치 스크립트 허용 목록과 Actions 환경 이행 안내는 비차단 경고다. 허용 정책이나 검사 기준을 끄지 않았으며 실행 결과와 남은 한계를 [의존성 기록](archive/dependency-updates-20261024.md)에서 구분한다.
+- 근거 `.tmp/release-0.8.16/`의 verify/audit/의존성·input-proof/review·PR/main CI·main/Sites 빌드·site-package/version/deployment·parity·smoke·receipt. [완료 계획](archive/release-0.8.16.md)과 보안/의존성 기록을 archive로 이관하고 이전 주소·명시 앵커를 유지한다. 후속 결과 문서도 작업 브랜치/PR로 main에 반영하며 제품 소스가 같으면 버전·발행을 반복하지 않는다. 이번에 병합된 브랜치만 정리하고 최종 상태는 receipt에 기록한다.
+
 <a id="release-0-8-15-20261024"></a>
 
 ## 0.8.15 — 공통 재생 성능·메모리 개선 · 2026-10-24 발행
