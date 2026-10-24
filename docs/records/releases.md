@@ -2,6 +2,20 @@
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](README.md)와 [현행 정본](../RULES-INDEX.md)을 구분한다.
 
+<a id="release-0-8-18-20261025"></a>
+
+## 0.8.18 — 공통 YAML 버전 목록 분리 · 2026-10-25 발행
+
+- 두 앱 0.8.17 → 0.8.18 patch. 개인 중앙 정본 `/Users/raphael/Library/Preferences/pnpm/shared-catalog.yaml`과 Git 사본 `config/shared-catalog.yaml`을 분리했다. pnpm `include`와 명시적 동기화 명령으로 사본·lockfile을 관리하고 CI·Sites는 개인 파일 없이 재현한다. 기존 25개 버전·26개 직접 선언·lockfile 바이트·보안 override를 유지했다. [분리 기록](archive/shared-catalog-20261025.md), [ADR-0028](../decisions/0028-shared-dependency-store-and-catalog.md).
+- 소스 빌드 `8c4041613211`. macOS arm64 Node26.12.1/pnpm12.15.0에서 중앙/사본 대조·frozen 설치·audit 0건·전체 `pnpm run verify`가 통과했다. lint·서식 434파일·앱/도구/hosting 타입·문서/구조·전체 129파일 767테스트·두 앱 빌드/공개 경계를 포함한다. 앱 소스는 버전 외 동일하며 저장 형식·원본·수록 6곡을 보존했다.
+- 구현 `790b874819e3af703bbb9bb01dcbe497916bddb5`, [PR #18](https://github.com/Raphael-KR/drum-practice/pull/18), 제품 main `880a2caeaec3517c9d03cf7f23039cc2bcfbb2ed`. [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40119438753)와 [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40119681286)가 성공했다. Linux Node22.23.3/pnpm12.15.0의 portable 83파일 422테스트와 로컬 전체 검사를 구분한다. PR/main tree와 소스·설정 547파일·수록 6곡 해시가 같아 전체 결과를 재사용하고 main에서 두 앱을 재빌드했다. 검토는 Codex 자체 검토다.
+- 기존 clean Sites checkout을 공식 helper로 열고 검증한 main에서 player만 준비했다. 독립 내보낸 manifest·lockfile·설치 설정은 이전 발행과 바이트가 같고 설치도 유지되어 재설치하지 않았다. 중앙 YAML 분리 단계의 독립 frozen 설치 증거와 함께, 이번 공식 Sites 빌드·Sites audit 0건·player 45파일의 정본→사본→Worker SHA256 일치를 확인했다. editor는 로컬 전용이다.
+- 기존 Site ID·public audience·주소를 유지했다. Sites 소스 `6db3239679f24271fa89749a89b708c30035b5fa`, 저장 버전88 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_dec030edb2fc8191a11aac55c50b3396`), 배포 `appgdep_6adcf5d2b49081918db8374ed6acbe0b`: **succeeded**, **2026-10-25 03:16:03 KST** / 2026-10-24T18:16:03.895443+00:00. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.8.18.tar.gz` SHA256 `338a88d40c068668ceb501c803bd47a10f2f42a8770075a78a6581a8516a857a`. Sites tar content hash `sha256:0fa1d4ee3d00612c9c0c4b2ec6a5e786150582e7bdf626dd6049511265585a96`는 gzip 파일 해시와 별개다.
+- 공개 읽기 49항목 통과: HTML 3경로의 최신 번들·nosniff/프레임/CSP/HSTS, 정적 43파일 전체 SHA256(수록 6곡·폰트·JS/CSS·renderer/Worker), 폐기 API 3경로 404. UI 변경이 없어 새 브라우저 조작 검사는 하지 않았고 공개 파일 확인을 청취·장기 재생·iPad 검증으로 확대하지 않는다.
+- 기존 OSMD import/청크 크기·Node 실험 기능·GitHub Actions Node20→24 이행 안내는 비차단 경고다. 원본·개인 저장곡·기존 서버·중앙 파일·다른 프로젝트를 보존했다. 중앙 목록의 다른 프로젝트 실제 연결은 이번 범위가 아니다.
+- 근거 `.tmp/release-0.8.18/`의 verify/audit·input-proof/review·PR/main CI·main/Sites 빌드·site-inputs-comparison·사이트 버전/배포·parity·smoke·receipt, [완료 계획](archive/release-0.8.18.md). 결과 문서는 별도 PR로 반영하며 제품 버전·발행을 반복하지 않는다. 이번에 병합된 브랜치만 정리한다.
+
 <a id="release-0-8-17-20261025"></a>
 
 ## 0.8.17 — pnpm 공통 저장소·중앙 버전 목록 · 2026-10-25 발행
