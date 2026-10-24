@@ -11,20 +11,12 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
-    "drizzle-orm": "0.45.4"
+    "drizzle-orm": "catalog:"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.65.0",
-    "drizzle-kit": "0.31.11",
-    "vite": "8.3.5",
-    "wrangler": "4.152.0"
-  },
-  "overrides": {
-    "@esbuild-kit/core-utils": {
-      "esbuild": "0.25.12"
-    },
-    "miniflare": {
-      "undici": "7.30.1"
-    }
+    "@cloudflare/vite-plugin": "catalog:",
+    "drizzle-kit": "catalog:",
+    "vite": "catalog:",
+    "wrangler": "catalog:"
   }
 }

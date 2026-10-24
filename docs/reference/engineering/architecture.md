@@ -39,6 +39,8 @@ HTML 주소는 `index.html`, `editor.html`, `player.html`을 유지한다. `src/
 
 ### 의존 규칙
 
+개발 패키지는 pnpm workspace로 관리한다. 루트 앱과 `hosting`의 직접 의존성은 `pnpm-workspace.yaml`의 정확한 `catalog` 버전을 참조한다. 실제 그래프는 `pnpm-lock.yaml` 하나에 기록한다. pnpm 사용자 공통 저장소의 파일을 공유하고 프로젝트에는 필요한 연결을 구성한다. 보안 수정과 일반 업데이트는 중앙 목록 갱신·호환성 수정·검증을 함께 수행한다. 과거 검증 버전에 장기간 고정하는 운영으로 사용하지 않는다. 다른 저장소의 전환은 별도 범위이며 실행 방법은 [개발 절차](../../how-to/develop.md#공유-의존성과-중앙-버전-갱신), 선택 이유는 [ADR-0028](../../decisions/0028-shared-dependency-store-and-catalog.md)을 따른다.
+
 제작기와 연습실은 서로 import하지 않는다. 앱은 공통 모듈을 조립하며, 재생 화면의 소유자는 `playback-screen.ts` 하나다. 분리한 BPM 모듈과 `playback-settings.ts`의 음량·보기·사용자 설정 바인딩은 같은 host와 이벤트 등록·해제 경로를 사용한다. 설정 모듈이 별도 화면 상태나 저장소를 만들지 않는다.
 
 재생 BPM 표시의 박 그리드는 화면 소유의 임시 스냅샷이다. Song/BPM/마디 배열/정본 XML 교체와 설정 동기화·track 재배치에서 다시 계산하며, 동일 객체 안의 박 시각 편집도 host의 sync/renderTrack 경로를 사용한다. 전역 Song 캐시나 저장 데이터로 확장하지 않는다. 오디오 클릭 예약 목록은 audio-core의 재생 cycle과 수명을 공유한다. 25ms 예약 확인은 다음 이벤트 위치만 진행하고, seek·배속·새 반복 cycle은 새 목록을 만들며 종료/pause/load에서는 해제한다. 예약 간격과 count-off/강세·원곡/연습 시간 변환은 유지한다.
@@ -71,7 +73,7 @@ DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·
 
 테스트는 unit·integration·local-media로 구분한다. 로컬 미디어가 없으면 필요한 검사가 실패하며 조용히 건너뛰지 않는다. 자세한 자산 목록과 실행 조건은 [검사 문서](../../how-to/verify.md#testing--개발-검사와-로컬-자산-준비)를 따른다.
 
-개발·테스트 진입점은 `npm run generate`로 생성 파일을 준비한다. 기본 `build`는 두 앱 분리 빌드이며, 앱·도구·hosting의 타입 환경은 각각 검사한다. Git에 기록할 파일을 대상으로 서식·문서 링크를 검사하고, `verify:portable`은 원본 미디어 없는 CI에서도 실행한다. 검증 범위·기록 항목은 [검증 Rule](verification.md)을 따르며 새 실행 결과는 `history.md`와 [해당 주제의 기록](../../records/README.md#주제별-기록)에 남긴다.
+개발·테스트 진입점은 `pnpm run generate`로 생성 파일을 준비한다. 기본 `build`는 두 앱 분리 빌드이며, 앱·도구·hosting의 타입 환경은 각각 검사한다. Git에 기록할 파일을 대상으로 서식·문서 링크를 검사하고, `verify:portable`은 원본 미디어 없는 CI에서도 실행한다. 검증 범위·기록 항목은 [검증 Rule](verification.md)을 따르며 새 실행 결과는 `history.md`와 [해당 주제의 기록](../../records/README.md#주제별-기록)에 남긴다.
 
 목록 카드와 즐겨찾기/제목 순서 표시는 `modules/library/library-presentation.ts`, 두 홈 화면의 크기·간격은 `modules/library/player-library.css`를 공유한다. 동작 버튼은 각 앱이 제공한다. 공통 색상 변수는 `shared/styles/controls.css`, 제작기의 오렌지 팔레트는 `apps/editor/styles/07-theme.css`에 정의한다.
 

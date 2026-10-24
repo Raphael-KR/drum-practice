@@ -1,4 +1,13 @@
-import { cp, mkdir, readFile, writeFile, rm, readdir } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  writeFile,
+  rm,
+  readdir,
+} from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
@@ -13,6 +22,41 @@ const manifest = JSON.parse(
 );
 if (manifest.project_id !== "appgprj_6ab0790baa048191aaee49f58c1ffe7b")
   throw new Error("Wrong Site");
+// Let pnpm resolve catalogs and prune the shared lockfile for this package.
+// Only portable dependency inputs are copied; local node_modules never ships.
+await mkdir(resolve(source, ".tmp"), { recursive: true });
+const dependencyTemp = await mkdtemp(
+  resolve(source, ".tmp/sites-dependencies-"),
+);
+const dependencyExport = resolve(dependencyTemp, "hosting");
+execFileSync(
+  "pnpm",
+  [
+    "--filter",
+    "drum-practice-site-runtime",
+    "deploy",
+    "--ignore-scripts",
+    dependencyExport,
+  ],
+  { cwd: source, stdio: "inherit" },
+);
+const packageJson = JSON.parse(
+  await readFile(resolve(dependencyExport, "package.json"), "utf8"),
+);
+packageJson.packageManager = JSON.parse(
+  await readFile(resolve(source, "package.json"), "utf8"),
+).packageManager;
+await writeFile(
+  resolve(dependencyExport, "package.json"),
+  JSON.stringify(packageJson, null, 2) + "\n",
+);
+// deploy omits the workspace's package-manager pin. Record it with pnpm
+// before shipping a lockfile that must support frozen installation.
+execFileSync(
+  "pnpm",
+  ["install", "--lockfile-only", "--offline", "--ignore-scripts"],
+  { cwd: dependencyExport, stdio: "inherit" },
+);
 // Replace only the previous generated mirror; its history is retained in Site Git.
 for (const entry of [
   "src",
@@ -27,6 +71,8 @@ for (const entry of [
   "index.html",
   "package.json",
   "package-lock.json",
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
   "tsconfig.json",
   "vite.config.ts",
   "drizzle.config.ts",
@@ -47,14 +93,15 @@ for (const entry of [
   "db",
   "drizzle",
   "index.html",
-  "package.json",
-  "package-lock.json",
   "vite.config.ts",
   "drizzle.config.ts",
 ])
   await cp(resolve(source, "hosting", entry), resolve(target, entry), {
     recursive: true,
   });
+for (const entry of ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"])
+  await cp(resolve(dependencyExport, entry), resolve(target, entry));
+await rm(dependencyTemp, { recursive: true });
 await mkdir(resolve(target, "server"), { recursive: true });
 await mkdir(resolve(target, "src"), { recursive: true });
 for (const entry of ["player-worker.ts", "security-headers.ts"])
@@ -80,7 +127,7 @@ await writeFile(
 );
 await writeFile(
   resolve(target, "README.md"),
-  "# 드럼연습실\n\nCanonical source: /Users/raphael/Playground/drum-practice\n\nPlayer-only assets with security headers. Audio and analysis stay on each device. The D1 binding is retained only to apply the final table-removal migration. Authoring app remains local-only. Run scripts/release/prepare-sites.mjs in the canonical project, install dependencies, then npm run build here.\n",
+  "# 드럼연습실\n\nCanonical source: /Users/raphael/Playground/drum-practice\n\nPlayer-only assets with security headers. Audio and analysis stay on each device. The D1 binding is retained only to apply the final table-removal migration. Authoring app remains local-only. Run scripts/release/prepare-sites.mjs in the canonical project, then pnpm install --frozen-lockfile and pnpm run build here. Dependency versions and the pruned lockfile are generated from the canonical pnpm workspace; do not edit them here.\n",
 );
 const digests = [];
 async function scan(dir = "") {

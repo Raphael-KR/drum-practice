@@ -15,7 +15,7 @@
 프로젝트 루트 `/Users/raphael/Playground/drum-practice`에서 실행한다. 현재 Mac/Xcode의 Speech 및 FoundationModels SDK, 설치된 일본어 STT 자산과 사용 가능한 로컬 모델, ffmpeg, Python 3가 필요하다. 도구는 모델을 자동 다운로드하지 않는다.
 
 ```sh
-npm run review:local -- \
+pnpm run review:local \
   --audio public/demo/audio.mp3 \
   --manifest data/reference/apple-stt-manifest.json \
   --song public/demo/song.json \
@@ -36,7 +36,7 @@ npm run review:local -- \
 
 ### 확인과 종료
 
-출력 파일·시간/ID/enum·누락/중복·실패 기록과 원본 보존을 확인한다. 경계 재검토의 anchors는 원래 STT와 별도로 전달하며 원본·confirmed 값을 바꾸지 않는다. 관련 기존 단위 검사는 `npm run test:local`을 사용한다. STT/AFM 실실행과 단위 검사를 구분하고 허가된 범위에서 수행한다.
+출력 파일·시간/ID/enum·누락/중복·실패 기록과 원본 보존을 확인한다. 경계 재검토의 anchors는 원래 STT와 별도로 전달하며 원본·confirmed 값을 바꾸지 않는다. 관련 기존 단위 검사는 `pnpm run test:local`을 사용한다. STT/AFM 실실행과 단위 검사를 구분하고 허가된 범위에서 수행한다.
 
 새 실행 결과는 [로컬 도구 기록](../records/apple-local-tools.md#apple-local-review-history--apple-로컬-가사-검토-실측-기록)에 입력·환경·판정과 함께 남긴다. 공유 대상 여부는 프로젝트 지침을 확인한다.
 

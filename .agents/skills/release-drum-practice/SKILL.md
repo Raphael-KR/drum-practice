@@ -17,7 +17,7 @@ description: 드럼연습실 프로젝트의 변경 검토·호환성 검증·�
 | --- | --- |
 | 범위·기능 | [프로젝트 지침](../../../AGENTS.md), [PRD](../../../PRD.md), [변경 기록](../../../history.md) |
 | 구조·코드 | [프로젝트 구조](../../../docs/reference/engineering/architecture.md#project-structure--프로젝트-구조) |
-| 검증·저장 호환성 | [검사 실행 방법](../../../docs/how-to/verify.md#testing--개발-검사와-로컬-자산-준비), [실제 npm 명령](../../../package.json), [CI 설정](../../../.github/workflows/check.yml) |
+| 검증·저장 호환성 | [검사 실행 방법](../../../docs/how-to/verify.md#testing--개발-검사와-로컬-자산-준비), [실제 검사 명령](../../../package.json), [CI 설정](../../../.github/workflows/check.yml) |
 | 버전 | [버전 정책](../../../docs/reference/engineering/release.md#app-versions--앱-공통-버전), [앱 버전 정본](../../../src/app-versions.json) |
 | UI 변경 | [UX 원칙](../../../docs/reference/product/ux.md#ux-principles--팀-ux-원칙과-맥락형-도움말), iPad 관련 시 [기기 검증](../../../docs/how-to/verify-ipad.md#ipad-simulator--ipad-mini-검증-실행-절차) |
 | 발행 | [Sites 발행](../../../docs/how-to/release.md#sites-publication--sites-발행-절차)와 현재 사용 가능한 Sites 스킬·도구 계약 |
@@ -46,7 +46,7 @@ description: 드럼연습실 프로젝트의 변경 검토·호환성 검증·�
 
 ### 3. 로컬 검증
 
-- 검사 문서의 공통 명령을 사용한다. 현재 전체 로컬 명령은 `npm run verify`이며 lint·서식·타입·문서/구조·전체 테스트·두 앱 빌드를 포함한다.
+- 검사 문서의 공통 명령을 사용한다. 현재 전체 로컬 명령은 `pnpm run verify`이며 lint·서식·타입·문서/구조·전체 테스트·두 앱 빌드를 포함한다.
 - CI의 `verify:portable`은 원본 미디어가 필요한 회귀 검사와 두 앱 빌드를 대체하지 않는다. 자산 누락을 skip으로 바꾸거나 테스트 개수를 고정 성공 기준으로 사용하지 않는다.
 - UI 변경은 승인된 로컬 앱·자료 범위에서 프로젝트 지정 브라우저로 화면과 관련 조작을 확인한다. 실제 검증 환경을 기록하고 화면 크기 모사를 iPad 실기기 검증으로 보고하지 않는다.
 - 현재 시험 승인 범위를 적용한다. 합성 자료·신규 DB·운영 쓰기 시험을 릴리스 검증에 임의로 추가하지 않는다.

@@ -13,8 +13,9 @@
 
 ```sh
 cd /Users/raphael/Playground/drum-practice
-npm ci
-npm run dev
+npm install --global --allow-scripts=pnpm pnpm@12.15.0
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 - 드럼연습실: `http://127.0.0.1:5173/player.html`

@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 
 /** Include pending source additions, but never ignored media, caches or checkouts. */
 export function projectFiles() {
@@ -12,5 +13,7 @@ export function projectFiles() {
         .split("\0")
         .filter(Boolean),
     ),
-  ].sort();
+  ]
+    .filter((file) => existsSync(file))
+    .sort();
 }
