@@ -1,3 +1,16 @@
+## 2026-10-25 — 0.8.17 릴리스 준비
+
+- 사용자 전체 릴리스 요청에 따라 pnpm 전환을 포함해 두 앱을 0.8.16 → 0.8.17로 올렸다. 기능·저장 계약 변경 없이 개발/배포 의존성 관리 개선이므로 patch다. [릴리스 계획](docs/plans/release-0.8.17.md).
+- 기존 직접 의존성 버전·보안 override·수록 자료·로컬 editor를 보존하고 전체 로컬 검증 → PR/main CI → 검증한 main의 player 발행 → 공개 읽기 확인 순서로 진행한다. 발행 완료 전 단계별 결과를 통과로 간주하지 않는다.
+- 소스 빌드 `e4d576e55da5`에서 frozen 설치·audit 0건·전체 `pnpm run verify`(129파일 767테스트, lint/서식 432파일·세 타입·구조/문서·두 앱 빌드/경계)가 통과했다. Safari 검증 소스와 버전 외 빌드 입력 동일성, 기존 수록 6곡 해시를 확인했다. 근거 `.tmp/release-0.8.17/`.
+
+## 2026-10-25 — pnpm 공통 저장소와 중앙 버전 카탈로그 전환
+
+- 사용자 요청에 따라 루트·hosting을 pnpm 12.15.0 workspace로 전환했다. `pnpm-workspace.yaml`의 25개 버전을 두 패키지의 26개 직접 선언이 참조하며 공용 `pnpm-lock.yaml`과 사용자 기본 저장소를 사용한다. 기존 직접 의존성 버전을 유지하고, 미선언으로 사용하던 `@napi-rs/canvas`만 기존 1.0.13을 명시했다. [ADR-0028](docs/decisions/0028-shared-dependency-store-and-catalog.md), [완료 기록](docs/records/archive/pnpm-shared-dependencies-20261025.md).
+- 개발/검사/빌드·라이선스 생성·소스 빌드번호·GitHub Actions·Sites 의존성 내보내기와 현행 문서를 함께 맞췄다. npm 12의 pnpm 네이티브 설치와 Sites의 pnpm 버전 잠금 정보 누락도 해결했다. 기존 앱/저장 소스·자료·배포 checkout을 보존했다.
+- 로컬 frozen 설치·lint/서식/세 타입·구조/문서·전체 129파일 767테스트·두 앱 빌드·독립 Sites 빌드가 통과했다. audit 0건, Vite 실경로 공유, 기존 고지 47개·수록 6곡 해시·player 45파일/Worker HTML 일치를 확인했다. Safari에서 두 앱 초기화와 실제 패키지의 96마디 렌더·음원 디코딩을 확인했다. 근거 `.tmp/pnpm-migration-20261024/`.
+- 두 앱 버전 0.8.16을 유지하고 빌드 `215e444fa5d3`를 갱신했다. 커밋·push·PR·발행은 하지 않았다. 원격 CI·공개 Worker·iPad·청취/장기 재생은 이번 확인 범위가 아니다.
+
 ## 2026-10-24 — 0.8.16 발행 완료
 
 - release-drum-practice로 의존성·보안 업데이트를 커밋caf6f0b·push하고 [PR #14](https://github.com/Raphael-KR/drum-practice/pull/14)를 최신 CI/자체 검토 뒤 main1beda44에 병합했다. 두 앱0.8.16·빌드de75f325f873, 새 전체129파일767검사·lint/서식/타입·두 앱 빌드·양쪽 audit0건과 Node22 PR/main CI·main 재빌드가 통과했다.

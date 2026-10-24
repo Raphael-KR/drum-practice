@@ -5,7 +5,7 @@ if (
   !["major", "minor", "patch"].includes(kind)
 ) {
   throw new Error(
-    "Usage: npm run version:app -- editor|player|both patch|minor|major",
+    "Usage: pnpm run version:app editor|player|both patch|minor|major",
   );
 }
 const file = new URL("../../src/app-versions.json", import.meta.url);

@@ -170,7 +170,7 @@
 
 실행 환경에는 Node/package lock, Python interpreter·라이브러리, Poppler/ffmpeg, 로컬 XSD의 `musicxml.xsd/xml.xsd/xlink.xsd`, 사용한 Audiveris/OSMD 버전을 기록한다. `tools/score-production/musicxml/requirements.txt`의 기존 환경에 numpy·ffmpeg까지 포함된다고 가정하지 않는다. 이동된 venv는 별도 재생성하거나 정상 interpreter를 확인한다. [Loveholic 재현 절](../records/songs/loveholic.md#loveholic-conversion--근거재현-경로)은 해당 곡의 정확한 선행 파일과 명령 예다.
 
-변환/저장 코드 변경에는 관련 `musicxml`, `canonical-xml`, `score-package` 테스트부터 실행하고, 영향 범위에 따라 `npm run test:drum`·TypeScript·관련 Python 검사를 수행한다. 실제 fixture가 없는 실패를 삭제로 우회하지 않는다. 현재 테스트는 `tests/{unit,integration,local-media}`만 수집한다. `npm run build`는 두 앱을 분리 빌드하며 독립 HTML 내보내기 템플릿은 생성하지 않는다. 문서만 변경한 작업에는 악보 재생성·앱 빌드·청취를 실행한 것처럼 기록하지 않는다.
+변환/저장 코드 변경에는 관련 `musicxml`, `canonical-xml`, `score-package` 테스트부터 실행하고, 영향 범위에 따라 `pnpm run test:drum`·TypeScript·관련 Python 검사를 수행한다. 실제 fixture가 없는 실패를 삭제로 우회하지 않는다. 현재 테스트는 `tests/{unit,integration,local-media}`만 수집한다. `pnpm run build`는 두 앱을 분리 빌드하며 독립 HTML 내보내기 템플릿은 생성하지 않는다. 문서만 변경한 작업에는 악보 재생성·앱 빌드·청취를 실행한 것처럼 기록하지 않는다.
 
 <a id="score-production-process--문제-조사와-과거-근거"></a>
 
@@ -232,7 +232,7 @@ root turn ID는 기존 다른 담당 채팅으로 전달한 후속 작업에도 
 
 ### 3. 인계문
 
-인계 초안을 만들기 전에 제작 JSON·스크립트의 수정을 마치고 [기존 검사 계약](verify.md#testing--개발-검사와-로컬-자산-준비)에 따라 `npm run format:check`와 변경 범위의 코드 검사를 완료한다. 전체 공통 검사에는 `npm run check`를 사용한다. 프로젝트 서식 검사는 Python·Markdown을 포함하지 않으므로 해당 파일까지 검사됐다고 보고하지 않는다.
+인계 초안을 만들기 전에 제작 JSON·스크립트의 수정을 마치고 [기존 검사 계약](verify.md#testing--개발-검사와-로컬-자산-준비)에 따라 `pnpm run format:check`와 변경 범위의 코드 검사를 완료한다. 전체 공통 검사에는 `pnpm run check`를 사용한다. 프로젝트 서식 검사는 Python·Markdown을 포함하지 않으므로 해당 파일까지 검사됐다고 보고하지 않는다.
 
 서식 수정 시 JSON은 수정 전후 파싱한 데이터 값을 비교하고, 스크립트는 diff에서 서식 외 변경이 없는지와 관련 집중 검사 결과를 확인한다. 보존된 제작 결과의 해시도 대조한다. 의미가 달라졌으면 영향받은 생성·음악 검증을 다시 수행한다. 이미 같은 입력/코드로 통과한 검사나 음악 검증을 인계문 작성만을 위해 반복하지 않는다.
 

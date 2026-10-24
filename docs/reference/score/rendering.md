@@ -251,7 +251,7 @@
 
 | 대상 | 위치/식별자 |
 | --- | --- |
-| 공통 엔진·글꼴 | [설치 의존성](../../../package-lock.json)의 opensheetmusicdisplay, [글꼴 배치·라이선스](../../../src/modules/score/vendor/pretendard/README.md) |
+| 공통 엔진·글꼴 | [설치 의존성](../../../pnpm-lock.yaml)의 opensheetmusicdisplay, [글꼴 배치·라이선스](../../../src/modules/score/vendor/pretendard/README.md) |
 | 파생 캐시 정책 | [score-render-cache.ts](../../../src/modules/score/score-render-cache.ts)의 SCORE_RENDER_POLICY, 실제 엔진 버전 포함 |
 | 기존 페이지/강조 속성 | data-rest-layout=svg-geometry-sync-v17, data-note-highlight=2 |
 | XML·SVG·영역 생성 | src/modules/score/musicxml.ts |

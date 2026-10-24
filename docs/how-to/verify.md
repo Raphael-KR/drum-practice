@@ -12,30 +12,30 @@
 
 ### 실행 범위
 
-모든 명령은 프로젝트 루트에서 실행한다. Node.js 22 LTS(22.13 이상, `.nvmrc`)와 `npm ci`로 설치한 의존성을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
+모든 명령은 프로젝트 루트에서 실행한다. Node.js 22 LTS(22.13 이상, `.nvmrc`)와 `pnpm install --frozen-lockfile`로 설치한 의존성을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
 
-- `npm run test:portable`: 로컬 악보 없이 실행 가능한 unit 및 integration 검사. 기존 테스트의 메모리 저장소·DOM·mock을 재사용한다.
-- `npm run test:local-media`: 보존된 실제 악보·음원 자료를 사용하는 검사. 자료가 없으면 명시적으로 실패한다.
-- `npm run test:drum`: 두 범위를 모두 실행하는 전체 회귀. 릴리스 필수 범위를 축소하지 않는다.
-- `npm run check:playback`: 재생 소유권, 공통 컴포넌트와 소스 경계 검사. `src/` 전체를 재귀 탐색한다.
-- `npm run build:apps`: 타입·i18n·재생/소스 경계 검사 후 두 앱을 빌드하고 player 번들의 제작 기능 유입을 검사한다.
-- `npm run test:local`: 기존 Apple 보조 도구의 Python 단위 검사. STT/AFM 실행이나 음원 전송은 포함하지 않는다.
+- `pnpm run test:portable`: 로컬 악보 없이 실행 가능한 unit 및 integration 검사. 기존 테스트의 메모리 저장소·DOM·mock을 재사용한다.
+- `pnpm run test:local-media`: 보존된 실제 악보·음원 자료를 사용하는 검사. 자료가 없으면 명시적으로 실패한다.
+- `pnpm run test:drum`: 두 범위를 모두 실행하는 전체 회귀. 릴리스 필수 범위를 축소하지 않는다.
+- `pnpm run check:playback`: 재생 소유권, 공통 컴포넌트와 소스 경계 검사. `src/` 전체를 재귀 탐색한다.
+- `pnpm run build:apps`: 타입·i18n·재생/소스 경계 검사 후 두 앱을 빌드하고 player 번들의 제작 기능 유입을 검사한다.
+- `pnpm run test:local`: 기존 Apple 보조 도구의 Python 단위 검사. STT/AFM 실행이나 음원 전송은 포함하지 않는다.
 
-`pretest`, `pretest:drum`, `pretest:portable`, `pretest:local-media`가 라이선스와 빌드번호를 생성한다. `npx vitest`를 직접 사용할 때는 먼저 `npm run pretest`를 실행한다. 타입만 검사할 때도 새 checkout에서는 생성 파일이 필요하다.
+`pretest`, `pretest:drum`, `pretest:portable`, `pretest:local-media`가 라이선스와 빌드번호를 생성한다. `pnpm exec vitest`를 직접 사용할 때는 먼저 `pnpm run pretest`를 실행한다. 타입만 검사할 때도 새 checkout에서는 생성 파일이 필요하다.
 
 <a id="testing--공통-검사와-ci"></a>
 
 ### 공통 검사와 CI
 
-- 최초 준비: `npm ci`와 `npm ci --prefix hosting`. 두 패키지의 lockfile을 사용한다. 로컬 hosting 의존성 링크가 이미 설치되어 있으면 재설치는 필요 없다.
-- `npm run generate`: 라이선스·소스 빌드번호 생성. 모든 개발 진입점과 테스트·앱/도구 타입 검사의 pre 단계가 재사용한다.
-- `npm run check`: ESLint, 코드/설정 서식, 앱·도구·hosting 타입, i18n, 모듈 경계, 생성 UI 문서·상대 파일 링크 검사.
-- `npm run verify:portable`: 공통 검사와 portable 테스트. `.github/workflows/check.yml`도 같은 명령을 실행한다. CI는 원본 미디어를 업로드/생성하지 않으며 두 앱 빌드·local-media 회귀를 대체하지 않는다.
-- `npm run verify`: 공통 검사, 전체 회귀, 분리 빌드. 릴리스의 로컬 검증 명령이다.
-- `npm run build`는 `build:apps`와 동일하다. 구형 통합 dist 빌드는 사용하지 않는다. 빌드 중 문서는 수정하지 않고 `check:docs`로 생성 문서의 일치를 확인한다.
-- `npm run typecheck`: 앱(`tsconfig.json`), 브라우저 제작 도구(`tsconfig.tools.json`), hosting 빌드 설정(`hosting/tsconfig.json`)을 각각 검사한다. hosting의 설치된 Vite/Cloudflare 타입을 사용한다.
-- `npm run format:check`: Git 추적 파일과 아직 추가하지 않은 비제외 파일 중 JS/TS/JSON/CSS/HTML/YAML을 검사한다. Markdown·Python은 서식 검사 대상이 아니다. `.prettierrc.json`과 고정한 Prettier 버전을 사용한다.
-- `npm run check:docs`: 생성 UI 문서와 Markdown의 상대 파일 링크만 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 외부 URL·절대 로컬 경로·앵커 내용은 검사하지 않는다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
+- 최초 준비: `pnpm install --frozen-lockfile`. 루트와 hosting을 한 번에 설치하며 중앙 카탈로그와 공용 잠금 파일을 사용한다.
+- `pnpm run generate`: 라이선스·소스 빌드번호 생성. 모든 개발 진입점과 테스트·앱/도구 타입 검사의 pre 단계가 재사용한다.
+- `pnpm run check`: ESLint, 코드/설정 서식, 앱·도구·hosting 타입, i18n, 모듈 경계, 생성 UI 문서·상대 파일 링크 검사.
+- `pnpm run verify:portable`: 공통 검사와 portable 테스트. `.github/workflows/check.yml`도 같은 명령을 실행한다. CI는 원본 미디어를 업로드/생성하지 않으며 두 앱 빌드·local-media 회귀를 대체하지 않는다.
+- `pnpm run verify`: 공통 검사, 전체 회귀, 분리 빌드. 릴리스의 로컬 검증 명령이다.
+- `pnpm run build`는 `build:apps`와 동일하다. 구형 통합 dist 빌드는 사용하지 않는다. 빌드 중 문서는 수정하지 않고 `check:docs`로 생성 문서의 일치를 확인한다.
+- `pnpm run typecheck`: 앱(`tsconfig.json`), 브라우저 제작 도구(`tsconfig.tools.json`), hosting 빌드 설정(`hosting/tsconfig.json`)을 각각 검사한다. hosting의 설치된 Vite/Cloudflare 타입을 사용한다.
+- `pnpm run format:check`: Git 추적 파일과 아직 추가하지 않은 비제외 파일 중 JS/TS/JSON/CSS/HTML/YAML을 검사한다. Markdown·Python과 pnpm이 생성하는 `pnpm-lock.yaml`은 Prettier 대상이 아니다. 잠금 파일은 `pnpm install --frozen-lockfile`로 선언·카탈로그와의 일치를 검사한다. `.prettierrc.json`과 고정한 Prettier 버전을 사용한다.
+- `pnpm run check:docs`: 생성 UI 문서와 Markdown의 상대 파일 링크만 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 외부 URL·절대 로컬 경로·앵커 내용은 검사하지 않는다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
 - 원격 CI 결과는 push 이후 별도로 확인한다. 로컬 통과를 원격 CI 실행 성공으로 기록하지 않는다.
 
 <a id="testing--eslint"></a>
@@ -44,14 +44,14 @@
 
 `eslint.config.mjs`의 flat config를 사용한다. ESLint 10과 typescript-eslint 8의 `recommended` 규칙을 JS·TS에 적용하며, 타입 정보를 사용하는 추가 규칙은 아직 켜지 않았다. 타입 검사는 기존 `tsc --noEmit`이 맡는다. 설정 방식은 [typescript-eslint 공식 안내](https://typescript-eslint.io/getting-started/)를 따른다.
 
-- `npm run lint`: 전체 검사. 오류 또는 경고가 있으면 실패한다.
-- `npm run lint:fix`: 자동 수정 가능한 항목을 수정한 뒤 같은 기준으로 검사한다. 실행 후 diff를 검토한다.
+- `pnpm run lint`: 전체 검사. 오류 또는 경고가 있으면 실패한다.
+- `pnpm run lint:fix`: 자동 수정 가능한 항목을 수정한 뒤 같은 기준으로 검사한다. 실행 후 diff를 검토한다.
 - 범위: 두 앱의 `src/`, `tests/`, `server/`, `scripts/`, JS 제작 도구, `hosting/`와 루트 설정 파일. 생성 파일·외부 의존성·미디어·배포 사본·실험 출력은 제외한다. HTML 내부 스크립트와 Python은 이 검사 대상이 아니다.
 - 환경: 앱은 browser, 서버·개발 도구는 Node.js, 테스트는 Node.js와 DOM이다. MusicXML 제작 도구는 `page.evaluate()` 콜백을 포함하므로 browser 전역도 허용한다.
 - Prettier: 마지막에 `eslint-config-prettier`를 적용해 서식 규칙 충돌을 막는다. ESLint 명령이 Prettier를 실행하는 것은 아니다.
 - 규칙: 미사용 변수, 명시적 `any`, 재할당 없는 `let`, 빈 블록 등을 권장 규칙 그대로 검사한다. 사용되지 않는 `eslint-disable`도 오류로 처리한다. 검사 설정 변경의 경계는 [검증 Rule](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)을 확인한다.
 
-빌드 명령은 lint를 자동 실행하지 않는다. 필요한 전체 공통 검사에는 `npm run check`를 사용하고, 직접 lint가 필요한 경우 `npm run lint`를 실행한다.
+빌드 명령은 lint를 자동 실행하지 않는다. 필요한 전체 공통 검사에는 `pnpm run check`를 사용하고, 직접 lint가 필요한 경우 `pnpm run lint`를 실행한다.
 
 <a id="testing--로컬-자료"></a>
 
@@ -113,7 +113,7 @@ player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons
 | 카운트오프 | 설정 켜기·끄기에 따른 시작 지연·박 수를 확인한다. 반복 재시작과 자연 반복의 카운트 동작은 현재 제품 결정·기존 테스트를 기준으로 대조한다. |
 | 끝과 시험 상태 정리 | 마지막 마디와 음원 잔향까지 재생한 뒤 종료 위치를 확인한다. 검증을 위해 만든 구간과 변경한 설정은 기록한 시험 시작 상태와 대조해 정리하며, 기존 사용자 구간·다른 곡을 일괄 삭제하거나 초기화하지 않는다. |
 
-집중 테스트와 필요한 공통 코드 검사는 기존 명령을 사용한다. 전체 코드 검사는 `npm run check`이며, 이는 unit/local-media 테스트·빌드·실제 앱 검증을 대신하지 않는다. 검사 실패는 대상 파일과 실제 원인을 기록하고, 관련 없는 동시 작업을 덮어쓰지 않는다. 수정 후에는 영향을 받은 검사를 다시 확인한다.
+집중 테스트와 필요한 공통 코드 검사는 기존 명령을 사용한다. 전체 코드 검사는 `pnpm run check`이며, 이는 unit/local-media 테스트·빌드·실제 앱 검증을 대신하지 않는다. 검사 실패는 대상 파일과 실제 원인을 기록하고, 관련 없는 동시 작업을 덮어쓰지 않는다. 수정 후에는 영향을 받은 검사를 다시 확인한다.
 
 결과에는 곡 ID·패키지 해시·환경·확인한 기능·실행 명령·증거 위치와 미확인 항목을 남긴다. 코드 검사, 실제 앱 기능, 화면 배치, 실제 청취는 각각의 관측 범위로 보고한다. 오디오 출력 신호나 예약 시각 확인을 사람이 들은 음질·음악적 싱크 검수로 표현하지 않는다. 공개 사이트·iPad 실기기·청취는 실제로 확인한 경우에만 완료로 기록한다.
 

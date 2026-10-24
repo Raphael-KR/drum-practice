@@ -1,6 +1,6 @@
 # UI 컴포넌트 기준
 
-정본: src/shared/ui/ui-catalog.json. 이 문서는 npm run ui:docs로 생성한다. 수동으로 표를 수정하지 않는다.
+정본: src/shared/ui/ui-catalog.json. 이 문서는 pnpm run ui:docs로 생성한다. 수동으로 표를 수정하지 않는다.
 
 한국어가 기본이다. 영어 이름과 공통 상태 문구는 준비했지만 전체 앱 번역은 완료되지 않았으므로 언어 선택기는 아직 제공하지 않는다. 안정적인 ID를 코드·QA·협업에 사용한다.
 

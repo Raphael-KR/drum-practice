@@ -2,8 +2,11 @@ import { readFile } from "node:fs/promises";
 import * as prettier from "prettier";
 import { projectFiles } from "./project-files.mjs";
 
-const files = projectFiles().filter((file) =>
-  /\.(?:ts|mts|js|mjs|json|css|html|ya?ml)$/.test(file),
+// pnpm owns lockfile formatting; frozen installation verifies its contents.
+const files = projectFiles().filter(
+  (file) =>
+    file !== "pnpm-lock.yaml" &&
+    /\.(?:ts|mts|js|mjs|json|css|html|ya?ml)$/.test(file),
 );
 const failures = [];
 for (const file of files) {

@@ -21,7 +21,6 @@ export async function writeBuildInfo() {
     ...(await files("hosting/db")),
     ...(await files("hosting/drizzle")),
     "hosting/package.json",
-    "hosting/package-lock.json",
     "hosting/vite.config.ts",
     "hosting/drizzle.config.ts",
   ];
@@ -33,7 +32,8 @@ export async function writeBuildInfo() {
     ...(await files("public/icons")),
     ...hosting,
     "package.json",
-    "package-lock.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
     "tsconfig.json",
     "index.html",
     "editor.html",

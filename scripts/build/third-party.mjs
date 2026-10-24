@@ -1,9 +1,17 @@
-import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
+import {
+  readFile,
+  readdir,
+  writeFile,
+  mkdir,
+  realpath,
+} from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { createRequire } from "node:module";
 const seen = new Set();
 const entries = [];
 async function collect(root) {
+  // Resolve dependencies from the package's pnpm location, not its root symlink.
+  root = await realpath(root);
   const p = JSON.parse(await readFile(`${root}/package.json`, "utf8"));
   const key = `${p.name}@${p.version}`;
   if (seen.has(key)) return;
