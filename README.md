@@ -4,7 +4,7 @@
 
 - 공개 드럼연습실: [drum-practice-studio.dgkma.chatgpt.site](https://drum-practice-studio.dgkma.chatgpt.site)
 - 앱 버전 정본: [app-versions.json](src/app-versions.json) — [버전·발행 상태](docs/reference/engineering/release.md#app-versions--앱-공통-버전)
-- 문서 시작점: [문서 안내](docs/records/archive/documentation-reorganization.md)
+- 문서 시작점: [문서 안내](docs/README.md)
 - 제품 범위: [PRD](PRD.md), 변경 기록: [history](history.md)
 
 ## 로컬 실행
