@@ -18,5 +18,8 @@
 
 - 두 앱 0.9.1, 소스 빌드 `5d0a9c2be8e2`. `pnpm run verify` exit 0: lint·438개 서식·앱/도구/hosting 타입·문서/구조·131파일 796테스트·두 앱 빌드/경계 통과.
 - 버전 갱신 전후 제품·도구·설정 380파일을 대조해 `src/app-versions.json`만 변경됨을 확인했다. 기존 36상태 UI 검수 빌드 `7948267fe366`의 동작 코드를 그대로 릴리스한다.
-- 기존 OSMD 혼합 import·500kB 초과 chunk 및 Node localStorage 실험 경고는 비차단으로 기록한다. PR/CI·병합·발행은 다음 단계에서 실제 확인한다.
+- 기존 OSMD 혼합 import·500kB 초과 chunk 및 Node localStorage 실험 경고는 비차단으로 기록한다.
+- 구현 `0efd2cb45fd081591a51bc844ffa3f4635e939ed`, PR #22의 CI·검토·ready·병합 완료. 제품 main `c818b0acc072f199eb3221a07c9b6835af3067a2`의 CI와 재빌드도 통과했다. PR/main tree와 검증 입력 694파일·로컬 자료 17파일의 내용이 같다.
+- Sites 버전90, 배포 `appgdep_6ae150704e048191af4b9deaa6f25291`가 2026-10-28 10:31:43 KST에 성공했다. 정본·사본·Worker 45파일 해시와 공개 49항목(정적 43파일·악보 6개 포함)이 통과했다. [발행 결과](../releases.md#release-0-9-1-20261028)에 전체 식별자·해시·검증 한계를 기록했다.
+- 이 결과 문서는 별도 PR로 반영하며 버전·발행은 반복하지 않는다. 이번 두 병합 브랜치의 정리와 최종 main 일치는 로컬 receipt에 기록한다.
 - 로컬 근거: `.tmp/release-0.9.1/`, `.tmp/metronome-icons-20261028/`, `.tmp/portrait-metronome-20261028/`. 로그·스크린샷·원본 자산은 Git에 넣지 않는다.

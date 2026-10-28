@@ -4,6 +4,21 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-9-1-20261028"></a>
+
+## 0.9.1 — 메트로놈 세로 배치·병렬 아이콘 · 2026-10-28 발행
+
+- 두 앱 0.9.0 → 0.9.1 patch. 세로 상단바의 BPM 규칙이 메트로놈까지 선택하던 겹침을 공통 CSS에서 수정했다. 메트로놈과 음표를 각각 36px SVG로 나란히 표시하며 버튼 폭은 세 모드 모두 84×48px다. Warm 색상·도움말·오디오·저장 계약은 유지한다. [완료 실행 기록](archive/release-0.9.1.md).
+- 소스 빌드 `5d0a9c2be8e2`, 구현 `0efd2cb45fd081591a51bc844ffa3f4635e939ed`, [PR #22](https://github.com/Raphael-KR/drum-practice/pull/22), 제품 main `c818b0acc072f199eb3221a07c9b6835af3067a2`. 검토는 Codex 자체 검토이며 독립 승인으로 보고하지 않는다.
+- macOS arm64 Node26.12.1/pnpm12.15.0의 `pnpm run verify` exit 0: lint·438개 서식·app/tools/hosting 타입·문서/구조·131파일 796테스트·두 앱 빌드/경계. [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40614874996), [push CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40614849879), [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40615056090)도 성공했다. PR/main tree 및 검증 입력 694파일·로컬 자료 17파일이 같아 전체 결과를 재사용하고 main에서 두 앱을 다시 빌드했다.
+- 버전 갱신 전 빌드 `7948267fe366`을 재생성해 기존 두 앱 Ego Lite 36상태 검수와 일치함을 확인했다. 제품·도구·설정 380파일 중 버전 정본만 바뀌었다. Safari MCP 비활성/rAF 문제와 지정 시뮬레이터 부재는 기존 한계로 유지하며 실제 iPad Safari·청취 검증으로 확대하지 않는다.
+- clean Sites 사본을 공식 helper로 열고 main의 player만 준비했다. manifest·lockfile·workspace 설정은 이전 사본과 바이트가 같아 기존 설치를 재사용했다. 공식 Sites 빌드·패키징과 정본→사본→Worker 45파일 SHA256 대조가 통과했다. editor는 로컬 전용이다.
+- 기존 Site ID·public audience·주소를 유지했다. Sites 소스 `d0e3545ec3e8b0436d7abb5e3f7610f7a5119127`, 저장 버전90 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_edcba01dc19c8191aac6346e915296b5`), 배포 `appgdep_6ae150704e048191af4b9deaa6f25291`: **succeeded**, **2026-10-28 10:31:43 KST** / 2026-10-28T01:31:43.979064+00:00. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.9.1.tar.gz` SHA256 `97eaae28fac99d92918cf13cfd1215e19cbc502f45a22c9bf8b761fab3b4b9fe`. Sites tar content hash `sha256:9d36b217cbe269383eb6f584baa9f7740603728612254c76e5fbc2efd599d638`는 gzip 파일 해시와 별개다.
+- 공개 읽기 49항목 통과: HTML 3경로의 최신 번들·nosniff/프레임/CSP/HSTS, 정적 43파일 전체 SHA256(수록 6곡·폰트·JS/CSS·renderer/Worker), 폐기 API 3경로 404. 공개 사이트 열기는 Codex UI가 queued로 반환했으므로 실제 화면 표시로 보고하지 않는다.
+- 처음 Sites Git 동기화와 배포용 pnpm 준비는 샌드박스 DNS 제한으로 실패했고, 승인된 네트워크 접근 실행에서 성공했다. 기존 사본은 준비 성공 전 보존됐다. Git checkout/fast-forward의 인덱스 쓰기 제한도 허용된 실행으로 해결했다. 제품 코드·검사 기준을 바꾸거나 원복하지 않았다. 기존 OSMD import/청크 크기·Node localStorage 경고는 비차단이다.
+- 근거 `.tmp/release-0.9.1/`: verify·pre-version/validated-inputs·review·PR/main CI·main-input-parity·main 빌드·prepare-sites(실패/재시도)·Sites 빌드/source/version/deployment·parity·smoke·receipt. 결과 문서는 별도 PR로 반영하며 제품 버전·발행을 반복하지 않는다. 이번 병합 브랜치 정리와 최종 main 일치는 receipt에 별도로 기록한다.
+
 <a id="release-0-9-0-20261028"></a>
 
 ## 0.9.0 — 4분·8분·끄기 메트로놈 · 2026-10-28 발행
