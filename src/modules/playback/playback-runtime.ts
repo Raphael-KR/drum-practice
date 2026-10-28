@@ -36,6 +36,7 @@ import {
 } from "./playback-ui";
 import { type StaffPosition } from "../score/practice-staff-layout";
 import { isEmbeddedScoreTextFontStyle } from "../score/score-text-font";
+import { isPhoneLandscape } from "../../platform/browser/phone-layout";
 
 export interface PlaybackRuntimeOptions {
   root: HTMLElement;
@@ -78,6 +79,24 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       countOff: initial.countOff,
     };
   const player = new Player(() => prefs);
+  let preferredFormat = s.scoreFormat ?? "pdf";
+  function applyVariant(score: Song, target: (typeof variants)[number]) {
+    score.regions = structuredClone(target.song.regions);
+    score.measures.forEach(
+      (m, i) => (m.regionId = target.song.measures[i].regionId),
+    );
+    score.pageCount = target.song.pageCount;
+    score.scoreFormat = target.song.scoreFormat;
+  }
+  const initialVariant =
+    !s.audioPractice && isPhoneLandscape()
+      ? variants.find((variant) => variant.song.scoreFormat === "musicxml")
+      : undefined;
+  if (initialVariant) {
+    applyVariant(s, initialVariant);
+    currentPages = initialVariant.pages;
+    isSVG = true;
+  }
   let ready = false,
     busy = false;
   let noteHighlightEnabled = initial.highlight,
@@ -117,8 +136,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     },
     preferences: { restart: "restart", countoff: "countoff" },
     select: (category) => {
-      selectedMenu = category;
-      settings();
+      selectedMenu = selectPlaybackSettings($("settings-dialog"), category);
     },
     openSettings: () => {
       open("settings");
@@ -199,13 +217,18 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     $<HTMLDialogElement>(id + "-dialog").showModal();
   };
   function settings() {
-    selectPlaybackSettings($("settings-dialog"), selectedMenu);
+    selectedMenu = selectPlaybackSettings($("settings-dialog"), selectedMenu);
   }
   function changed() {
     if (positionTimer !== undefined) clearTimeout(positionTimer);
     positionTimer = undefined;
     if (disposed || !ready || !options.changed) return;
     const snapshot = structuredClone(s);
+    const preferred = variants.find(
+      (variant) => variant.song.scoreFormat === preferredFormat,
+    );
+    if (preferred && snapshot.scoreFormat !== preferredFormat)
+      applyVariant(snapshot, preferred);
     const preferences = {
       ...prefs,
       fullscreen,
@@ -269,6 +292,8 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
         changed();
       },
       report: (message) => status(message, "display"),
+      setPhoneLandscape: (active) =>
+        changeScoreFormat(active ? "musicxml" : preferredFormat),
     },
     ids: {
       ...playerPlaybackBindings,
@@ -305,6 +330,9 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       }
     },
     listsChanged: () => management?.render(),
+    settingsSelected: (category) => {
+      selectedMenu = category;
+    },
   });
   const scoreGestures = {
     cancel: () => playback.cancel(),
@@ -397,12 +425,12 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     input("pdf-view").disabled = variants.length < 2;
     if (ready) playback.syncDisplay();
   }
-  input("pdf-view").onchange = async () => {
-    if (busy || !ready) return;
-    const target = variants.find(
-      (v) =>
-        v.song.scoreFormat === (input("pdf-view").checked ? "pdf" : "musicxml"),
-    );
+  async function changeScoreFormat(
+    format: "pdf" | "musicxml",
+    persist = false,
+  ) {
+    if (busy || !ready || s.audioPractice || s.scoreFormat === format) return;
+    const target = variants.find((v) => v.song.scoreFormat === format);
     if (!target) return;
     busy = true;
     scoreGestures.cancel();
@@ -413,14 +441,12 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
         return;
       }
       useAssets(next);
-      s.regions = structuredClone(target.song.regions);
-      s.measures.forEach(
-        (m, i) => (m.regionId = target.song.measures[i].regionId),
-      );
-      s.pageCount = target.song.pageCount;
-      s.scoreFormat = target.song.scoreFormat;
+      applyVariant(s, target);
       currentPages = target.pages;
-      changed();
+      if (persist) {
+        preferredFormat = format;
+        changed();
+      }
       isSVG = s.scoreFormat === "musicxml";
 
       playback.renderTrack();
@@ -431,6 +457,12 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       busy = false;
       formatControls();
     }
+  }
+  input("pdf-view").onchange = () => {
+    void changeScoreFormat(
+      input("pdf-view").checked ? "pdf" : "musicxml",
+      true,
+    );
   };
   try {
     options.onLoading?.("screen");

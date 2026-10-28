@@ -310,7 +310,7 @@ dialog::backdrop {
 .settings-layout {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
-  gap: 22px;
+  gap: var(--settings-column-gap, 22px);
   align-items: start;
 }
 .settings-nav {
@@ -385,6 +385,13 @@ dialog::backdrop {
 
 #settings-dialog {
   --settings-description-gap: 5px;
+  --settings-sidebar-width: 120px;
+  --settings-column-gap: 22px;
+}
+#settings-dialog.liquid-glass {
+  position: fixed;
+  background: var(--liquid-glass-surface);
+  border-color: var(--liquid-glass-edge);
 }
 dialog select {
   appearance: none;
@@ -409,6 +416,11 @@ dialog .dialoghead {
 }
 dialog .dialoghead:not(.liquid-glass) {
   background: var(--surface, #f4f7fc);
+}
+#settings-dialog.liquid-glass > .dialoghead {
+  position: sticky;
+  z-index: 3;
+  background: transparent;
 }
 .playback-ui #settings-dialog[open],
 #settings-dialog.library-settings-dialog[open] {

@@ -8,18 +8,20 @@
 
 문서 역할: **실행 절차**. 검증 판정은 [Rule](../reference/engineering/verification.md#verification-rules--검증-범위와-증거), 선택 이유는 [ADR-0027](../decisions/0027-verification-scope-and-device-evidence.md), 설치·권한·실측 이력은 [사실 기록](../records/ipad.md#ipad-simulator-history--ipad-시뮬레이터-설치연결-기록)에 둔다. 여기에 기록된 기기가 현재 실행 중이라는 뜻은 아니다.
 
+릴리스의 화면 검수는 아래 [Safari 응답형 디자인 모드](#safari-responsive-mode)를 사용한다. iOS·iPadOS 실기기·시뮬레이터 검증은 사용자가 해당 검증을 명시적으로 지시한 경우에만 수행한다. 일반 릴리스에서는 기기 조회·연결·부팅 등 기기 검증 준비도 시작하지 않는다.
+
 <a id="ipad-simulator--기록된-대상과-사전-확인"></a>
 
-### 기록된 대상과 사전 확인
+### 별도 지시 시 시뮬레이터 대상과 사전 확인
 
 - 지정 대상: iPad mini (A17 Pro), iOS 27.0, UDID `9ECBE1E1-D908-45A7-AF31-5F9FEAB568E2`.
-- 사용자 지정 경로: Safari 응답형 디자인 모드 및 Apple iPad Simulator.
+- 시뮬레이터 검증 경로: Apple iPad Simulator.
 - 대상 앱: `http://127.0.0.1:5173/`, 실제 프로젝트 `src/`의 웹앱.
 - 이전 기기·삭제된 런타임은 [환경 기록](../records/ipad.md#ipad-simulator-history--ipad-시뮬레이터-설치연결-기록)에서 조회하고 아래 명령의 대상은 실제 가용 목록과 대조한다.
 
 1. `xcrun simctl list devices available`로 실제 설치·가용 상태와 UDID를 확인한다. 런타임 설치·삭제·초기화가 필요하면 해당 요청 범위를 별도로 확인한다.
 2. GUI 사용과 제어 도구의 실제 승인 상태를 확인한다. 과거 승인·도구 목록 조회를 현재 터치 권한으로 간주하지 않는다.
-3. Safari 응답형 모드로 레이아웃을 확인한 뒤, 시뮬레이터에서 Safari 툴바·전체화면·회전·한 줄/두 줄·재생·탐색·반복을 필요한 범위로 검수한다.
+3. 시뮬레이터에서 Safari 툴바·전체화면·회전·한 줄/두 줄·재생·탐색·반복 중 사용자가 지시한 범위를 검수한다. 응답형 화면 검수 뒤에 자동으로 이어서 수행하지 않는다.
 
 <a id="safari-responsive-mode"></a>
 
@@ -34,7 +36,7 @@
 5. 연결이 실패하면 실제 오류와 사용한 대체 경로를 기록한다. 승인된 범위에서 공식 `/usr/bin/safaridriver --mcp`의 새 연결을 사용할 수 있으며, 이를 기존 연결의 복구로 기록하지 않는다. 기존 사용자 창·세션을 임의로 종료하지 않는다.
 6. 변경한 보기 상태를 복원하고 검사에 생성한 창·탭만 닫는다. 사용자가 창을 유지해 달라고 요청한 경우는 그대로 둔다. 기존 사용자 창과 자료는 보존한다.
 
-이 경로는 macOS Safari의 응답형 레이아웃·기본 조작 검사다. iOS Safari의 주소 막대, 터치 제스처, 오디오 지연·성능 검증은 Simulator 또는 실물 기기에서 별도로 수행한다.
+이 경로는 macOS Safari의 응답형 레이아웃·기본 조작 검사다. iOS Safari의 주소 막대, 터치 제스처, 오디오 지연·성능 검증을 대신하지 않는다. Simulator 또는 실물 기기 검증은 사용자가 명시적으로 지시한 경우에만 수행한다.
 
 <a id="ipad-simulator--승인-범위-내-cli-예"></a>
 

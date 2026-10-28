@@ -399,7 +399,8 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
 #app-help-dialog.speech-help {
   background: #15243c24;
 }
-#app-help-dialog.speech-help .dialoghead {
+#app-help-dialog.speech-help .dialoghead,
+#app-help-dialog.score-area-help .dialoghead {
   z-index: 3;
   bottom: auto;
   right: auto;
@@ -412,6 +413,48 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
   box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+/* Phone landscape uses one glass modal for score gestures in either row view. */
+#app-help-dialog.score-area-help {
+  inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  width: auto;
+  height: auto;
+  padding: 18px;
+  border: 1px solid var(--liquid-glass-edge);
+  border-radius: 18px;
+  background: var(--liquid-glass-surface);
+  color: var(--ink, #243044);
+}
+#app-help-dialog.score-area-help .dialoghead {
+  position: fixed;
+}
+.score-area-help-content {
+  height: 100%;
+  overflow: auto;
+  padding: 0 8px;
+  touch-action: pan-y;
+}
+.score-area-help-content h3 {
+  margin: 0 56px 18px 0;
+  min-height: 30px;
+  font-size: 18px;
+  line-height: 30px;
+}
+.score-area-help-body {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel-surface);
+}
+.score-area-help-content p {
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+.score-area-help-body > p:last-child {
+  margin-bottom: 0;
 }
 #app-help-dialog.speech-help .help-content {
   inset: 0;

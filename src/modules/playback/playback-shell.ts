@@ -135,5 +135,15 @@ export function mountPlaybackShell(
     options.preferences.restart,
     options.preferences.countoff,
   );
+  for (const category of ["metronome", "tempo"] as const) {
+    addSettings(
+      category,
+      `${category}-settings`,
+      `open-${category}-settings`,
+    ).hidden = true;
+    root.querySelector<HTMLButtonElement>(
+      `#open-${category}-settings`,
+    )!.hidden = true;
+  }
   return { settings, screen, addSettings };
 }

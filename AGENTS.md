@@ -11,7 +11,7 @@
 - 현재 GUI 검증은 같은 로컬 앱·자료 범위에서 이미 승인되어 있다. 외부 공개·배포·원격 push는 별도 요청 없이는 수행하지 않는다.
 - 웹앱 개발 중에는 정적 검사만 수행하고 화면 테스트는 릴리스 때 진행한다. 사용자가 별도로 검사 범위를 지시하면 해당 요청을 따른다. 릴리스의 필수 검증은 생략하지 않으며 상세 기준은 docs/reference/engineering/verification.md를 따른다.
 - 웹앱의 화면 확인·버튼 조작·기능 테스트는 Safari MCP를 우선 사용한다. Safari MCP가 지원하지 않는 기능은 처음부터 ego-browser를 사용한다. Safari MCP가 지원하는 기능에서 검증이 실패하면 실패 원인을 기록하고 ego-browser 사용을 검토한다. 비교만을 위해 같은 테스트를 두 브라우저에서 반복하지 않는다.
-- iPad 화면 검증은 사용자가 지정한 Safari 응답형 디자인 모드와 iPad mini (A17 Pro) 시뮬레이터를 우선한다. 설정·기기 ID·검증 상태는 docs/how-to/verify-ipad.md를 따른다. Chromium 화면 크기 모사를 iPad Safari 검증으로 간주하지 않는다.
+- iPad 화면 검증은 Safari 응답형 디자인 모드를 우선한다. iOS·iPadOS 실기기·시뮬레이터 검증은 릴리스에 포함하지 않고, 사용자가 해당 검증을 명시적으로 지시한 경우에만 수행한다. 설정·기기 ID·검증 상태는 docs/how-to/verify-ipad.md를 따른다. Chromium 화면 크기 모사를 iPad Safari 검증으로 간주하지 않는다.
 
 ## Apple 로컬 도구 활용 및 팀장 공유
 

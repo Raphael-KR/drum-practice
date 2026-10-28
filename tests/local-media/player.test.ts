@@ -390,7 +390,7 @@ it.each([
   },
 );
 
-it("keeps the louder music click under its volume control and the count-in independent", () => {
+it("fixes metronome volume at 100% without changing saved volume or the count-in", () => {
   vi.stubGlobal("AudioContext", Context);
   const p = new Player();
   try {
@@ -399,13 +399,15 @@ it("keeps the louder music click under its volume control and the count-in indep
     p.song!.settings.click = true;
     p.song!.settings.clickVolume = 0;
     p.volumes();
-    expect(p.click.gain.value).toBe(0);
+    expect(p.click.gain.value).toBe(1.5);
+    expect(p.song!.settings.clickVolume).toBe(0);
     p.song!.settings.clickVolume = 1;
     p.volumes();
     expect(p.click.gain.value).toBe(1.5);
     p.song!.settings.clickVolume = 2 / 3;
     p.volumes();
-    expect(p.click.gain.value).toBe(1);
+    expect(p.click.gain.value).toBe(1.5);
+    expect(p.song!.settings.clickVolume).toBe(2 / 3);
 
     p.pulse(2, true);
     const accent = ctx.nodes.at(-1)!;

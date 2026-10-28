@@ -607,11 +607,11 @@
       },
       "name": {
         "ko": "component.highlight.name",
-        "en": "Follow notes"
+        "en": "Note glow"
       },
       "accessible": {
         "ko": "component.highlight.accessible",
-        "en": "Follow notes"
+        "en": "Note glow"
       }
     },
     {
@@ -698,6 +698,31 @@
         "ko": "component.settings.playback.accessible",
         "en": "Playback"
       }
+    },
+    {
+      "id": "settings.metronome",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#open-metronome-settings",
+        "player": "#open-metronome-settings"
+      },
+      "name": { "ko": "component.metronome.name", "en": "Metronome" },
+      "accessible": {
+        "ko": "component.metronome.accessible",
+        "en": "Metronome"
+      }
+    },
+    {
+      "id": "settings.tempo",
+      "parent": "settings",
+      "role": "",
+      "selectors": {
+        "web": "#open-tempo-settings",
+        "player": "#open-tempo-settings"
+      },
+      "name": { "ko": "component.tempo.name", "en": "Practice BPM" },
+      "accessible": { "ko": "component.tempo.accessible", "en": "Practice BPM" }
     },
     {
       "id": "settings.score",

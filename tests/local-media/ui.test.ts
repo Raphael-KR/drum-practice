@@ -452,9 +452,11 @@ it("groups screen, playback, score management and app info in settings", async (
     (document.getElementById("settings-dialog") as HTMLDialogElement).open,
   ).toBe(true);
   expect(
-    [...document.querySelectorAll<HTMLElement>("[data-settings-category]")].map(
-      (e) => e.dataset.settingsCategory,
-    ),
+    [
+      ...document.querySelectorAll<HTMLElement>(
+        "[data-settings-category]:not([hidden])",
+      ),
+    ].map((e) => e.dataset.settingsCategory),
   ).toEqual(["screen", "playback", "score", "info"]);
   expect(
     document.querySelectorAll("[data-settings-panel]:not([hidden])"),
@@ -1166,6 +1168,86 @@ it("dismisses settings only for an outside gesture and uses icon close controls"
   rect.mockRestore();
 });
 
+it("reuses tempo and metronome inputs in one phone landscape settings card and restores them", async () => {
+  const { installPhoneLandscapeSettings } =
+    await import("../../src/modules/playback/playback-settings-layout");
+  const { selectSettingsCategory, openSettings, closeSettings } =
+    await import("../../src/apps/editor/workspace");
+  const root = document.getElementById("app")!;
+  const settings = document.getElementById(
+    "settings-dialog",
+  ) as HTMLDialogElement;
+  const tempoDialog = document.getElementById(
+    "tempo-dialog",
+  ) as HTMLDialogElement;
+  const tempo = tempoDialog.querySelector<HTMLElement>(".tool-body")!;
+  const input = tempo.querySelector<HTMLInputElement>("input")!;
+  const originalValue = input.value;
+  const metronome = root.querySelector<HTMLElement>(".settings-metronome-row")!;
+  const metronomeHome = metronome.parentElement;
+  const layout = installPhoneLandscapeSettings(root, selectSettingsCategory);
+  const visible = (attribute: string) =>
+    [
+      ...settings.querySelectorAll<HTMLElement>(`[${attribute}]:not([hidden])`),
+    ].map((element) => element.getAttribute(attribute));
+  try {
+    openSettings("score");
+    for (let i = 0; i < 3; i++) {
+      layout.sync(true);
+      expect(visible("data-settings-category")).toEqual([
+        "screen",
+        "playback",
+        "metronome",
+        "tempo",
+      ]);
+      expect(visible("data-settings-panel")).toEqual(["screen"]);
+      for (const category of ["playback", "metronome", "tempo"] as const) {
+        selectSettingsCategory(category);
+        expect(visible("data-settings-panel")).toEqual([category]);
+      }
+      expect(settings.querySelector("#tempo-settings input")).toBe(input);
+      expect(
+        settings.querySelector("#metronome-settings .settings-metronome-row"),
+      ).toBe(metronome);
+      expect(tempoDialog.open).toBe(false);
+      closeSettings();
+      openSettings();
+      expect(visible("data-settings-panel")).toEqual(["tempo"]);
+      layout.sync(false);
+      expect(tempo.parentElement).toBe(tempoDialog);
+      expect(metronome.parentElement).toBe(metronomeHome);
+      expect(input.value).toBe(originalValue);
+      expect(root.querySelectorAll(`#${input.id}`)).toHaveLength(1);
+      expect(root.querySelectorAll("#metronome-choices")).toHaveLength(1);
+      expect(visible("data-settings-category")).toEqual([
+        "screen",
+        "playback",
+        "score",
+        "info",
+      ]);
+      expect(visible("data-settings-panel")).toHaveLength(4);
+      expect(
+        document
+          .getElementById("open-screen-dialog")!
+          .getAttribute("aria-current"),
+      ).toBe("location");
+      // The first phone selection must not leave the scroll listener in phone mode.
+      settings
+        .querySelector(".settings-detail")!
+        .dispatchEvent(new Event("scroll"));
+      expect(visible("data-settings-category")).toEqual([
+        "screen",
+        "playback",
+        "score",
+        "info",
+      ]);
+    }
+  } finally {
+    layout.dispose();
+    closeSettings();
+  }
+});
+
 it("remembers the settings category and returns from a child only when opened there", async () => {
   const { openSettings, selectSettingsCategory, openSettingsChild } =
     await import("../../src/apps/editor/workspace");
@@ -1285,7 +1367,7 @@ it("shows note-follow as unavailable for the active PDF-only score without erasi
   const toggle = document.getElementById("note-highlight") as HTMLInputElement;
   expect(toggle.closest("#screen-dialog")).not.toBeNull();
   expect(toggle.getAttribute("role")).toBe("switch");
-  expect(toggle.closest("label")!.textContent).toContain("음표 따라가기");
+  expect(toggle.closest("label")!.textContent).toContain("음표 빛나기");
   expect(toggle.disabled).toBe(true);
   expect(toggle.checked).toBe(false);
   expect(

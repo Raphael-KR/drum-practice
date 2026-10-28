@@ -84,6 +84,9 @@ export function createPlaybackTempo(
         t("main.message210", { value1: bpm }),
       );
     }
+    const menuValue = root.querySelector("#open-tempo-settings .icon-caption");
+    if (menuValue && menuValue.textContent !== label)
+      menuValue.textContent = label;
   }
   function originalAudioBpm() {
     ensureSources();
@@ -128,8 +131,13 @@ export function createPlaybackTempo(
       sync();
     }
   }
-  function openTempo() {
+  let preparedOriginal = 0,
+    preparedScore = 0;
+  function prepareTempo() {
     const original = originalAudioBpm();
+    if (preparedOriginal === original && preparedScore === h.song().bpm) return;
+    preparedOriginal = original;
+    preparedScore = h.song().bpm;
     get("tempo-options").innerHTML = [
       ...new Set(
         [0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map((f) =>
@@ -146,6 +154,9 @@ export function createPlaybackTempo(
     get("tempo-score").dataset.tempo = String(h.song().bpm);
     get("tempo-score").textContent = `${h.song().bpm} BPM`;
     get("tempo-score").title = t("tooltip.tempo", { bpm: h.song().bpm });
+  }
+  function openTempo() {
+    prepareTempo();
     sync();
     open("tempo");
   }
@@ -174,5 +185,6 @@ export function createPlaybackTempo(
     originalAudioBpm,
     minimumPracticeBpm,
     refreshSources,
+    prepareTempo,
   };
 }

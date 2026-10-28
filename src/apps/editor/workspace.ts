@@ -3,19 +3,23 @@ import buildInfo from "../../generated/build-info.generated.json";
 import { showAppBuildLabel } from "../../shared/ui/app-build-label";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { appInfoContent } from "../../shared/ui/app-info";
-import { selectPlaybackSettings } from "../../modules/playback/playback-forms";
+import {
+  selectPlaybackSettings,
+  type SettingsCategory,
+} from "../../modules/playback/playback-forms";
 import { mountPlaybackShell } from "../../modules/playback/playback-shell";
 import { webPlaybackBindings } from "../../modules/playback/playback-ui";
 import { componentName } from "../../shared/ui/ui-standard";
 // Arrange existing controls without duplicating their state or event handlers.
-export type SettingsCategory =
-  "screen" | "playback" | "score" | "audio" | "info";
+export type { SettingsCategory } from "../../modules/playback/playback-forms";
 const settingsTitles: Record<SettingsCategory, string> = {
   screen: componentName("settings.screen"),
   playback: componentName("settings.playback"),
   score: componentName("settings.score"),
   info: componentName("settings.info"),
   audio: componentName("settings.audio"),
+  metronome: componentName("settings.metronome"),
+  tempo: componentName("settings.tempo"),
 };
 const SETTINGS_KEY = "drum-practice.settings-category";
 let lastCategory: SettingsCategory = "screen";
@@ -35,13 +39,12 @@ export function updateViewWidth() {
   if (mirror) mirror.textContent = select.selectedOptions[0]?.textContent || "";
 }
 export function selectSettingsCategory(category: SettingsCategory) {
-  lastCategory = category;
+  lastCategory = selectPlaybackSettings(document, category);
   try {
-    localStorage.setItem(SETTINGS_KEY, category);
+    localStorage.setItem(SETTINGS_KEY, lastCategory);
   } catch {
     /* Session fallback. */
   }
-  selectPlaybackSettings(document, category);
 }
 export function openSettings(
   category: SettingsCategory = rememberedCategory(),

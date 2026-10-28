@@ -43,12 +43,14 @@
 | tempoValue | 연습 BPM | 연습 BPM | Practice BPM | tempo |
 | close | 닫기 | 닫기 | Close | — |
 | pdf | 악보를 PDF로 보기 | 악보를 PDF로 보기 | Use PDF score | settings |
-| highlight | 음표 따라가기 | 음표 따라가기 | Follow notes | settings |
+| highlight | 음표 빛나기 | 음표 빛나기 | Note glow | settings |
 | autoFullscreen | 전체화면으로 악보 보기 | 전체화면으로 악보 보기 | Open scores fullscreen | settings |
 | restart | 마디 처음부터 다시 재생 | 마디 처음부터 다시 재생 | Resume from measure start | settings |
 | countoff | 카운트오프 (Count-off) | 카운트오프 (Count-off) | Count-off | settings |
 | settings.screen | 화면 | 화면 | Display | settings |
 | settings.playback | 재생 | 재생 | Playback | settings |
+| settings.metronome | 메트로놈 | 메트로놈 | Metronome | settings |
+| settings.tempo | 연습 BPM | 연습 BPM | Practice BPM | settings |
 | settings.score | 악보 | 악보 | Score management | settings |
 | settings.audio | 백업 | 사용자 설정 백업·복원 | Audio | settings |
 | settings.info | 정보 | 정보 | About | settings |
