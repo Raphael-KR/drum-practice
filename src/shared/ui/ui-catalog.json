@@ -160,6 +160,7 @@
     {
       "id": "metronome",
       "parent": "header",
+      "dynamicLabel": true,
       "role": "",
       "selectors": {
         "web": "#click",
@@ -169,6 +170,20 @@
         "ko": "component.metronome.name",
         "en": "Metronome"
       },
+      "accessible": {
+        "ko": "component.metronome.accessible",
+        "en": "Metronome"
+      }
+    },
+    {
+      "id": "metronomeChoices",
+      "parent": "settings.playback",
+      "role": "group",
+      "selectors": {
+        "web": "#metronome-choices",
+        "player": "#metronome-choices"
+      },
+      "name": { "ko": "component.metronome.name", "en": "Metronome" },
       "accessible": {
         "ko": "component.metronome.accessible",
         "en": "Metronome"

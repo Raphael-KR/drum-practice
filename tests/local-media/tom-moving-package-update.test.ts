@@ -44,6 +44,7 @@ it("updates the shipped 28-bar score, audio and SVG cache while using incoming p
   expect(reopened.song.artist).toBe("Portland 드럼킷");
   expect(reopened.song.settings).toEqual({
     ...next.song.settings,
+    clickDivision: 4,
     musicVolume: 0.5,
     clickVolume: 1,
     click: true,

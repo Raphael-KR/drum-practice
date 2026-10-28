@@ -1,6 +1,11 @@
 import { enterFullscreen } from "../../platform/browser/fullscreen";
 import { clamp } from "../../model/model";
 import {
+  nextMetronomeMode,
+  setMetronomeMode,
+  type MetronomeMode,
+} from "../../model/metronome";
+import {
   readTitleOrder,
   saveTitleOrder,
   type TitleOrder,
@@ -27,14 +32,30 @@ export function bindSoundAndViewSettings(
 ) {
   const { root, get, input, listen, run, available, sync, renderTrack } =
     bindings;
-  const click = input("click");
-  listen(click, click.type === "checkbox" ? "change" : "click", () => {
+  const changeMetronome = (mode: MetronomeMode) => {
     if (!available()) return;
-    h.song().settings.click =
-      click.type === "checkbox" ? click.checked : !h.song().settings.click;
+    if (!setMetronomeMode(h.song().settings, mode)) return;
+    h.player().updateMetronome();
     sync();
     h.changed();
+  };
+  listen(get("click"), "click", () => {
+    if (available()) changeMetronome(nextMetronomeMode(h.song().settings));
   });
+  // Keep native button activation from also reaching playback shortcuts.
+  listen(get("click"), "keydown", (event) => {
+    const key = event as KeyboardEvent;
+    if (key.code === "Space" || key.key === "Enter") event.stopPropagation();
+  });
+  root
+    .querySelectorAll<HTMLButtonElement>(
+      "#metronome-choices [data-metronome-mode]",
+    )
+    .forEach((button) => {
+      listen(button, "click", () =>
+        changeMetronome(button.dataset.metronomeMode as MetronomeMode),
+      );
+    });
   for (const [id, key] of [
     ["music-volume", "musicVolume"],
     ["click-volume", "clickVolume"],

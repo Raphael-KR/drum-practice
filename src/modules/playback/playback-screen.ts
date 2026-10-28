@@ -14,7 +14,7 @@ import { sliderFromZoom } from "../score/score-zoom";
 import { mountLoopSlots } from "./loop-slots";
 import { selectPlaybackEngraving, type RibbonAsset } from "./playback-assets";
 import { mountPlaybackDrawer } from "./playback-drawer";
-import { syncSettingsChoices } from "./playback-forms";
+import { syncMetronomeControls, syncSettingsChoices } from "./playback-forms";
 import { createPlaybackTempo } from "./playback-tempo";
 import { createPlaybackWakeLock } from "./playback-wake-lock";
 import { syncCurrentSection } from "./section-shortcuts";
@@ -867,10 +867,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       ["max", v.max],
     ])
       v.setAttribute(`aria-value${key}`, value);
-    const click = input("click");
-    click.checked = s.settings.click;
-    click.classList.toggle("on", s.settings.click);
-    click.setAttribute("aria-pressed", String(s.settings.click));
+    syncMetronomeControls(root, s.settings);
     input("music-volume").value = String(s.settings.musicVolume);
     input("click-volume").value = String(s.settings.clickVolume);
     for (const id of ["music-volume", "click-volume"]) {

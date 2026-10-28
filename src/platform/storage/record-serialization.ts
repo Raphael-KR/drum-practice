@@ -1,6 +1,10 @@
 import { encodeAsset, decodeAsset as decode } from "./binary-asset";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { validateSong, type Song } from "../../model/model";
+import {
+  normalizeMetronomeSettings,
+  type MetronomeCorrectionReporter,
+} from "../../model/metronome";
 import type { ScoreVariant } from "../../model/record";
 import type { RecordData } from "./storage";
 
@@ -52,18 +56,24 @@ export async function packSong(record: RecordData): Promise<PackedRecord> {
     pages: await Promise.all(record.pages.map(encode)),
   };
 }
-export function unpackSong(data: PackedRecord): RecordData {
+export function unpackSong(
+  data: PackedRecord,
+  report?: MetronomeCorrectionReporter,
+): RecordData {
   if (data.version !== 1)
     throw Error(i18nText("record-serialization.invalidVersion"));
-  validateSong(data.song);
+  const normalized = normalizeMetronomeSettings(data.song);
+  validateSong(normalized.song);
   if (data.pages.length !== data.song.pageCount)
     throw Error(i18nText("record-serialization.invalidPages"));
-  return {
-    song: data.song,
+  const record = {
+    song: normalized.song,
     canonicalXML: data.canonicalXML,
     otherScores: unpackScores(data.otherScores),
     pdf: decode(data.pdf),
     audio: decode(data.audio),
     pages: data.pages.map(decode),
   };
+  report?.(normalized.corrections);
+  return record;
 }

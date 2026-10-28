@@ -37,6 +37,8 @@
 
 ### 재생·조판과 악보 수록
 
+- [메트로놈 4분·8분·끄기 구현과 검증](archive/metronome-subdivision-20261028.md)
+
 - [렌더러 메모리 조사와 중복 할당 개선](archive/runtime-memory-20261024.md)
 - [앱 실행 반복 작업 점검과 성능 계측](archive/runtime-performance-20261024.md)
 - [Safari 두 줄 스크롤 진단과 표시 갱신 개선](archive/safari-two-row-scroll-20261024.md)

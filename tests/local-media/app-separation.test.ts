@@ -54,6 +54,7 @@ it("producer package -> player -> direct replacement without recovery", async ()
   expect(saved.song.loops).toEqual(updated.song.loops);
   expect(saved.song.settings).toEqual({
     ...updated.song.settings,
+    clickDivision: 4,
     musicVolume: 0.5,
     clickVolume: 1,
     click: true,

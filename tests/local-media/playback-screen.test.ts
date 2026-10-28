@@ -101,6 +101,7 @@ function mount(
     }),
     prepare: vi.fn(async () => {}),
     volumes: vi.fn(),
+    updateMetronome: vi.fn(),
     setRate: vi.fn<
       import("../../src/modules/audio/audio-core").Player["setRate"]
     >(async (rate: number, original = rate === 1) => {
@@ -170,6 +171,86 @@ function mount(
   return { screen, p, song, root, ids, input, click, fail, changed, prefs };
 }
 for (const environment of ["web", "player"] as const) {
+  it(`${environment}: header cycle and settings choices share one transition and preserve playback`, () => {
+    const { root, p, song, click, changed, screen } = mount(environment);
+    const choices = [
+      ...root.querySelectorAll<HTMLButtonElement>("#metronome-choices button"),
+    ];
+    const header = root.querySelector<HTMLButtonElement>("#click")!;
+    expect(choices.map((b) => b.textContent)).toEqual(["4분", "8분", "끄기"]);
+    expect(
+      root.querySelector(
+        ".settings-metronome-row p, .settings-metronome-row small",
+      ),
+    ).toBeNull();
+    expect(
+      root
+        .querySelector(".settings-metronome-row")!
+        .previousElementSibling!.querySelector("#countoff"),
+    ).not.toBeNull();
+    p.playing = true;
+    p.position = 1.25;
+    changed.mockClear();
+    for (const [mode, division, enabled] of [
+      ["eighth", 8, true],
+      ["off", 8, false],
+      ["quarter", 4, true],
+    ] as const) {
+      click("click");
+      expect(song.settings).toMatchObject({
+        click: enabled,
+        clickDivision: division,
+      });
+      expect(header.dataset.metronomeMode).toBe(mode);
+      expect(
+        choices.find((b) => b.getAttribute("aria-pressed") === "true")!.dataset
+          .metronomeMode,
+      ).toBe(mode);
+      expect(header.dataset.help).toContain("다음:");
+      expect(header.getAttribute("aria-label")).toContain("현재:");
+    }
+    expect(changed).toHaveBeenCalledTimes(3);
+    expect(p.updateMetronome).toHaveBeenCalledTimes(3);
+    choices[0].click();
+    expect(changed).toHaveBeenCalledTimes(3);
+    choices[1].click();
+    expect(header.dataset.metronomeMode).toBe("eighth");
+    expect(changed).toHaveBeenCalledTimes(4);
+    expect(p.updateMetronome).toHaveBeenCalledTimes(4);
+    expect(p.position).toBe(1.25);
+    expect(p.playing).toBe(true);
+    expect(p.play).not.toHaveBeenCalled();
+    p.playing = false;
+    choices[2].click();
+    expect(p.playing).toBe(false);
+    screen.sync();
+    expect(choices[2].getAttribute("aria-pressed")).toBe("true");
+  });
+  it(`${environment}: metronome keyboard activation does not invoke playback shortcuts`, () => {
+    const { root, p, song } = mount(environment);
+    const header = root.querySelector<HTMLButtonElement>("#click")!;
+    const initial = { ...song.settings };
+    for (const [key, code] of [
+      [" ", "Space"],
+      ["Enter", "Enter"],
+    ]) {
+      const event = new KeyboardEvent("keydown", {
+        key,
+        code,
+        bubbles: true,
+        cancelable: true,
+      });
+      header.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(p.play).not.toHaveBeenCalled();
+      expect(song.settings).toEqual(initial);
+      expect(header.dataset.metronomeMode).toBe("quarter");
+    }
+    // jsdom has no native key activation; the browser supplies this click.
+    header.click();
+    expect(header.dataset.metronomeMode).toBe("eighth");
+    expect(p.play).not.toHaveBeenCalled();
+  });
   it(`${environment}: unchanged paused row frames retain text nodes and scroll position`, () => {
     const { screen, root, input, p, song, ids } = mount(environment);
     input("view").value = "rows";

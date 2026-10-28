@@ -44,6 +44,7 @@ function setup() {
     activate: vi.fn<(record: RecordData) => Promise<void>>(async () => {}),
     openEditor: vi.fn(async () => {}),
     error: vi.fn(),
+    tell: vi.fn(),
     action: vi.fn(),
   };
   return { h, library: createEditorLibrary(h) };

@@ -18,6 +18,7 @@
 | library | 내 악보 목록 | 내 악보 목록 | Score library | header |
 | tempo | 연습 BPM | 연습 BPM | Practice BPM | header |
 | metronome | 메트로놈 | 메트로놈 | Metronome | header |
+| metronomeChoices | 메트로놈 | 메트로놈 | Metronome | settings.playback |
 | fullscreen | 전체화면 | 전체화면 | Fullscreen | header |
 | reload | 새로고침 | 새로고침 | Reload | header |
 | home | 처음으로 | 처음으로 | Go to beginning | playback.actions |

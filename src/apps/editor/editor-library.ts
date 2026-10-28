@@ -9,6 +9,7 @@ import {
 } from "../../modules/library/score-catalog";
 import { downloadScore } from "../../modules/library/download-score";
 import { readScorePackage } from "../../modules/library/score-package";
+import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import type { RecordData } from "../../model/record";
 import { chooseRecent } from "../../modules/library/recent-score";
 import {
@@ -24,6 +25,7 @@ interface LibraryHost {
   activate(record: RecordData): Promise<void>;
   openEditor(): Promise<void>;
   error(error: unknown): void;
+  tell(message: string): void;
   action(id: string, fn: () => unknown): void;
 }
 export function createEditorLibrary(h: LibraryHost) {
@@ -66,8 +68,9 @@ export function createEditorLibrary(h: LibraryHost) {
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
     let stage = "read-saved";
+    const correctionNotice = createMetronomeCorrectionNotice();
     try {
-      let selected = (await allRecords()).find(
+      let selected = (await allRecords(correctionNotice.collect)).find(
         (record) => record.song.id === entry.id,
       );
       if (!selected && entry.bundled) {
@@ -82,7 +85,7 @@ export function createEditorLibrary(h: LibraryHost) {
           },
         );
         stage = "decode";
-        const incoming = await readScorePackage(blob);
+        const incoming = await readScorePackage(blob, correctionNotice.collect);
         if (incoming.song.id !== entry.id) {
           throw new Error(
             `Bundled score ID mismatch: expected=${entry.id}, actual=${incoming.song.id}`,
@@ -103,6 +106,7 @@ export function createEditorLibrary(h: LibraryHost) {
       await activate(selected);
       await refreshRecentScore(true);
       await openEditor();
+      h.tell(correctionNotice.message());
     } catch (cause) {
       try {
         console.error("Editor catalog open failed", {
