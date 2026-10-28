@@ -1,5 +1,6 @@
-/* Portrait: title above tempo/metronome and the right-aligned action group. */
-@media (orientation: portrait) {
+/* Portrait and phone landscape share a title row above all playback controls. */
+@media (orientation: portrait),
+  (orientation: landscape) and (max-width: 1023px) and (max-height: 480px) {
   .has-song .playback-ui header {
     display: grid;
     grid-template-columns: auto auto minmax(0, 1fr);
@@ -227,7 +228,8 @@ body.has-song:has(.drawer-playback) {
   align-self: center;
   flex: 0 0 auto;
 }
-@media (orientation: portrait) {
+@media (orientation: portrait),
+  (orientation: landscape) and (max-width: 1023px) and (max-height: 480px) {
   .has-song .playback-ui header {
     grid-template-columns: auto auto auto minmax(0, 1fr);
   }
@@ -769,9 +771,8 @@ button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
   }
 }
 
-/* Wide windows keep the landscape arrangement even when taller than wide.
-   Narrow tablet and phone rules above retain their separate control rows. */
-@media (min-width: 900px) {
+/* Wide headers stay on one row, except for the compact phone landscape above. */
+@media (min-width: 900px) and (min-height: 481px), (min-width: 1024px) {
   .has-song .playback-ui header {
     display: flex;
     flex-wrap: nowrap;
@@ -793,6 +794,10 @@ button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
     flex-wrap: nowrap;
     margin-left: auto;
   }
+}
+
+/* Keep the existing wide transport and shortcut layout in phone landscape too. */
+@media (min-width: 900px) {
   .drawer-playback .playback-dock .transport {
     grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
     column-gap: 8px;

@@ -131,8 +131,10 @@ body:not(.has-song) #app:has(.editor-home) > .library-header {
   border-bottom: 1px solid #cbd6e7;
 }
 
-/* Fit build metadata beneath the song title within the existing button-height bar. */
-@media (orientation: landscape), (min-width: 900px) {
+/* Stack metadata only in the one-row header; compact landscape keeps it inline. */
+@media (orientation: landscape) and (min-height: 481px),
+  (min-width: 900px) and (min-height: 481px),
+  (min-width: 1024px) {
   .has-song #app header h1[data-app-build] {
     /* Center the title, not the title + 16px metadata group. Account for
        the header's 2px top / 6px bottom padding without changing its size. */
