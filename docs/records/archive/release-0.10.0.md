@@ -24,6 +24,12 @@
 - 환경 한계: MCP 제어 창을 네이티브 창 선택으로 연결하지 못해 MCP 기능 확인과 일반 Safari 창의 응답형 화면 검수를 분리했다. 지정 iPad mini 시뮬레이터가 설치돼 있지 않아 iOS 실기기·시뮬레이터·청취를 확인한 것으로 보고하지 않는다. 기존 OSMD 혼합 import·큰 번들·Node 실험 API 경고는 비차단 경고로 남는다.
 - 신규 공통 모듈·CSS·pnpm 패치의 위치와 의존 방향, 두 앱 연결, 정본 문서 일치를 자체 검토했다. 별도 독립 검토는 수행하지 않았다. 원본 미디어·사용자 저장 데이터를 수정하거나 삭제하지 않았다.
 
-## 진행 상태
+## PR·main·발행
 
-- 버전·로컬 검증 완료. PR·main CI·발행·공개 확인은 진행 중이다.
+- 구현 `6d8bb48b0d8456cb93d772ba156d96ba80422616`, [PR #26](https://github.com/Raphael-KR/drum-practice/pull/26)의 자체 검토·최종 head CI·병합 완료. 제품 main은 `2708ecff4955211fba0f7aea3f463a00d0ff5ec9`다.
+- PR head와 main의 tree는 `4e57e16fb348449458b5cfb401e4d5f33d6a4c13`로 같아 전체 로컬 결과를 재사용했다. 같은 로컬 검사 자산·설치 상태를 유지했고 main에서 두 앱을 재빌드했다. [main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40680125294)도 통과했다(portable85파일443테스트).
+- 소스 빌드 `c569f76b36d3`, main 재빌드 시각 `2026-10-28T11:28:05.637Z`. 공식 helper로 기존 clean Sites 사본을 연 뒤 준비·frozen install·빌드·패키징했다. 정본 player·사본·Worker45파일의 SHA256이 모두 일치한다.
+- 기존 public audience·Site ID·주소를 유지했다. Sites 소스 `7af157a6447b144ffab44331fb5725336ac29a06`, 버전92 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_6d2f562aafd481918ed101373e2bc5be`), 배포 `appgdep_6ae1dcc5c5c08191a93c5511717c05fb`: **succeeded**,2026-10-28 20:30:33 KST / `2026-10-28T11:30:33.247386+00:00`.
+- 아카이브 `local-archives/releases/release-0.10.0.tar.gz` SHA256은 `c5826454c9f173070c0f8519e505a5d35550371f852cdd5f42b4669a0ecd2381`이다. Sites tar content hash `sha256:86928a0a79adb68a8d7ef64b3d92781d0358e29c374f8cb48465bb7713ffcc90`와 구분한다.
+- 공개 읽기49항목 통과: HTML3경로의 최신 번들·보안 헤더, 정적43파일 전체 SHA256(수록6곡·폰트·JS/CSS·Worker), 폐기 API3경로404. 이 검사를 공개 재생·청취·실기기 검증으로 확대하지 않는다. 근거 `.tmp/release-0.10.0/parity.json`, `smoke.json`, `site-result.json`과 main CI/빌드 로그를 보존한다.
+- 결과 문서는 별도 PR로 반영하며 제품 버전·발행을 반복하지 않는다. 이번에 병합한 브랜치 정리와 최종 main의 로컬/원격 일치는 로컬 receipt에 기록한다.

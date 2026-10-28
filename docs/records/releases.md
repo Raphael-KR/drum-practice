@@ -4,6 +4,18 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-10-0-20261028"></a>
+
+## 0.10.0 — 폰 가로 악보 전용 모드·공통 UI 정리 · 2026-10-28 발행
+
+- 두 앱0.9.2→0.10.0 minor. 폰 가로 자동 악보 전용 흐름을 추가하고 기존 한 줄 재생바·세로 복귀를 연결했다. 목록 두 줄 상단바·하단 조작판·섹션 가로 순서·공통 유리 효과·정보 표시, JSZip 단일화와 라이선스 표시 정리를 함께 반영했다. [릴리스 실행 기록](archive/release-0.10.0.md).
+- 소스 빌드 `c569f76b36d3`, 구현 `6d8bb48b0d8456cb93d772ba156d96ba80422616`, [PR #26](https://github.com/Raphael-KR/drum-practice/pull/26), 제품 main `2708ecff4955211fba0f7aea3f463a00d0ff5ec9`. Codex 자체 검토이며 독립 검토와 구분한다. PR/main tree가 같고 [main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40680125294)도 통과했다(portable85파일443테스트).
+- macOS Node26.12.1/pnpm12.15.0에서 `pnpm run verify` 통과: lint·443파일 서식·타입·구조/문서·131파일796테스트·두 앱 빌드/경계. 최초 세 파일13개 시간초과/후속 오류는 같은 파일36테스트와 전체 재실행에서 재현되지 않았다. 원인은 확정하지 않았고 코드·제한·규칙을 완화하지 않았다. 검증 상태와 같은 main을 재빌드했다.
+- Safari 응답형 폰 세로/가로에서 상단바·간결한 설정창·하단 조작판·자동 악보 전용/복귀를 확인했다. 별도 MCP 창에서 수록 악보 열기·실제 재생/카운트오프/일시정지·AudioContext running·섹션 순서·제작기 편집 열기를 확인했다. MCP 창의 네이티브 제어 연결 실패로 검수를 분리했으며 지정 iPad 시뮬레이터 부재·iOS 실기기·청취 미검증을 남긴다.
+- 기존 public Site·주소를 유지했다. clean Sites checkout을 공식 helper로 연 뒤 main player로 준비·frozen install·빌드·패키징했다. 정본·사본·Worker45파일 해시가 같고 제작기는 공개하지 않았다. Sites 소스 `7af157a6447b144ffab44331fb5725336ac29a06`, 버전92 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_6d2f562aafd481918ed101373e2bc5be`), 배포 `appgdep_6ae1dcc5c5c08191a93c5511717c05fb`: **succeeded**, **2026-10-28 20:30:33 KST** / `2026-10-28T11:30:33.247386+00:00`. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.10.0.tar.gz` SHA256 `c5826454c9f173070c0f8519e505a5d35550371f852cdd5f42b4669a0ecd2381`. Sites tar content hash `sha256:86928a0a79adb68a8d7ef64b3d92781d0358e29c374f8cb48465bb7713ffcc90`와 구분한다.
+- 공개 읽기49항목 통과: HTML3경로의 최신 번들·보안 헤더, 정적43파일 SHA256(수록6곡·폰트·JS/CSS·Worker), 폐기 API3경로404. OSMD 혼합 import·큰 번들·Node 실험 API·Actions Node 전환 경고는 비차단으로 기록한다. 근거 `.tmp/release-0.10.0/`에 검증·화면·CI·빌드·parity·smoke·발행 결과를 보존한다. 후속 결과 문서 PR만으로 버전·발행을 반복하지 않는다.
+
 <a id="release-0-9-2-20261028"></a>
 
 ## 0.9.2 — 아이폰 가로 상단바 · 2026-10-28 발행
