@@ -4,6 +4,21 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-9-0-20261028"></a>
+
+## 0.9.0 — 4분·8분·끄기 메트로놈 · 2026-10-28 발행
+
+- 두 앱 0.8.18 → 0.9.0 minor. 8분음표 모드·상단 순환·설정 직접 선택을 새 사용자 기능으로 추가했다. 8분은 Warm 색상과 연결 음표로 구분한다. 공통 두 음색·예약 루프를 재사용하며 카운트오프·음악 소스·저장 형식·개인 자료를 유지한다. [구현·기기별 검수](archive/metronome-subdivision-20261028.md), [릴리스 실행 기록](archive/release-0.9.0.md).
+- 소스 빌드 `3836cdee4d6d`, 구현 `cd6f35331c3216c36f399b3a6d1617604189add1`, [PR #20](https://github.com/Raphael-KR/drum-practice/pull/20), 제품 main `cde9e13acf41b929b65c4fffcd105ff0d553ac5e`. 기존 pnpm 안내문·문서 정리 커밋 `1b53be6`, `c24a0e1`도 함께 보존하여 병합했다. 검토는 Codex 자체 검토이며 독립 승인으로 보고하지 않는다.
+- macOS arm64 Node26.12.1/pnpm12.15.0의 `pnpm run verify` exit 0: lint·438개 서식·app/tools/hosting 타입·문서/구조·131파일 796테스트·두 앱 빌드/공개 경계. [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40606951111)와 [병합 main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40607170129)도 portable 85파일 443테스트를 통과했다. PR/main tree·소스/설정 551파일·수록 6곡이 같아 전체 검사 결과를 재사용하고 main에서 두 앱을 다시 빌드했다.
+- 버전 값을 0.8.18로 대입해 이전 구현 소스 빌드 `a63a4880de15`를 읽기 전용으로 재현했다. 이전 두 앱 Ego 화면·저장/재열기·키보드·길게 누르기·Web Audio 예약 검수와 제품 소스가 같음을 확인했다. Safari MCP 비활성 탭/rAF 실패 후의 Ego 대체 근거를 유지하며, Safari/iPad 터치·사람의 실제 청취는 미확인이다. 공개 HTTP 확인을 실제 청취나 실기기 검증으로 확대하지 않는다.
+- 기존 clean Sites checkout을 공식 helper로 열고 검증된 main의 player만 준비했다. 내보낸 manifest·lockfile·workspace 설정의 바이트가 이전 배포와 같아 기존 설치를 재사용했다. 공식 Sites 빌드·패키징, 정본→사본→Worker 45파일 SHA256 대조가 통과했다. editor는 로컬 전용이다.
+- 기존 Site ID·public audience·주소를 유지했다. Sites 소스 `87cfbc0d196f07686d390fafd8dcdf013689d9a7`, 저장 버전89 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_e8f96537dc308191ad26f75d20303938`), 배포 `appgdep_6ae13e6fe5248191862643a7a7bfad88`: **succeeded**, **2026-10-28 09:14:55 KST** / 2026-10-28T00:14:55.381774+00:00. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.9.0.tar.gz` SHA256 `2ea6b26bf2a5019d562abc53709654af325496c3b856dd8c5c8113f13b3e81fd`. Sites tar content hash `sha256:e20cb6f29917ed29ba2bf2a41803d54c9cdd9d3a789e4fec6ed10bfacf771958`는 gzip 파일 해시와 별개다.
+- 09:15:26 KST 공개 읽기 49항목 통과: HTML 3경로의 최신 번들·nosniff/프레임/CSP/HSTS, 정적 43파일 전체 SHA256(수록 6곡·폰트·JS/CSS·renderer/Worker), 폐기 API 3경로 404. 공개 사이트 열기 요청은 Codex UI에서 queued로 반환했으므로 화면이 실제 열렸다고 보고하지 않는다.
+- 기존 OSMD import/청크 크기·Node 실험 기능·GitHub Actions Node20→24 및 Ubuntu26 이행 안내는 비차단 경고다. 의존성·중앙 목록·원본·개인 저장곡·기존 개발 서버는 변경하지 않았다.
+- 근거는 `.tmp/release-0.9.0/`의 verify·input-proof/review·PR/main CI·main-input-parity/gui-source-parity·main/Sites 빌드·site-inputs-comparison·사이트 소스/버전/배포·parity·smoke·receipt다. 이 결과 문서는 별도 작업 브랜치·PR로 반영하며 제품 버전·발행을 반복하지 않는다. 브랜치 정리와 최종 main 일치는 로컬 receipt에 별도로 기록한다.
+
 <a id="release-0-8-18-20261025"></a>
 
 ## 0.8.18 — 공통 YAML 버전 목록 분리 · 2026-10-25 발행
