@@ -141,4 +141,4 @@ player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons
 4. 저장/재열기와 재생은 [기존 실제 패키지 검사 순서](verify.md#testing--곡-수록-후-개발-검증)를 따른다. 실제 AudioContext와 위치 진행 후 배속·반복·카운트오프를 관측한다. 수치·화면·사람 청취를 별도 기록한다.
 5. 일시 검수 DOM/URL·계측 래퍼·검증용 구간과 설정은 시작 상태에 맞게 정리한다. 다른 곡·기존 사용자 데이터를 초기화하지 않는다. 검사 결과·캡처·한계·다음 조치를 기록한다.
 
-검수 질문은 처음 보는 사람의 시작, 반복 사용의 수고, 오조작 후 결과 이해/복귀다. iPad는 [지정 절차](verify-ipad.md#ipad-simulator--ipad-mini-검증-실행-절차)로 확인하고 Chromium 크기 모사를 실제 Safari 실기기 결과로 쓰지 않는다. 과거 가독성 계산식·후보·실측은 [ADR-0005](../decisions/0005-practice-layout-and-spacing.md)에 보존한다.
+검수 질문은 처음 보는 사람의 시작, 반복 사용의 수고, 오조작 후 결과 이해/복귀다. iOS·iPadOS 실기기·시뮬레이터 검증은 릴리스에 포함하지 않으며, 사용자가 해당 검증을 명시적으로 지시한 경우에만 [지정 절차](verify-ipad.md#ipad-simulator--ipad-mini-검증-실행-절차)를 수행한다. 응답형 화면이나 Chromium 크기 모사를 실제 Safari 실기기 결과로 쓰지 않는다. 과거 가독성 계산식·후보·실측은 [ADR-0005](../decisions/0005-practice-layout-and-spacing.md)에 보존한다.

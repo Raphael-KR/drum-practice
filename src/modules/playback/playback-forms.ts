@@ -5,9 +5,10 @@ import { setIconButton } from "../../shared/ui/icon-button";
 import { dialogHeader } from "../../shared/ui/dialog-ui";
 import { escapeHTML } from "../../shared/ui/html";
 import { t } from "../../shared/i18n/i18n";
-import { icon, metronomeIcon } from "../../shared/ui/icon-svg";
+import { icon, metronomeIcon, tempoNote } from "../../shared/ui/icon-svg";
 import type { Settings } from "../../model/model";
 import {
+  METRONOME_VOLUME_ADJUSTABLE,
   metronomeMode,
   metronomeModes,
   nextMetronomeMode,
@@ -23,10 +24,10 @@ export function soundFieldsHTML() {
     ["music-volume", "main.message129"],
     ["click-volume", "workspace.message548"],
   ]
-    .map(
-      ([id, key]) =>
-        `<label class="volume-channel"><output for="${id}" id="${id}-value">100%</output><input id="${id}" aria-label="${t(key as "main.message129")}" type="range" min="0" max="1" step=".01"><span>${t(key as "main.message129")}</span></label>`,
-    )
+    .map(([id, key]) => {
+      const fixed = id === "click-volume" && !METRONOME_VOLUME_ADJUSTABLE;
+      return `<label class="volume-channel"${fixed ? " hidden" : ""}><output for="${id}" id="${id}-value">100%</output><input id="${id}" aria-label="${t(key as "main.message129")}" type="range" min="0" max="1" step=".01"${fixed ? " disabled" : ""}><span>${t(key as "main.message129")}</span></label>`;
+    })
     .join("")}</div>`;
 }
 export function zoomFieldHTML() {
@@ -92,7 +93,7 @@ export function screenSettingsHTML(
   );
 }
 export type SettingsCategory =
-  "screen" | "playback" | "score" | "audio" | "info";
+  "screen" | "playback" | "score" | "audio" | "info" | "metronome" | "tempo";
 export function settingsFrameHTML() {
   return (
     dialogHeader(
@@ -138,16 +139,19 @@ export function settingsPanel(
   button.dataset.settingsCategory = category;
   setIconButton(
     button,
-    icon(
-      category === "playback"
-        ? "play"
-        : category === "score" || category === "audio"
-          ? "library"
-          : category,
-    ),
+    category === "tempo"
+      ? tempoNote
+      : icon(
+          category === "playback"
+            ? "play"
+            : category === "score" || category === "audio"
+              ? "library"
+              : category,
+        ),
     title,
     title,
   );
+  button.dataset.help = t("help.tipSettingsTabs");
   button.onclick = () => select(category);
   nav.insertBefore(
     button,
@@ -162,20 +166,35 @@ export function selectPlaybackSettings(
   category: SettingsCategory,
 ) {
   const detail = root.querySelector<HTMLElement>(".settings-detail")!;
+  const dialog = detail.closest<HTMLElement>("#settings-dialog")!;
+  const phone = dialog.classList.contains("settings-phone-landscape");
+  const available = (name: string) =>
+    dialog.classList.contains("settings-phone-landscape")
+      ? ["screen", "playback", "metronome", "tempo"].includes(name)
+      : !["metronome", "tempo"].includes(name);
   const panels = [
     ...detail.querySelectorAll<HTMLElement>("[data-settings-panel]"),
   ];
   const mark = (current: string) => {
+    dialog.dataset.settingsCurrent = current;
     root
       .querySelectorAll<HTMLElement>("[data-settings-category]")
       .forEach((button) => {
+        button.hidden = !available(button.dataset.settingsCategory!);
         const active = button.dataset.settingsCategory === current;
         button.classList.toggle("primary", active);
         button.setAttribute("aria-current", active ? "location" : "false");
       });
   };
+  if (
+    !available(category) ||
+    !panels.some((panel) => panel.dataset.settingsPanel === category)
+  )
+    category = "screen";
   panels.forEach((panel) => {
-    panel.hidden = false;
+    panel.hidden =
+      !available(panel.dataset.settingsPanel!) ||
+      (phone && panel.dataset.settingsPanel !== category);
     if (!panel.querySelector(".settings-section-heading")) {
       const heading = document.createElement("h3");
       heading.className = "settings-section-heading";
@@ -185,16 +204,18 @@ export function selectPlaybackSettings(
       panel.prepend(heading);
     }
   });
-  if (!root.querySelector(".settings-nav")) return;
+  if (!root.querySelector(".settings-nav")) return category;
   if (!detail.dataset.scrollNavigation) {
     detail.dataset.scrollNavigation = "true";
     detail.addEventListener("scroll", () => {
+      if (dialog.classList.contains("settings-phone-landscape")) return;
       const top = detail.getBoundingClientRect().top;
       const sections = [
         ...detail.querySelectorAll<HTMLElement>("[data-settings-panel]"),
       ];
       const current = sections.find(
-        (panel) => panel.getBoundingClientRect().bottom > top + 32,
+        (panel) =>
+          !panel.hidden && panel.getBoundingClientRect().bottom > top + 32,
       );
       if (current) mark(current.dataset.settingsPanel!);
     });
@@ -203,7 +224,8 @@ export function selectPlaybackSettings(
     const panel = panels.find(
       (panel) => panel.dataset.settingsPanel === category,
     );
-    if (panel)
+    if (phone) detail.scrollTop = 0;
+    else if (panel)
       detail.scrollTop +=
         panel.getBoundingClientRect().top - detail.getBoundingClientRect().top;
     mark(category);
@@ -215,6 +237,7 @@ export function selectPlaybackSettings(
       ? t("main.message097")
       : componentName(`settings.${category}`);
   heading.hidden = true;
+  return category;
 }
 
 export function metronomeControlHTML(

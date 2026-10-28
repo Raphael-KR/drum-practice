@@ -11,7 +11,11 @@ import {
   type Song,
   type Loop,
 } from "../../model/model";
-import { metronomeEvents, metronomeQuarterAt } from "../../model/metronome";
+import {
+  metronomeEvents,
+  metronomeQuarterAt,
+  metronomeVolume,
+} from "../../model/metronome";
 import {
   createMixLimiterCurve,
   MIX_INPUT_GAIN,
@@ -96,7 +100,7 @@ export class Player {
     if (!this.song) return;
     this.music.gain.value = this.song.settings.musicVolume;
     this.click.gain.value = this.song.settings.click
-      ? this.song.settings.clickVolume * METRONOME_MAX_GAIN
+      ? metronomeVolume(this.song.settings) * METRONOME_MAX_GAIN
       : 0;
   }
   get duration() {

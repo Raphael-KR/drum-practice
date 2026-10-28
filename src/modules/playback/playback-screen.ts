@@ -4,7 +4,10 @@ import {
 } from "./playback-settings";
 import { readRecordingTempo } from "../../content/recording-tempo";
 import { beatTime as audioBeatTime } from "../../model/model";
+import { metronomeVolume } from "../../model/metronome";
+import { PHONE_LAYOUT_QUERY } from "../../platform/browser/phone-layout";
 import { closeDialogOnBackdrop } from "../../shared/ui/dialog-ui";
+import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
 import { setIconButton } from "../../shared/ui/icon-button";
 import { audioMeasureHTML } from "../audio/audio-practice-view";
 import { originalTempoMode } from "../audio/audio-time-map";
@@ -14,8 +17,13 @@ import { sliderFromZoom } from "../score/score-zoom";
 import { mountLoopSlots } from "./loop-slots";
 import { selectPlaybackEngraving, type RibbonAsset } from "./playback-assets";
 import { mountPlaybackDrawer } from "./playback-drawer";
-import { syncMetronomeControls, syncSettingsChoices } from "./playback-forms";
+import {
+  syncMetronomeControls,
+  syncSettingsChoices,
+  type SettingsCategory,
+} from "./playback-forms";
 import { createPlaybackTempo } from "./playback-tempo";
+import { installPhoneLandscapeSettings } from "./playback-settings-layout";
 import { createPlaybackWakeLock } from "./playback-wake-lock";
 import { installScoreOnlyView } from "./score-only-view";
 import { syncCurrentSection } from "./section-shortcuts";
@@ -105,6 +113,7 @@ export interface PlaybackScreenHost {
     fullscreen(): boolean;
     setFullscreen(value: boolean): void;
     setHighlight(value: boolean): void;
+    setPhoneLandscape?(active: boolean): Promise<void>;
     report(message: string): void;
   };
   afterFrame?(time: number): void;
@@ -143,14 +152,23 @@ export interface PlaybackScreenHost {
   listsChanged?(): void;
   validateView?(view: Song["settings"]["view"]): void;
   settingsChanged?(): void;
+  settingsSelected?(category: SettingsCategory): void;
 }
 export function createPlaybackScreen(h: PlaybackScreenHost) {
   const { root, ids } = h;
   arrangePlaybackUI(root, ids);
-  const scoreOnlyView = installScoreOnlyView(root, h.ready);
   installUIStandard(h.environment, root);
   installHelp(root);
   const drawer = mountPlaybackDrawer(root, ids);
+  const scoreOnlyView = installScoreOnlyView(root, h.ready);
+  const settingsLayout = installPhoneLandscapeSettings(
+    root,
+    h.settingsSelected,
+  );
+  let applyingDisplayMode = false;
+  const phoneLayout = window.matchMedia?.(PHONE_LAYOUT_QUERY);
+  const repeatEnabled = () => !phoneLayout?.matches;
+  root.classList.toggle("phone-layout", !repeatEnabled());
   const get = <T extends HTMLElement = HTMLElement>(id: string) =>
     root.querySelector<T>(`#${id}`)!;
   const input = (id: string) => get<HTMLInputElement>(id);
@@ -161,6 +179,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     drawer.dispose,
     wakeLock.dispose,
     scoreOnlyView.dispose,
+    settingsLayout.dispose,
+    () => root.classList.remove("phone-layout"),
   ];
   const listen = (target: EventTarget, type: string, fn: EventListener) => {
     target.addEventListener(type, fn);
@@ -184,6 +204,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   for (const name of ["settings", "tempo", "loop", "marker"]) {
     const dialog = root.querySelector<HTMLDialogElement>(`#${name}-dialog`);
     if (!dialog) continue;
+    if (name === "settings") disposers.push(mountLiquidGlass(dialog).dispose);
     disposers.push(closeDialogOnBackdrop(dialog));
     const close = dialog.querySelector<HTMLElement>(".close-button");
     if (close) {
@@ -226,6 +247,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const repeatPresets = new Map<number, ReturnType<typeof repeatPreset>>();
   let disposed = false;
   const available = () => h.ready() && !h.busy();
+  const canRepeat = () => available() && repeatEnabled();
   function position(index: number, beat: number, width: number) {
     const s = h.song(),
       asset = ribbonAsset(index);
@@ -424,7 +446,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       "uniform-spacing",
       !!s.settings.uniformSpacing && s.scoreFormat === "musicxml",
     );
-    input("zoom").closest("label")!.hidden = s.settings.view !== "ribbon";
+    input("zoom").closest("label")!.hidden =
+      s.settings.view !== "ribbon" && !scoreOnlyView.active();
     if (compare) {
       stage.style.removeProperty("height");
       h.compare?.render();
@@ -580,6 +603,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     },
     resume: () => play(false),
     pausedDoubleTap: (index) => {
+      if (!canRepeat()) return;
       selectMeasure(index);
       loopSlots?.endpoint(index);
       frame();
@@ -642,7 +666,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
         clearPreset();
         useLoop(loop);
       },
-      ready: available,
+      ready: canRepeat,
     },
   );
   disposers.push(loopSlots.dispose);
@@ -783,6 +807,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     originalAudioBpm,
     minimumPracticeBpm,
     refreshSources,
+    prepareTempo,
   } = createPlaybackTempo(h, {
     get,
     input,
@@ -818,7 +843,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       playing: p.playing,
       count: p.count(),
       loop: p.loop,
-      highlight: s.scoreFormat === "musicxml" && h.highlight(),
+      repeatEnabled: repeatEnabled(),
+      highlight:
+        s.scoreFormat === "musicxml" &&
+        (scoreOnlyView.active() || h.highlight()),
       native,
       scrubbing: !!scrub || !!loopSlots?.selecting,
       stationary,
@@ -839,6 +867,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function sync() {
     if (!h.ready()) return;
     refreshSources();
+    prepareTempo();
     const s = h.song(),
       bpm = originalTempoMode(s)
         ? s.bpm
@@ -865,7 +894,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
     tempo.title = t("main.message211");
     const v = input(ids.tempoInput);
-    v.value = String(bpm);
+    if (!h.busy()) v.value = String(bpm);
     v.min = String(minimumPracticeBpm());
     v.max = String(Math.floor(originalAudioBpm() * 1.2));
     for (const [key, value] of [
@@ -876,7 +905,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       v.setAttribute(`aria-value${key}`, value);
     syncMetronomeControls(root, s.settings);
     input("music-volume").value = String(s.settings.musicVolume);
-    input("click-volume").value = String(s.settings.clickVolume);
+    input("click-volume").value = String(metronomeVolume(s.settings));
     for (const id of ["music-volume", "click-volume"]) {
       const output = root.querySelector(`#${id}-value`);
       if (output)
@@ -907,8 +936,16 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function syncDisplay() {
     scoreOnlyView.sync();
+    if (h.ready()) prepareTempo();
+    settingsLayout.sync(scoreOnlyView.active());
+    syncPhoneDisplayMode();
+    syncRepeatAvailability();
     syncSettingsChoices(root);
     const view = h.ready() ? h.song().settings.view : input("view").value;
+    const zoom = input("zoom");
+    zoom.closest("label")!.hidden =
+      view !== "ribbon" && !scoreOnlyView.active();
+    zoom.disabled = view !== "ribbon";
     root
       .querySelectorAll<HTMLButtonElement>("[data-row-view]")
       .forEach((button) => {
@@ -943,7 +980,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
     const control = input(h.display.highlightId);
     control.disabled = view === "compare" || pdf;
-    control.checked = !control.disabled && h.highlight();
+    control.checked =
+      !control.disabled && (scoreOnlyView.active() || h.highlight());
     get("note-highlight-description").textContent = t(
       view === "compare"
         ? "main.message252"
@@ -953,6 +991,27 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
             : "main.message254"
           : "main.message255",
     );
+  }
+  function syncPhoneDisplayMode() {
+    if (
+      !h.ready() ||
+      h.busy() ||
+      applyingDisplayMode ||
+      !h.display.setPhoneLandscape
+    )
+      return;
+    const phone = scoreOnlyView.active();
+    applyingDisplayMode = true;
+    void Promise.resolve()
+      .then(() => {
+        if (!disposed && h.ready() && !h.busy())
+          return h.display.setPhoneLandscape!(phone);
+      })
+      .catch(h.fail)
+      .finally(() => {
+        applyingDisplayMode = false;
+        if (!disposed && phone !== scoreOnlyView.active()) syncDisplay();
+      });
   }
   action("play", toggle);
   action("home", () => seek(0));
@@ -985,6 +1044,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   };
   bindSoundAndViewSettings(h, settingsBindings);
   function useLoop(loop?: Loop, preservePosition = false) {
+    if (loop && !repeatEnabled()) return;
     gestures.cancel();
     const p = h.player();
     if (loop && !validLoop(loop.start, loop.end, p.duration))
@@ -1015,7 +1075,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     useLoop();
   }
   function quickRepeat(value: number) {
-    if (!available()) return;
+    if (!canRepeat()) return;
     if (h.player().loop && radius === value) {
       repeatPresets.delete(value);
       stopLoop();
@@ -1043,7 +1103,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   });
 
   action(ids.adjust, () => {
-    if (!available()) return;
+    if (!canRepeat()) return;
     if (h.player().loop) {
       stopLoop();
       return;
@@ -1079,6 +1139,40 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   );
   bindPlaybackPreferences(h, settingsBindings);
   disposers.push(installNumericInputs(root));
+  function syncRepeatAvailability() {
+    const phone = !repeatEnabled();
+    const enteringPhone = phone && !root.classList.contains("phone-layout");
+    root.classList.toggle("phone-layout", phone);
+    if (!phone || !h.ready()) return;
+    if (enteringPhone) {
+      gestures.cancel();
+      if (scrub) finishScrub(true);
+    }
+    if (loopSlots.awaitingEndpoint) loopSlots.cancel();
+    clearPreset();
+    // Reuse the normal loop-off path so already scheduled audio is cancelled too.
+    // Saved loops and slots remain on the song; returning to a wider layout only
+    // makes them available again, without unexpectedly restarting a loop.
+    if (h.player().loop) useLoop();
+    const focused = document.activeElement;
+    if (
+      focused instanceof HTMLElement &&
+      root.contains(focused) &&
+      focused.closest('.dock-repeat, [data-drawer-panel="loop"]')
+    )
+      stage.focus({ preventScroll: true });
+  }
+  if (phoneLayout)
+    listen(phoneLayout, "change", () => {
+      syncRepeatAvailability();
+      renderLists();
+      frame();
+    });
+  if (scoreOnlyView.media)
+    listen(scoreOnlyView.media, "change", () => {
+      syncDisplay();
+      frame();
+    });
   let raf = 0;
   const animate = () => {
     if (disposed) return;

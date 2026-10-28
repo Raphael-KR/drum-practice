@@ -76,6 +76,7 @@ import {
 } from "../../modules/playback/playback-initial";
 import { songScores, useScore } from "../../modules/score/song-scores";
 import { createDialog } from "../../shared/ui/dialog-ui";
+import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
 import type { RecordData } from "../../model/record";
 
 const PLAYER_PREFERENCES_KEY = "drum-player-preferences";
@@ -449,6 +450,7 @@ export async function showLibrary() {
       "tool-dialog library-settings-dialog",
       root,
     );
+    const glass = mountLiquidGlass(dialog);
     dialog.insertAdjacentHTML(
       "beforeend",
       settingsLayoutHTML({ sound: false, navigation: false }),
@@ -512,6 +514,7 @@ export async function showLibrary() {
     dialog.addEventListener(
       "close",
       () => {
+        glass.dispose();
         dialog.remove();
         opener.focus({ preventScroll: true });
       },

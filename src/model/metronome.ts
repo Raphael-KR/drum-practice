@@ -3,7 +3,13 @@ import type { RecordData } from "./record";
 
 export type MetronomeMode = "quarter" | "eighth" | "off";
 export const metronomeModes = ["quarter", "eighth", "off"] as const;
+// Keep saved volume preferences for when the control is enabled again.
+export const METRONOME_VOLUME_ADJUSTABLE = false;
 const EPSILON = 1e-7;
+
+export function metronomeVolume(settings: Pick<Settings, "clickVolume">) {
+  return METRONOME_VOLUME_ADJUSTABLE ? settings.clickVolume : 1;
+}
 
 export function metronomeMode(settings: Settings): MetronomeMode {
   return !settings.click

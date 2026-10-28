@@ -1,15 +1,31 @@
+import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
+import { PHONE_LANDSCAPE_QUERY } from "../../platform/browser/phone-layout";
+
 /** Automatic phone landscape layout shared by both hosts; no fullscreen API. */
 export function installScoreOnlyView(root: HTMLElement, ready: () => boolean) {
   const main = root.querySelector<HTMLElement>("main")!;
   const practice = root.querySelector<HTMLElement>("#practice")!;
   const stage = root.querySelector<HTMLElement>("#stage")!;
-  const settingsDialog =
-    root.querySelector<HTMLDialogElement>("#settings-dialog");
-  // Match the phone landscape breakpoint in styles/06-responsive.css, not a device UA.
-  const phoneLandscape = window.matchMedia?.(
-    "(orientation: landscape) and (max-width: 1023px) and (max-height: 480px)",
+  const soundFields = root.querySelector<HTMLElement>(
+    "#settings-dialog .playback-sound-fields",
   );
+  const soundHome = soundFields?.parentElement;
+  const settingsClose = root.querySelector<HTMLButtonElement>(
+    "#settings-dialog > .dialoghead > .close-button",
+  );
+  const phoneLandscape = window.matchMedia?.(PHONE_LANDSCAPE_QUERY);
   let normalScrollTop = 0;
+  const buttonGlass: ReturnType<typeof mountLiquidGlass>[] = [];
+  const clearButtonGlass = () => {
+    for (const glass of buttonGlass.splice(0)) glass.dispose();
+  };
+  const placeVolume = (inHeader: boolean) => {
+    if (!soundFields || !soundHome || !settingsClose) return;
+    // Keep the close button as the initial focus after moving the slider before it.
+    settingsClose.autofocus = inHeader;
+    if (inHeader) settingsClose.before(soundFields);
+    else soundHome.append(soundFields);
+  };
 
   function alignStaff() {
     if (
@@ -35,8 +51,18 @@ export function installScoreOnlyView(root: HTMLElement, ready: () => boolean) {
     const wasActive = root.classList.contains("score-only-view");
     if (active && !wasActive) normalScrollTop = main.scrollTop;
     root.classList.toggle("score-only-view", active);
-    if (active && !wasActive) alignStaff();
-    else if (!active && wasActive) main.scrollTop = normalScrollTop;
+    if (active && !wasActive) {
+      placeVolume(true);
+      for (const button of root.querySelectorAll<HTMLButtonElement>(
+        "header .actions > :is(#settings, #open-settings-dialog, #app-help-button)",
+      ))
+        buttonGlass.push(mountLiquidGlass(button));
+      alignStaff();
+    } else if (!active && wasActive) {
+      placeVolume(false);
+      clearButtonGlass();
+      main.scrollTop = normalScrollTop;
+    }
     if (
       active &&
       focused instanceof HTMLElement &&
@@ -47,24 +73,18 @@ export function installScoreOnlyView(root: HTMLElement, ready: () => boolean) {
       stage.focus({ preventScroll: true });
   }
 
-  const restoreFocus = () => {
-    if (
-      ready() &&
-      root.classList.contains("score-only-view") &&
-      !root.querySelector("dialog[open]")
-    )
-      stage.focus({ preventScroll: true });
-  };
-  settingsDialog?.addEventListener("close", restoreFocus);
   phoneLandscape?.addEventListener("change", sync);
   sync();
 
   return {
     sync,
+    active: () => ready() && !!phoneLandscape?.matches,
+    media: phoneLandscape,
     alignStaff,
     dispose() {
-      settingsDialog?.removeEventListener("close", restoreFocus);
       phoneLandscape?.removeEventListener("change", sync);
+      clearButtonGlass();
+      placeVolume(false);
       root.classList.remove("score-only-view");
     },
   };

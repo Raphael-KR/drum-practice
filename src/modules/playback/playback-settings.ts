@@ -1,6 +1,7 @@
 import { enterFullscreen } from "../../platform/browser/fullscreen";
 import { clamp } from "../../model/model";
 import {
+  METRONOME_VOLUME_ADJUSTABLE,
   nextMetronomeMode,
   setMetronomeMode,
   type MetronomeMode,
@@ -60,6 +61,7 @@ export function bindSoundAndViewSettings(
     ["music-volume", "musicVolume"],
     ["click-volume", "clickVolume"],
   ] as const) {
+    if (key === "clickVolume" && !METRONOME_VOLUME_ADJUSTABLE) continue;
     const change = () => {
       if (!available()) return;
       h.song().settings[key] = clamp(Number(input(id).value), 0, 1);

@@ -41,6 +41,7 @@ import {
   savePreferPDF,
   scorePreference,
 } from "../../modules/library/score-preference";
+import { isPhoneLandscape } from "../../platform/browser/phone-layout";
 import { enableLyricGrid } from "../../modules/lyrics/lyric-grid";
 import { applyJapaneseReadings } from "../../modules/lyrics/lyric-reading";
 import { applyLyricRevision } from "../../modules/lyrics/lyric-revision";
@@ -131,6 +132,7 @@ import {
   openSettingsChild,
   paginateList,
   selectEditorPane,
+  selectSettingsCategory,
 } from "./workspace";
 const renderPDF: typeof import("../../modules/score/pdf").renderPDF = async (
   ...args
@@ -203,6 +205,8 @@ const playback = createPlaybackScreen({
     },
   },
   display: {
+    setPhoneLandscape: (active) =>
+      changeScoreFormat(active ? false : preferPDF()),
     highlightId: "note-highlight",
     fullscreenId: "auto-fullscreen",
     fullscreen: autoFullscreenEnabled,
@@ -283,6 +287,7 @@ const playback = createPlaybackScreen({
     }
   },
   settingsChanged: syncViewChoices,
+  settingsSelected: selectSettingsCategory,
 });
 function songControlsAvailable(enabled: boolean) {
   $("click").hidden = !enabled;
@@ -380,9 +385,18 @@ async function persist() {
   if (!record) return;
   await ensureCanonical(record);
   saveCanonical(record);
-  await saveRecord(session?.forStorage() || record);
+  await saveRecord(preferredRecordForStorage(session?.forStorage() || record));
   management?.refresh();
   status(i18nText("main.message216"));
+}
+function preferredRecordForStorage(value: RecordData) {
+  if (value.song.audioPractice) return value;
+  const format = scorePreference(value).format;
+  if (value.song.scoreFormat === format) return value;
+  return useScore(
+    value,
+    songScores(value).find((score) => score.format === format)!,
+  );
 }
 function queueSave() {
   clearTimeout(saveTimer);
@@ -438,7 +452,10 @@ async function activate(r: RecordData) {
     r = await (
       await import("../../modules/score/browser-score")
     ).prepareBrowserScore(r, status);
-    const preferred = scorePreference(r).format;
+    const preferred = scorePreference(
+      r,
+      isPhoneLandscape() ? false : preferPDF(),
+    ).format;
     if (preferred !== (r.song.scoreFormat ?? "pdf"))
       r = useScore(
         r,
@@ -462,7 +479,10 @@ async function activate(r: RecordData) {
     }
     engine().pause();
     clearTimeout(saveTimer);
-    if (record) await saveRecord(session?.forStorage() || record);
+    if (record)
+      await saveRecord(
+        preferredRecordForStorage(session?.forStorage() || record),
+      );
     session?.reset();
     record = r;
 
@@ -518,7 +538,10 @@ async function activate(r: RecordData) {
     status("");
   } finally {
     busy = false;
-    if (record) renderLists();
+    if (record) {
+      renderLists();
+      playback.syncDisplay();
+    }
   }
 }
 function syncViewChoices() {
@@ -547,7 +570,10 @@ function syncViewChoices() {
   ($("view") as HTMLSelectElement).querySelector<HTMLOptionElement>(
     'option[value="compare"]',
   )!.disabled = missing.length > 0;
-  const preference = scorePreference(record);
+  const preference = scorePreference(
+    record,
+    isPhoneLandscape() ? false : preferPDF(),
+  );
   val("prefer-pdf").checked = preference.checked;
   val("prefer-pdf").disabled = preference.disabled;
   $("pdf-view-status").textContent = preference.message;
@@ -573,13 +599,13 @@ function syncViewChoices() {
   $("review-add-score").hidden = !missing.length;
 }
 // Prepare geometry before swapping it, leaving audio and loop scheduling intact.
-val("prefer-pdf").onchange = async () => {
+async function changeScoreFormat(wanted: boolean, persistPreference = false) {
   if (!record || busy) {
     if (record) syncViewChoices();
     return;
   }
   const original = record;
-  const wanted = val("prefer-pdf").checked;
+  if (original.song.scoreFormat === (wanted ? "pdf" : "musicxml")) return;
   if (scorePreference(original).disabled) {
     syncViewChoices();
     return;
@@ -609,9 +635,9 @@ val("prefer-pdf").onchange = async () => {
     prepared = undefined;
     record = next;
     engine().song = next.song;
-    savePreferPDF(wanted);
+    if (persistPreference) savePreferPDF(wanted);
     renderTrack();
-    queueSave();
+    if (persistPreference) queueSave();
   } catch (e) {
     if (prepared) releasePlaybackAssets(prepared);
     error(e);
@@ -619,6 +645,9 @@ val("prefer-pdf").onchange = async () => {
     busy = false;
     syncViewChoices();
   }
+}
+val("prefer-pdf").onchange = () => {
+  void changeScoreFormat(val("prefer-pdf").checked, true);
 };
 function syncSettings() {
   playback.sync();

@@ -114,6 +114,7 @@ export function updateScoreFrame(h: {
   playing: boolean;
   count: number;
   loop?: Loop;
+  repeatEnabled?: boolean;
   highlight: boolean;
   native: boolean;
   scrubbing: boolean;
@@ -125,7 +126,9 @@ export function updateScoreFrame(h: {
   compare?: () => void;
   regionAt?: (index: number) => Region | undefined;
 }) {
-  const { s, t, stage, ribbon, count, loop } = h;
+  const { s, t, stage, ribbon, count } = h;
+  const repeatEnabled = h.repeatEnabled !== false;
+  const loop = repeatEnabled ? h.loop : undefined;
   const { index, measure: m, beat } = locate(s, t);
   const selected = h.selectedIndex ?? index;
   if (!m) return h.native;
@@ -214,9 +217,11 @@ export function updateScoreFrame(h: {
       : s.settings.uniformSpacing
         ? gridPhase((beat * 4) / m.denominator, (m.beats * 4) / m.denominator)
         : continuousX(region!, m, beat, 1, nextStart));
-  const savedRanges = savedLoopSlots(s)
-    .slice(0, LOOP_SLOT_COUNT)
-    .filter((range): range is Loop => !!range);
+  const savedRanges = repeatEnabled
+    ? savedLoopSlots(s)
+        .slice(0, LOOP_SLOT_COUNT)
+        .filter((range): range is Loop => !!range)
+    : [];
   ribbon.querySelectorAll<HTMLElement>("[data-index]").forEach((e) => {
     const measureIndex = Number(e.dataset.index);
     const active = measureIndex === selected;

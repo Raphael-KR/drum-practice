@@ -25,7 +25,9 @@ export function installHelp(root: HTMLElement) {
   const button = document.createElement("button");
   button.id = "app-help-button";
   button.type = "button";
-  button.textContent = "?";
+  const glyph = document.createElement("span");
+  glyph.textContent = "?";
+  button.append(glyph);
   button.title = button.ariaLabel = t("help.title");
   button.setAttribute("aria-haspopup", "dialog");
   root.append(button);
@@ -34,6 +36,7 @@ export function installHelp(root: HTMLElement) {
     context: HTMLElement | undefined;
   let bubble: ReturnType<typeof createHelpBubble> | undefined;
   let regions: ReturnType<typeof createHelpRegions> | undefined;
+  let surfaceGlass: ReturnType<typeof mountLiquidGlass> | undefined;
   let legend: HTMLDialogElement | undefined;
   let oldDescription: string | null = null;
   let hint: HTMLElement | undefined;
@@ -145,11 +148,15 @@ export function installHelp(root: HTMLElement) {
   };
   const close = () => {
     if (!surface) return;
+    const current = surface;
+    surface = undefined;
+    if (current instanceof HTMLDialogElement && current.open) current.close();
     legend?.close();
     restoreDescription(selected, oldDescription);
     selected = undefined;
-    surface.remove();
-    surface = undefined;
+    surfaceGlass?.dispose();
+    surfaceGlass = undefined;
+    current.remove();
     bubble = undefined;
     regions = undefined;
     context = undefined;
@@ -168,6 +175,7 @@ export function installHelp(root: HTMLElement) {
     const r = button.getBoundingClientRect();
     header.style.left = `${Math.max(0, Math.min(innerWidth - 48, r.left))}px`;
     header.style.top = `${Math.max(0, Math.min(innerHeight - 48, r.top))}px`;
+    if (surface.classList.contains("score-area-help")) return;
     const footer = surface.querySelector<HTMLElement>(".help-footer")!;
     const stage =
       !context && root.querySelector<HTMLElement>("#practice #stage");
@@ -221,6 +229,52 @@ export function installHelp(root: HTMLElement) {
   button.onclick = () => {
     if (surface || activeDialog()) return;
     hideHold();
+    if (
+      root.classList.contains("score-only-view") &&
+      !root.querySelector("#practice.score-review")
+    ) {
+      const modal = createDialog(
+        "app-help-dialog",
+        t("help.title"),
+        "score-area-help",
+        root,
+      );
+      surface = modal;
+      modal.querySelector("h2")?.remove();
+      const content = document.createElement("section");
+      content.className = "score-area-help-content";
+      const heading = document.createElement("h3");
+      heading.textContent = t("component.score.name");
+      content.append(heading);
+      const card = document.createElement("div");
+      card.className = "score-area-help-body";
+      const body = [
+        t("help.scoreTouch"),
+        t(
+          root.querySelector("#practice.two-rows")
+            ? "help.scoreRowsScroll"
+            : "help.scoreRibbonScroll",
+        ),
+      ].join("\n");
+      for (const line of body.split("\n")) {
+        const paragraph = document.createElement("p");
+        paragraph.textContent = line;
+        card.append(paragraph);
+      }
+      content.append(card);
+      modal.append(content);
+      surfaceGlass = mountLiquidGlass(modal);
+      modal.addEventListener(
+        "close",
+        () => {
+          if (surface === modal) close();
+        },
+        { once: true },
+      );
+      button.setAttribute("aria-expanded", "true");
+      showDialogFromButton(modal, button, paint);
+      return;
+    }
     context = activeDialog();
     surface = document.createElement("div");
     surface.id = "app-help-dialog";
@@ -334,6 +388,7 @@ export function installHelp(root: HTMLElement) {
     });
   listen("keydown", (event) => {
     if (!surface || legend || !owned(event)) return;
+    if (surface instanceof HTMLDialogElement) return;
     const e = event as KeyboardEvent;
     if (e.key === "Escape") {
       e.preventDefault();
@@ -353,6 +408,11 @@ export function installHelp(root: HTMLElement) {
     });
   const observer = new MutationObserver(() => {
     if (held && !held.isConnected) hideHold();
+    if (
+      surface?.classList.contains("score-area-help") &&
+      !root.classList.contains("score-only-view")
+    )
+      close();
     relocate();
     if (surface && selected && !selected.isConnected) {
       clearSelection();
@@ -364,6 +424,7 @@ export function installHelp(root: HTMLElement) {
     attributes: true,
     attributeFilter: ["open"],
   });
+  observer.observe(root, { attributes: true, attributeFilter: ["class"] });
   disposeHelp = () => {
     disposeHelp = undefined;
     observer.disconnect();

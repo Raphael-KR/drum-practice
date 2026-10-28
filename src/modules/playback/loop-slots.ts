@@ -251,6 +251,7 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
     "pointerdown",
     ((e: PointerEvent) => {
       if (
+        !h.ready() ||
         armed === undefined ||
         e.button !== 0 ||
         (e.pointerType !== "touch" && e.pointerType !== "mouse")
@@ -286,6 +287,7 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
     "pointermove",
     ((e: PointerEvent) => {
       if (
+        !h.ready() ||
         armed === undefined ||
         (e.pointerType !== "touch" && e.pointerType !== "mouse")
       )
@@ -305,6 +307,7 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
     "pointerup",
     ((e: PointerEvent) => {
       if (
+        !h.ready() ||
         armed === undefined ||
         (e.pointerType !== "touch" && e.pointerType !== "mouse")
       )
@@ -346,6 +349,7 @@ export function mountLoopSlots(root: HTMLElement, stage: HTMLElement, h: Host) {
       true,
     );
   listen(grid, "click", ((e: MouseEvent) => {
+    if (!h.ready()) return;
     const el = (e.target as Element).closest<HTMLElement>("button");
     if (!el) return;
     if (el.dataset.loopSlot === undefined) return;
