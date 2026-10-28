@@ -24,6 +24,7 @@
 
 ### 릴리스와 의존성
 
+- [0.10.1 폰 가로 설정·공통 조작 개선 릴리스](archive/release-0.10.1.md)
 - [0.9.0 메트로놈 릴리스](archive/release-0.9.0.md)
 - [0.8.18 중앙 버전 YAML 분리 릴리스](archive/release-0.8.18.md)
 - [공통 YAML 버전 목록 분리와 CI 입력 검증](archive/shared-catalog-20261025.md)

@@ -4,6 +4,17 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-10-1-20261029"></a>
+
+## 0.10.1 — 폰 가로 설정·공통 조작 개선 · 2026-10-29 발행
+
+- 두 앱 0.10.0 → 0.10.1 patch. 기존 폰 가로 설정을 화면·재생·메트로놈·연습 BPM의 단일 카드로 정리하고 저장 선호를 보존하는 모드 한정 MusicXML·음표 빛나기, 폰 반복 구간 비활성화, 메트로놈 음량 100%, 공통 유리 효과·도움말·버전 표시를 반영했다. [실행 기록과 한계](archive/release-0.10.1.md).
+- 소스 빌드 `e93a87c7a9da`, 구현 `86cfc0304cc56d9b72b85e3dc72039df77150b86`, [PR #28](https://github.com/Raphael-KR/drum-practice/pull/28), 제품 main `c3d77588fb83bb9674a0832c7dc282fc236ee943`. 자체 검토·PR CI·[main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/40724984097) 통과. PR/main tree가 같아 로컬 결과를 재사용하고 main에서 두 앱을 재빌드했다.
+- `pnpm run verify` 통과: lint·445파일 서식·타입·구조/문서·131파일 797테스트·두 앱 빌드/경계. Safari 응답형 667×375·852×393·768×1024 화면과 별도 MCP 창의 두 앱 저장 자료 재열기·BPM 변환·카운트오프·재생/일시정지·회전/설정 복원을 확인했다. iOS·iPadOS 실기기·시뮬레이터는 사용자 결정에 따라 제외하며 실제 청취는 확인하지 않았다.
+- 기존 public Site에 player만 발행했다. 정본·사본·Worker 45파일 해시가 같다. Sites 소스 `36a43745d93538caf2baa0368441f562588b0e21`, 버전 93 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_a13f300341608191a43826b299808050`), 배포 `appgdep_6ae2220c149c81918b38f2e121b20f6a`: **succeeded**, **2026-10-29 01:26:05 KST** / `2026-10-28T16:26:05.690183+00:00`. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.10.1.tar.gz` SHA256 `d27fd4dd38f0872d31e598e190da08394688ff1c14f66dd765c44b6d25100020`. Sites tar content hash `sha256:65a0a3cc84325d3e100b41cc3fadcc120423f3fd386bf066c30f87c2ae2dfdd9`와 구분한다.
+- 공개 읽기 49항목 통과: HTML 3경로의 최신 번들·보안 헤더, 정적 43파일 SHA256(수록 6곡 포함), 폐기 API 3경로 404. 기존 OSMD 혼합 import·큰 청크·Node 실험 API 경고와 검수 환경의 한계는 실행 기록에 남긴다. 근거 `.tmp/release-0.10.1/`를 보존한다. 결과 문서 PR만으로 버전·발행을 반복하지 않는다.
+
 <a id="release-0-10-0-20261028"></a>
 
 ## 0.10.0 — 폰 가로 악보 전용 모드·공통 UI 정리 · 2026-10-28 발행
