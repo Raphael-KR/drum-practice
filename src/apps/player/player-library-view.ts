@@ -15,12 +15,14 @@ export function libraryHTML(showEditor: boolean): string {
   return `<header class="library-header">
     <h1>${escapeHTML(t("separation.appTitle"))}</h1>
     <div class="library-header-actions">
-      <div class="library-import">
-        <button id="import-package" class="primary library-primary-action" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("audioPractice.import"))}</button>
-        <p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p>
+      <div class="library-link-actions">
+        <div class="library-import">
+          <button id="import-package" class="primary library-primary-action" title="${escapeHTML(t("library.tipImport"))}">${escapeHTML(t("audioPractice.import"))}</button>
+          <p id="library-empty-hint" class="library-empty-hint" hidden>${escapeHTML(t("separation.empty"))}</p>
+        </div>
+        <a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="${escapeHTML(BOOKING_URL)}" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>
+        ${editorLink}
       </div>
-      <a title="${escapeHTML(t("library.tipBooking"))}" class="library-booking" href="${escapeHTML(BOOKING_URL)}" target="_blank" rel="noopener noreferrer">${escapeHTML(t("library.booking"))}</a>
-      ${editorLink}
       <div class="actions library-common-actions">
         <button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button>
         <button id="library-settings" class="icon-button" type="button" title="${escapeHTML(t("icons.message059"))}" aria-label="${escapeHTML(t("icons.message059"))}">${icon("settings")}</button>

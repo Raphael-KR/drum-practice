@@ -107,7 +107,9 @@ export function renderMeasure({
     String(m.beats) +
     "/" +
     String(m.denominator) +
-    '</small></span><div class="crop" style="' +
+    '</small></span><div class="crop"' +
+    (layout ? ` data-staff-middle="${layout.staffMiddle}"` : "") +
+    ' style="' +
     String(trim) +
     "width:" +
     String(width) +

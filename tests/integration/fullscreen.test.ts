@@ -33,7 +33,7 @@ it("requests native fullscreen and reports browser rejection without failing son
 it("keeps unavailable fullscreen optional", async () => {
   const report = vi.fn();
   expect(await enterFullscreen(report)).toBe(false);
-  expect(report).toHaveBeenCalledWith(expect.stringContaining("지원하지"));
+  expect(report).not.toHaveBeenCalled();
 });
 
 it("keeps the existing modal above fullscreen without firing dismissal cleanup", async () => {

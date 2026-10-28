@@ -117,6 +117,7 @@ export function practiceStaffLayout(
     pageHeight = gap / staff.gap;
   return {
     height: gap * frameHeight,
+    staffMiddle: ((staff.frame?.above ?? 7) + 2) * gap,
     size: `${pageWidth}px ${pageHeight}px`,
     position: `${-region.x * pageWidth}px ${(staff.frame?.above ?? 7) * gap - staff.top * pageHeight}px`,
   };

@@ -14,6 +14,8 @@
 
 설정 > 정보 > 오픈소스 라이선스에서 설치 버전, 라이선스, 저작권/면책을 포함한 전문, 프로젝트 소스 링크를 확인한다. 내용은 앱 번들에 포함한다. SoundTouchJS 패키지의 비압축 dist/soundtouch.js도 저장할 수 있다.
 
+PDF.js는 `PDF.js 설치버전 · 라이선스 및 구성요소` 한 항목으로 묶는다. 펼치면 본체와 문자 매핑·색상 프로필·글꼴·이미지 디코더·연결 코드별 고지를 확인한다. 표시 이름만 읽기 쉽게 바꾸며 각 원문·저작권·소스 링크는 그대로 유지한다. 구성요소 전체를 본체의 Apache-2.0으로 표시하지 않는다. 이름표가 아직 없는 새 PDF.js 고지도 원래 이름으로 같은 그룹 안에 표시한다.
+
 직접 의존성의 라이선스는 OSMD BSD-3-Clause, PDF.js Apache-2.0, JSZip MIT 선택(원본 MIT/GPL 선택), SoundTouchJS LGPL-2.1이다. 정확한 설치 버전은 lockfile과 생성 고지를 사용한다.
 
 <a id="open-source-notices--수집-계약"></a>
@@ -21,6 +23,8 @@
 ### 수집 계약
 
 scripts/build/third-party.mjs가 설치된 런타임 의존성을 따라 패키지 LICENSE/COPYING/NOTICE 전문을 수집한다. 별도 파일이 없는 경우 README의 라이선스 절을 보존한다. OSMD의 VexFlow 등 하위 의존성과 PDF.js 동봉 폰트/CMap/디코더 고지도 포함한다. 추가 고지는 사용 여부보다 넓게 보존할 수 있다. 개발 도구만의 의존성은 대상이 아니다.
+
+JSZip은 앱과 OSMD가 중앙 catalog의 한 버전을 공유한다. [OSMD 패치](../../../config/patches/README.md)로 내장 구버전 코드도 공통 패키지 참조로 교체했다. 고지 생성기는 설치 경로를 그대로 따라 한 항목만 생성하며 화면에서 구버전을 임의로 숨기지 않는다. `pnpm run check:dependencies`는 공유 경로·내장 코드 제거·고지 버전의 일치를 검사한다.
 
 pretest, 개발 서버 시작 및 앱 빌드에서 생성한다. 라이선스 원문을 찾지 못하면 빌드가 실패한다. 생성 JSON은 Git에서 제외하며 앱 코드에 HTML로 삽입하지 않고 textContent로 표시한다. 번들의 법적 주석도 보존한다.
 

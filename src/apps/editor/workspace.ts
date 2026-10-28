@@ -2,11 +2,8 @@ import appVersions from "../../app-versions.json";
 import buildInfo from "../../generated/build-info.generated.json";
 import { showAppBuildLabel } from "../../shared/ui/app-build-label";
 import { t as i18nText } from "../../shared/i18n/i18n";
-import { licenseSection } from "../../shared/ui/licenses";
-import {
-  appInfoHTML,
-  selectPlaybackSettings,
-} from "../../modules/playback/playback-forms";
+import { appInfoContent } from "../../shared/ui/app-info";
+import { selectPlaybackSettings } from "../../modules/playback/playback-forms";
 import { mountPlaybackShell } from "../../modules/playback/playback-shell";
 import { webPlaybackBindings } from "../../modules/playback/playback-ui";
 import { componentName } from "../../shared/ui/ui-standard";
@@ -159,8 +156,9 @@ export function arrangeWorkspace() {
   const backupBody = group(i18nText("workspace.message563"), "backup-dialog");
   backupBody.append(...backup.children, el("alignment-note"));
   const info = settingsPanel("info", "info-settings", "open-info-settings");
-  info.innerHTML = appInfoHTML(appVersions.editor.version, buildInfo);
-  info.append(licenseSection());
+  info.append(
+    appInfoContent(appVersions.editor.version, buildInfo, { scoreInfo: true }),
+  );
   info.append(practice.querySelector(".keyboard")!);
   const log = document.createElement("section");
   log.className = "work-log";

@@ -14,6 +14,7 @@ import {
 } from "./help-controls";
 import { bindHelpHold } from "../../shared/ui/help-hold";
 import { createHelpRegions } from "./help-regions";
+import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
 
 let disposeHelp: (() => void) | undefined;
 /** A transparent top-layer guide leaves real controls focusable without executing them. */
@@ -259,10 +260,12 @@ export function installHelp(root: HTMLElement) {
       const modal = legend;
       modal.querySelector(".dialoghead h2")?.remove();
       modal.append(scoreLegendHelp());
+      const glass = mountLiquidGlass(modal);
       modal.addEventListener("keydown", (e) => e.stopPropagation());
       modal.addEventListener(
         "close",
         () => {
+          glass.dispose();
           modal.remove();
           legend = undefined;
           if (surface) legendButton.focus({ preventScroll: true });

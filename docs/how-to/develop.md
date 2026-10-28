@@ -47,6 +47,7 @@ ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `pn
 - 공통 파일: `pnpm store path`가 출력하는 사용자 기본 저장소. 프로젝트 전용 store 경로를 지정하지 않는다. 다른 기기·CI는 자기 저장소를 사용하며 잠금 파일은 같다.
 - 기존 npm 잠금 파일을 새로 생성하지 않는다. `npm ci` 대신 pnpm 설치를 사용한다. `predev`·`pretest` 등 기존 생성 단계는 `enablePrePostScripts`로 유지한다.
 - 설치 시 esbuild·workerd·fsevents의 기존 플랫폼 준비 스크립트를 허용한다. 브라우저 앱과 기존 검사에서 쓰지 않는 선택적 headless WebGL `gl`의 빌드는 실행하지 않는다.
+- OSMD의 JSZip은 `opensheetmusicdisplay>jszip: catalog:` override로 앱과 같은 버전을 사용한다. [OSMD 패치](../../config/patches/README.md)는 배포 파일에 내장된 구버전도 제거하고 공통 `jszip`을 참조하게 한다. 패치·workspace·lockfile을 함께 유지하며 중앙 YAML이나 공통 store의 원본을 직접 수정하지 않는다. `pnpm run check`는 설치 경로·내장 코드·라이선스 항목도 정적으로 확인한다.
 
 업데이트는 다음 순서로 수행한다.
 

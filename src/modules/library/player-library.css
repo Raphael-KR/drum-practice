@@ -102,9 +102,8 @@ body:not(.has-song) #app:has(.editor-home) > header .editor-player-link {
   color: var(--accent);
 }
 
-/* Always visible in screenshots, independent of the changing song title. */
-#app header h1[data-app-build]::after {
-  content: attr(data-app-build);
+/* Selectable metadata, independent of the changing song title. */
+#app header .app-build-label {
   display: inline;
   margin-left: 10px;
   font-size: 12px;
@@ -112,6 +111,10 @@ body:not(.has-song) #app:has(.editor-home) > header .editor-player-link {
   font-weight: 500;
   color: var(--build-label-color, #3d526e);
   letter-spacing: 0;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+  cursor: text;
 }
 
 /* The first screen supplies Safari's persistent top-edge color before any tap. */
@@ -140,7 +143,7 @@ body:not(.has-song) #app:has(.editor-home) > .library-header {
        the header's 2px top / 6px bottom padding without changing its size. */
     transform: translateY(10px);
   }
-  .has-song #app header h1[data-app-build]::after {
+  .has-song #app header .app-build-label {
     display: block;
     margin-left: 0;
   }
@@ -153,6 +156,9 @@ body:not(.has-song) #app:has(.editor-home) > .library-header {
   margin-left: auto;
   gap: 10px;
   flex-wrap: wrap;
+}
+.library-link-actions {
+  display: contents;
 }
 .library-header .library-header-actions > .library-common-actions {
   align-items: center;
@@ -463,11 +469,6 @@ body:not(.has-song) #app:has(.editor-home) #favorite-practice-records[hidden],
 body:not(.has-song) #app:has(.editor-home) .library-section[hidden] {
   display: none;
 }
-.library-settings-dialog {
-  width: 720px;
-  max-width: calc(100vw - 32px);
-}
-.library-settings-dialog .settings-panel,
 .audio-setup .audio-setup-panel {
   margin-top: 12px;
   padding: 18px;
@@ -482,22 +483,127 @@ body:not(.has-song) #app:has(.editor-home) .library-section[hidden] {
   display: none;
 }
 
-/* Phone library: booking + shared controls, then local editor + audio import. */
+/* The library's three short sections share one column without jump buttons. */
+#settings-dialog.library-settings-dialog .settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+}
+#settings-dialog.library-settings-dialog .settings-detail {
+  padding: 0;
+}
+.library-settings-dialog .settings-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.library-settings-dialog .settings-panel:last-child {
+  margin-bottom: 0;
+}
+.library-settings-dialog .settings-section-heading {
+  margin: 0;
+}
+.library-settings-dialog .settings-choice-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+.library-settings-dialog [data-settings-panel="screen"] {
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+}
+.library-settings-dialog [data-settings-panel="screen"] > .settings-choice-row {
+  display: contents;
+}
+.library-settings-dialog
+  [data-settings-panel="screen"]
+  .settings-section-heading {
+  grid-column: 1;
+  grid-row: 1;
+}
+.library-settings-dialog
+  [data-settings-panel="screen"]
+  .settings-choice-row
+  > p {
+  grid-column: 2;
+  grid-row: 1;
+}
+.library-settings-dialog [data-settings-panel="screen"] .segmented-control {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.library-settings-dialog .library-settings-status {
+  grid-column: 1 / -1;
+}
+.library-settings-dialog .settings-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.library-settings-dialog .app-info dl {
+  margin: 0;
+}
+
+/* Phone player library: title + shared controls, then booking + editor + import. */
 @media (max-width: 480px) and (orientation: portrait) {
-  .player-library .library-header-actions,
+  .player-library .library-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: 8px;
+  }
+  .player-library .library-header h1 {
+    grid-column: 1;
+    grid-row: 1;
+    white-space: nowrap;
+  }
+  #app.player-library .library-header .app-build-label {
+    margin-left: 6px;
+  }
+  .player-library .library-header .app-build-source {
+    display: none;
+  }
+  .player-library .library-header-actions {
+    display: contents;
+  }
+  .player-library .library-common-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .player-library .library-link-actions {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-items: center;
+    gap: 8px;
+  }
+  .player-library .library-link-actions > .library-booking {
+    order: 1;
+    margin-right: auto;
+  }
+  .player-library .library-link-actions > .library-editor {
+    order: 2;
+  }
+  .player-library .library-link-actions > .library-import {
+    order: 3;
+  }
+  .player-library .library-link-actions > a,
+  .player-library .library-link-actions .library-primary-action {
+    padding-inline: 8px;
+    white-space: nowrap;
+  }
+
+  /* The editor home retains its existing layout. */
   body:not(.has-song) #app:has(.editor-home) .library-header-actions {
     display: grid;
     grid-template-columns: minmax(0, 1fr) max-content;
     width: 100%;
     margin-left: 0;
   }
-  .player-library .library-import,
   body:not(.has-song) #app:has(.editor-home) .library-import {
     grid-column: 2;
     grid-row: 2;
     justify-self: end;
   }
-  .player-library .library-header-actions > .library-booking,
   body:not(.has-song)
     #app:has(.editor-home)
     .library-header-actions
@@ -510,13 +616,11 @@ body:not(.has-song) #app:has(.editor-home) .library-section[hidden] {
     padding-inline: 8px;
     text-align: center;
   }
-  .player-library .library-common-actions,
   body:not(.has-song) #app:has(.editor-home) .library-common-actions {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
   }
-  .player-library .library-header-actions > .library-editor,
   body:not(.has-song)
     #app:has(.editor-home)
     .library-header-actions
@@ -524,6 +628,24 @@ body:not(.has-song) #app:has(.editor-home) .library-section[hidden] {
     grid-column: 1;
     grid-row: 2;
     justify-self: start;
+  }
+}
+
+@media (max-width: 360px) and (orientation: portrait) {
+  .player-library .library-header {
+    padding-inline: 12px;
+  }
+  .player-library .library-header h1 {
+    font-size: 20px;
+  }
+  .player-library .library-header .library-common-actions {
+    --playback-control-size: 44px;
+    gap: 6px;
+  }
+  .player-library .library-link-actions > a,
+  .player-library .library-link-actions .library-primary-action {
+    padding-inline: 6px;
+    font-size: 13px;
   }
 }
 

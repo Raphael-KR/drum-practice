@@ -4,9 +4,6 @@
   --surface-collapse-time: 260ms;
   --surface-collapse-easing: cubic-bezier(0.4, 0, 0.8, 0.4);
 }
-.liquid-glass {
-  background: #f4f7fc;
-}
 #app-help-button {
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
@@ -183,17 +180,12 @@ header .actions #app-help-button {
   max-width: none;
   max-height: none;
   margin: 0;
-  padding: 8px;
+  padding: 12px;
   border: 0;
   border-radius: 0;
-  /* Opaque fallback for browsers without backdrop filtering. */
-  background: #f4f7fc;
-  box-shadow:
-    inset 0 1px 0 #ffffffeb,
-    inset 1px 0 0 #ffffff80,
-    inset 0 -1px 0 #8da7c333;
   color: #17283e;
   overflow: hidden;
+  cursor: pointer;
 }
 #app-legend-dialog[open] {
   display: flex;
@@ -237,68 +229,6 @@ header .actions #app-help-button {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-/* Web interpretation of Liquid Glass: diffuse the score behind the legend,
-   retaining its colours without competing with the notation or labels. */
-@supports (
-  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
-) {
-  #app-legend-dialog,
-  #app-help-dialog .dialoghead,
-  #app-help-dialog .help-content,
-  .liquid-glass {
-    background:
-      linear-gradient(135deg, #ffffff80 0%, #eef5ff38 45%, #ffffff66 100%),
-      rgb(239 245 253 / 48%);
-    -webkit-backdrop-filter: blur(28px) saturate(145%);
-    backdrop-filter: blur(28px) saturate(145%);
-  }
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  #app-legend-dialog,
-  #app-help-dialog .dialoghead,
-  #app-help-dialog .help-content,
-  .liquid-glass {
-    background: #f4f7fc;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow: none;
-  }
-}
-
-#app-help-dialog .dialoghead,
-#app-help-dialog .help-content,
-.liquid-glass {
-  box-shadow:
-    inset 0 1px 0 #ffffffeb,
-    inset 1px 0 0 #ffffff80,
-    inset 0 -1px 0 #8da7c333,
-    0 8px 28px #14213614;
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  #app-help-dialog .dialoghead,
-  #app-help-dialog .help-content,
-  .liquid-glass {
-    box-shadow: none;
-  }
-}
-
-#app-legend-dialog {
-  padding: 12px;
-  cursor: pointer;
-}
-@supports (
-  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
-) {
-  #app-legend-dialog {
-    background: rgb(239 245 253 / 16%);
-  }
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  #app-legend-dialog {
-    background: #f4f7fc;
-  }
 }
 
 /* Only the modal snapshot moves. Buttons remain in the unchanged root layer. */
@@ -352,19 +282,6 @@ html.help-modal-transition::view-transition-old(root) {
   html.help-modal-transition::view-transition-new(*) {
     animation-duration: 0s;
   }
-}
-
-/* A named snapshot creates a backdrop root: use a readable glass tint while
-   the live backdrop is unavailable, then explicitly refresh its compositor. */
-html.help-modal-transition #app-help-dialog .dialoghead,
-html.help-modal-transition #app-help-dialog .help-content {
-  background: linear-gradient(135deg, #f9fbfff5, #eaf1fbf2);
-}
-#app-help-dialog.glass-repaint .dialoghead,
-#app-help-dialog.glass-repaint .help-content,
-#app-legend-dialog.glass-repaint {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
 }
 
 /* Avoid rasterizing SVG turbulence on every modal transition frame in WebKit.

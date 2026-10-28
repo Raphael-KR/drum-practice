@@ -21,7 +21,14 @@ import {
 } from "../../modules/audio/audio-practice";
 import { libraryHTML } from "./player-library-view";
 import { setupAudioPractice } from "../../modules/audio/audio-practice-setup";
-import { titleOrderFieldsHTML } from "../../modules/playback/playback-forms";
+import {
+  titleOrderFieldsHTML,
+  settingsLayoutHTML,
+  settingsPanel,
+  selectPlaybackSettings,
+  type SettingsCategory,
+} from "../../modules/playback/playback-forms";
+import { appInfoContent } from "../../shared/ui/app-info";
 import { recordingTempoUpgrade } from "../../content/recording-tempo";
 import {
   readTitleOrder,
@@ -47,7 +54,6 @@ import appVersions from "../../app-versions.json";
 import { showAppBuildLabel } from "../../shared/ui/app-build-label";
 import buildInfo from "../../generated/build-info.generated.json";
 import bundledScores from "../../content/bundled-scores.json";
-import notices from "../../generated/third-party.generated.json";
 import { escapeHTML } from "../../shared/ui/html";
 import { readScorePackage } from "../../modules/library/score-package";
 import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
@@ -297,9 +303,6 @@ async function openRecord(id: string) {
         findAudio: findPracticeAudio,
         restore: restorePracticeFile,
       },
-      licenses: notices.entries
-        .map((e) => `${e.name} ${e.version} · ${e.license}\n${e.text}`)
-        .join("\n\n"),
       changed: async (song, initial) => {
         await savePracticeState(id, structuredClone(song));
         localStorage.setItem(PLAYER_PREFERENCES_KEY, JSON.stringify(initial));
@@ -446,21 +449,39 @@ export async function showLibrary() {
       "tool-dialog library-settings-dialog",
       root,
     );
-    const panel = document.createElement("section");
-    panel.className = "tool-body settings-panel";
-    panel.dataset.settingsPanel = "screen";
-    panel.innerHTML = `<h3 class="settings-section-heading">${t("settings.screenTitle")}</h3>${titleOrderFieldsHTML()}<p class="library-settings-status" role="status"></p>`;
-    dialog.append(panel);
-    const practiceFiles = document.createElement("section");
-    practiceFiles.className = "tool-body settings-panel";
-    practiceFiles.dataset.settingsPanel = "audio";
-    practiceFiles.innerHTML = `<h3 class="settings-section-heading">${t("component.settings.audio.name")}</h3>`;
-    dialog.append(practiceFiles);
+    dialog.insertAdjacentHTML(
+      "beforeend",
+      settingsLayoutHTML({ sound: false, navigation: false }),
+    );
+    const select = (category: SettingsCategory) =>
+      selectPlaybackSettings(dialog, category);
+    const panel = settingsPanel(
+      dialog,
+      "screen",
+      "screen-dialog",
+      "open-screen-dialog",
+      select,
+    );
+    panel.innerHTML = `${titleOrderFieldsHTML()}<p class="library-settings-status" role="status"></p>`;
+    const practiceFiles = settingsPanel(
+      dialog,
+      "audio",
+      "audio-settings",
+      "open-audio-settings",
+      select,
+    );
     installPracticeFileControls(practiceFiles, {
       records: audioPracticeRecords,
       findAudio: findPracticeAudio,
       restore: restorePracticeFile,
     });
+    settingsPanel(
+      dialog,
+      "info",
+      "info-settings",
+      "open-info-settings",
+      select,
+    ).append(appInfoContent(appVersions.player.version, buildInfo));
     const buttons = Array.from(
       panel.querySelectorAll<HTMLButtonElement>("[data-title-order]"),
     );
@@ -497,6 +518,7 @@ export async function showLibrary() {
       { once: true },
     );
     dialog.showModal();
+    select("screen");
   };
   document.querySelector("#import-package")!.addEventListener("click", () => {
     if (working || filePickerOpen) return;

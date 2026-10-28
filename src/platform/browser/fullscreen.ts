@@ -4,6 +4,12 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import { uiText } from "../../shared/ui/ui-standard";
 import { icon } from "../../shared/ui/icons";
 const KEY = "drum-practice.auto-fullscreen";
+export function fullscreenSupported() {
+  return (
+    typeof document.documentElement.requestFullscreen === "function" &&
+    document.fullscreenEnabled !== false
+  );
+}
 export function autoFullscreenEnabled() {
   try {
     return readPreference(KEY) === "true";
@@ -20,10 +26,7 @@ export function saveAutoFullscreen(enabled: boolean) {
 }
 export async function enterFullscreen(report: (message: string) => void) {
   if (document.fullscreenElement) return true;
-  if (!document.documentElement.requestFullscreen) {
-    report(i18nText("fullscreen.message048"));
-    return false;
-  }
+  if (!fullscreenSupported()) return false;
   try {
     await document.documentElement.requestFullscreen();
     restoreModalLayer();
@@ -86,6 +89,7 @@ export function installScreenControls(
   reload.onclick = () => window.location.reload();
   const sync = () => {
     const active = !!document.fullscreenElement;
+    full.hidden = !active && !fullscreenSupported();
     setIconButton(
       full,
       icon(active ? "collapse" : "expand"),

@@ -37,6 +37,7 @@ export function transitionSurface(
   if (!opening && !isDrawer) measure();
   if (isDrawer) html.classList.add("surface-drawer-transition");
   surface.style.viewTransitionName = "help-modal-morph";
+  surface.classList.add("glass-transition");
   html.classList.add(
     "help-modal-transition",
     opening ? "help-modal-opening" : "help-modal-closing",
@@ -50,6 +51,7 @@ export function transitionSurface(
   };
   const cleanup = () => {
     surface.style.viewTransitionName = previousName;
+    surface.classList.remove("glass-transition");
     html.classList.remove(
       "help-modal-transition",
       "help-modal-opening",
@@ -60,12 +62,13 @@ export function transitionSurface(
     // Removing a view-transition name changes the backdrop root. Invalidate
     // the glass layers now instead of leaving their first repaint to a tap.
     if (surface.isConnected && !surface.hidden) {
+      const glass = surface.querySelector<HTMLElement>(
+        ".liquid-glass__refract",
+      );
       surface.classList.add("glass-repaint");
-      const glass =
-        surface.querySelector<HTMLElement>(".help-content") || surface;
-      void getComputedStyle(glass).backdropFilter;
+      if (glass) void getComputedStyle(glass).backdropFilter;
       surface.classList.remove("glass-repaint");
-      void getComputedStyle(glass).backdropFilter;
+      if (glass) void getComputedStyle(glass).backdropFilter;
     }
     transitioning = false;
   };
