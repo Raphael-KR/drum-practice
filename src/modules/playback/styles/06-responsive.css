@@ -467,27 +467,27 @@ body.has-song:has(.drawer-playback) {
 }
 .segmented-control > button[aria-pressed="true"] {
   z-index: 1;
-  color: var(--segment-accent);
-  border-color: var(--segment-accent);
-  background: var(--selected-control-surface);
+  color: var(--segment-selected-color, var(--segment-accent));
+  border-color: var(--segment-border, var(--segment-accent));
+  background: var(--segment-selected-surface, var(--selected-control-surface));
   box-shadow:
-    inset 0 0 0 1px var(--segment-accent),
+    inset 0 0 0 1px var(--segment-border, var(--segment-accent)),
     inset 0 3px 2px #fff,
-    inset 0 -3px 4px #315d9324;
+    inset 0 -3px 4px var(--segment-selected-shadow, #315d9324);
 }
 @media (hover: hover) {
   .segmented-control > button:hover:not(:disabled) {
-    color: var(--segment-accent);
-    background: linear-gradient(#fff, #dfebfc);
-    border-color: var(--segment-accent);
+    color: var(--segment-hover-color, var(--segment-accent));
+    background: var(--segment-hover-surface, linear-gradient(#fff, #dfebfc));
+    border-color: var(--segment-border, var(--segment-accent));
     z-index: 2;
   }
 }
 .segmented-control > button:active:not(:disabled) {
-  box-shadow: inset 0 2px 5px #23436b44;
+  box-shadow: inset 0 2px 5px var(--segment-active-shadow, #23436b44);
 }
 .segmented-control > button:focus-visible {
-  outline: 3px solid #d88a40;
+  outline: 3px solid var(--segment-focus, #d88a40);
   outline-offset: 2px;
   z-index: 3;
 }
@@ -498,6 +498,40 @@ body.has-song:has(.drawer-playback) {
 .settings-choice-buttons.segmented-control {
   display: flex;
   width: 100%;
+}
+
+/* Scope the shared Warm palette to the active eighth-note mode only. */
+.metronome-toggle[data-metronome-mode="eighth"],
+#metronome-choices > [data-metronome-mode="eighth"][aria-pressed="true"] {
+  --metronome-warm-surface: #f6c45b;
+  --metronome-warm-hover: #ffd77c;
+  --metronome-warm-ink: #5b330b;
+  --metronome-warm-border: #b87510;
+  --metronome-warm-focus: #6e420b;
+  --segment-selected-color: var(--metronome-warm-ink);
+  --segment-hover-color: var(--metronome-warm-ink);
+  --segment-border: var(--metronome-warm-border);
+  --segment-selected-surface: var(--metronome-warm-surface);
+  --segment-hover-surface: var(--metronome-warm-hover);
+  --segment-selected-shadow: #79460e24;
+  --segment-active-shadow: #79460e44;
+  --segment-focus: var(--metronome-warm-focus);
+}
+.metronome-toggle[data-metronome-mode="eighth"] {
+  background: var(--metronome-warm-surface);
+  color: var(--metronome-warm-ink);
+  border-color: var(--metronome-warm-border);
+}
+button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
+  background: var(--metronome-warm-hover);
+  border-color: var(--metronome-warm-border);
+}
+.metronome-toggle[data-metronome-mode="eighth"]:active:not(:disabled) {
+  box-shadow: inset 0 2px 5px #79460e44;
+}
+.metronome-toggle[data-metronome-mode="eighth"]:focus-visible {
+  outline: 3px solid var(--metronome-warm-focus);
+  outline-offset: 2px;
 }
 .settings-group > .segmented-control {
   margin-top: 10px;

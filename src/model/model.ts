@@ -54,6 +54,8 @@ export interface Settings {
   tempoMode?: "original" | "practice";
   rate: number;
   click: boolean;
+  /** Missing in older songs; quarter notes are the compatible default. */
+  clickDivision?: 4 | 8;
   musicVolume: number;
   clickVolume: number;
   countIn: number;
@@ -119,6 +121,7 @@ export const uid = () => crypto.randomUUID();
 export const defaults = (): Settings => ({
   rate: 1,
   click: true,
+  clickDivision: 4,
   musicVolume: 0.5,
   clickVolume: 1,
   countIn: 1,
@@ -548,6 +551,9 @@ export function validateSong(x: unknown): asserts x is Song {
     !finite(t.rate) ||
     t.rate < 0.5 ||
     t.rate > 1.2 ||
+    (t.clickDivision !== undefined &&
+      t.clickDivision !== 4 &&
+      t.clickDivision !== 8) ||
     ![t.musicVolume, t.clickVolume].every(
       (v) => finite(v) && v >= 0 && v <= 1,
     ) ||

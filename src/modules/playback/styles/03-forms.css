@@ -146,6 +146,7 @@
   justify-content: center;
   width: 48px;
   height: 48px;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: white;
@@ -161,13 +162,23 @@
   opacity: 0;
   cursor: pointer;
 }
-.metronome-toggle:has(input:checked) {
+.metronome-toggle:has(input:checked),
+.metronome-toggle[data-metronome-mode="quarter"] {
   background: var(--accent);
   color: white;
 }
 .metronome-toggle:has(input:focus-visible) {
   outline: 3px solid #d88a40;
   outline-offset: 2px;
+}
+
+.settings-metronome-row {
+  display: grid;
+  width: 100%;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 14px;
 }
 
 /* Shared form surfaces and layout, used by both hosts. */

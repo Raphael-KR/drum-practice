@@ -1,4 +1,9 @@
 import { validateSong, uid, type Song } from "../../model/model";
+import {
+  normalizeMetronomeSettings,
+  type MetronomeCorrection,
+  type MetronomeCorrectionReporter,
+} from "../../model/metronome";
 import type { RecordData } from "../../model/record";
 import {
   MAX_AUDIO_FILE_BYTES,
@@ -122,10 +127,24 @@ export async function createPracticeFile(
   if (file.size > MAX_FILE) invalid();
   return file;
 }
-export async function readPracticeFile(file: Blob): Promise<PracticeFileData> {
+export async function readPracticeFile(
+  file: Blob,
+  report?: MetronomeCorrectionReporter,
+): Promise<PracticeFileData> {
   if (!file.size || file.size > MAX_FILE) invalid();
   const data: PracticeFileData = JSON.parse(await file.text());
+  const corrections: MetronomeCorrection[] = [];
+  if (Array.isArray(data?.records)) {
+    if (data.records.length > MAX_RECORDS) invalid();
+    for (const entry of data.records) {
+      if (!entry || typeof entry !== "object") continue;
+      const normalized = normalizeMetronomeSettings(entry.song);
+      entry.song = normalized.song;
+      corrections.push(...normalized.corrections);
+    }
+  }
   validate(data);
+  report?.(corrections);
   return data;
 }
 /** Matching bytes, not names, establish which audio the preserved timing belongs to. */

@@ -50,6 +50,7 @@ export interface PlaybackRuntimeOptions {
   onLibrary?: () => void;
   practiceFiles?: PracticeFileControlsOptions;
   onLoading?: (phase: "screen" | "audio") => void;
+  initialNotice?: string;
 }
 /** Blob-based playback host for the practice library app. */
 export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
@@ -446,7 +447,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     playback.sync();
     playback.renderTrack();
     settings();
-    status("");
+    status(options.initialNotice ?? "");
     document.body.dataset.ready = "true";
     document.body.dataset.readyMs = String(performance.now());
   } catch (e) {

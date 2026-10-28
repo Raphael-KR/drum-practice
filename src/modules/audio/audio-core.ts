@@ -3,7 +3,6 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import type { PlaybackPreferences } from "../playback/playback-preferences";
 import { stickClickSamples } from "./stick-click";
 import {
-  beatEvents,
   preludeCountBeats,
   locate,
   makeCycle,
@@ -12,6 +11,7 @@ import {
   type Song,
   type Loop,
 } from "../../model/model";
+import { metronomeEvents, metronomeQuarterAt } from "../../model/metronome";
 import {
   createMixLimiterCurve,
   MIX_INPUT_GAIN,
@@ -37,6 +37,11 @@ export class Player {
   private clickEvents = new Map<
     Cycle,
     { at: number; accent: boolean; count: boolean }[]
+  >();
+  private cycleQuarters = new Map<Cycle, number>();
+  private clickSources = new Map<
+    AudioScheduledSourceNode,
+    { at: number; gain: GainNode }
   >();
   generation = 0;
   private playRequest = 0;
@@ -143,9 +148,12 @@ export class Player {
       n.disconnect();
     }
     this.nodes.clear();
+    for (const { gain } of this.clickSources.values()) gain.disconnect();
+    this.clickSources.clear();
     this.cycles = [];
     this.nextClick.clear();
     this.clickEvents.clear();
+    this.cycleQuarters.clear();
     if (notify) this.onstate();
   }
   outputTime(source: number) {
@@ -160,6 +168,7 @@ export class Player {
   }
   async setRate(rate: number, original = rate === 1, report = this.onprogress) {
     const was = this.playing;
+    const phase = this.currentMetronomeQuarter();
     this.pause();
     const request = this.playRequest;
     if (
@@ -171,7 +180,7 @@ export class Player {
       request !== this.playRequest
     )
       return;
-    if (was) await this.play(false, false);
+    if (was) await this.play(false, false, phase);
     this.onstate();
   }
   private cancelStretch() {
@@ -273,7 +282,11 @@ export class Player {
     }
     await this.ctx.resume();
   }
-  async play(count = true, fromMeasureStart?: boolean) {
+  async play(
+    count = true,
+    fromMeasureStart?: boolean,
+    continuedQuarter?: number,
+  ) {
     const preferences = this.preferences();
     const restartMeasure = fromMeasureStart ?? preferences.restartMeasure;
     if (!this.song?.measures.length || !this.rendered)
@@ -304,6 +317,7 @@ export class Player {
       this.ctx.currentTime + 0.08,
       this.position,
       count && preferences.countOff,
+      continuedQuarter,
     );
     this.tick();
     this.timer = window.setInterval(() => this.tick(), 25);
@@ -316,7 +330,61 @@ export class Player {
     if (was) void this.play(countOff, false);
     else this.onstate();
   }
-  addCycle(at: number, from: number, countOff: boolean) {
+  private currentMetronomeQuarter() {
+    if (!this.song) return 0;
+    const now = this.ctx.currentTime;
+    const cycle =
+      [...this.cycles].reverse().find((c) => now >= c.at) ?? this.cycles[0];
+    return cycle
+      ? this.cycleQuarters.get(cycle)! +
+          metronomeQuarterAt(this.song, this.current()) -
+          metronomeQuarterAt(this.song, cycle.from)
+      : metronomeQuarterAt(this.song, this.position);
+  }
+  private normalClicks(cycle: Cycle) {
+    return metronomeEvents(
+      this.song!,
+      cycle.from,
+      cycle.to,
+      this.cycleQuarters.get(cycle),
+    ).map((event) => ({
+      at:
+        cycle.musicAt +
+        this.outputTime(event.time) -
+        this.outputTime(cycle.from),
+      accent: event.accent,
+      count: false,
+    }));
+  }
+  /** Retiming only ordinary clicks leaves music and already scheduled count-off untouched. */
+  updateMetronome() {
+    this.volumes();
+    const now = this.ctx.currentTime;
+    for (const [source, event] of this.clickSources) {
+      if (event.at <= now) continue;
+      source.stop();
+      source.disconnect();
+      event.gain.disconnect();
+      this.nodes.delete(source);
+      this.clickSources.delete(source);
+    }
+    for (const cycle of this.cycles) {
+      const remainingCounts = this.clickEvents
+        .get(cycle)!
+        .slice(this.nextClick.get(cycle) ?? 0)
+        .filter((event) => event.count);
+      this.clickEvents.set(
+        cycle,
+        [
+          ...remainingCounts,
+          ...this.normalClicks(cycle).filter((event) => event.at > now + 1e-7),
+        ].sort((a, b) => a.at - b.at),
+      );
+      this.nextClick.set(cycle, 0);
+    }
+    if (this.playing) this.tick();
+  }
+  addCycle(at: number, from: number, countOff: boolean, runFrom?: number) {
     const s = this.song!;
     const to = Math.min(this.loop?.end ?? this.duration, this.duration);
     const m = locate(s, from).measure;
@@ -356,25 +424,24 @@ export class Player {
         .filter((t) => t >= from - 1e-7 && t < to - 1e-7)
         .map((t) => c.musicAt + this.outputTime(t) - this.outputTime(from));
     this.cycles.push(c);
+    this.cycleQuarters.set(c, runFrom ?? metronomeQuarterAt(s, from));
     this.nextClick.set(c, 0);
-    const fromOutput = this.outputTime(c.from);
-    this.clickEvents.set(c, [
-      ...(c.preludeClicks ?? []).map((at) => ({
-        at,
-        accent: false,
-        count: true,
-      })),
-      ...Array.from({ length: c.count }, (_, i) => ({
-        at: c.countAt + i * c.countBeatSeconds,
-        accent: i % c.beats === 0,
-        count: true,
-      })),
-      ...beatEvents(s, c.from, c.to).map((b) => ({
-        at: c.musicAt + this.outputTime(b.time) - fromOutput,
-        accent: b.accent,
-        count: false,
-      })),
-    ]);
+    this.clickEvents.set(
+      c,
+      [
+        ...(c.preludeClicks ?? []).map((at) => ({
+          at,
+          accent: false,
+          count: true,
+        })),
+        ...Array.from({ length: c.count }, (_, i) => ({
+          at: c.countAt + i * c.countBeatSeconds,
+          accent: i % c.beats === 0,
+          count: true,
+        })),
+        ...this.normalClicks(c),
+      ].sort((a, b) => a.at - b.at),
+    );
     const source = this.ctx.createBufferSource();
     source.buffer = this.rendered!;
     source.connect(this.music);
@@ -390,6 +457,7 @@ export class Player {
     n.onended = () => {
       n.disconnect();
       this.nodes.delete(n);
+      this.clickSources.delete(n);
     };
   }
   pulse(at: number, accent: boolean, count = false) {
@@ -420,6 +488,7 @@ export class Player {
     o.connect(g);
     g.connect(this.click);
     this.track(o);
+    this.clickSources.set(o, { at, gain: g });
     o.addEventListener("ended", () => g.disconnect());
     o.start(at);
     o.stop(at + 0.08);
@@ -434,7 +503,14 @@ export class Player {
       return;
     }
     if (this.loop && last.endAt < now + 1) {
-      this.addCycle(last.endAt, this.loop.start, false);
+      this.addCycle(
+        last.endAt,
+        this.loop.start,
+        false,
+        this.cycleQuarters.get(last)! +
+          metronomeQuarterAt(this.song, last.to) -
+          metronomeQuarterAt(this.song, last.from),
+      );
       last = this.cycles.at(-1)!;
     }
     for (const c of this.cycles) {
@@ -452,6 +528,7 @@ export class Player {
     while (this.cycles.length > 1 && this.cycles[0].endAt < now) {
       this.nextClick.delete(this.cycles[0]);
       this.clickEvents.delete(this.cycles[0]);
+      this.cycleQuarters.delete(this.cycles[0]);
       this.cycles.shift();
     }
     if (!this.loop && now >= last.endAt) {

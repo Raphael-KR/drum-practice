@@ -4,7 +4,13 @@ import { setIconButton } from "../../shared/ui/icon-button";
 import { dialogHeader } from "../../shared/ui/dialog-ui";
 import { escapeHTML } from "../../shared/ui/html";
 import { formatDate, t } from "../../shared/i18n/i18n";
-import { icon } from "../../shared/ui/icon-svg";
+import { icon, metronomeIcon } from "../../shared/ui/icon-svg";
+import type { Settings } from "../../model/model";
+import {
+  metronomeMode,
+  metronomeModes,
+  nextMetronomeMode,
+} from "../../model/metronome";
 import { playbackButton, repeatControlsHTML } from "./playback-ui";
 import { settingsSwitch } from "../../shared/ui/settings-ui";
 import { componentName } from "../../shared/ui/ui-standard";
@@ -53,6 +59,7 @@ export function playbackPreferenceFieldsHTML(
       t("playback.message444"),
       t("playback.message445"),
     ) +
+    `<div class="settings-metronome-row"><strong class="settings-item-title" id="metronome-choices-title">${componentName("metronome")}</strong><div id="metronome-choices" class="settings-choice-buttons segmented-control" role="group" aria-labelledby="metronome-choices-title">${metronomeModes.map((mode) => `<button type="button" data-metronome-mode="${mode}" data-help-title="${componentName("metronome")}" data-help="${t(`metronome.${mode}Description`)}" aria-label="${componentName("metronome")} ${t(`metronome.${mode}`)}">${t(`metronome.${mode}`)}</button>`).join("")}</div></div>` +
     '<p id="playback-settings-status" class="subtle" role="status"></p>'
   );
 }
@@ -202,9 +209,40 @@ export function selectPlaybackSettings(
 }
 
 export function metronomeControlHTML(
-  options: { id?: string; name?: string; label?: string } = {},
+  options: {
+    id?: string;
+    name?: string;
+    label?: string;
+    preview?: boolean;
+  } = {},
 ) {
+  if (!options.preview)
+    return `<button id="click" type="button" class="metronome-toggle" data-metronome-mode="quarter" aria-label="${componentName("metronome")}">${metronomeIcon("quarter")}</button>`;
   return `<label class="metronome-toggle" title="${t("icons.message075")}"><input id="${escapeHTML(options.id ?? "click")}" ${options.name ? `name="${escapeHTML(options.name)}"` : ""} type="checkbox" checked aria-label="${escapeHTML(options.label ?? t("icons.message076"))}">${icon("metronome")}</label>`;
+}
+export function syncMetronomeControls(root: ParentNode, settings: Settings) {
+  const mode = metronomeMode(settings);
+  const button = root.querySelector<HTMLButtonElement>("#click");
+  if (button) {
+    if (button.dataset.metronomeMode !== mode) {
+      button.dataset.metronomeMode = mode;
+      button.innerHTML = metronomeIcon(mode);
+    }
+    button.setAttribute(
+      "aria-label",
+      t("metronome.current", { mode: t(`metronome.${mode}`) }),
+    );
+    button.dataset.help = `${t(`metronome.${mode}Description`)} ${t("metronome.cycle", { next: t(`metronome.${nextMetronomeMode(settings)}`) })}`;
+    button.title = button.dataset.help;
+  }
+  root
+    .querySelectorAll<HTMLButtonElement>(
+      "#metronome-choices [data-metronome-mode]",
+    )
+    .forEach((choice) => {
+      const selected = choice.dataset.metronomeMode === mode;
+      choice.setAttribute("aria-pressed", String(selected));
+    });
 }
 export function playbackBrandHTML(titleId: string, tempoId: string) {
   return `<h1 id="${titleId}">${t("main.message097")}</h1><button id="${tempoId}" type="button" hidden disabled aria-haspopup="dialog" aria-label="${t("main.message211")}"><span id="original-tempo-value"></span></button>`;

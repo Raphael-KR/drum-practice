@@ -115,6 +115,7 @@ import { Player } from "./audio";
 import { $, num, val } from "./editor-dom";
 import { createEditorForm, editorFields } from "./editor-form";
 import { createEditorLibrary } from "./editor-library";
+import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import { createLyricEditor } from "./editor-lyrics";
 import { createEditorReview } from "./editor-review";
 import { createScoreEditor } from "./editor-score-controls";
@@ -284,7 +285,7 @@ const playback = createPlaybackScreen({
   settingsChanged: syncViewChoices,
 });
 function songControlsAvailable(enabled: boolean) {
-  val("click").closest("label")!.hidden = !enabled;
+  $("click").hidden = !enabled;
   for (const id of [
     "click",
     "zoom",
@@ -814,6 +815,7 @@ const editorLibrary = createEditorLibrary({
   activate,
   openEditor,
   error,
+  tell,
   action,
 });
 const openLibrary = () => editorLibrary.open();
@@ -825,11 +827,15 @@ function openNew() {
 action("welcome-new", openNew);
 action("demo-button", async () => {
   status(i18nText("main.message290"));
+  const correctionNotice = createMetronomeCorrectionNotice();
   const existing = chooseRecent(
-    (await allRecords()).filter((r) => !r.song.audioPractice),
+    (await allRecords(correctionNotice.collect)).filter(
+      (r) => !r.song.audioPractice,
+    ),
   );
   if (existing) {
     await activate(existing);
+    tell(correctionNotice.message());
     return;
   }
   const fetchBlob = async (url: string) => {
@@ -1486,7 +1492,11 @@ const management: ReturnType<typeof setupScoreManagement> =
       tell(i18nText("main.message374", { value1: records.length }));
     },
     restoreAll: async (f) => {
-      const parsed = await importLibrary(await f.arrayBuffer());
+      const correctionNotice = createMetronomeCorrectionNotice();
+      const parsed = await importLibrary(
+        await f.arrayBuffer(),
+        correctionNotice.collect,
+      );
       for (const r of parsed.records) {
         if (r.canonicalXML) readCanonical(r.canonicalXML, r.song);
       }
@@ -1517,7 +1527,14 @@ const management: ReturnType<typeof setupScoreManagement> =
         await activate(replacement);
       }
       await openLibrary();
-      tell(i18nText("main.message376", { value1: parsed.records.length }));
+      tell(
+        [
+          i18nText("main.message376", { value1: parsed.records.length }),
+          correctionNotice.message(),
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      );
     },
     replaceAudio: async (f) => {
       if (!record) return;

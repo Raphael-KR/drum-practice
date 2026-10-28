@@ -1,7 +1,8 @@
 import { it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { Player } from "../../src/apps/editor/audio";
-import * as model from "../../src/model/model";
+import * as metronome from "../../src/model/metronome";
+import { defaults, type Song } from "../../src/model/model";
 class Node {
   gain = {
     value: 1,
@@ -15,6 +16,7 @@ class Node {
   onended = () => {};
   started: number[] = [];
   stopped = false;
+  stops: number[] = [];
   connections: Node[] = [];
   connect(node: Node) {
     this.connections.push(node);
@@ -24,8 +26,9 @@ class Node {
   start(...a: number[]) {
     this.started = a;
   }
-  stop() {
+  stop(at = 0) {
     this.stopped = true;
+    this.stops.push(at);
   }
   addEventListener() {}
 }
@@ -71,6 +74,155 @@ class Context {
     return { duration: 20 };
   }
 }
+
+function metronomePlayer(beats = 3, denominator = 8, countOff = false) {
+  vi.stubGlobal("AudioContext", Context);
+  vi.stubGlobal("window", { setInterval: () => 1 });
+  const p = new Player(() => ({ restartMeasure: false, countOff }));
+  const duration = ((beats * 4) / denominator) * 0.5;
+  p.song = {
+    version: 1,
+    id: "phase",
+    title: "phase",
+    bpm: 120,
+    firstBeat: 0,
+    audioName: "",
+    pdfName: "",
+    pageCount: 0,
+    regions: [],
+    lyrics: [],
+    markers: [],
+    loops: [],
+    settings: defaults(),
+    measures: [
+      {
+        id: "m",
+        label: "1",
+        regionId: "",
+        beats,
+        denominator,
+        start: 0,
+        end: duration,
+      },
+    ],
+  } satisfies Song;
+  p.original = p.rendered = { duration } as AudioBuffer;
+  p.loop = { id: "l", name: "l", start: 0, end: duration };
+  return { p, ctx: p.ctx as unknown as Context };
+}
+it.each([4, 8] as const)(
+  "keeps %s-note phase over natural odd-meter repeats, then resets on a user seek",
+  async (division) => {
+    const { p, ctx } = metronomePlayer();
+    const pulses = vi.spyOn(p, "pulse").mockImplementation(() => {});
+    try {
+      p.song!.settings.clickDivision = division;
+      await p.play(false, false);
+      for (let now = 0.08; now < 3; now += 0.025) {
+        ctx.currentTime = now;
+        p.tick();
+      }
+      const calls = pulses.mock.calls;
+      calls.forEach(([at, accent], index) => {
+        expect(at).toBeCloseTo(0.08 + (index * 2) / division);
+        if (division === 8) expect(accent).toBe(index % 2 === 0);
+      });
+      expect(p.cycles.length).toBeLessThanOrEqual(3);
+      p.pause();
+      p.seek(0.2);
+      pulses.mockClear();
+      await p.play(false, false);
+      const c = p.cycles[0];
+      ctx.currentTime = c.musicAt;
+      p.tick();
+      if (division === 4) {
+        ctx.currentTime += 0.2;
+        p.tick();
+      }
+      expect(pulses.mock.calls[0][0]).toBeCloseTo(
+        c.musicAt + (division === 8 ? 0.05 : 0.3),
+      );
+      if (division === 8) expect(pulses.mock.calls[0][1]).toBe(false);
+    } finally {
+      p.pause();
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    }
+  },
+);
+it("changes only pending ordinary clicks and leaves music/count-off sources running", async () => {
+  const { p, ctx } = metronomePlayer(4, 4, true);
+  try {
+    await p.play(true, false);
+    const c = p.cycles[0],
+      music = ctx.nodes.find((n) =>
+        n.connections.includes(p.music as unknown as Node),
+      )!;
+    ctx.currentTime = 0.49;
+    p.tick();
+    const counts = ctx.nodes.filter((n) =>
+      n.connections.includes(p.countOff as unknown as Node),
+    );
+    expect(counts).toHaveLength(2);
+    p.song!.settings.clickDivision = 8;
+    p.updateMetronome();
+    expect(counts.every((n) => n.stops.length === 0)).toBe(true);
+    expect(p.cycles[0]).toBe(c);
+    expect(music.stops).toEqual([]);
+    ctx.currentTime = c.musicAt + 0.14;
+    p.tick();
+    const pending = ctx.nodes.find(
+      (n) => !n.buffer && n.started[0] > ctx.currentTime,
+    )!;
+    expect(pending.started[0]).toBeCloseTo(c.musicAt + 0.25);
+    p.song!.settings.click = false;
+    p.updateMetronome();
+    expect(pending.stops.at(-1)).toBe(0);
+    expect(p.click.gain.value).toBe(0);
+    const count = ctx.nodes.length;
+    ctx.currentTime += 0.2;
+    p.tick();
+    expect(ctx.nodes).toHaveLength(count);
+    p.song!.settings.click = true;
+    p.updateMetronome();
+    ctx.currentTime = c.musicAt + 0.4;
+    p.tick();
+    const next = ctx.nodes.at(-1)!;
+    expect(next.started[0]).toBeCloseTo(c.musicAt + 0.5);
+    expect(next.frequency.value).toBe(1500);
+    expect(music.stops).toEqual([]);
+    p.pause();
+    expect(p.nodes.size).toBe(0);
+    expect(p.cycles).toEqual([]);
+  } finally {
+    p.pause();
+    vi.unstubAllGlobals();
+  }
+});
+it("keeps the accumulated odd-loop phase across internal rate restart", async () => {
+  const { p, ctx } = metronomePlayer();
+  const pulses = vi.spyOn(p, "pulse").mockImplementation(() => {});
+  try {
+    p.song!.settings.clickDivision = 8;
+    await p.play(false, false);
+    for (let now = 0.1; now < 0.96; now += 0.025) {
+      ctx.currentTime = now;
+      p.tick();
+    }
+    ctx.currentTime = 0.93; // Second repeat, source .1, cumulative quarter 1.7.
+    await p.setRate(1, true);
+    pulses.mockClear();
+    const c = p.cycles[0];
+    ctx.currentTime = c.musicAt + 0.02;
+    p.tick();
+    expect(pulses.mock.calls[0][0]).toBeCloseTo(c.musicAt + 0.15);
+    expect(pulses.mock.calls[0][1]).toBe(true); // Run quarter 2, not source quarter .5.
+  } finally {
+    p.pause();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  }
+});
 it("clears the previous song's active loop when loading another audio file", async () => {
   vi.stubGlobal("AudioContext", Context);
   const p = new Player();
@@ -547,7 +699,7 @@ it.each([1, 0.8, 1.25])(
       p.position = 1.18;
       p.loop = { id: "l", name: "l", start: 1.18, end: 3.64 };
       const pulses = vi.spyOn(p, "pulse").mockImplementation(() => {});
-      const events = vi.spyOn(model, "beatEvents");
+      const events = vi.spyOn(metronome, "metronomeEvents");
       const cycles = vi.spyOn(p, "addCycle");
       await p.play(false, false);
       const first = p.cycles[0];

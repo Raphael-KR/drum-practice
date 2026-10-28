@@ -40,3 +40,16 @@ export const tempoNote =
 export function icon(name: string) {
   return svgFromPath(paths[name] || paths.info);
 }
+
+/** Keep the familiar outline; the adjacent note shape identifies the subdivision. */
+export function metronomeIcon(mode: "quarter" | "eighth" | "off") {
+  if (mode === "off")
+    return svgFromPath(`${paths.metronome}<path d="m3 3 18 18"/>`);
+  const notes =
+    mode === "quarter"
+      ? '<path d="M21 12V3"/><ellipse cx="19" cy="12" rx="2" ry="1.4" fill="currentColor" stroke="none"/>'
+      : '<path d="M17 12V4l6-1v8M17 6l6-1"/><ellipse cx="15.5" cy="12" rx="1.5" ry="1.2" fill="currentColor" stroke="none"/><ellipse cx="21.5" cy="11" rx="1.5" ry="1.2" fill="currentColor" stroke="none"/>';
+  return svgFromPath(
+    `<g transform="translate(-1 3) scale(.72)">${paths.metronome}</g>${notes}`,
+  );
+}

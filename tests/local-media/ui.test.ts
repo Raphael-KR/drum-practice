@@ -30,6 +30,7 @@ vi.mock("../../src/apps/editor/audio", () => ({
       this.position = s.settings.position;
     }
     volumes() {}
+    updateMetronome() {}
     current() {
       return this.position;
     }
@@ -632,10 +633,9 @@ it("keeps icon controls accessible and updates play and metronome states", async
   expect(
     document.getElementById("open-settings-dialog")!.getAttribute("aria-label"),
   ).toBe("설정");
-  expect(
-    document.getElementById("click")!.closest("label")!.previousElementSibling!
-      .id,
-  ).toBe("original-tempo");
+  expect(document.getElementById("click")!.previousElementSibling!.id).toBe(
+    "original-tempo",
+  );
   expect(document.getElementById("fullscreen")).toBeNull();
   expect(document.getElementById("save-html")).toBeNull();
   expect(
@@ -659,11 +659,14 @@ it("keeps icon controls accessible and updates play and metronome states", async
   expect(document.getElementById("play")!.getAttribute("aria-label")).toBe(
     "재생",
   );
-  const metronome = document.getElementById("click") as HTMLInputElement;
-  const initial = metronome.checked;
-  metronome.closest("label")!.click();
-  expect(metronome.checked).toBe(!initial);
-  metronome.closest("label")!.click();
+  const metronome = document.getElementById("click") as HTMLButtonElement;
+  expect(metronome.dataset.metronomeMode).toBe("quarter");
+  metronome.click();
+  expect(metronome.dataset.metronomeMode).toBe("eighth");
+  metronome.click();
+  expect(metronome.dataset.metronomeMode).toBe("off");
+  metronome.click();
+  expect(metronome.dataset.metronomeMode).toBe("quarter");
 });
 it("offers tempo presets and previews single-BPM dragging until release", async () => {
   click("original-tempo");

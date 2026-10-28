@@ -1,5 +1,7 @@
 import JSZip from "jszip";
 import { validateSong, type Song } from "../../model/model";
+import { normalizeMetronomeSettings } from "../../model/metronome";
+import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import type { RecordData } from "../../model/record";
 import {
   mediaIdentity,
@@ -85,8 +87,13 @@ export function installEditorBackup(h: FileTransferHost) {
       const zip = await JSZip.loadAsync(f);
       const text = await zip.file("song.json")?.async("string");
       if (!text) throw Error(i18nText("main.message333"));
-      const s = JSON.parse(text);
+      const correctionNotice = createMetronomeCorrectionNotice();
+      const normalized = normalizeMetronomeSettings(
+        JSON.parse(text) as unknown,
+      );
+      const s = normalized.song;
       validateSong(s);
+      correctionNotice.collect(normalized.corrections);
       const canonicalXML = await zip
         .file("canonical.musicxml")
         ?.async("string");
@@ -112,7 +119,11 @@ export function installEditorBackup(h: FileTransferHost) {
           val("new-artist").value = s.artist || "";
           val("new-bpm").value = String(s.bpm);
           val("new-first").value = String(s.firstBeat);
-          tell(i18nText("main.message334"));
+          tell(
+            [i18nText("main.message334"), correctionNotice.message()]
+              .filter(Boolean)
+              .join("\n"),
+          );
           return;
         }
       }
@@ -144,7 +155,11 @@ export function installEditorBackup(h: FileTransferHost) {
         ? unpackScores(JSON.parse(otherText))
         : (await allRecords()).find((r) => r.song.id === s.id)?.otherScores;
       await activate({ song: s, pdf, audio, pages, otherScores, canonicalXML });
-      tell(i18nText("main.message337"));
+      tell(
+        [i18nText("main.message337"), correctionNotice.message()]
+          .filter(Boolean)
+          .join("\n"),
+      );
     } catch (e) {
       error(e);
     } finally {
@@ -218,7 +233,8 @@ export function installEditorPackages(h: FileTransferHost) {
     if (!file) return;
     packageInput.disabled = true;
     try {
-      const imported = await readScorePackage(file);
+      const correctionNotice = createMetronomeCorrectionNotice();
+      const imported = await readScorePackage(file, correctionNotice.collect);
       if ((await allRecords()).some((r) => r.song.id === imported.song.id)) {
         if (!confirm(i18nText("separation.importCopy"))) return;
         imported.song.id = crypto.randomUUID();
@@ -230,7 +246,11 @@ export function installEditorPackages(h: FileTransferHost) {
       await saveRecord(imported);
       await activate(imported);
       $<HTMLDialogElement>("new-dialog").close();
-      tell(i18nText("separation.saved"));
+      tell(
+        [i18nText("separation.saved"), correctionNotice.message()]
+          .filter(Boolean)
+          .join("\n"),
+      );
     } catch (e) {
       error(e);
     } finally {

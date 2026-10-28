@@ -2,6 +2,10 @@ import { audioFileHash } from "./audio-analysis-cache";
 import { openScoreDatabase, RETIRED_SCORE_ID } from "./score-database";
 import { t } from "../../shared/i18n/i18n";
 import { defaults, validateSong, type Song } from "../../model/model";
+import {
+  normalizeRecordMetronome,
+  type MetronomeCorrectionReporter,
+} from "../../model/metronome";
 import type { RecordData } from "./storage";
 import { scoreStructureSignature } from "../../modules/library/score-package";
 import { useScore } from "../../modules/score/song-scores";
@@ -99,11 +103,15 @@ async function read<T>(
     db.close();
   }
 }
-export async function listPracticeRecords(): Promise<RecordData[]> {
+export async function listPracticeRecords(
+  report?: MetronomeCorrectionReporter,
+): Promise<RecordData[]> {
   const records = (await read<Stored[]>((store) => store.getAll())).map(decode);
   for (let i = 0; i < records.length; i++)
     records[i] = await upgradePracticeMetadata(records[i]);
-  return records;
+  const normalized = records.map(normalizeRecordMetronome);
+  report?.(normalized.flatMap((result) => result.corrections));
+  return normalized.map((result) => result.record);
 }
 async function upgradePracticeMetadata(
   record: RecordData,
@@ -140,9 +148,15 @@ async function upgradePracticeMetadata(
 }
 export async function loadPracticeRecord(
   id: string,
+  report?: MetronomeCorrectionReporter,
 ): Promise<RecordData | undefined> {
   const record = await read<Stored | undefined>((store) => store.get(id));
-  return record ? upgradePracticeMetadata(decode(record)) : undefined;
+  if (!record) return undefined;
+  const result = normalizeRecordMetronome(
+    await upgradePracticeMetadata(decode(record)),
+  );
+  report?.(result.corrections);
+  return result.record;
 }
 async function change(
   work: (transaction: IDBTransaction) => void,
@@ -257,8 +271,13 @@ export function importPracticeRecord(
 ): Promise<PracticeImportResult> {
   const copy = snapshot(incoming);
   // A newly imported score uses practice defaults, not the author's mix.
-  const { musicVolume, clickVolume, click } = defaults();
-  Object.assign(copy.song.settings, { musicVolume, clickVolume, click });
+  const { musicVolume, clickVolume, click, clickDivision } = defaults();
+  Object.assign(copy.song.settings, {
+    musicVolume,
+    clickVolume,
+    click,
+    clickDivision,
+  });
   return queued(async () => {
     if (copy.song.audioPractice && !options.allowDuplicateAudio)
       await assertNewPracticeAudio(copy.audio);

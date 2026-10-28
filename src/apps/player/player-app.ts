@@ -50,6 +50,7 @@ import bundledScores from "../../content/bundled-scores.json";
 import notices from "../../generated/third-party.generated.json";
 import { escapeHTML } from "../../shared/ui/html";
 import { readScorePackage } from "../../modules/library/score-package";
+import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import {
   listPracticeRecords,
   removePracticeRecord,
@@ -216,6 +217,7 @@ async function openRecord(id: string) {
         score.id === id && "category" in score && score.category === "basic",
     );
     let record;
+    const correctionNotice = createMetronomeCorrectionNotice();
     if (basic) {
       const blob = await downloadScore(
         `${import.meta.env.BASE_URL}${basic.file}`,
@@ -223,13 +225,13 @@ async function openRecord(id: string) {
           message.textContent = downloadLabel(percent);
         },
       );
-      record = await readScorePackage(blob);
+      record = await readScorePackage(blob, correctionNotice.collect);
       if (record.song.id !== id) throw Error("Basic score ID mismatch");
-      const current = await loadPracticeRecord(id);
+      const current = await loadPracticeRecord(id, correctionNotice.collect);
       if (current && (await hasSameBundledContent(current, record)))
         record = current;
       else await importPracticeRecord(record);
-    } else record = await loadPracticeRecord(id);
+    } else record = await loadPracticeRecord(id, correctionNotice.collect);
     timing.stage("opening");
     if (!record) throw Error(t("separation.missing"));
     const tracked = await ensureAudioBeatTracking(record, (text) => {
@@ -281,6 +283,7 @@ async function openRecord(id: string) {
         );
       },
       canonicalXML: record.canonicalXML,
+      initialNotice: correctionNotice.message(),
       root,
       song: structuredClone(record.song),
       audio: record.audio,
@@ -336,6 +339,7 @@ async function importFile(file: File, ownsLock = false) {
   try {
     const kind = practiceFileKind(file);
     let record: RecordData;
+    const correctionNotice = createMetronomeCorrectionNotice();
     let allowDuplicateAudio = false;
     if (kind === "audio") {
       stage = t("audioPractice.loading");
@@ -355,7 +359,7 @@ async function importFile(file: File, ownsLock = false) {
       record = await readAudioPractice(file, (text) => {
         if (button) button.textContent = text;
       });
-    } else record = await readScorePackage(file);
+    } else record = await readScorePackage(file, correctionNotice.collect);
     stage = t("library.stageSave");
     try {
       await importPracticeRecord(record, { allowDuplicateAudio });
@@ -368,6 +372,8 @@ async function importFile(file: File, ownsLock = false) {
     if (epoch !== importEpoch) return;
     stage = t("library.stageList");
     await showLibrary();
+    const notice = correctionNotice.message();
+    if (notice) document.getElementById("library-status")!.textContent = notice;
     if (kind === "audio") {
       working = false;
       await openRecord(record.song.id);

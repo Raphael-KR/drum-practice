@@ -11,6 +11,7 @@ import { AUDIO_FILE_ACCEPT } from "../audio/audio-practice";
 import type { RecordData } from "../../model/record";
 import { download } from "../../platform/browser/download";
 import { t } from "../../shared/i18n/i18n";
+import { createMetronomeCorrectionNotice } from "./metronome-corrections";
 
 export interface PracticeFileControlsOptions {
   records(): Promise<Pick<RecordData, "song" | "audio">[]>;
@@ -37,8 +38,11 @@ export function installPracticeFileControls(
   let pending: PracticeFileData | undefined;
   let matched = new Map<string, Blob>();
   let busy = false;
+  let correctionNotice = createMetronomeCorrectionNotice();
   function message(text: string, error = false) {
-    status.textContent = text;
+    status.textContent = [text, error ? "" : correctionNotice.message()]
+      .filter(Boolean)
+      .join("\n");
     status.classList.toggle("is-error", error);
     status.setAttribute("role", error ? "alert" : "status");
   }
@@ -118,7 +122,8 @@ export function installPracticeFileControls(
       pending = undefined;
       matched.clear();
       audioButton.hidden = true;
-      const data = await readPracticeFile(selected);
+      correctionNotice = createMetronomeCorrectionNotice();
+      const data = await readPracticeFile(selected, correctionNotice.collect);
       matched = await options.findAudio(data.records);
       pending = data;
       await restoreOrPrompt();

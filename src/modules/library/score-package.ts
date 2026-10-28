@@ -1,5 +1,9 @@
 import JSZip from "jszip";
 import { validateSong, type Song } from "../../model/model";
+import {
+  normalizeMetronomeSettings,
+  type MetronomeCorrectionReporter,
+} from "../../model/metronome";
 import type { RecordData } from "../../model/record";
 import type { ScoreVariant } from "../../model/record";
 
@@ -374,7 +378,10 @@ async function readEntry(
     stream.resume();
   });
 }
-export async function readScorePackage(blob: Blob): Promise<RecordData> {
+export async function readScorePackage(
+  blob: Blob,
+  report?: MetronomeCorrectionReporter,
+): Promise<RecordData> {
   if (!blob.size || blob.size > MAX_BYTES) invalid();
   const bytes = new Uint8Array(await blob.arrayBuffer());
   if (bytes.length < 22) invalid();
@@ -390,6 +397,8 @@ export async function readScorePackage(blob: Blob): Promise<RecordData> {
       await readEntry(zip, "manifest.json", entries.get("manifest.json")!),
     ),
   );
+  const normalized = normalizeMetronomeSettings(manifest?.song);
+  if (manifest) manifest.song = normalized.song;
   const expected = validateManifest(manifest);
   if (
     entries.size !== expected.size + 1 ||
@@ -402,7 +411,7 @@ export async function readScorePackage(blob: Blob): Promise<RecordData> {
     if (data.length !== a.size) invalid();
     return new Blob([data as Uint8Array<ArrayBuffer>], { type: a.type });
   };
-  return {
+  const record = {
     song: manifest.song,
     canonicalXML: manifest.canonicalXML,
     pdf: await asset(manifest.source),
@@ -416,4 +425,6 @@ export async function readScorePackage(blob: Blob): Promise<RecordData> {
       })),
     ),
   };
+  report?.(normalized.corrections);
+  return record;
 }

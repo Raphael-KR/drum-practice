@@ -1,5 +1,9 @@
 import { openScoreDatabase } from "./score-database";
 import { validateSong, type Song } from "../../model/model";
+import {
+  normalizeRecordMetronome,
+  type MetronomeCorrectionReporter,
+} from "../../model/metronome";
 import type { ScoreVariant } from "../../model/record";
 import {
   storeMedia,
@@ -97,12 +101,20 @@ async function writeRecords(records: RecordData[]) {
     d.close();
   }
 }
-export async function allRecords(): Promise<RecordData[]> {
+export async function allRecords(
+  report?: MetronomeCorrectionReporter,
+): Promise<RecordData[]> {
   const d = await db();
   try {
     return await new Promise((ok, no) => {
       const r = d.transaction("songs").objectStore("songs").getAll();
-      r.onsuccess = () => ok(r.result.map(restoreRecord));
+      r.onsuccess = () => {
+        const normalized = (r.result as (StoredRecord | RecordData)[])
+          .map(restoreRecord)
+          .map(normalizeRecordMetronome);
+        report?.(normalized.flatMap((result) => result.corrections));
+        ok(normalized.map((result) => result.record));
+      };
       r.onerror = () => no(r.error);
     });
   } finally {

@@ -37,6 +37,8 @@ ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `pn
 
 ## 공유 의존성과 중앙 버전 갱신
 
+다른 프로젝트를 같은 구조로 전환할 때는 [공통 저장소·중앙 YAML 전환 안내](adopt-shared-pnpm-catalog.md)를 따른다. 아래 내용은 이 프로젝트의 실제 운영 절차다.
+
 설치 관리자는 `package.json`의 `packageManager`에 지정한 pnpm이다. 최초 한 번 `npm install --global --allow-scripts=pnpm pnpm@12.15.0`으로 준비한다. npm 12에서도 pnpm 자체의 네이티브 실행 파일 설치만 허용하며, 전역 스크립트 정책은 변경하지 않는다. 각 프로젝트의 라이브러리를 npm 전역 경로에서 직접 import하지 않는다.
 
 - 중앙 정본: `/Users/raphael/Library/Preferences/pnpm/shared-catalog.yaml`의 `catalog`. 별도 저장소나 프로젝트는 만들지 않는다. 중앙 파일에는 버전 목록만 두고 프로젝트별 override·설치 정책은 workspace에 유지한다.

@@ -21,6 +21,7 @@ import {
 /** Shared preview variant keeps the same metronome control as practice playback. */
 export function audioSetupMetronomeHTML() {
   return metronomeControlHTML({
+    preview: true,
     id: "audio-setup-click",
     name: "click",
     label: t("audioPractice.click"),
