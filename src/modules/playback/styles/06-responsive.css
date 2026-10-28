@@ -14,7 +14,7 @@
     margin: 0;
     width: 100%;
   }
-  .has-song .playback-ui header .brand > button {
+  .has-song .playback-ui header .brand > .playback-tempo {
     grid-column: 1;
     grid-row: 2;
   }
@@ -603,6 +603,10 @@ button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
   .has-song #app.playback-ui header h1[data-app-build]::after {
     display: none;
   }
+  .has-song .playback-ui header .library-header-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
   .has-song .playback-ui header .actions {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -612,7 +616,7 @@ button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
     gap: 6px;
     width: auto;
   }
-  .has-song .playback-ui header .brand > button {
+  .has-song .playback-ui header .brand > .playback-tempo {
     grid-column: 1;
     grid-row: 3;
   }
@@ -632,7 +636,7 @@ button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
     padding-inline: 6px;
     font-size: 14px;
   }
-  .has-song .playback-ui header .brand > button {
+  .has-song .playback-ui header .brand > .playback-tempo {
     padding-inline: 8px;
     font-size: 22px;
   }
