@@ -95,32 +95,4 @@
   font-size: 14px;
 }
 
-.license-section {
-  display: block;
-  width: 100%;
-  min-width: 0;
-}
-.license-section details {
-  margin: 8px 0;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-}
-.license-section summary {
-  cursor: pointer;
-  overflow-wrap: anywhere;
-}
-.license-section pre {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  font-size: 12px;
-  max-height: 320px;
-  overflow: auto;
-}
-.license-section a {
-  display: inline-block;
-  padding: 10px 0;
-  color: var(--accent);
-}
-
 /* Repeat controls stay on the left; fixed marker slots stay on the right. */

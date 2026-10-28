@@ -13,7 +13,8 @@ it("shows installed versions and full offline notices, never treating notices as
   ]) {
     const entry = notices.entries.find((e) => e.name === name)!;
     expect(entry.text.length).toBeGreaterThan(200);
-    expect(section.textContent).toContain(`${name} ${entry.version}`);
+    const displayName = name === "pdfjs-dist" ? "PDF.js" : name;
+    expect(section.textContent).toContain(`${displayName} ${entry.version}`);
   }
   expect(section.querySelectorAll("pre")).toHaveLength(notices.entries.length);
   expect(section.querySelector("script")).toBeNull();

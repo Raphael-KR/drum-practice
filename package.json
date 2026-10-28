@@ -23,6 +23,7 @@
     "test:drum": "node scripts/checks/check-local-assets.mjs && vitest run",
     "version:app": "node scripts/release/bump-app-version.mjs",
     "check:structure": "node scripts/checks/check-source-boundaries.mjs",
+    "check:dependencies": "node scripts/checks/check-jszip.mjs",
     "pretest:drum": "pnpm run generate",
     "test:portable": "vitest run tests/unit tests/integration",
     "pretest:portable": "pnpm run generate",
@@ -41,7 +42,7 @@
     "typecheck": "pnpm run typecheck:app && pnpm run typecheck:tools && pnpm run typecheck:hosting",
     "format:check": "node scripts/checks/check-format.mjs",
     "check:docs": "node scripts/build/ui-docs.mjs --check && node scripts/checks/check-docs.mjs",
-    "check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run check:i18n && pnpm run check:playback && pnpm run check:docs",
+    "check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run check:dependencies && pnpm run check:i18n && pnpm run check:playback && pnpm run check:docs",
     "verify:portable": "pnpm run check && pnpm run test:portable",
     "verify": "pnpm run check && pnpm run test:drum && pnpm run build"
   },

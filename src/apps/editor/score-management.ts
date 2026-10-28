@@ -1,4 +1,5 @@
 import { createDialog } from "../../shared/ui/dialog-ui";
+import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
 import { hasLyrics, scoreAssets } from "../../modules/library/score-assets";
 export { hasLyrics } from "../../modules/library/score-assets";
 import { bindNumericDrag } from "../../shared/ui/numeric-drag";
@@ -188,6 +189,7 @@ export function setupScoreManagement(h: Host) {
   const head = editor.querySelector<HTMLElement>(".dialoghead")!;
   const tools = editor.querySelector<HTMLElement>(".editor-history-tools")!;
   head.insertBefore(tools, head.querySelector('[data-close="editor-dialog"]'));
+  mountLiquidGlass(head);
   const fields = $("editor-meta").querySelector(".metadata-fields")!;
   fields.prepend($("edit-title").closest("label")!);
   $("edit-title")

@@ -1,9 +1,7 @@
-/* Shared dock for the player and authoring preview. Glass lives in help.css. */
+/* Shared dock for both hosts; the surface uses shared/styles/liquid-glass.css. */
 .drawer-playback {
   --dock-surface: #e8ebef;
   --dock-edge: #cbd2da;
-  --drawer-surface: rgba(215, 239, 232, 0.9);
-  --drawer-edge: #8ebeb1;
 }
 .drawer-playback .playback-dock {
   gap: 0;
@@ -116,16 +114,10 @@
   box-sizing: border-box;
   height: 176px;
   margin-top: 0;
-  border: 1px solid var(--drawer-edge);
-  border-top: 3px solid var(--drawer-edge);
+  border: 1px solid var(--liquid-glass-edge);
+  border-top: 3px solid var(--liquid-glass-edge);
   border-radius: 0 0 18px 18px;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.35), transparent 60%),
-    var(--drawer-surface);
-  box-shadow:
-    inset 0 1px 0 #ffffffcc,
-    0 5px 12px #234f4312;
 }
 .drawer-playback .playback-drawer[hidden] {
   display: block !important;
@@ -583,10 +575,10 @@ body.has-song:has(.drawer-playback) {
   }
 }
 
-/* Automatic score sections: twelve stable shortcuts, no marker linkage. */
+/* Score sections follow score order from left to right, then top to bottom. */
 .drawer-playback .section-shortcuts {
   display: grid;
-  grid-auto-flow: column;
+  grid-auto-flow: row;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
   gap: 4px;

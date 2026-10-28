@@ -17,6 +17,7 @@ import { mountPlaybackDrawer } from "./playback-drawer";
 import { syncMetronomeControls, syncSettingsChoices } from "./playback-forms";
 import { createPlaybackTempo } from "./playback-tempo";
 import { createPlaybackWakeLock } from "./playback-wake-lock";
+import { installScoreOnlyView } from "./score-only-view";
 import { syncCurrentSection } from "./section-shortcuts";
 /** The single playback screen owner. Hosts supply assets, persistence and authoring hooks. */
 import {
@@ -146,6 +147,7 @@ export interface PlaybackScreenHost {
 export function createPlaybackScreen(h: PlaybackScreenHost) {
   const { root, ids } = h;
   arrangePlaybackUI(root, ids);
+  const scoreOnlyView = installScoreOnlyView(root, h.ready);
   installUIStandard(h.environment, root);
   installHelp(root);
   const drawer = mountPlaybackDrawer(root, ids);
@@ -155,7 +157,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const stage = get("stage"),
     ribbon = get("ribbon");
   const wakeLock = createPlaybackWakeLock();
-  const disposers: (() => void)[] = [drawer.dispose, wakeLock.dispose];
+  const disposers: (() => void)[] = [
+    drawer.dispose,
+    wakeLock.dispose,
+    scoreOnlyView.dispose,
+  ];
   const listen = (target: EventTarget, type: string, fn: EventListener) => {
     target.addEventListener(type, fn);
     disposers.push(() => target.removeEventListener(type, fn));
@@ -435,6 +441,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     }
     h.trackChanged?.();
     renderLists();
+    scoreOnlyView.alignStaff();
   }
   function open(id: string) {
     gestures.cancel();
@@ -899,6 +906,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     h.settingsChanged?.();
   }
   function syncDisplay() {
+    scoreOnlyView.sync();
     syncSettingsChoices(root);
     const view = h.ready() ? h.song().settings.view : input("view").value;
     root
@@ -1083,14 +1091,16 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const observer =
     typeof ResizeObserver !== "undefined"
       ? new ResizeObserver(() => {
+          if (!h.ready()) return;
           const w = stage.clientWidth;
-          if (h.ready() && w !== lastWidth) {
+          if (w !== lastWidth) {
             lastWidth = w;
             renderTrack();
-          }
+          } else scoreOnlyView.alignStaff();
         })
       : undefined;
   observer?.observe(stage);
+  observer?.observe(root.querySelector<HTMLElement>("main")!);
   function reset() {
     loopSlots?.cancel();
     gestures.cancel();

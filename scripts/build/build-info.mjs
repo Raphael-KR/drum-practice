@@ -35,6 +35,9 @@ export async function writeBuildInfo() {
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
     "config/shared-catalog.yaml",
+    ...(await files("config/patches")).filter((path) =>
+      path.endsWith(".patch"),
+    ),
     "tsconfig.json",
     "index.html",
     "editor.html",

@@ -1,9 +1,10 @@
 import { ZOOM_TICKS, zoomFromSlider } from "../score/score-zoom";
+import { fullscreenSupported } from "../../platform/browser/fullscreen";
 import { setIconButton } from "../../shared/ui/icon-button";
 /** Shared playback form markup. Authoring content is appended by the web host. */
 import { dialogHeader } from "../../shared/ui/dialog-ui";
 import { escapeHTML } from "../../shared/ui/html";
-import { formatDate, t } from "../../shared/i18n/i18n";
+import { t } from "../../shared/i18n/i18n";
 import { icon, metronomeIcon } from "../../shared/ui/icon-svg";
 import type { Settings } from "../../model/model";
 import {
@@ -87,7 +88,7 @@ export function screenSettingsHTML(
       true,
       { descriptionId: "note-highlight-description" },
     ) +
-    `<div class="settings-group">${settingsSwitch(ids.fullscreen, t("playback.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
+    `<div class="settings-group"${fullscreenSupported() ? "" : " hidden"}>${settingsSwitch(ids.fullscreen, t("playback.message441"), t("workspace.message562"))}<p id="fullscreen-status" class="subtle" role="status"></p></div>`
   );
 }
 export type SettingsCategory =
@@ -99,9 +100,15 @@ export function settingsFrameHTML() {
       "",
       "settings-dialog",
       "settings-heading",
-    ) +
-    `<div class="settings-layout"><aside class="settings-sidebar"><nav class="settings-nav" aria-label="${t("workspace.message561")}"></nav>${soundFieldsHTML()}</aside><div class="settings-detail"><h3 id="settings-detail-heading" hidden></h3></div></div>`
+    ) + settingsLayoutHTML()
   );
+}
+export function settingsLayoutHTML({ sound = true, navigation = true } = {}) {
+  const sidebar =
+    navigation || sound
+      ? `<aside class="settings-sidebar">${navigation ? `<nav class="settings-nav" aria-label="${t("workspace.message561")}"></nav>` : ""}${sound ? soundFieldsHTML() : ""}</aside>`
+      : "";
+  return `<div class="settings-layout">${sidebar}<div class="settings-detail"><h3 id="settings-detail-heading" hidden></h3></div></div>`;
 }
 export function settingsPanel(
   root: HTMLElement,
@@ -123,6 +130,8 @@ export function settingsPanel(
       ? null
       : detail.querySelector('[data-settings-panel="info"]'),
   );
+  const nav = root.querySelector(".settings-nav");
+  if (!nav) return section;
   const button = document.createElement("button");
   button.id = buttonId;
   button.className = "icon-button";
@@ -140,7 +149,6 @@ export function settingsPanel(
     title,
   );
   button.onclick = () => select(category);
-  const nav = root.querySelector(".settings-nav")!;
   nav.insertBefore(
     button,
     category === "info"
@@ -177,6 +185,7 @@ export function selectPlaybackSettings(
       panel.prepend(heading);
     }
   });
+  if (!root.querySelector(".settings-nav")) return;
   if (!detail.dataset.scrollNavigation) {
     detail.dataset.scrollNavigation = "true";
     detail.addEventListener("scroll", () => {
@@ -245,7 +254,7 @@ export function syncMetronomeControls(root: ParentNode, settings: Settings) {
     });
 }
 export function playbackBrandHTML(titleId: string, tempoId: string) {
-  return `<h1 id="${titleId}">${t("main.message097")}</h1><button id="${tempoId}" type="button" hidden disabled aria-haspopup="dialog" aria-label="${t("main.message211")}"><span id="original-tempo-value"></span></button>`;
+  return `<h1><span id="${titleId}">${t("main.message097")}</span></h1><button id="${tempoId}" type="button" hidden disabled aria-haspopup="dialog" aria-label="${t("main.message211")}"><span id="original-tempo-value"></span></button>`;
 }
 export function repeatBarHTML(ids: {
   repeat: string;
@@ -257,13 +266,6 @@ export function repeatBarHTML(ids: {
 }) {
   return `<section ${ids.repeat ? `id="${ids.repeat}"` : ""} class="repeat-controls" aria-label="${t("workspace.message549")}"><div class="repeat-actions">${playbackButton(ids.adjust, "repeat", t("icons.message067"))}${repeatControlsHTML(ids)}</div><div id="${ids.markers}" class="marker-slots" role="group" aria-label="${t("playback.message452")}"></div></section>`;
 }
-export function appInfoHTML(
-  version: string,
-  build: { source: string; builtAt: string },
-) {
-  return `<section class="settings-group app-info"><p id="recording-tempo-info" class="subtle" hidden></p><dl><dt>${t("playback.message456")}</dt><dd id="app-version">${escapeHTML(version)} (${escapeHTML(build.source)})</dd><dt>${t("playback.message457")}</dt><dd id="app-built-at">${escapeHTML(formatDate(new Date(build.builtAt), { timeZone: "Asia/Seoul", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }))} KST</dd></dl></section>`;
-}
-
 /** The visible choices reuse the existing settings change handlers. */
 export function syncSettingsChoices(root: ParentNode) {
   root

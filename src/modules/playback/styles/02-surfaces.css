@@ -302,7 +302,8 @@ dialog::backdrop {
 .dialoghead h2 {
   margin: 0;
 }
-.playback-ui #settings-dialog {
+.playback-ui #settings-dialog,
+#settings-dialog.library-settings-dialog {
   width: min(720px, 96vw);
   min-height: min(560px, 90dvh);
 }
@@ -335,7 +336,8 @@ dialog::backdrop {
   font-size: 17px;
 }
 @media (max-width: 600px) {
-  .playback-ui #settings-dialog {
+  .playback-ui #settings-dialog,
+  #settings-dialog.library-settings-dialog {
     padding: 14px;
   }
 }
@@ -375,7 +377,8 @@ dialog::backdrop {
   }
 }
 @media (orientation: portrait) {
-  .playback-ui #settings-dialog {
+  .playback-ui #settings-dialog,
+  #settings-dialog.library-settings-dialog {
     width: min(880px, 96vw);
   }
 }
@@ -402,10 +405,13 @@ dialog .dialoghead {
   position: sticky;
   top: 0;
   z-index: 3;
-  background: var(--surface, #f4f7fc);
   flex-shrink: 0;
 }
-.playback-ui #settings-dialog[open] {
+dialog .dialoghead:not(.liquid-glass) {
+  background: var(--surface, #f4f7fc);
+}
+.playback-ui #settings-dialog[open],
+#settings-dialog.library-settings-dialog[open] {
   display: flex;
   flex-direction: column;
   height: min(620px, 94dvh);

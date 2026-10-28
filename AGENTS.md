@@ -9,6 +9,7 @@
 - UI·UX 설계, 구현, 검수에는 `docs/reference/product/ux.md`의 팀 UX 원칙과 맥락형 도움말 지침을 적용한다. 잠정 문구와 구현 예정 사항은 확정·구현된 상태와 구분한다.
 - Git에는 소스·설정·문서·테스트를 기록한다. 원본 미디어, 로컬 예제 자료, 분석 자료, 실험 출력, 생성 HTML, node_modules, dist는 제외한다. 제외된 파일은 삭제하지 않는다.
 - 현재 GUI 검증은 같은 로컬 앱·자료 범위에서 이미 승인되어 있다. 외부 공개·배포·원격 push는 별도 요청 없이는 수행하지 않는다.
+- 웹앱 개발 중에는 정적 검사만 수행하고 화면 테스트는 릴리스 때 진행한다. 사용자가 별도로 검사 범위를 지시하면 해당 요청을 따른다. 릴리스의 필수 검증은 생략하지 않으며 상세 기준은 docs/reference/engineering/verification.md를 따른다.
 - 웹앱의 화면 확인·버튼 조작·기능 테스트는 Safari MCP를 우선 사용한다. Safari MCP가 지원하지 않는 기능은 처음부터 ego-browser를 사용한다. Safari MCP가 지원하는 기능에서 검증이 실패하면 실패 원인을 기록하고 ego-browser 사용을 검토한다. 비교만을 위해 같은 테스트를 두 브라우저에서 반복하지 않는다.
 - iPad 화면 검증은 사용자가 지정한 Safari 응답형 디자인 모드와 iPad mini (A17 Pro) 시뮬레이터를 우선한다. 설정·기기 ID·검증 상태는 docs/how-to/verify-ipad.md를 따른다. Chromium 화면 크기 모사를 iPad Safari 검증으로 간주하지 않는다.
 

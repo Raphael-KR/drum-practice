@@ -51,13 +51,13 @@ for (const file of files) {
           "playbackPreferenceFieldsHTML",
         ].includes(name)
       ) {
-        // settingsFrameHTML is the shared form composite, not a host copy.
+        // settingsLayoutHTML is the shared form composite, not a host copy.
         let owner = n.parent;
         while (owner && !ts.isFunctionDeclaration(owner)) owner = owner.parent;
         const sharedSoundComposite =
           file === "src/modules/playback/playback-forms.ts" &&
           name === "soundFieldsHTML" &&
-          owner?.name?.text === "settingsFrameHTML";
+          owner?.name?.text === "settingsLayoutHTML";
         assert(
           file === "src/modules/playback/playback-shell.ts" ||
             sharedSoundComposite,

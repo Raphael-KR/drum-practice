@@ -20,6 +20,18 @@ export function resizeScoreStage(
   ribbon: HTMLElement,
   s: Song,
 ) {
+  const staffMiddle =
+    s.settings.view === "ribbon"
+      ? ribbon.querySelector<HTMLElement>(".crop[data-staff-middle]")?.dataset
+          .staffMiddle
+      : undefined;
+  if (staffMiddle !== undefined) {
+    stage.dataset.staffMiddle = staffMiddle;
+    stage.style.setProperty("--ribbon-staff-middle", `${staffMiddle}px`);
+  } else {
+    delete stage.dataset.staffMiddle;
+    stage.style.removeProperty("--ribbon-staff-middle");
+  }
   const height =
     Math.max(
       s.settings.view === "rows" && stage.closest(".drawer-playback")

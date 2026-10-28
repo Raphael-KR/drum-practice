@@ -66,6 +66,7 @@ export function scoreLayout(
     return {
       ...layout,
       height: layout.height + 24,
+      staffMiddle: layout.staffMiddle + 24,
       position: `${x}px ${y + 24}px`,
     };
   }

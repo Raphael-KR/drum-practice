@@ -6,6 +6,7 @@ import type { Player } from "../../src/modules/audio/audio-core";
 import type { Song, Loop } from "../../src/model/model";
 import { validateSong } from "../../src/model/model";
 import { createPlaybackScreen } from "../../src/modules/playback/playback-screen";
+import { appInfoHTML } from "../../src/shared/ui/app-info";
 import {
   webPlaybackBindings,
   playerPlaybackBindings,
@@ -13,7 +14,6 @@ import {
   scoreStageHTML,
 } from "../../src/modules/playback/playback-ui";
 import {
-  appInfoHTML,
   playbackTransportRightHTML,
   repeatBarHTML,
   tempoFieldsHTML,
@@ -65,7 +65,7 @@ function mount(
   };
   const root = document.createElement("div");
   document.body.replaceChildren(root);
-  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: playbackTransportRightHTML({ progress: ids.progress, mark: ids.mark, sound: ids.sound }) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog">${loopFieldsHTML()}<div id="loop-slots"></div></dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}${appInfoHTML("test", { source: "test", builtAt: "2026-10-13T00:00:00Z" })}`;
+  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: playbackTransportRightHTML({ progress: ids.progress, mark: ids.mark, sound: ids.sound }) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog">${loopFieldsHTML()}<div id="loop-slots"></div></dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}${appInfoHTML("test", { source: "test", builtAt: "2026-10-13T00:00:00Z" }, { scoreInfo: true })}`;
   const stage = root.querySelector<HTMLElement>("#stage")!;
   Object.defineProperty(stage, "clientWidth", {
     value: 800,

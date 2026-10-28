@@ -27,6 +27,8 @@
 
 ### 공통 검사와 CI
 
+웹앱 개발 중에는 아래의 정적 검사 `pnpm run check`만 실행한다. 화면 테스트는 릴리스 때 수행하며, 그때 필요한 테스트·빌드도 함께 확인한다. 별도 사용자 요청은 우선하며, 자세한 범위는 [검증 Rule](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)을 따른다.
+
 - 최초 준비: `pnpm install --frozen-lockfile`. 루트와 hosting을 한 번에 설치하며 Git에 보관한 `config/shared-catalog.yaml` 사본과 공용 잠금 파일을 사용한다. 개인 중앙 경로는 필요하지 않다. 버전 갱신과 로컬 정본 대조는 [카탈로그 동기화 절차](develop.md#공유-의존성과-중앙-버전-갱신)를 따른다.
 - `pnpm run generate`: 라이선스·소스 빌드번호 생성. 모든 개발 진입점과 테스트·앱/도구 타입 검사의 pre 단계가 재사용한다.
 - `pnpm run check`: ESLint, 코드/설정 서식, 앱·도구·hosting 타입, i18n, 모듈 경계, 생성 UI 문서·상대 파일 링크 검사.
@@ -128,6 +130,8 @@ player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons
 <a id="ui-review--화면악보재생-검수-절차"></a>
 
 ## 화면·악보·재생 검수 절차
+
+웹앱 개발 변경의 화면 테스트는 릴리스 때 이 절차로 수행한다. 악보 제작·검수 등 별도로 요청된 작업의 검사 범위는 해당 요청과 정본 절차를 따른다.
 
 [UX Rule](../reference/product/ux.md#ux-principles--팀-ux-원칙과-맥락형-도움말), [SVG Rule](../reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙), [검증 Rule](../reference/engineering/verification.md#verification-rules--검증-범위와-증거)을 먼저 읽는다. GUI·시험은 현재 전역·프로젝트 지침의 허가 범위 안에서 수행한다. 이 절차를 읽는 것 자체가 실행 승인은 아니다.
 

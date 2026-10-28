@@ -38,7 +38,6 @@
 .has-song .drawer-playback header,
 .drawer-playback #practice > .stage,
 .drawer-playback .playback-dock .transport,
-.drawer-playback .playback-drawer,
 .drawer-playback .drawer-panel {
   border: 0;
   border-radius: 0;
@@ -52,9 +51,8 @@
   background: var(--dock-surface);
 }
 .drawer-playback .playback-drawer {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.35), transparent 60%),
-    var(--drawer-surface);
+  border: 0;
+  border-radius: 0;
 }
 
 /* Full-bleed color bands: safe areas belong inside each colored region. */
@@ -80,7 +78,7 @@
   padding-right: max(8px, env(safe-area-inset-right, 0px));
 }
 .drawer-playback .playback-drawer {
-  border-bottom: var(--playback-safe-bottom) solid #d7efe8;
+  border-bottom: var(--playback-safe-bottom) solid var(--liquid-glass-edge);
   padding-left: max(12px, env(safe-area-inset-left, 0px));
   padding-right: max(12px, env(safe-area-inset-right, 0px));
 }
@@ -99,8 +97,7 @@
   border-top: 1px solid var(--dock-edge);
 }
 .drawer-playback .playback-drawer {
-  border-top: 2px solid var(--drawer-edge);
-  box-shadow: inset 0 -1px var(--drawer-edge);
+  border-top: 2px solid var(--liquid-glass-edge);
 }
 
 /* Let Safari own the page-edge rubber band when dragging the title. */
@@ -602,7 +599,7 @@ button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .has-song #app.playback-ui header h1[data-app-build]::after {
+  .has-song #app.playback-ui header .app-build-label {
     display: none;
   }
   .has-song .playback-ui header .library-header-actions {
@@ -850,22 +847,23 @@ button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
   }
 }
 
-/* Tablet and desktop: give unused height to the three shortcut/range rows.
-   Keep each breakpoint's existing board height as its non-shrinking basis. */
 @media (min-width: 720px) {
   /* Match the comparison canvas's minimum render height before sharing space. */
   .drawer-playback #practice.score-review > .stage {
     min-height: 220px;
   }
-  .drawer-playback #practice > .playback-dock {
-    flex: 1 0 auto;
-  }
-  .drawer-playback #practice > .playback-dock > .transport {
-    flex: 0 0 auto;
-  }
-  .drawer-playback #practice > .playback-dock > .playback-drawer {
-    flex: 1 0 auto;
-  }
+}
+
+/* All viewport widths: give unused height to the three shortcut/range rows.
+   Keep each breakpoint's existing board height as its non-shrinking basis. */
+.drawer-playback #practice > .playback-dock {
+  flex: 1 0 auto;
+}
+.drawer-playback #practice > .playback-dock > .transport {
+  flex: 0 0 auto;
+}
+.drawer-playback #practice > .playback-dock > .playback-drawer {
+  flex: 1 0 auto;
 }
 
 .settings-panel[data-settings-panel="audio"] {
@@ -937,4 +935,83 @@ dialog.confirmation-dialog {
   min-height: 48px;
   border-radius: 24px;
   font-weight: 600;
+}
+
+/* Phone landscape automatically uses the score-only layout. */
+@media (orientation: landscape) and (max-width: 1023px) and (max-height: 480px) {
+  .has-song #app.drawer-playback.score-only-view {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    padding: 0;
+    background: white;
+  }
+  .has-song .drawer-playback.score-only-view > header,
+  .has-song .drawer-playback.score-only-view .playback-dock,
+  .has-song .drawer-playback.score-only-view #review-tools {
+    display: none;
+  }
+  .has-song .drawer-playback.score-only-view .statusline {
+    position: fixed;
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    z-index: 30;
+  }
+  .has-song .drawer-playback.score-only-view main {
+    display: block;
+    overflow: auto;
+    padding: 0;
+  }
+  .has-song .drawer-playback.score-only-view #practice {
+    min-height: 100%;
+    justify-content: center;
+  }
+  /* Preserve the natural two-row height, including scrolling on short screens. */
+  .has-song .drawer-playback.score-only-view #practice:not(.two-rows) > .stage,
+  .has-song .drawer-playback.score-only-view #practice.score-review > .stage {
+    flex: 0 0 100dvh !important;
+    height: 100dvh !important;
+    min-height: 100dvh;
+  }
+  .has-song .drawer-playback.score-only-view #practice:not(.two-rows) > .stage {
+    min-height: max(100dvh, calc(var(--row-content-height, 200px) + 94px));
+  }
+  .has-song
+    .drawer-playback.score-only-view
+    #practice:not(.two-rows):not(.score-review)
+    > .stage[data-staff-middle] {
+    --ribbon-center-top: max(53px, calc(50dvh - var(--ribbon-staff-middle)));
+    /* Leave room to scroll an enlarged staff to the viewport center in either direction. */
+    min-height: max(
+      100dvh,
+      calc(var(--ribbon-center-top) + var(--row-content-height)),
+      calc(var(--ribbon-center-top) + var(--ribbon-staff-middle) + 50dvh)
+    );
+  }
+
+  /* Reuse the live transport as a single overlay row; leave score geometry intact. */
+  .score-only-view
+    #practice:not(.two-rows):not(.score-review)
+    > .playback-dock {
+    display: block;
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 25;
+  }
+  .score-only-view
+    #practice:not(.two-rows):not(.score-review)
+    .playback-drawer {
+    display: none !important;
+  }
+  .score-only-view #practice:not(.two-rows):not(.score-review) .transport {
+    overflow-x: clip;
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  }
+  /* Reuse the wide dock breakpoint; omit its second-row group in the overlay. */
+  @media (max-width: 899px) {
+    .score-only-view #practice:not(.two-rows):not(.score-review) .dock-repeat {
+      display: none;
+    }
+  }
 }

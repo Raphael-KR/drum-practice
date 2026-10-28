@@ -503,7 +503,7 @@ it("groups screen, playback, score management and app info in settings", async (
   expect(Object.keys(buildInfo).sort()).toEqual(["builtAt", "source"]);
   expect(buildInfo.source).toMatch(/^[a-f0-9]{12}$/);
   expect(document.getElementById("app-version")!.textContent).toBe(
-    `${JSON.parse(readFileSync("src/app-versions.json", "utf8")).editor.version} (${buildInfo.source})`,
+    `v${JSON.parse(readFileSync("src/app-versions.json", "utf8")).editor.version} · build ${buildInfo.source.slice(0, 8)}`,
   );
   expect(document.querySelector(".app-info h4")).toBeNull();
   expect(

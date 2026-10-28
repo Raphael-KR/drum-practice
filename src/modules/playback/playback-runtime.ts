@@ -3,6 +3,7 @@ import {
   type PracticeFileControlsOptions,
 } from "../library/practice-file-controls";
 import { renderKeepingTopHeader } from "../../shared/ui/top-edge-header";
+import { appInfoContent } from "../../shared/ui/app-info";
 import type { RibbonAsset } from "./playback-assets";
 import appVersions from "../../app-versions.json";
 import { installScoreReader } from "../score/score-reader";
@@ -23,7 +24,6 @@ import {
 } from "./playback-assets";
 import { playbackInitial, type PlaybackInitial } from "./playback-initial";
 import {
-  appInfoHTML,
   selectPlaybackSettings,
   type SettingsCategory,
 } from "./playback-forms";
@@ -45,7 +45,6 @@ export interface PlaybackRuntimeOptions {
   pages: Blob[];
   scores?: { song: Song; pages: Blob[] }[];
   initial?: PlaybackInitial;
-  licenses?: string;
   changed?: (song: Song, initial: PlaybackInitial) => void | Promise<void>;
   onLibrary?: () => void;
   practiceFiles?: PracticeFileControlsOptions;
@@ -128,10 +127,9 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
     markerContent,
     loopExtra,
   });
-  addSettings("info", "info-settings", "open-info-settings").innerHTML =
-    appInfoHTML(appVersions.player.version, build) +
-    `<details><summary>${i18nText("licenses.message083")}</summary><pre id="licenses"></pre></details>`;
-  $("licenses").textContent = options.licenses ?? "";
+  addSettings("info", "info-settings", "open-info-settings").append(
+    appInfoContent(appVersions.player.version, build, { scoreInfo: true }),
+  );
   const noticeStage = $("stage");
   const alignNotice = () => {
     $("status").style.setProperty(

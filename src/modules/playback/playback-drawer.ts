@@ -1,4 +1,5 @@
 import { t } from "../../shared/i18n/i18n";
+import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
 import type { PlaybackBindings } from "./playback-ui";
 
 type Panel = "loop" | "marker";
@@ -34,7 +35,7 @@ export function mountPlaybackDrawer(
   root.querySelector(".repeat-controls")?.remove();
   const drawer = document.createElement("section");
   drawer.id = "playback-drawer";
-  drawer.className = "playback-drawer liquid-glass";
+  drawer.className = "playback-drawer";
   drawer.setAttribute("aria-label", t("drawer.controls"));
   const panels = new Map<Panel, HTMLElement>();
   for (const name of ["loop", "marker"] as const) {
@@ -55,6 +56,7 @@ export function mountPlaybackDrawer(
     drawer.append(panel);
   }
   group.append(drawer);
+  const glass = mountLiquidGlass(drawer);
   const triggers = [get(ids.adjust)];
   group.dataset.drawerOpen = "true";
   for (const trigger of triggers) {
@@ -67,5 +69,5 @@ export function mountPlaybackDrawer(
     const target = panels.get(name)!;
     target.focus({ preventScroll: true });
   };
-  return { show, dispose() {} };
+  return { show, dispose: glass.dispose };
 }

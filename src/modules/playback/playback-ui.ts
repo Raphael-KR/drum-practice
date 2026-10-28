@@ -76,10 +76,10 @@ export function arrangePlaybackUI(root: HTMLElement, ids: PlaybackBindings) {
     "playback-stop": ids.stop,
     "playback-adjust": ids.adjust,
     "playback-markers": ids.markers,
-    "playback-title": ids.title,
     "playback-tempo": ids.tempo,
   };
   for (const [role, id] of Object.entries(roles)) get(id)?.classList.add(role);
+  get(ids.title)?.closest("h1")?.classList.add("playback-title");
   const transport = root.querySelector<HTMLElement>(".transport")!;
   const left = transport.querySelector<HTMLElement>(".transport-left")!;
   const right = transport.querySelector<HTMLElement>(".transport-right")!;
