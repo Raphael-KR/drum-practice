@@ -2,6 +2,30 @@
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](README.md)와 [현행 정본](../RULES-INDEX.md)을 구분한다.
 
+<a id="safari-responsive-mode-20261028"></a>
+
+## Safari 응답형 디자인 모드 직접 제어 검증 — 2026-10-28
+
+- 사용자 요청으로 macOS Safari 27.0.1의 별도 검사 창에서 로컬 `player.html?rdm-check=20261028`을 열었다. 앱은 0.9.1·소스 빌드 `6fa6969d`이며 앞선 상단바 CSS 수정이 반영된 상태다. 사용자 기존 응답형 창은 보존했다.
+- 네이티브 GUI 제어(`cua_repl`)로 `개발자용 → 응답형 디자인 모드 시작`을 직접 선택했다. 프리셋·회전·크기 필드와 앱의 접근성 트리가 노출되고, 검사 창의 PNG 캡처도 성공했다. 처음 기존 창의 캡처에서 `Screenshot unavailable`이 한 번 반환됐으나 새 검사 창에서는 캡처가 정상 반환됐다. 원인은 확정하지 않았다.
+- 프리셋과 회전 뒤 확인한 도구 막대 값은 아래와 같다. 값은 응답형 모드 UI에서 읽었으며 해당 창의 JavaScript `innerWidth` 측정값으로 바꾸어 보고하지 않는다. 확대 비율은 Mac 창에 맞춘 미리보기 배율이다.
+
+| 프리셋·방향 | 폭×높이 | 픽셀 비율 | 미리보기 배율 |
+| --- | --- | --- | --- |
+| iPhone 세로 | 393×852 | 3x | 82% |
+| iPhone 가로 | 852×393 | 3x | 100% |
+| iPad mini 가로 | 1133×744 | 2x | 94% |
+| iPad mini 세로 | 744×1133 | 2x | 62% |
+
+- 같은 응답형 창에서 기존 Loveholic 열기, `1줄 → 2줄 → 1줄` 전환, 도움말 열기·닫기를 직접 실행하고 접근성 선택 상태·화면 변화를 확인했다. iPhone 가로와 iPad mini 세로에서 제목·버전 첫 줄/버튼 둘째 줄 배치를 캡처로 확인했다. 기기 실물 재생·오디오·터치 성능 검사는 수행하지 않았다.
+- 현재 Safari MCP의 17개 도구에는 네이티브 메뉴·응답형 프리셋 명령이 없다. 일반 Safari 검사 창을 열고 iPhone 프리셋을 적용한 상태에서 MCP `list_tabs`에는 MCP가 생성한 자동화 탭 하나만 표시됐다. MCP의 URL에는 검사 쿼리가 없고 `innerWidth=1024`, `innerHeight=664`, DPR=2 및 목록 제목을 반환해 응답형 창과 다른 페이지 상태임을 확인했다. 네이티브 GUI 제어 성공과 해당 창의 MCP DOM 연결은 구분하며, 이번 연결에서는 동일 창을 MCP로 제어하지 못했다.
+- 후속 사용자 제안으로 MCP 검사 탭에서 `keyPress`에 `Control+Command+R`을 전달했다. 도구는 유효한 키가 아니어서 문자열을 한 글자씩 입력했다고 반환했고, 뷰포트는 1024×664·DPR=2로 유지됐다. `window.focus()` 뒤에도 `document.hasFocus()`는 false였으며 네이티브 Safari 제어는 기존 사용자 창을 선택했다. 대상이 일치하지 않아 OS 조합키는 보내지 않았다. **조합키 전달 자체가 확인되지 않았으므로 MCP 창에서 응답형 모드가 금지된다는 증거는 아니다.** 실제 OS 단축키로 MCP 창에 진입하고 MCP 연결을 유지할 수 있는지는 미검증이다. 해당 검사 탭만 닫았으며 근거는 `mcp-shortcut-attempt.json`이다.
+- **후속 수동 단축키 검증:** MCP가 `player.html?mcp-manual-rdm=20261028`을 열고 사용자가 해당 창에서 ⌃⌘R로 진입했다고 확인했다. 같은 MCP 탭 핸들·URL을 유지한 채 실제 `innerWidth/innerHeight`가 1024×664에서 750×1130(DPR=2)으로 바뀌었고 DOM·요소 좌표 읽기, 페이지 PNG 캡처, 도움말 버튼 클릭(`expanded=true`·dialog 표시)이 성공했다. 따라서 위 미검증 중 **MCP 창에서 응답형 모드와 페이지 제어를 함께 사용하는 경로는 확인됐다.** 다만 사용자 보고로 MCP 제어 UI가 상단 응답형 도구 막대를 가렸으며, Computer Use는 계속 기존 일반 Safari 창을 선택해 이 가림을 직접 캡처하지 못했다. OS 단축키 자동 전달과 가려진 기기 메뉴 제어는 여전히 미검증이다. 시험 도움말 닫기 요청은 stale UID로 실패했지만 재조회에서는 도움말이 없고 뷰포트가 955×927인 것을 확인했다. 검사 창은 사용자의 추가 조작을 위해 열어두었다. 근거는 `mcp-manual-verification.json`, `mcp-manual-after-shortcut.png`, `mcp-rdm-help-open.png`다.
+- 원래 1줄 보기를 복원하고 검사 창·MCP 생성 탭을 닫았다. 기존 Safari 창의 iPhone SE 667×375, 2x 및 기존 곡·1줄 보기 상태가 유지된 것을 확인했다. 증거는 로컬 `.tmp/safari-responsive-mode-20261028/`의 `iphone-landscape-two-line.png`, `ipad-mini-landscape.png`, `ipad-mini-portrait.png`, 도움말 캡처·접근성 트리, `mcp-separation.json`이다.
+- **후속 신규 연결·가려진 메뉴 검증:** 사용자의 Safari 전체 종료 및 MCP 신규 연결 승인에 따라 Safari 종료를 확인한 뒤 공식 `/usr/bin/safaridriver --mcp`에 별도 stdio 연결을 만들었다. 기존 등록 도구는 `Transport closed` 상태였으며 이 연결의 복구를 주장하지 않는다. 새 연결의 `list_tabs`에는 `player.html?mcp-rdm-single=20261028` 탭 하나만 있었고, Computer Use도 같은 URL·창을 선택했다. 네이티브 `ctrl+super+r`로 응답형 모드에 진입했고, 창 캡처로 MCP 배너가 상단 도구 막대를 가리는 현상을 직접 확인했다.
+- **가려져도 조작 가능:** 접근성 트리의 `ViewportPresetButton`을 눌러 iPhone·iPad mini 메뉴를 선택하고 `뷰포트 회전`을 눌러 방향을 바꿨다. iPhone UI는 393×852→852×393·3x, 실제 MCP DOM은 392×851→851×393·DPR=3이었다. iPad mini UI는 1133×744→744×1133·2x, 마지막 DOM은 744×1132·DPR=2였다. 이 1px 차이의 원인은 확정하지 않았다. 같은 MCP 연결의 도움말 클릭도 `successful=1`, `expanded=true`로 확인했다. 위 OS 단축키·가려진 메뉴 미검증은 이번 결과로 해소됐으며 iOS 실물·터치·오디오 성능 검증을 뜻하지 않는다. 근거는 `mcp-single-rdm-toolbar.png`, `mcp-single-iphone-landscape.ax.txt`, `mcp-single-ipad-portrait.ax.txt`, `mcp-single-verification.json`이다. 새 검사 창은 사용자가 계속 볼 수 있게 유지한다.
+- 실행 절차는 [iPad 검수 안내](../how-to/verify-ipad.md)에 반영했다. 이번 작업은 도구·검수 경로 확인이며 앱 코드·버전 변경, 커밋·푸시·발행은 하지 않았다.
+
 <a id="ipad-simulator-history--ipad-시뮬레이터-설치연결-기록"></a>
 
 ## iPad 시뮬레이터 설치·연결 기록

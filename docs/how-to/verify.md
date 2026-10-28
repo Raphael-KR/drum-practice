@@ -132,7 +132,7 @@ player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons
 [UX Rule](../reference/product/ux.md#ux-principles--팀-ux-원칙과-맥락형-도움말), [SVG Rule](../reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙), [검증 Rule](../reference/engineering/verification.md#verification-rules--검증-범위와-증거)을 먼저 읽는다. GUI·시험은 현재 전역·프로젝트 지침의 허가 범위 안에서 수행한다. 이 절차를 읽는 것 자체가 실행 승인은 아니다.
 
 1. 실제 대상 앱/origin·입력/패키지 해시·버전/빌드·현재 저장 상태를 기록한다. 순수 문서 변경이면 앱을 실행하지 않고 문서·보존 검사로 범위를 맞춘다.
-2. 제품 검수는 공통 카탈로그·설정·도움말·닫기·포커스·터치 영역과 해당 변경 흐름을 확인한다. 실제 화면·지원하지 않는 브라우저 기능·미확인을 구분한다.
+2. 화면 검수는 기본적으로 [Safari MCP 창의 응답형 디자인 모드](verify-ipad.md#safari-responsive-mode)를 사용한다. 같은 창에서 Computer Use로 기기·방향을 설정하고 Safari MCP로 화면·버튼을 확인한다. 제품 검수는 변경에 맞춰 공통 카탈로그·설정·도움말·닫기·포커스·터치 영역과 해당 흐름을 확인한다. 실제 화면·지원하지 않는 브라우저 기능·미확인을 구분한다.
 3. 악보 표시·PDF/SVG 비교는 [악보 검수](review-score.md#원본과-제작기-화면-대조)를 따른다.
 4. 저장/재열기와 재생은 [기존 실제 패키지 검사 순서](verify.md#testing--곡-수록-후-개발-검증)를 따른다. 실제 AudioContext와 위치 진행 후 배속·반복·카운트오프를 관측한다. 수치·화면·사람 청취를 별도 기록한다.
 5. 일시 검수 DOM/URL·계측 래퍼·검증용 구간과 설정은 시작 상태에 맞게 정리한다. 다른 곡·기존 사용자 데이터를 초기화하지 않는다. 검사 결과·캡처·한계·다음 조치를 기록한다.
