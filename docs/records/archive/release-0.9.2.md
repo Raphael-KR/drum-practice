@@ -18,4 +18,7 @@
 - 두 앱 0.9.2, 소스 빌드 `7ccd93194e9b`. `pnpm run verify` exit 0: lint·438개 서식·앱/도구/hosting 타입·문서/구조·131파일 796테스트·두 앱 빌드/경계 통과. 기존 OSMD 혼합 import·500kB 초과 chunk 및 Node localStorage 실험 경고는 비차단으로 기록한다.
 - 버전만 이전 상태로 대입해 소스 빌드를 재계산한 결과 기존 UI 검수의 `6fa6969d9c61`과 일치했다. 검수 당시와 릴리스의 제품 빌드 입력 378개 중 버전 파일만 바뀌었고, 공통 CSS diff SHA-256은 `4acb57df222223593d7218c093cd9ddc3af555f843bf271dc71a86b3b5d6e162`로 유지된다. 근거는 `.tmp/release-0.9.2/source-equivalence.json`과 `.tmp/iphone-landscape-header-20261028/`이다.
 - Safari 27.0.1의 MCP 검사 창에서 iPhone 가로 프리셋을 선택하고 실제 Loveholic을 열었다. 852×392 페이지에서 제목·버전은 첫 줄, 템포·메트로놈·줄보기와 나머지 버튼은 둘째 줄에 표시됐으며 8분 메트로놈 선택과 84×48px 배치를 확인했다. 마지막 4분·1줄 상태를 재조회했다. 근거: `.tmp/release-0.9.2/player-landscape.png`, `player-open.txt`. 실기기 검증은 아니다.
-- 이후 같은 MCP 연결에서 제작기 URL로 이동할 때 서버가 exit 1로 종료됐다. 원인은 확인하지 못했다. 이번 제작기 재검수는 성공으로 기록하지 않으며, 버전 외 제품 빌드 입력이 동일한 앞선 Safari/Ego 제작기 화면 증거를 사용한다. PR·CI·발행 단계는 진행 중이다.
+- 이후 같은 MCP 연결에서 제작기 URL로 이동할 때 서버가 exit 1로 종료됐다. 원인은 확인하지 못했다. 이번 제작기 재검수는 성공으로 기록하지 않으며, 버전 외 제품 빌드 입력이 동일한 앞선 Safari/Ego 제작기 화면 증거를 사용한다.
+- 구현 `2eac2605ff804e08f9ce9e63ea4afd9c19599176`, PR #24의 CI·검토·병합 완료. 제품 main `68fdc6d4a20b68af02edad240c48438a07bb682d`의 CI와 두 앱 재빌드가 통과했다. PR head와 병합 main의 Git tree가 같다.
+- 기존 공개 Site의 버전91, 배포 `appgdep_6ae18f339cf0819190895c5f9ba64153`가 2026-10-28 14:59:31 KST에 성공했다. 정본·사본·Worker 45파일 해시와 공개 49항목이 통과했다. [발행 결과](../releases.md#release-0-9-2-20261028)에 식별자·해시·한계를 기록했다.
+- 결과 문서는 별도 PR로 반영하며 제품 버전·발행을 반복하지 않는다. 이번 병합 브랜치 정리와 최종 main 일치는 로컬 receipt로 확인한다.
