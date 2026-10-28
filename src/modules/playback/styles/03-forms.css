@@ -153,6 +153,15 @@
   color: var(--accent);
   cursor: pointer;
 }
+.metronome-toggle[data-metronome-mode] {
+  width: 84px;
+  flex-shrink: 0;
+  gap: 4px;
+}
+.metronome-toggle[data-metronome-mode] > .ui-icon {
+  width: 36px;
+  height: 36px;
+}
 .metronome-toggle input {
   position: absolute;
   inset: 0;
