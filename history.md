@@ -1,9 +1,16 @@
+## 2026-10-28 — 0.9.0 메트로놈 릴리스 완료
+
+- 두 앱 0.9.0·빌드 `3836cdee4d6d`. [PR #20](https://github.com/Raphael-KR/drum-practice/pull/20)의 구현 `cd6f3533`을 제품 main `cde9e13a`에 병합하고 main에서 두 앱을 다시 빌드했다. [발행 식별자·검증 근거](docs/records/releases.md#release-0-9-0-20261028), [완료 계획](docs/records/archive/release-0.9.0.md).
+- 로컬 전체 131파일 796테스트·lint/서식/세 타입·문서/구조·두 앱 빌드, PR/main CI portable 85파일 443테스트가 통과했다. PR/main tree·소스/설정·수록곡 해시가 같고 이전 실제 UI 검수와는 버전만 다름을 대조했다.
+- player만 기존 public Sites 버전89로 발행했다. 09:14:55 KST succeeded, 09:15:26 공개 읽기 49항목·정적 43파일 SHA256·정본/사본/Worker 45파일 대조가 통과했다. editor·개인 자료·의존성·중앙 목록은 유지했다.
+- Safari MCP 문제 후 Ego 대체 검수 근거를 유지한다. Safari/iPad·사람 청취 미확인, 기존 OSMD/chunk/Node/Actions 경고를 완료로 바꾸지 않았다. 결과 문서는 별도 PR로 반영하며 버전·발행을 반복하지 않는다.
+
 ## 2026-10-28 — 0.9.0 메트로놈 릴리스 준비
 
 - 사용자 릴리스 요청에 따라 두 앱을 0.8.18 → 0.9.0으로 올렸다. 8분음표 모드와 직접 선택 메뉴라는 새 기능이므로 minor를 선택했다. 공용 개발 패키지 버전·의존성·기존 자산은 유지했다.
 - 소스 빌드 `3836cdee4d6d`, `pnpm run verify` exit 0: lint·438개 서식·세 타입·i18n·문서/구조·131파일 796테스트·두 앱 빌드/경계 통과. 근거 `.tmp/release-0.9.0/verify.log`.
 - 공통 모드/예약·저장 사본 보정·두 앱 진입점·신규 파일의 검사 포함을 자체 검토했다. UI 소스는 앞선 Ego 검수와 같고 표시 버전만 바뀌었다. Safari/iPad·사람의 청취 미확인과 기존 빌드 경고는 유지한다.
-- [릴리스 계획](docs/plans/release-0.9.0.md)에 PR·main·Sites·공개 확인 단계를 기록한다. 기존 문서 커밋 `1b53be6`, `c24a0e1`도 함께 보존하여 병합한다.
+- [릴리스 계획](docs/records/archive/release-0.9.0.md)에 PR·main·Sites·공개 확인 단계를 기록한다. 기존 문서 커밋 `1b53be6`, `c24a0e1`도 함께 보존하여 병합한다.
 
 ## 2026-10-28 — 공통 메트로놈 4분·8분·끄기 구현
 
