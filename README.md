@@ -13,7 +13,7 @@
 
 ```sh
 cd /Users/raphael/Playground/drum-practice
-npm install --global --allow-scripts=pnpm pnpm@12.15.0
+npm install --global --allow-scripts=pnpm pnpm@12.18.0
 pnpm install --frozen-lockfile
 pnpm run dev
 ```

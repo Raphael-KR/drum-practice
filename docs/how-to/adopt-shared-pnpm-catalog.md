@@ -42,7 +42,7 @@ pnpm --version
 pnpm store path
 ```
 
-현재 검증된 pnpm은 **12.15.0**이다. 이 안내의 파일 분리용 `include`는 이 버전부터 지원한다. 대상 프로젝트의 `packageManager`에 정확한 버전을 기록하고 CI에도 같은 버전을 사용한다. Node는 대상 프로젝트의 `engines`·도구 호환성을 확인해 정한다. pnpm을 준비하기 위해 모든 라이브러리를 전역 설치할 필요는 없다. [공식 include 지원·경로 규칙](https://pnpm.io/config-includes)
+현재 검증된 pnpm은 **12.18.0**이다(2026-11-08 갱신). 이 안내의 파일 분리용 `include`는 12.15.0부터 지원한다. 대상 프로젝트의 `packageManager`에 정확한 버전을 기록하고 CI에도 같은 버전을 사용한다. 전역 설치가 필요하면 `npm install --global --allow-scripts=pnpm pnpm@12.18.0`으로 pnpm의 네이티브 실행 파일 설치를 허용하고 실제 `pnpm --version`을 확인한다. Node는 대상 프로젝트의 `engines`·도구 호환성을 확인해 정한다. pnpm을 준비하기 위해 모든 라이브러리를 전역 설치할 필요는 없다. [공식 include 지원·경로 규칙](https://pnpm.io/config-includes)
 
 ## 3. 기존 의존성 해석을 보존하며 pnpm 준비
 
@@ -92,7 +92,7 @@ include:
 
 ```json
 {
-  "packageManager": "pnpm@12.15.0",
+  "packageManager": "pnpm@12.18.0",
   "devDependencies": {
     "typescript": "catalog:"
   },

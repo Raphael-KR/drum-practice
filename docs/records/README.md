@@ -24,6 +24,9 @@
 
 ### 릴리스와 의존성
 
+- [0.10.2 의존성·보안 릴리스](archive/release-0.10.2.md)
+- [minimatch 보안 수정과 호환성 검증](archive/minimatch-security-20261108.md)
+- [pnpm 실행 버전·카탈로그·OSMD 패치 동기화](archive/pnpm-catalog-sync-20261108.md)
 - [0.10.1 폰 가로 설정·공통 조작 개선 릴리스](archive/release-0.10.1.md)
 - [0.9.0 메트로놈 릴리스](archive/release-0.9.0.md)
 - [0.8.18 중앙 버전 YAML 분리 릴리스](archive/release-0.8.18.md)
