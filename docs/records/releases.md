@@ -4,6 +4,18 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-10-2-20261108"></a>
+
+## 0.10.2 — pnpm·카탈로그·OSMD 동기화와 보안 수정 · 2026-11-08 발행
+
+- 두 앱 0.10.1 → 0.10.2 patch. pnpm 실행 파일/pin 12.18.0, 카탈로그 13개 갱신과 OSMD 2.3.0 JSZip 공유 패치, minimatch 11.0.5 보안 수정 및 날짜 검사/Sites 준비 호환성을 반영했다. 기존 기능·저장 형식·수록 6곡과 검사 기준을 유지한다. [실행 기록](archive/release-0.10.2.md).
+- 소스 빌드 `6a539cdfde15`, 구현 `797c1d76b0015eaa307f6e5721868ee7c77e2742`, [PR #30](https://github.com/Raphael-KR/drum-practice/pull/30), 제품 main `a80d9bf7b1aaf05ad651f2c07e834af71612e3b5`. 자체 검토·[PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42444227611)·[main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42444489073) 통과. PR/main tree가 같아 로컬 결과를 재사용하고 main에서 두 앱을 재빌드했다.
+- Node 26.13.0·pnpm 12.18.0의 `pnpm run verify` 통과: lint·445파일 서식·앱/도구/hosting 타입·구조/154문서·131파일 797테스트·두 앱 빌드. ESLint 대상 370파일 보존, 루트/Sites audit 0건, 독립 frozen 설치·빌드와 player 48파일 세 위치 해시 대조도 통과했다.
+- Safari MCP hidden 탭/rAF 제약을 기록하고 ego-browser/Chromium의 실제 685×941 viewport에서 두 앱 Loveholic MusicXML·1줄/2줄·실제 AudioContext/재생 진행과 player 저장·재열기를 확인했다. iOS/iPadOS 실기기·시뮬레이터·사람 청취와 유보된 iPhone 재로드 진단은 수행하지 않았다.
+- 기존 public Site에 player만 발행했다. Sites 소스 `10a5ecd42b4ead3f4eb9a2fc3222b0f678da1c39`, 저장 버전 94 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_c7dda6edbc4881918a150b6902f289f9`), 배포 `appgdep_6aeff2c31aa08191b157b979f1cbc595`: **succeeded**, **2026-11-08 12:56:01 KST** / `2026-11-08T03:56:01.768445+00:00`. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 아카이브 `local-archives/releases/release-0.10.2.tar.gz` SHA256 `fea7f9970c9616fa2022fc490e2db6adb864dd1e691d3600fee669f3e359ec7d`. Sites tar content hash `sha256:e0af3df8969f4b80ed4f515332c777f04914af4df7ad03adb8568a8dec2268fa`와 구분한다.
+- 공개 읽기 52항목(HTML/보안 헤더·46정적 파일·수록 6곡·폐기 API 404)과 공개 버전/빌드 표시 확인을 통과했다. 기존 번들/Node 경고와 검수 한계는 실행 기록에 남긴다. 근거 `.tmp/release-0.10.2/`를 보존하며 결과 문서 PR만으로 버전·발행을 반복하지 않는다.
+
 <a id="release-0-10-1-20261029"></a>
 
 ## 0.10.1 — 폰 가로 설정·공통 조작 개선 · 2026-10-29 발행
