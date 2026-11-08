@@ -22,3 +22,5 @@ include:
   ./config/shared-catalog.yaml: [catalog]
 patchedDependencies:
   opensheetmusicdisplay@2.2.1: config/patches/opensheetmusicdisplay@2.2.1.patch
+minimumReleaseAgeExclude:
+  - opensheetmusicdisplay@2.3.0

@@ -1,3 +1,10 @@
+## 2026-11-08 — pnpm 카탈로그 갱신 작업 상태 보관
+
+- 사용자 요청에 따라 미커밋 `config/shared-catalog.yaml`·`pnpm-workspace.yaml`을 현재 작업 상태로 보관한다. 카탈로그의13개 패키지 버전 변경과 `opensheetmusicdisplay@2.3.0`의 `minimumReleaseAgeExclude` 항목을 포함한다.
+- 설치 갱신은 미완료다. 카탈로그는 OSMD2.3.0 등 새 버전을 선언하지만 `pnpm-lock.yaml`의 카탈로그는 이전 버전이고 JSZip 공유 패치는 OSMD2.2.1을 대상으로 한다. 설치·잠금 파일·패치와 앱 호환성은 함께 후속 검증해야 한다. 앱 표시 버전은 설치 완료 전의0.10.1이다.
+- 현재 실행되는 pnpm11.25.0에서 `pnpm install --frozen-lockfile --lockfile-only --offline --ignore-scripts`가 `include` 설정 미지원 경고와 `ERR_PNPM_CATALOG_IN_OVERRIDES`(default catalog의 jszip 항목을 찾지 못함)로 실패했다. 프로젝트·기존 설치의 지정 버전은 pnpm12.15.0이며 잠금 파일 SHA256 `a6a7e2db72ee06ded499e828f031582486a971fbda6bb5be4e8b3343588bbf9f`는 검사 전후 같다.
+- 기존 설치의 Prettier를 Node로 직접 실행한 두 YAML 서식 검사와 `git diff --check`는 통과했다. 이 결과를 새 의존성의 설치·타입·테스트·빌드 성공으로 간주하지 않는다. iPhone Safari 재로드 진단은 사용자 요청에 따라 문제 기기 확인 전까지 유보한다.
+
 ## 2026-10-29 — 악보제작기 PC 전용 범위 확정
 
 - 사용자 결정에 따라 악보제작기는 PC(데스크톱·노트북) 전용으로 개발하며 휴대폰·태블릿용 UI·반응형 최적화·화면 검증을 대상에서 제외한다. 해당 기기 대응은 드럼연습실에만 적용한다.
