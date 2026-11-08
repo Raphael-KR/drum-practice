@@ -1,3 +1,10 @@
+## 2026-11-08 — 0.10.2 발행 완료
+
+- [PR #30](https://github.com/Raphael-KR/drum-practice/pull/30)의 자체 검토·CI·main 병합과 병합 main CI를 마쳤다. 구현 `797c1d7`과 제품 main `a80d9bf`의 tree가 같고 main에서 두 앱을 재빌드해 소스 빌드 `6a539cdfde15`를 재현했다. 제작기는 PC 로컬 전용이며 player만 기존 공개 Site에 발행했다.
+- Sites 소스 `10a5ecd42b4ead3f4eb9a2fc3222b0f678da1c39`, 저장 버전 94, 배포 `appgdep_6aeff2c31aa08191b157b979f1cbc595`가 2026-11-08 12:56:01 KST에 succeeded로 완료됐다. 독립 frozen 설치/빌드·48파일 세 위치 해시·공개 읽기 52항목과 `v0.10.2 · build 6a539cdf` 표시를 확인했다. 루트/Sites 의존성 audit 모두 0건이다.
+- 전체 로컬 797테스트·정적 검사와 두 앱 실제 렌더링/재생 관측, SHA·배포 ID·아카이브 해시·Safari MCP 제약 및 대체 검수의 한계는 [릴리스 기록](docs/records/archive/release-0.10.2.md)에 남겼다. iOS/iPadOS 실기기·시뮬레이터와 유보된 iPhone 재로드 진단은 수행하지 않았다.
+- 발행 결과 문서만 별도 작업 브랜치·PR로 반영한다. 제품 버전·발행은 반복하지 않으며 이번에 병합한 브랜치만 정리한다.
+
 ## 2026-11-08 — 0.10.2 의존성·보안 릴리스 준비
 
 - 사용자 요청에 따라 pnpm 12.18.0 실행 버전 정정, 카탈로그의 13개 갱신과 OSMD 2.3.0 JSZip 공유 패치, minimatch 11.0.5 보안 수정, ICU 날짜 검사와 Sites 준비 호환성 및 관련 문서를 함께 릴리스한다.
