@@ -51,10 +51,11 @@ await writeFile(
   JSON.stringify(packageJson, null, 2) + "\n",
 );
 // deploy omits the workspace's package-manager pin. Record it with pnpm
-// before shipping a lockfile that must support frozen installation.
+// before shipping a lockfile that must support frozen installation. Missing
+// supply-chain metadata may need a registry read even when packages are cached.
 execFileSync(
   "pnpm",
-  ["install", "--lockfile-only", "--offline", "--ignore-scripts"],
+  ["install", "--lockfile-only", "--prefer-offline", "--ignore-scripts"],
   { cwd: dependencyExport, stdio: "inherit" },
 );
 // Replace only the previous generated mirror; its history is retained in Site Git.

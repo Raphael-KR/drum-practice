@@ -516,10 +516,19 @@ it("groups screen, playback, score management and app info in settings", async (
   const kst = new Date(
     new Date(buildInfo.builtAt).getTime() + 9 * 60 * 60 * 1000,
   );
-  const pad = (n: number) => String(n).padStart(2, "0");
-  expect(document.getElementById("app-built-at")!.textContent).toBe(
-    `${kst.getUTCFullYear()}. ${kst.getUTCMonth() + 1}. ${kst.getUTCDate()}. ${pad(kst.getUTCHours())}:${pad(kst.getUTCMinutes())} KST`,
-  );
+  // Korean date separators vary by ICU/CLDR version; the KST fields must not.
+  const displayedBuildTime = document
+    .getElementById("app-built-at")!
+    .textContent.match(
+      /^(\d{4})[./]\s*(\d{1,2})[./]\s*(\d{1,2})\.?\s+(\d{2}):(\d{2}) KST$/,
+    );
+  expect(displayedBuildTime?.slice(1).map(Number)).toEqual([
+    kst.getUTCFullYear(),
+    kst.getUTCMonth() + 1,
+    kst.getUTCDate(),
+    kst.getUTCHours(),
+    kst.getUTCMinutes(),
+  ]);
   click("open-playback-settings");
   expect(
     (document.getElementById("restart-measure") as HTMLInputElement).checked,

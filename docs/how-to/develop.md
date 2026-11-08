@@ -39,7 +39,7 @@ ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `pn
 
 다른 프로젝트를 같은 구조로 전환할 때는 [공통 저장소·중앙 YAML 전환 안내](adopt-shared-pnpm-catalog.md)를 따른다. 아래 내용은 이 프로젝트의 실제 운영 절차다.
 
-설치 관리자는 `package.json`의 `packageManager`에 지정한 pnpm이다. 최초 한 번 `npm install --global --allow-scripts=pnpm pnpm@12.15.0`으로 준비한다. npm 12에서도 pnpm 자체의 네이티브 실행 파일 설치만 허용하며, 전역 스크립트 정책은 변경하지 않는다. 각 프로젝트의 라이브러리를 npm 전역 경로에서 직접 import하지 않는다.
+설치 관리자는 `package.json`의 `packageManager`에 지정한 pnpm이다. 최초 한 번 `npm install --global --allow-scripts=pnpm pnpm@12.18.0`으로 준비한다. npm 12에서도 pnpm 자체의 네이티브 실행 파일 설치만 허용하며, 전역 스크립트 정책은 변경하지 않는다. 설치 후 프로젝트 밖과 루트의 `pnpm --version`이 지정 버전과 같은지 확인한다. 전역 manifest만 새 버전이고 명령이 이전 버전이면 네이티브 실행 파일 준비가 생략됐는지 확인하고 같은 명령으로 다시 설치한다. 각 프로젝트의 라이브러리를 npm 전역 경로에서 직접 import하지 않는다.
 
 - 중앙 정본: `/Users/raphael/Library/Preferences/pnpm/shared-catalog.yaml`의 `catalog`. 별도 저장소나 프로젝트는 만들지 않는다. 중앙 파일에는 버전 목록만 두고 프로젝트별 override·설치 정책은 workspace에 유지한다.
 - 프로젝트 사본: `config/shared-catalog.yaml`. `pnpm-workspace.yaml`의 `include`가 이 파일의 `catalog`를 읽으며 앱과 `hosting`의 모든 직접 의존성은 `catalog:`로 참조한다. 사본은 심볼릭 링크가 아닌 일반 파일로 Git에 기록한다.
@@ -47,7 +47,7 @@ ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `pn
 - 공통 파일: `pnpm store path`가 출력하는 사용자 기본 저장소. 프로젝트 전용 store 경로를 지정하지 않는다. 다른 기기·CI는 자기 저장소를 사용하며 잠금 파일은 같다.
 - 기존 npm 잠금 파일을 새로 생성하지 않는다. `npm ci` 대신 pnpm 설치를 사용한다. `predev`·`pretest` 등 기존 생성 단계는 `enablePrePostScripts`로 유지한다.
 - 설치 시 esbuild·workerd·fsevents의 기존 플랫폼 준비 스크립트를 허용한다. 브라우저 앱과 기존 검사에서 쓰지 않는 선택적 headless WebGL `gl`의 빌드는 실행하지 않는다.
-- OSMD의 JSZip은 `opensheetmusicdisplay>jszip: catalog:` override로 앱과 같은 버전을 사용한다. [OSMD 패치](../../config/patches/README.md)는 배포 파일에 내장된 구버전도 제거하고 공통 `jszip`을 참조하게 한다. 패치·workspace·lockfile을 함께 유지하며 중앙 YAML이나 공통 store의 원본을 직접 수정하지 않는다. `pnpm run check`는 설치 경로·내장 코드·라이선스 항목도 정적으로 확인한다.
+- OSMD의 JSZip은 `opensheetmusicdisplay>jszip: catalog:` override로 앱과 같은 버전을 사용한다. [OSMD 패치](../../config/patches/README.md)는 배포 파일의 내장 코드도 제거하고 공통 `jszip`을 참조하게 한다. OSMD 2.3.0의 내장 버전도 3.10.2지만 중복 코드이므로 공유 연결을 유지한다. 패치·workspace·lockfile을 함께 유지하며 중앙 YAML이나 공통 store의 원본을 직접 수정하지 않는다. `pnpm run check`는 설치 경로·내장 코드·라이선스 항목도 정적으로 확인한다.
 
 업데이트는 다음 순서로 수행한다.
 
