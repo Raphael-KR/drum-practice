@@ -6,7 +6,7 @@
 
 ## 검증 현황
 
-최신 자동 검사·공개 반영은 [Sites 발행 기록](../how-to/release.md#sites-publication--sites-발행-절차)을 따른다. 아래는 실기기 사용자 확인 이력이며 최신 코드 전체의 검증 상태를 대신하지 않는다.
+최신 자동 검사·브라우저 검수·공개 반영은 [릴리스 기록](releases.md)을 따른다. 아래는 실기기 사용자 확인 이력이며 최신 코드 전체의 검증 상태를 대신하지 않는다.
 
 최신 사용자 확인: 공통 0.7.12, 2026-10-15. 자동 검사·브라우저 관측·사용자 실기기 확인·발행 확인을 구분한다.
 
@@ -31,7 +31,7 @@
 - 사용자 보고: “아이패드에서 확인했어. 하단 버튼 크기 좋아졌네. 잘 된다.”
 - 확인 결과: 악보 재생 화면의 하단 바로가기·구간 버튼 크기 개선이 실기기에서도 정상임을 사용자 확인으로 기록한다.
 - 범위: 이번 하단 버튼판 개선에 대한 확인이다. 다른 기능의 전체 회귀나 기기별 성능 검증으로 확대하지 않는다. 에이전트의 데스크톱 Safari 검증과 별도 근거다.
-- 릴리스: 구현 `cc8b677`, 소스 빌드 `9e84b3a09483`, Sites 버전68. [발행 기록](../how-to/release.md#sites-publication--sites-발행-절차)을 따른다.
+- 릴리스: 구현 `cc8b677`, 소스 빌드 `9e84b3a09483`, Sites 버전68. [발행 기록](releases.md#sites-publication-history--sites-발행공개-확인-기록)을 따른다.
 
 <a id="acceptance--076--과거-검증-기록-2026-10-13"></a>
 
@@ -50,7 +50,7 @@
 | 1마디 시작점 보정 | Safari 393px에서 자동 후보→수동 지정→저장 재조회 및 취소/자료 보존 확인 | `.tmp/bar-one/`; 실물 iPhone 테스트로 간주하지 않음 |
 | 연주 전 카운트 | Safari AudioContext에서 11.27/11.70/12.10/12.55초 예약, 12.99초 첫 강박 확인 | `.tmp/bar-one/countoff-safari.json`; 출력 장치 청감 측정과 구분 |
 | 사용자 청취 | 붉은 노을의 연주 시작점 보정 결과를 사용자 확인 | 해당 곡·해당 보정의 확인이며 모든 라이브 정확도 보증 아님 |
-| 공개 배포 | Sites 62 succeeded, 정적 35파일 일치, HTTP/API smoke 통과 | [발행 기록](../how-to/release.md#sites-publication--sites-발행-절차), `.tmp/release-0.7.6/smoke.json` |
+| 공개 배포 | Sites 62 succeeded, 정적 35파일 일치, HTTP/API smoke 통과 | [발행 기록](releases.md#sites-publication-history--sites-발행공개-확인-기록), `.tmp/release-0.7.6/smoke.json` |
 
 삭제한 로그를 현재 검증 근거로 사용하지 않는다. 새 시험은 사용자 허가를 받은 뒤 실행한다. 현재 소스를 검사하려면 [README의 명령](../../README.md#개발과-검증)을 실행한다.
 

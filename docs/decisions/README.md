@@ -7,7 +7,7 @@
 - [MADR 4.0.0](https://github.com/adr/madr/tree/4.0.0/template)을 사용하며 파일명은 `NNNN-title-with-dashes.md`다. 이 프로젝트 범위의 문서 형식이며 전역 표준을 새로 강제하지 않는다.
 - YAML `status`는 결정 상태, `date`는 마지막 갱신일이다. 원래 결정 시기는 본문과 원문에 남긴다. `accepted`는 구현·전곡·기기·청취·발행 검증 완료를 뜻하지 않는다.
 - Context and Problem Statement, Considered Options, Decision Outcome, Consequences, Confirmation, More Information을 사용한다. 대안은 확인한 채택/대체 경로이며 별도 합의 회의를 추정하지 않는다.
-- 최초 이관은 주제별 기존 최종 결정을 기록하고 대체 전 원문·검증을 More Information에 보존한다. 실제 새 결정이 기존 결정을 대체하면 새 ADR과 이전 status·대체 링크를 갱신한다.
+- 최초 이관은 주제별 기존 최종 결정을 기록한다. 대체 전 원문·검증은 More Information에 두거나, 긴 경우 별도 기록 문서에 보존하고 연결한다. [원문 분리 대응표](../records/documentation-migration.md#긴-adr-원문의-기록-분리--2026-11-09)와 기존 문단별 안내로 이전 주소를 유지한다. 실제 새 결정이 기존 결정을 대체하면 새 ADR과 이전 status·대체 링크를 갱신한다.
 - 같은 주제는 기존 ADR을 재사용한다. 배포/테스트 수·해시·측정값을 건별 ‘결정’으로 만들지 않는다. 이번 문서 이관은 앱·악보의 새 검증이 아니다.
 
 ## 목록

@@ -7,4 +7,4 @@
 
 이전 문단 주소를 유지한다. 아래 링크의 원문·수치는 당시 기록이며 현행 Rule이 아니다.
 
-- <a id="ipad-mini-가로-연습-화면"></a>[iPad mini 가로 연습 화면](../decisions/0005-practice-layout-and-spacing.md#이관-원문--ipad-landscape-uxmd--1)
+- <a id="ipad-mini-가로-연습-화면"></a>[iPad mini 가로 연습 화면](../records/archive/adr-0005-practice-layout-and-spacing-sources.md#이관-원문--ipad-landscape-uxmd--1)

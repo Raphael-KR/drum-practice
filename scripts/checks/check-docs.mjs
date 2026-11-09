@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { markdownDocument } from "./markdown-document.mjs";
 import { projectFiles } from "./project-files.mjs";
 
 const sourceFiles = projectFiles();
@@ -14,36 +15,65 @@ for (const file of sourceFiles) {
 available.add(".");
 const files = sourceFiles.filter((file) => file.endsWith(".md"));
 const missing = [];
+const documents = new Map();
 for (const file of files) {
-  // Check inline relative file links, not remote URLs, absolute local paths or anchors.
-  // Keep code examples out of the document-link contract.
-  const text = readFileSync(file, "utf8").replace(/```[\s\S]*?```/g, (block) =>
-    block.replace(/[^\n]/g, " "),
-  );
-  for (const [index, line] of text.split("\n").entries()) {
-    for (const match of line.matchAll(/\]\(([^)]+)\)/g)) {
-      const target = decodeURIComponent(
-        match[1].split(' "')[0].replace(/^<|>$/g, "").split("#")[0],
+  try {
+    documents.set(file, await markdownDocument(readFileSync(file, "utf8")));
+  } catch (error) {
+    missing.push(`${file}: Markdown parse failed: ${error.message}`);
+  }
+}
+let localLinks = 0;
+let fragmentLinks = 0;
+for (const file of files) {
+  for (const { url, line } of documents.get(file)?.links ?? []) {
+    // No network requests or access to absolute paths outside the source snapshot.
+    if (!url || /^(?:[a-z][\w+.-]*:|\/)/i.test(url)) continue;
+    const hash = url.indexOf("#");
+    let target;
+    let fragment;
+    try {
+      target = decodeURIComponent(hash < 0 ? url : url.slice(0, hash));
+      fragment = hash < 0 ? "" : decodeURIComponent(url.slice(hash + 1));
+    } catch (error) {
+      missing.push(
+        `${file}:${line}: invalid local URL ${url}: ${error.message}`,
       );
-      if (!target || /^(?:[a-z][\w+.-]*:|\/)/i.test(target)) continue;
-      const resolved = path.resolve(path.dirname(file), target);
-      const relative =
-        path.relative(process.cwd(), resolved).split(path.sep).join("/") || ".";
-      if (!existsSync(resolved))
-        missing.push(`${file}:${index + 1}: missing ${target}`);
-      else if (!available.has(relative))
+      continue;
+    }
+    const resolved = target
+      ? path.resolve(path.dirname(file), target)
+      : path.resolve(file);
+    const relative =
+      path.relative(process.cwd(), resolved).split(path.sep).join("/") || ".";
+    localLinks++;
+    if (!available.has(relative)) {
+      missing.push(
+        `${file}:${line}: target not in source snapshot: ${url} -> ${relative}`,
+      );
+    } else if (!existsSync(resolved)) {
+      missing.push(`${file}:${line}: missing file: ${url} -> ${relative}`);
+    } else if (fragment && relative.endsWith(".md")) {
+      fragmentLinks++;
+      const document = documents.get(relative);
+      if (!document) {
         missing.push(
-          `${file}:${index + 1}: target not in source snapshot ${target}`,
+          `${file}:${line}: anchor target could not be parsed: ${relative}`,
         );
+      } else if (!document.anchors.has(fragment)) {
+        missing.push(
+          `${file}:${line}: missing anchor: ${url} -> ${relative}#${fragment} (${document.anchors.size} available anchors)`,
+        );
+      }
     }
   }
 }
 if (missing.length) {
   console.error(
-    `Missing relative document targets (${missing.length}):\n${missing.join("\n")}`,
+    `Invalid document targets (${missing.length}):\n${missing.join("\n")}`,
   );
   process.exitCode = 1;
 } else
   console.log(
-    `PASS: relative file links in ${files.length} Markdown files (URLs/anchors not checked)`,
+    `PASS: ${files.length} Markdown files, ${localLinks} local links, ${fragmentLinks} Markdown anchor links (external URLs/absolute paths/non-Markdown fragments not checked)`,
   );

@@ -33,6 +33,7 @@
 | `config/shared-catalog.yaml` | 중앙 의존성 버전 목록의 Git 사본; CI·설치 입력 |
 | `scripts/{build,checks,dependencies,release}/` | 제품 빌드·검사·의존성 동기화·릴리스 도구 |
 | `tools/` | 악보 제작·벤치마크·Apple 로컬 보조 도구 |
+| `exports/` | 보존된 범례 SVG·과거 화면 검수 자료. [자료 안내](../../../exports/README.md)를 따르며 빌드/임시 출력 위치로 사용하지 않음 |
 
 HTML 주소는 `index.html`, `editor.html`, `player.html`을 유지한다. `src/app-versions.json`이 버전 정본이다. 독립 HTML 내보내기는 추가하지 않는다.
 
@@ -45,6 +46,8 @@ HTML 주소는 `index.html`, `editor.html`, `player.html`을 유지한다. `src/
 pnpm 사용자 공통 저장소의 파일을 공유하고 프로젝트에는 필요한 연결을 구성한다. 보안 수정과 일반 업데이트는 중앙 목록 갱신·사본 및 lockfile 동기화·호환성 수정·검증을 함께 수행한다. 과거 검증 버전에 장기간 고정하는 운영으로 사용하지 않는다. 다른 저장소의 전환은 별도 범위이며 실행 방법은 [개발 절차](../../how-to/develop.md#공유-의존성과-중앙-버전-갱신), 선택 이유는 [ADR-0028](../../decisions/0028-shared-dependency-store-and-catalog.md)을 따른다.
 
 제작기와 연습실은 서로 import하지 않는다. 앱은 공통 모듈을 조립하며, 재생 화면의 소유자는 `playback-screen.ts` 하나다. 분리한 BPM 모듈과 `playback-settings.ts`의 음량·보기·사용자 설정 바인딩은 같은 host와 이벤트 등록·해제 경로를 사용한다. 설정 모듈이 별도 화면 상태나 저장소를 만들지 않는다.
+
+`playback-forms.ts`는 공통 폼 HTML과 설정 카드 생성을 담당한다. 설정 카드 선택·스크롤·폰 가로 배치는 `playback-settings-layout.ts`, 메트로놈·선택 버튼의 상태 동기화와 입력 바인딩은 `playback-settings.ts`가 담당한다. 두 앱은 각 기능의 담당 모듈을 직접 사용한다. 재생바의 진행 위치는 `progressFieldHTML()`을 직접 사용하고, 반복 구간 콘텐츠는 기존 `loopExtra` 슬롯으로 전달한다. 빈 HTML 함수나 사용하지 않는 버튼 ID를 중간 인터페이스에 두지 않는다.
 
 재생 BPM 표시의 박 그리드는 화면 소유의 임시 스냅샷이다. Song/BPM/마디 배열/정본 XML 교체와 설정 동기화·track 재배치에서 다시 계산하며, 동일 객체 안의 박 시각 편집도 host의 sync/renderTrack 경로를 사용한다. 전역 Song 캐시나 저장 데이터로 확장하지 않는다. 오디오 클릭 예약 목록은 audio-core의 재생 cycle과 수명을 공유한다. 25ms 예약 확인은 다음 이벤트 위치만 진행하고, seek·배속·새 반복 cycle은 새 목록을 만들며 종료/pause/load에서는 해제한다. 예약 간격과 count-off/강세·원곡/연습 시간 변환은 유지한다.
 

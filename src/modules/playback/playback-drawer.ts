@@ -6,7 +6,7 @@ type Panel = "loop" | "marker";
 /** Existing forms and their listeners move intact into one shared drawer. */
 export function mountPlaybackDrawer(
   root: HTMLElement,
-  ids: PlaybackBindings & { mark: string; rewindButton: string },
+  ids: PlaybackBindings & { rewindButton: string },
 ) {
   const get = (id: string) => root.querySelector<HTMLElement>(`#${id}`)!;
   const group = root.querySelector<HTMLElement>(".playback-group")!;

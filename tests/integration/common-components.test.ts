@@ -51,8 +51,6 @@ for (const [host, binding] of [
       ids: {
         ...binding,
         rewindButton: "rewind",
-        mark: "mark",
-        sound: "sound",
         settings: "settings",
         radiusAttribute: "data-radius",
       },

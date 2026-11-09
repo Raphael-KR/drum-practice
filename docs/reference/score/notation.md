@@ -180,7 +180,7 @@
 - Crash=A5 x, Open Hi-Hat=G5 circle-x를 모든 곡의 공통 기준으로 사용한다. 특정 곡의 빈 머리 예외·circle-x 전체를 크래시로 보는 보정을 사용하지 않는다.
 - 성부 구성·화음·기둥 방향·연결선·쉼표와 backup/forward를 원본대로 유지하고 킥을 공통 분리하지 않는다.
 - 공통 범례 실행은 drum-legend.ts를 따른다. 알려진 입력의 오분류 이관은 원본 식별 근거로 한정하며 임의 ID/도형에서 추측하지 않는다.
-- 공통 범례의 승인·교정 근거와 곡별 오분류 사례는 [ADR-0007의 최종 재확인 원문](../../decisions/0007-native-drum-notation.md#2026-10-03-최종-재확인-모든-곡에-확정-범례-적용)에 보존한다.
+- 공통 범례의 승인·교정 근거와 곡별 오분류 사례는 [ADR-0007의 최종 재확인 원문](../../records/archive/adr-0007-native-drum-notation-sources.md#2026-10-03-최종-재확인-모든-곡에-확정-범례-적용)에 보존한다.
 
 <a id="score-musicxml-osmd-mapping--근거와-관리"></a>
 

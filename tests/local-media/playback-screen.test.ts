@@ -14,11 +14,10 @@ import {
   scoreStageHTML,
 } from "../../src/modules/playback/playback-ui";
 import {
-  playbackTransportRightHTML,
+  progressFieldHTML,
   repeatBarHTML,
   tempoFieldsHTML,
   soundFieldsHTML,
-  loopFieldsHTML,
   screenSettingsHTML,
   playbackPreferenceFieldsHTML,
   playbackBrandHTML,
@@ -60,13 +59,11 @@ function mount(
   const ids = {
     ...(environment === "web" ? webPlaybackBindings : playerPlaybackBindings),
     rewindButton: "back",
-    mark: "mark",
-    sound: "sound",
     radiusAttribute: "data-radius",
   };
   const root = document.createElement("div");
   document.body.replaceChildren(root);
-  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: playbackTransportRightHTML({ progress: ids.progress, mark: ids.mark, sound: ids.sound }) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog">${loopFieldsHTML()}<div id="loop-slots"></div></dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}${appInfoHTML("test", { source: "test", builtAt: "2026-10-13T00:00:00Z" }, { scoreInfo: true })}`;
+  root.innerHTML = `<header><div class="brand">${playbackBrandHTML(ids.title, ids.tempo)}</div>${metronomeControlHTML()}</header><section id="practice">${scoreStageHTML()}${transportHTML({ rewindId: ids.rewind, rewindButton: ids.rewindButton, positionId: ids.position, right: progressFieldHTML(ids.progress) })}${repeatBarHTML({ repeat: ids.repeat, adjust: ids.adjust, markers: ids.markers, radiusAttribute: ids.radiusAttribute, summaryId: ids.summary, stopId: ids.stop })}</section><dialog id="tempo-dialog">${tempoFieldsHTML(ids.tempoInput)}</dialog><dialog id="sound-dialog">${soundFieldsHTML()}</dialog><dialog id="loop-dialog"><div id="loop-slots"></div></dialog><dialog id="marker-dialog"></dialog>${screenSettingsHTML({ pdf: "pdf", highlight: "highlight", fullscreen: "fullscreen" }, true)}${playbackPreferenceFieldsHTML("restart", "countoff")}${appInfoHTML("test", { source: "test", builtAt: "2026-10-13T00:00:00Z" }, { scoreInfo: true })}`;
   const stage = root.querySelector<HTMLElement>("#stage")!;
   Object.defineProperty(stage, "clientWidth", {
     value: 800,
@@ -560,7 +557,7 @@ it("fixed control board stays visible while shortcuts and repeat presets are use
   ).toBe(false);
   expect(song.markers).toHaveLength(1);
   expect(root.querySelector("#add-marker")).toBeNull();
-  expect(root.querySelector("#" + ids.mark)).toBeNull();
+  expect(root.querySelector("#mark")).toBeNull();
   root.querySelector<HTMLButtonElement>("[data-quick-marker]")!.click();
   expect(song.markers).toHaveLength(0);
   expect(root.querySelectorAll(".empty-marker-slot")).toHaveLength(5);

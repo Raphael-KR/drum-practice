@@ -23,10 +23,8 @@ import {
   releasePlaybackAssets,
 } from "./playback-assets";
 import { playbackInitial, type PlaybackInitial } from "./playback-initial";
-import {
-  selectPlaybackSettings,
-  type SettingsCategory,
-} from "./playback-forms";
+import type { SettingsCategory } from "./playback-forms";
+import { selectPlaybackSettings } from "./playback-settings-layout";
 import { createPlaybackScreen } from "./playback-screen";
 import { mountPlaybackShell } from "./playback-shell";
 import {
@@ -124,8 +122,6 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       ...playerPlaybackBindings,
       markers: "quick-markers",
       rewindButton: "rewind",
-      mark: "mark",
-      sound: "sound",
       settings: "settings",
       radiusAttribute: "data-radius",
     },
@@ -299,8 +295,6 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       ...playerPlaybackBindings,
       markers: "quick-markers",
       rewindButton: "rewind",
-      mark: "mark",
-      sound: "sound",
       radiusAttribute: "data-radius",
       settings: "settings",
     },

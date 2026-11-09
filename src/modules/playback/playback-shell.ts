@@ -8,10 +8,9 @@ import {
 import {
   playbackBrandHTML,
   metronomeControlHTML,
-  playbackTransportRightHTML,
+  progressFieldHTML,
   repeatBarHTML,
   tempoFieldsHTML,
-  loopFieldsHTML,
   settingsFrameHTML,
   settingsPanel,
   screenSettingsHTML,
@@ -30,8 +29,6 @@ export function audioSetupMetronomeHTML() {
 export interface PlaybackShellOptions {
   ids: PlaybackBindings & {
     rewindButton: string;
-    mark: string;
-    sound: string;
     settings: string;
     radiusAttribute: string;
   };
@@ -77,11 +74,7 @@ export function mountPlaybackShell(
       rewindButton: ids.rewindButton,
       positionId: ids.position,
       showPosition: options.showPosition,
-      right: playbackTransportRightHTML({
-        progress: ids.progress,
-        mark: ids.mark,
-        sound: ids.sound,
-      }),
+      right: progressFieldHTML(ids.progress),
     }) +
       repeatBarHTML({
         repeat: ids.repeat,
@@ -107,7 +100,7 @@ export function mountPlaybackShell(
     return content;
   };
   panel("tempo", t("main.message208"), tempoFieldsHTML(ids.tempoInput));
-  const loop = panel("loop", t("icons.message067"), loopFieldsHTML());
+  const loop = panel("loop", t("icons.message067"), "");
   // Hosts may supply a section or a div; both use the shared board layout.
   if (options.loopExtra) {
     options.loopExtra.classList.add("playback-panel-content");

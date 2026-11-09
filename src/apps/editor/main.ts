@@ -56,7 +56,7 @@ import {
   releasePlaybackAssets,
   replacePlaybackAssets,
 } from "../../modules/playback/playback-assets";
-import { syncSettingsChoices } from "../../modules/playback/playback-forms";
+import { syncSettingsChoices } from "../../modules/playback/playback-settings";
 import {
   readPlaybackPreferences,
   savePlaybackPreferences,
@@ -223,8 +223,6 @@ const playback = createPlaybackScreen({
   ids: {
     ...webPlaybackBindings,
     rewindButton: "jump",
-    mark: "open-marker-dialog",
-    sound: "open-sound-dialog",
     radiusAttribute: "data-loop-radius",
     settings: "open-settings-dialog",
   },

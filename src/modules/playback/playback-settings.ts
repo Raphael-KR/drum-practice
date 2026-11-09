@@ -1,7 +1,10 @@
 import { enterFullscreen } from "../../platform/browser/fullscreen";
-import { clamp } from "../../model/model";
+import { clamp, type Settings } from "../../model/model";
+import { t } from "../../shared/i18n/i18n";
+import { metronomeIcon } from "../../shared/ui/icon-svg";
 import {
   METRONOME_VOLUME_ADJUSTABLE,
+  metronomeMode,
   nextMetronomeMode,
   setMetronomeMode,
   type MetronomeMode,
@@ -200,5 +203,71 @@ export function bindPlaybackPreferences(
       sync();
       frame();
     }
+  });
+}
+
+export function syncMetronomeControls(root: ParentNode, settings: Settings) {
+  const mode = metronomeMode(settings);
+  const button = root.querySelector<HTMLButtonElement>("#click");
+  if (button) {
+    if (button.dataset.metronomeMode !== mode) {
+      button.dataset.metronomeMode = mode;
+      button.innerHTML = metronomeIcon(mode);
+    }
+    button.setAttribute(
+      "aria-label",
+      t("metronome.current", { mode: t(`metronome.${mode}`) }),
+    );
+    button.dataset.help = `${t(`metronome.${mode}Description`)} ${t("metronome.cycle", { next: t(`metronome.${nextMetronomeMode(settings)}`) })}`;
+    button.title = button.dataset.help;
+  }
+  root
+    .querySelectorAll<HTMLButtonElement>(
+      "#metronome-choices [data-metronome-mode]",
+    )
+    .forEach((choice) => {
+      const selected = choice.dataset.metronomeMode === mode;
+      choice.setAttribute("aria-pressed", String(selected));
+    });
+}
+
+/** The visible choices reuse the existing settings change handlers. */
+export function syncSettingsChoices(root: ParentNode) {
+  root
+    .querySelectorAll<HTMLButtonElement>("[data-setting-control]")
+    .forEach((button) => {
+      const control = root.querySelector<HTMLInputElement | HTMLSelectElement>(
+        `#${button.dataset.settingControl}`,
+      );
+      if (!control) return;
+      const value =
+        control instanceof HTMLInputElement
+          ? String(control.checked)
+          : control.value;
+      const active = value === button.dataset.settingValue;
+      button.setAttribute("aria-pressed", String(active));
+      button.classList.toggle("primary", active);
+      const option =
+        control instanceof HTMLSelectElement
+          ? [...control.options].find(
+              (o) => o.value === button.dataset.settingValue,
+            )
+          : undefined;
+      button.disabled = control.disabled || !!option?.disabled;
+      button.onclick = () => {
+        if (button.disabled || active) return;
+        if (control instanceof HTMLInputElement)
+          control.checked = button.dataset.settingValue === "true";
+        else control.value = button.dataset.settingValue!;
+        control.dispatchEvent(new Event("change", { bubbles: true }));
+        syncSettingsChoices(root);
+      };
+    });
+  root.querySelectorAll<HTMLElement>(".settings-choice-row").forEach((row) => {
+    const choices = row.querySelectorAll<HTMLButtonElement>(
+      "[data-setting-control]",
+    );
+    if (choices.length)
+      row.hidden = [...choices].filter((button) => !button.disabled).length < 2;
   });
 }

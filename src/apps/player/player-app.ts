@@ -25,9 +25,9 @@ import {
   titleOrderFieldsHTML,
   settingsLayoutHTML,
   settingsPanel,
-  selectPlaybackSettings,
   type SettingsCategory,
 } from "../../modules/playback/playback-forms";
+import { selectPlaybackSettings } from "../../modules/playback/playback-settings-layout";
 import { appInfoContent } from "../../shared/ui/app-info";
 import { recordingTempoUpgrade } from "../../content/recording-tempo";
 import {

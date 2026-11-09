@@ -1,7 +1,6 @@
-import {
-  selectPlaybackSettings,
-  type SettingsCategory,
-} from "./playback-forms";
+import type { SettingsCategory } from "./playback-forms";
+import { t } from "../../shared/i18n/i18n";
+import { componentName } from "../../shared/ui/ui-standard";
 
 /** Move the existing inputs, including their listeners and in-progress values. */
 export function installPhoneLandscapeSettings(
@@ -53,4 +52,83 @@ export function installPhoneLandscapeSettings(
         ?.focus({ preventScroll: true });
   }
   return { sync, dispose: () => sync(false) };
+}
+
+export function selectPlaybackSettings(
+  root: ParentNode,
+  category: SettingsCategory,
+) {
+  const detail = root.querySelector<HTMLElement>(".settings-detail")!;
+  const dialog = detail.closest<HTMLElement>("#settings-dialog")!;
+  const phone = dialog.classList.contains("settings-phone-landscape");
+  const available = (name: string) =>
+    dialog.classList.contains("settings-phone-landscape")
+      ? ["screen", "playback", "metronome", "tempo"].includes(name)
+      : !["metronome", "tempo"].includes(name);
+  const panels = [
+    ...detail.querySelectorAll<HTMLElement>("[data-settings-panel]"),
+  ];
+  const mark = (current: string) => {
+    dialog.dataset.settingsCurrent = current;
+    root
+      .querySelectorAll<HTMLElement>("[data-settings-category]")
+      .forEach((button) => {
+        button.hidden = !available(button.dataset.settingsCategory!);
+        const active = button.dataset.settingsCategory === current;
+        button.classList.toggle("primary", active);
+        button.setAttribute("aria-current", active ? "location" : "false");
+      });
+  };
+  if (
+    !available(category) ||
+    !panels.some((panel) => panel.dataset.settingsPanel === category)
+  )
+    category = "screen";
+  panels.forEach((panel) => {
+    panel.hidden =
+      !available(panel.dataset.settingsPanel!) ||
+      (phone && panel.dataset.settingsPanel !== category);
+    if (!panel.querySelector(".settings-section-heading")) {
+      const heading = document.createElement("h3");
+      heading.className = "settings-section-heading";
+      heading.textContent = componentName(
+        `settings.${panel.dataset.settingsPanel}`,
+      );
+      panel.prepend(heading);
+    }
+  });
+  if (!root.querySelector(".settings-nav")) return category;
+  if (!detail.dataset.scrollNavigation) {
+    detail.dataset.scrollNavigation = "true";
+    detail.addEventListener("scroll", () => {
+      if (dialog.classList.contains("settings-phone-landscape")) return;
+      const top = detail.getBoundingClientRect().top;
+      const sections = [
+        ...detail.querySelectorAll<HTMLElement>("[data-settings-panel]"),
+      ];
+      const current = sections.find(
+        (panel) =>
+          !panel.hidden && panel.getBoundingClientRect().bottom > top + 32,
+      );
+      if (current) mark(current.dataset.settingsPanel!);
+    });
+  }
+  const scroll = () => {
+    const panel = panels.find(
+      (panel) => panel.dataset.settingsPanel === category,
+    );
+    if (phone) detail.scrollTop = 0;
+    else if (panel)
+      detail.scrollTop +=
+        panel.getBoundingClientRect().top - detail.getBoundingClientRect().top;
+    mark(category);
+  };
+  scroll();
+  const heading = root.querySelector<HTMLElement>("#settings-detail-heading")!;
+  heading.textContent =
+    category === "info"
+      ? t("main.message097")
+      : componentName(`settings.${category}`);
+  heading.hidden = true;
+  return category;
 }
