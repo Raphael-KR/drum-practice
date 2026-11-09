@@ -1,6 +1,8 @@
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import type { SourceMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/VoiceData/SourceMeasure";
 import type { GraphicalMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalMeasure";
+import type { StaffLine } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/StaffLine";
+import { MUSICXML_TOP_SPACES } from "./practice-staff-layout";
 import { SCORE_TEXT_FONT_FAMILY } from "./score-text-font";
 
 type Alignment = "left" | "center" | "right";
@@ -69,8 +71,25 @@ export function installRehearsalLayout(
       alignment: align === "center" || align === "right" ? align : "left",
     });
   });
+  const sectionLines = new WeakSet<StaffLine>();
   const calculator = osmd.GraphicSheet.GetCalculator as unknown as {
     calculateRehearsalMark(measure: SourceMeasure): void;
+    updateStaffLineBorders(staff: StaffLine): void;
+  };
+  const updateBorders = calculator.updateStaffLineBorders.bind(calculator);
+  calculator.updateStaffLineBorders = (staff) => {
+    if (sectionLines.has(staff)) {
+      // Reserve the final section height before native system/page Y layout.
+      // Practice crops span the whole row: a narrow mark-only skyline can
+      // still let the preceding staff enter the section's rectangular crop.
+      const skyline = staff.SkyBottomLineCalculator;
+      skyline.updateSkyLineInRange(
+        0,
+        staff.PositionAndShape.Size.width,
+        Math.min(-MUSICXML_TOP_SPACES, skyline.getSkyLineMin()),
+      );
+    }
+    updateBorders(staff);
   };
   const calculate = calculator.calculateRehearsalMark.bind(calculator);
   calculator.calculateRehearsalMark = (measure) => {
@@ -90,6 +109,7 @@ export function installRehearsalLayout(
         .reverse()
         .find((modifier) => typeof modifier.section === "string");
       if (!section) continue;
+      sectionLines.add(graphical.ParentStaffLine);
       section.font.family = SCORE_TEXT_FONT_FAMILY;
       // Legacy marks without positioning attributes also need stable metrics.
       // Keep their native position while using the same font for frame/text.
