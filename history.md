@@ -1,7 +1,8 @@
-## 2026-11-09 — 0.10.4 릴리스 준비
+## 2026-11-09 — 0.10.4 발행 완료
 
-- 사용자 릴리스 요청에 따라 상단 주법 잘림 표시와 GitHub Actions 런타임 변경을 함께 검증한다. 기존 기능의 표시·호환성 보완이므로 두 앱 0.10.3 → 0.10.4 patch를 선택했다. 이번 전체 fixture·임시 시험 DB 사용을 명시적으로 허가받았다.
-- 전체 검사·‘갑자기’ 8/9마디 화면·PR/main CI·Sites 발행 결과와 한계는 [릴리스 기록](docs/records/archive/release-0.10.4.md)에 기록한다.
+- 사용자 릴리스 요청에 따라 상단 주법 잘림 표시와 GitHub Actions 런타임 변경을 함께 검증했다. 기존 기능의 표시·호환성 보완이므로 두 앱 0.10.3 → 0.10.4 patch를 선택했다. 이번 전체 fixture·임시 시험 DB 사용을 명시적으로 허가받았다.
+- [PR #34](https://github.com/Raphael-KR/drum-practice/pull/34)의 자체 검토·PR/main CI를 통과했고 제품 main `52e1a01`에서 두 앱을 재빌드해 소스 `fa70002157b8`을 재현했다. 전체 810테스트·lint/서식/타입/빌드·두 앱 Safari 1줄/2줄 검수·원본 해시 보존을 확인했다. 새 CI의 Node 20 경고가 사라졌고 Ubuntu 이미지 전환 notice만 남았다.
+- 기존 public Sites에 player만 발행했다. Sites 소스 `42dbf6ac`·버전96·배포 `appgdep_6af14f75244881918eeac31df6a29c2a`가 2026-11-09 13:43:46 KST에 succeeded. 47파일 세 위치 해시·공개 읽기 51항목·공개 버전 표시를 확인했고 루트/Sites audit은 0건이다. [실행 기록과 기존 하단 잔상·검수 한계](docs/records/archive/release-0.10.4.md)에 상세 근거를 남긴다. 결과 문서만 별도 PR로 반영하며 버전·발행을 반복하지 않는다.
 
 ## 2026-11-09 — MusicXML 연습 화면 상단 주법 기호 여유
 
