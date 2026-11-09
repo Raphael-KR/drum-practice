@@ -23,4 +23,15 @@
 - 실제 드럼연습실의 기존 Loveholic 123마디를 열어 1줄/2줄 보기, 실제 재생·일시정지·처음·저장 후 재열기를 확인했다. AudioContext `running`으로 2·4·5·7마디 진행, 5마디 경계의 같은 현재 행 Node 유지·미제거를 확인했다. 저장 put 12회 중 songs cursor는 0회였다. 시험 전후 전체 저장 레코드·Song·미디어 해시가 같고 원래 1마디/ribbon을 유지했다.
 - 악보제작기 1280×900 데스크톱에서 같은 저장 악보의 편집 열기·MusicXML/PDF/가사/음원 존재와 내용 변경 없는 닫기, 공통 두 줄 재생을 확인했다. 실제 AudioContext `running`으로 30마디 진행을 관측했고 처음부터 4·5·7마디를 다시 통과해 7마디 일시정지 화면을 캡처했다. 원래 1마디/ribbon·목록 복귀 후 전체 레코드 해시가 여전히 같았다. 앱별 위치 컨트롤 ID 혼용에 따른 관측 대기 실패는 실제 ID로 바로잡았다. 선택적인 CDP init-script 제거는 `Script not found`였고 페이지 내 임시 계측·컨텍스트와 검사 탭을 정리했다.
 - 브라우저 초기 검수 호출에서 CLI 파일 인수와 앱별 버튼 식별자를 혼용한 오류는 표준입력/실제 DOM으로 정정했다. viewport CDP 호출 후 무효화된 ref는 공통 닫기 CSS 식별자로 바꿨으며 앱 코드를 변경하거나 자동 재생 정책을 해제하지 않았다.
-- PR/CI·발행은 후속 단계에서 기록한다. 큰 청크 경고는 남고 OSMD 혼합 import·Node localStorage 경고는 이번 전체 검사/빌드 로그에 없다. iPhone 충돌 원인·상주 RSS 고정 감소·사람 청취·전곡 안정성은 미확정이다. 근거는 `.tmp/release-0.10.3/`에 보존한다.
+- 큰 청크 경고는 남고 OSMD 혼합 import·Node localStorage 경고는 이번 전체 검사/빌드 로그에 없다. iPhone 충돌 원인·상주 RSS 고정 감소·사람 청취·전곡 안정성은 미확정이다. 근거는 `.tmp/release-0.10.3/`에 보존한다.
+
+## Git·발행 결과
+
+- 구현 `a6115c1d1b905567e6e354155309c2dcb9682250`을 작업 브랜치에 push하고 [PR #32](https://github.com/Raphael-KR/drum-practice/pull/32)의 자체 검토·ready·main 병합을 마쳤다. 검토는 Codex 자체 검토이며 독립 검토가 아니다. main 보호 규칙·필수 승인 우회 없이 최신 head를 지정해 병합했다.
+- [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42558069532)·[push CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42558039710)·제품 main `52cacb930ad5983c8a356245f0909c2d1d7916de`의 [main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42558220414)가 성공했다. head/main tree는 `cddd020545a386d0ca0e68ee78df8b5456b665cf`로 같고 수록 6곡·OSMD 설치 바이트도 같아 로컬 결과를 재사용했다. main에서 두 앱을 다시 빌드해 소스 `8c051b046bc1`을 재현했다.
+- GitHub Actions의 checkout/setup-node v4가 Node 20 폐기와 Node 24 강제 실행 전환을 알리고 ubuntu-latest 이미지 변경도 예고했다. 이번 CI는 성공했으며 앱의 Node 저장소 경고와 구분한다. 관련 없는 Actions 업그레이드를 이번 릴리스에 추가하지 않았다.
+- 공식 Sites helper로 연 기존 clean 사본에 정본 player만 준비했다. 독립 frozen 설치·공급망 정책·Sites 빌드와 audit 취약점 0건, 정본 → 사본 → Worker의 manifest 47파일 SHA256 대조가 통과했다. HTML 두 파일은 Worker가 전달한다. 기존 불필요한 OSMD 동적 wrapper 제거로 이전 발행보다 파일 하나가 줄었으며 악보·글꼴·음원을 삭제한 결과가 아니다.
+- Sites 소스 `db8fc0560fbffa4e19704b9350999fa63e34e8c6`, 저장 버전 **95** (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_bd3f6bc74a608191942e1667430cc1fa`), 배포 `appgdep_6af1431d03948191b01ac22b165dd45b`: **succeeded**, **2026-11-09 12:51:07 KST** / `2026-11-09T03:51:07.508607+00:00`. 기존 Site ID·public audience·[공개 주소](https://drum-practice-studio.dgkma.chatgpt.site/)를 유지했고 제작기는 발행하지 않았다.
+- 아카이브 `local-archives/releases/release-0.10.3.tar.gz` SHA256 `2ee81da27101c8723de0a5e2587b073f909fb6529e48dc43ebb086e1836d2ac7`. Sites tar content hash `sha256:761c3457be135223db709d39d0fdbbdc4965bb6733c403157049e6788c14f1c4`와 구분한다. 저장 완료까지 같은 아카이브를 유지했다.
+- 공개 읽기 **51항목** 통과: HTML 3경로의 최신 번들·보안 헤더, 정적 45파일 전체 해시(수록 6곡·글꼴·JS/CSS·Worker 포함), 폐기 API 3경로 404. 공개 목록의 `v0.10.3 · build 8c051b04`도 확인하고 검수 공간을 한 번 종료했다. 로컬 소유 5173 서버도 중단했다. 공개 파일/표시 확인을 공개 재생·실기기 장기 안정성 검증으로 확대하지 않는다.
+- 근거: `.tmp/release-0.10.3/`의 전체 검사·설치/audit·브라우저 관측/캡처·`pr-ci.json`·`main-ci.json`·`main-input-proof.json`·main/Sites 빌드·`parity.json`·`site-package.json`·`site-version.json`·`site-deployment.json`·`smoke.json`·최종 `receipt.json`. 결과 문서만 별도 PR로 반영하며 앱 버전과 발행은 반복하지 않는다. 이번 병합 브랜치 정리와 최종 main 일치는 receipt에 기록한다.
