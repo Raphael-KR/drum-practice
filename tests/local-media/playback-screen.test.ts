@@ -314,6 +314,82 @@ for (const environment of ["web", "player"] as const) {
       layout.mockRestore();
     }
   });
+  it(`${environment}: paused row browsing leaves automatic score frames idle until state changes`, () => {
+    const callbacks: FrameRequestCallback[] = [];
+    vi.mocked(requestAnimationFrame).mockImplementation((callback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
+    const { screen, root, song, p, input, ids } = mount(environment);
+    song.settings.view = "rows";
+    screen.renderTrack();
+    const rows = vi.spyOn(playbackLayout, "renderScoreRows");
+    const tick = (count: number) => {
+      for (let i = 0; i < count; i++) {
+        const callback = callbacks.shift();
+        expect(callback).toBeDefined();
+        callback!(performance.now());
+      }
+    };
+    try {
+      tick(5);
+      expect(rows).toHaveBeenCalledTimes(1);
+      const stage = root.querySelector<HTMLElement>("#stage")!;
+      stage.scrollTop = 125;
+      stage.dispatchEvent(new Event("scroll"));
+      tick(5);
+      expect(rows).toHaveBeenCalledTimes(1);
+      expect(stage.scrollTop).toBe(125);
+      screen.renderLists();
+      tick(5);
+      expect(rows).toHaveBeenCalledTimes(2);
+      p.position = song.measures[1].start;
+      tick(5);
+      expect(rows).toHaveBeenCalledTimes(3);
+      expect(input(ids.progress).value).toBe("2");
+      p.playing = true;
+      screen.onState();
+      rows.mockClear();
+      tick(3);
+      expect(rows).toHaveBeenCalledTimes(3);
+      p.playing = false;
+      screen.onState();
+      tick(1);
+      rows.mockClear();
+      tick(5);
+      expect(rows).not.toHaveBeenCalled();
+    } finally {
+      rows.mockRestore();
+    }
+  });
+  it(`${environment}: vertical wheel browsing retains a keyboard-selected bar without seeking`, () => {
+    const { screen, root, song, p } = mount(environment);
+    song.settings.view = "rows";
+    screen.renderTrack();
+    screen.frame();
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", cancelable: true }),
+    );
+    const stage = root.querySelector<HTMLElement>("#stage")!;
+    stage.scrollTop = 125;
+    const rows = vi.spyOn(playbackLayout, "renderScoreRows");
+    try {
+      const event = new WheelEvent("wheel", {
+        deltaY: 100,
+        cancelable: true,
+      });
+      stage.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(rows.mock.lastCall?.[2]).toBe(4);
+      expect(stage.scrollTop).toBe(125);
+      expect(p.position).toBe(0);
+      expect(
+        root.querySelector('.measure[data-index="4"]')!.classList,
+      ).toContain("active");
+    } finally {
+      rows.mockRestore();
+    }
+  });
   it(`${environment}: same transport validates rewind, copies full quarter-beat context and reports progress`, async () => {
     const { screen, p, song, ids, input, click, fail } = mount(environment);
     p.position = song.measures[10].start + 0.3;
