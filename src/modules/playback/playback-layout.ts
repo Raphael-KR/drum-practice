@@ -218,9 +218,10 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       rowWindow = -1;
     }
     const windowIndex = Math.floor(index / 4);
-    if (windowIndex === rowWindow && renderedBrowseWidth === h.cellWidth)
-      return;
-    renderedBrowseWidth = h.cellWidth ?? stage.clientWidth / 4;
+    const width = h.cellWidth ?? stage.clientWidth / 4;
+    if (windowIndex === rowWindow && renderedBrowseWidth === width) return;
+    const reuse = rowWindow >= 0 && renderedBrowseWidth === width;
+    renderedBrowseWidth = width;
     rowWindow = windowIndex;
     const s = song();
     const currentOnTop = (windowIndex - playbackRowOrigin) % 2 === 0;
@@ -241,13 +242,45 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       ...Array.from({ length: 4 }, (_, j) => lower * 4 + j),
     ];
     // Preserve all four slots when the upcoming final row is incomplete.
-    const width = h.cellWidth ?? stage.clientWidth / 4;
     const html = (i: number) =>
       i < s.measures.length
         ? measureHTML(s.measures[i], i, width)
         : `<div class="measure empty-measure" style="width:${width}px"></div>`;
-    ribbon.innerHTML =
-      s.scoreFormat === "musicxml" && s.settings.uniformSpacing
+    const uniform = s.scoreFormat === "musicxml" && s.settings.uniformSpacing;
+    const parents = uniform
+      ? [
+          ...ribbon.querySelectorAll<HTMLElement>(
+            ":scope > .browse-row > .browse-strip",
+          ),
+        ]
+      : [ribbon];
+    if (reuse && parents.length === (uniform ? 2 : 1)) {
+      const existing = new Map(
+        [...ribbon.querySelectorAll<HTMLElement>("[data-index]")].map(
+          (cell) => [Number(cell.dataset.index), cell],
+        ),
+      );
+      const missing = indices.filter((i) => !existing.has(i));
+      const template = document.createElement("template");
+      template.innerHTML = missing.map(html).join("");
+      const created = [...template.content.children];
+      missing.forEach((i, j) => existing.set(i, created[j] as HTMLElement));
+      // Retain the currently playing row and its image/highlight DOM. Only the
+      // outgoing row needs new cells; final-row swaps move the same nodes.
+      parents.forEach((parent, row) => {
+        const cells = (
+          uniform ? indices.slice(row * 4, row * 4 + 4) : indices
+        ).map((i) => existing.get(i)!);
+        const wanted = new Set(cells);
+        for (const cell of [...parent.children])
+          if (!wanted.has(cell as HTMLElement)) cell.remove();
+        cells.forEach((cell, i) => {
+          if (parent.children[i] !== cell)
+            parent.insertBefore(cell, parent.children[i] ?? null);
+        });
+      });
+    } else {
+      ribbon.innerHTML = uniform
         ? [indices.slice(0, 4), indices.slice(4)]
             .map(
               (row) =>
@@ -255,6 +288,7 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
             )
             .join("")
         : indices.map(html).join("");
+    }
     layoutLyrics();
   } finally {
     Object.assign(state, {

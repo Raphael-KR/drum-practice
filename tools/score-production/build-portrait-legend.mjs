@@ -1,7 +1,7 @@
 // Reflow the approved vector artwork; never substitute its notation glyphs.
 import { readFileSync, writeFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 const module = ts.createSourceFile(
   "score-legend-svg.ts",
   readFileSync("src/modules/score/vendor/score-legend-svg.ts", "utf8"),

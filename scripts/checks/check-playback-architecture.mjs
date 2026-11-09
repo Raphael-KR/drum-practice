@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 import { resolveSource } from "./source-files.mjs";
 // Keep host adapters from reacquiring playback ownership. Audit actual call expressions.
 const owned = [

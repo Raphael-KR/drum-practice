@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
 import { Blob as NodeBlob } from "node:buffer";
+import { readFileSync } from "node:fs";
 import { preparePlaybackAssets } from "../../src/modules/playback/playback-assets";
+import { parsePlaybackSVG } from "../../src/modules/playback/playback-svg";
+import {
+  embedScoreTextFonts,
+  loadScoreTextFonts,
+} from "../../src/modules/score/score-text-font";
 import type { Song } from "../../src/model/model";
 const state = vi.hoisted(() => ({
   host: undefined as unknown as import("../../src/modules/playback/playback-screen").PlaybackScreenHost,
@@ -203,6 +209,97 @@ it("validates SVG content before rendering and permits internal glyph references
     ),
   ).resolves.toBeUndefined();
   runtime.dispose();
+});
+
+it("still checks exact bundled font bytes and rejects altered CSS after text restoration", async () => {
+  vi.stubGlobal("URL", { revokeObjectURL: vi.fn() });
+  vi.stubGlobal("fetch", async (url: string) => ({
+    ok: true,
+    blob: async () =>
+      new NodeBlob([
+        readFileSync(
+          `src/modules/score/vendor/pretendard/Pretendard-${url.includes("Regular") ? "Regular" : "Bold"}.woff2`,
+        ),
+      ]),
+  }));
+  const previousFonts = Object.getOwnPropertyDescriptor(document, "fonts");
+  Object.defineProperty(document, "fonts", {
+    configurable: true,
+    value: { load: async () => [{}] },
+  });
+  const o = options();
+  o.song.scoreFormat = "musicxml";
+  const runtime = await mountPlaybackRuntime(o);
+  try {
+    const validate = vi.mocked(preparePlaybackAssets).mock.calls[0][2]!
+      .validate!;
+    const doc = new DOMParser().parseFromString(
+      '<svg xmlns="http://www.w3.org/2000/svg"><text font-family="Pretendard">가사</text></svg>',
+      "image/svg+xml",
+    );
+    embedScoreTextFonts(
+      doc.documentElement as unknown as SVGSVGElement,
+      await loadScoreTextFonts(),
+    );
+    const source = new XMLSerializer().serializeToString(doc);
+    for (const [input, accepted] of [
+      [source, true],
+      [
+        source.replace(
+          "</svg>",
+          `${doc.querySelector("style")!.outerHTML}</svg>`,
+        ),
+        true,
+      ],
+      [source.replace("base64,", "base64,A"), false],
+      [
+        source.replace("data:font/woff2;base64,", "https://example.invalid/"),
+        false,
+      ],
+      [
+        source.replace(
+          "</style>",
+          `${doc.querySelector("style")!.textContent}</style>`,
+        ),
+        false,
+      ],
+      [
+        source.replace(
+          "</svg>",
+          '<use href="https://example.invalid/glyph.svg#x"/></svg>',
+        ),
+        false,
+      ],
+      [source.replace("</svg>", '<path onload="alert(1)"/></svg>'), false],
+      [
+        source.replace(
+          "</svg>",
+          '<style>@import "https://example.invalid/font.css";</style></svg>',
+        ),
+        false,
+      ],
+    ] as const) {
+      const prepared = parsePlaybackSVG(input);
+      const serialized = new XMLSerializer().serializeToString(prepared);
+      expect(serialized).toBe(
+        new XMLSerializer().serializeToString(
+          new DOMParser().parseFromString(input, "image/svg+xml"),
+        ),
+      );
+      const page = new NodeBlob([input], {
+        type: "image/svg+xml",
+      }) as unknown as Blob;
+      if (accepted)
+        await expect(validate(page, prepared)).resolves.toBeUndefined();
+      else await expect(validate(page, prepared)).rejects.toThrow();
+      // Borrowed validation must restore even rejected font/style contents.
+      expect(new XMLSerializer().serializeToString(prepared)).toBe(serialized);
+    }
+  } finally {
+    runtime.dispose();
+    if (previousFonts) Object.defineProperty(document, "fonts", previousFonts);
+    else Reflect.deleteProperty(document, "fonts");
+  }
 });
 
 it("keeps a BFCache page usable and saves position, while final pagehide disposes", async () => {

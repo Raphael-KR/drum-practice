@@ -96,6 +96,7 @@
   top: 35px;
   gap: 28px 0;
   transform: none !important;
+  will-change: auto;
 }
 .two-rows .ribbon > .measure {
   width: auto !important;

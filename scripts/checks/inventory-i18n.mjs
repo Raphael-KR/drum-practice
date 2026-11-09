@@ -1,5 +1,5 @@
 import { sourceFiles } from "./source-files.mjs";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 import fs from "node:fs";
 let all = [];
 for (const file of sourceFiles().map((file) => file.slice(4))) {

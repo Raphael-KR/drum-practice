@@ -7,6 +7,13 @@ overrides:
   "miniflare>undici": 7.30.1
   # GHSA-g3hv-75wg-m249; remove when lint tools adopt patched minimatch.
   "minimatch@10": 11.0.5
+  # Use the linter's own supported JS API instead of the root native compiler.
+  "typescript-eslint@8>typescript:peer": "-"
+
+packageExtensions:
+  typescript-eslint@8:
+    dependencies:
+      typescript: npm:@typescript/typescript6@6.0.2
 
 allowBuilds:
   esbuild: true

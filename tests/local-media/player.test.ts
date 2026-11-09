@@ -75,6 +75,12 @@ class Context {
   }
 }
 
+// Pure audio tests inject app defaults without reading Node's browser storage.
+const defaultPlaybackPreferences = () => ({
+  restartMeasure: true,
+  countOff: true,
+});
+
 function metronomePlayer(beats = 3, denominator = 8, countOff = false) {
   vi.stubGlobal("AudioContext", Context);
   vi.stubGlobal("window", { setInterval: () => 1 });
@@ -225,7 +231,7 @@ it("keeps the accumulated odd-loop phase across internal rate restart", async ()
 });
 it("clears the previous song's active loop when loading another audio file", async () => {
   vi.stubGlobal("AudioContext", Context);
-  const p = new Player();
+  const p = new Player(defaultPlaybackPreferences);
   p.loop = { id: "old", name: "old", start: 60, end: 70 };
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   song.settings.position = 0;
@@ -250,7 +256,7 @@ it.each(["pause", "seek", "load"])(
       },
     );
     vi.stubGlobal("window", { setInterval: () => 1 });
-    const p = new Player();
+    const p = new Player(defaultPlaybackPreferences);
     try {
       p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
       p.original = { duration: 296.88 } as AudioBuffer;
@@ -292,7 +298,7 @@ it("does not let an older delayed play replace the newest playback", async () =>
     },
   );
   vi.stubGlobal("window", { setInterval: () => 1 });
-  const p = new Player();
+  const p = new Player(defaultPlaybackPreferences);
   try {
     p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
     p.original = { duration: 296.88 } as AudioBuffer;
@@ -346,7 +352,7 @@ it.each([
     );
     vi.stubGlobal("AudioContext", Context);
     vi.stubGlobal("window", { setInterval: () => 1 });
-    const p = new Player();
+    const p = new Player(defaultPlaybackPreferences);
     try {
       p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
       p.original = {
@@ -392,7 +398,7 @@ it.each([
 
 it("fixes metronome volume at 100% without changing saved volume or the count-in", () => {
   vi.stubGlobal("AudioContext", Context);
-  const p = new Player();
+  const p = new Player(defaultPlaybackPreferences);
   try {
     p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
     const ctx = p.ctx as unknown as Context;
@@ -463,7 +469,7 @@ it("can unlock playback on the initial touch without starting sound", async () =
     },
   );
   try {
-    const p = new Player();
+    const p = new Player(defaultPlaybackPreferences);
     await p.prepare();
     expect(order).toEqual(["playback", "resume"]);
     expect(p.playing).toBe(false);
@@ -475,7 +481,7 @@ it("can unlock playback on the initial touch without starting sound", async () =
 it("schedules adjacent audio sources on exact loop boundaries and cancels queued audio", async () => {
   vi.stubGlobal("AudioContext", Context);
   vi.stubGlobal("window", { setInterval: () => 1 });
-  const p = new Player();
+  const p = new Player(defaultPlaybackPreferences);
   p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   p.original = { duration: 296.88 } as AudioBuffer;
   p.rendered = {} as AudioBuffer;
@@ -522,7 +528,7 @@ it.each(["supported", "missing", "rejected"])(
       },
     );
     vi.stubGlobal("window", { setInterval: () => 1 });
-    const p = new Player();
+    const p = new Player(defaultPlaybackPreferences);
     try {
       p.song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
       p.original = { duration: 296.88 } as AudioBuffer;

@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import { it, expect } from "vitest";
+import { it, expect, vi } from "vitest";
 import {
   openScoreDatabase,
   RETIRED_SCORE_ID,
@@ -59,7 +59,18 @@ it("permanently purges 16-bar live records and backups in both databases while p
     });
     db.close();
   }
-  (await openScoreDatabase()).close();
+  const cursor = vi.spyOn(IDBObjectStore.prototype, "openCursor");
+  const point = vi.spyOn(IDBObjectStore.prototype, "get");
+  try {
+    (await openScoreDatabase()).close();
+    expect(cursor).not.toHaveBeenCalled();
+    expect(
+      point.mock.calls.filter(([key]) => key === RETIRED_SCORE_ID),
+    ).toHaveLength(2);
+  } finally {
+    cursor.mockRestore();
+    point.mockRestore();
+  }
   for (const name of ["drum-practice", "drum-practice-player"]) {
     const db = await connection(name);
     const read = (store: string) =>

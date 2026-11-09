@@ -16,11 +16,12 @@ async function purgeRetiredScore(db: IDBDatabase): Promise<void> {
     tx.oncomplete = () => resolve();
     tx.onerror = tx.onabort = () => reject(failure ?? tx.error);
     for (const name of stores) {
-      const request = tx.objectStore(name).openCursor();
+      // songs is keyed by song.id. Reading every media-bearing record here on
+      // each position save needlessly deserializes the entire score library.
+      const store = tx.objectStore(name);
+      const request = store.get(RETIRED_SCORE_ID);
       request.onsuccess = () => {
-        const cursor = request.result;
-        if (!cursor) return;
-        const record = cursor.value;
+        const record = request.result;
         if (record?.song?.id === RETIRED_SCORE_ID) {
           if (record.song.measures?.length !== 16) {
             failure = new Error(
@@ -29,9 +30,8 @@ async function purgeRetiredScore(db: IDBDatabase): Promise<void> {
             tx.abort();
             return;
           }
-          cursor.delete();
+          store.delete(RETIRED_SCORE_ID);
         }
-        cursor.continue();
       };
     }
   });

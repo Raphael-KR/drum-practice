@@ -21,6 +21,7 @@ import { prepareDrumDecorations, applyDrumDecorations } from "./drum-notation";
 import { REST_LAYOUT_VERSION, restCenterShift } from "./whole-rest-layout";
 import { compressSVG } from "./score-pages";
 import JSZip from "jszip";
+import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import {
   ribbonSpacing,
   gridPosition,
@@ -334,7 +335,6 @@ async function renderMusicXMLPass(
     partId,
   );
   progress(i18nText("musicxml.message412"));
-  const { OpenSheetMusicDisplay } = await import("opensheetmusicdisplay");
   const scoreFonts = await loadScoreTextFonts();
   const host = document.createElement("div");
   host.style.cssText =

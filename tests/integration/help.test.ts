@@ -19,6 +19,9 @@ beforeEach(() => {
   } as DOMRect);
   HTMLElement.prototype.showPopover = function () {
     this.dataset.popoverOpen = "true";
+    // jsdom has closed-popover CSS but no showPopover API. Emulate opening
+    // in this stub so the unchanged keyboard-focus assertions remain real.
+    this.style.display = "block";
   };
   HTMLDialogElement.prototype.showModal = function () {
     this.open = true;

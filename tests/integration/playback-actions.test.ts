@@ -285,6 +285,21 @@ it.each([false, true])(
         );
       },
     };
+    const render = vi.spyOn(h, "measureHTML");
+    renderScoreRows(h, state, 0);
+    const retained = ribbon.querySelector('[data-index="4"]');
+    const observer = new MutationObserver(() => {});
+    observer.observe(ribbon, { childList: true, subtree: true });
+    render.mockClear();
+    renderScoreRows(h, state, 4);
+    expect(ribbon.querySelector('[data-index="4"]')).toBe(retained);
+    expect(
+      observer
+        .takeRecords()
+        .some((record) => [...record.removedNodes].includes(retained!)),
+    ).toBe(false);
+    observer.disconnect();
+    expect(render).toHaveBeenCalledTimes(4);
     renderScoreRows(h, state, 115);
     renderScoreRows(h, state, 116);
     expect(
@@ -295,6 +310,32 @@ it.each([false, true])(
     h.playing = false;
     renderScoreRows(h, state, 116);
     expect(stage.scrollTop).toBe(28 * 200);
+    h.playing = true;
+    renderScoreRows(h, state, 116);
+    const lastCells = new Map(
+      [...ribbon.querySelectorAll<HTMLElement>("[data-index]")].map((cell) => [
+        cell.dataset.index,
+        cell,
+      ]),
+    );
+    renderScoreRows(h, state, 122);
+    for (const [i, cell] of lastCells)
+      expect(ribbon.querySelector(`[data-index="${i}"]`)).toBe(cell);
+    expect(
+      [...ribbon.querySelectorAll<HTMLElement>(".measure")].map(
+        (e) => e.dataset.index ?? "empty",
+      ),
+    ).toEqual(["116", "117", "118", "119", "120", "121", "122", "empty"]);
+    // Width and explicit track invalidation must not reuse stale crop geometry.
+    h.cellWidth = 101;
+    renderScoreRows(h, state, 122);
+    expect(ribbon.querySelector('[data-index="116"]')).not.toBe(
+      lastCells.get("116"),
+    );
+    const resized = ribbon.querySelector('[data-index="116"]');
+    state.rowWindow = -1;
+    renderScoreRows(h, state, 122);
+    expect(ribbon.querySelector('[data-index="116"]')).not.toBe(resized);
   },
 );
 it("handles vertical arrows only in rows and leaves numeric editing and dialogs alone", () => {
