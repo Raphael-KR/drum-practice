@@ -4,6 +4,15 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-10-8-20261109"></a>
+
+## 0.10.8 — 문서·공통 재생 코드 정리 · 2026-11-09 발행
+
+- 두 앱 0.10.7→0.10.8 patch. 문서·앵커 검사와 CI 연결, 긴 ADR/완료 계획 원문 분리, 공통 재생 폼·설정 모듈의 책임 정리를 반영했다. 기능·저장 계약·수록 6곡은 유지했다. [실행 기록과 검수 범위](archive/release-0.10.8.md).
+- 구현 `ca1c23e350ff4eec225d92ce961a4b63be43e013`·[PR #42](https://github.com/Raphael-KR/drum-practice/pull/42)·제품 main `615764c339534033ac21c8ca8e74467d76b8028c`·소스 빌드 `90b12fc30945`. 자체 검토·PR/main CI·전체 817테스트·정적 검사·두 앱 빌드 통과. Safari MCP 연결 실패 후 ego-browser PC에서 두 앱의 설정·메트로놈 동기화와 연습실 재생/위치 조절을 확인했다. 폰 가로 화면 모사는 Chromium이며 iOS/Safari 검증을 뜻하지 않는다.
+- Sites 소스 `350ba06d2f7ae2e84822d437ca5c6837cb7c6aa9`, 버전100, 배포 `appgdep_6af1ce59b2c0819190fab32f27b847d3`: **succeeded**, **2026-11-09 22:45:12 KST**. 기존 public Site에 player만 발행했다. 47파일 세 위치 해시·공개 읽기 51항목·루트/Sites audit 0건을 확인했다.
+- 아카이브 `local-archives/releases/drum-practice-0.10.8-sites.tar.gz` SHA256 `3123838b7102d86a4a725938ba3ad519812a74f6ef85464e384dc523d891b758`. 증거는 `.tmp/release-0.10.8/`에 보존한다. 기존 큰 번들/Node 경고와 미검증 범위는 실행 기록을 따른다. 결과 문서만 별도 PR로 반영하며 버전·발행을 반복하지 않는다.
+
 <a id="release-0-10-7-20261109"></a>
 
 ## 0.10.7 — 섹션 줄 간격 확보 · 2026-11-09 발행
