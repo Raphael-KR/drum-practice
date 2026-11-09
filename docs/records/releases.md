@@ -4,6 +4,15 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-10-3-20261109"></a>
+
+## 0.10.3 — 화면 준비·재생 부하·도구 호환성 개선 · 2026-11-09 발행
+
+- 두 앱 0.10.2 → 0.10.3 patch. 큰 SVG 텍스트 파싱, 자동 저장의 전체 악보 순회와 두 줄 행 DOM 교체 비용을 줄이고 jsdom 31·TypeScript 7/API 6 호환성을 반영했다. 저장 스키마·패키지·SVG 출력·보안 검사와 기존 기능을 유지한다. [실행 기록과 한계](archive/release-0.10.3.md).
+- 구현 `a6115c1d1b905567e6e354155309c2dcb9682250`·[PR #32](https://github.com/Raphael-KR/drum-practice/pull/32)·제품 main `52cacb930ad5983c8a356245f0909c2d1d7916de`·소스 빌드 `8c051b046bc1`. 자체 검토·PR/main CI, 전체 로컬 132파일 810테스트·lint/서식/타입/구조/문서·두 앱 빌드와 실제 악보 열기/재생/저장 보존 확인을 마쳤다. root/Sites audit은 취약점 0건이다.
+- Sites 소스 `db8fc0560fbffa4e19704b9350999fa63e34e8c6`, 버전95 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_bd3f6bc74a608191942e1667430cc1fa`), 배포 `appgdep_6af1431d03948191b01ac22b165dd45b`: **succeeded**, **2026-11-09 12:51:07 KST**. 기존 public Site에 player만 발행했고 47파일 3곳 해시·공개 읽기 51항목을 확인했다. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site/).
+- 큰 청크·Actions 전환 예고는 비차단이다. Safari MCP의 숨김 탭/rAF 제한으로 ego-browser를 사용했으며 iOS/iPadOS 실기기·시뮬레이터는 제외했다. iPhone 재로드 해결·상주 RSS 감소·실제 청취나 전곡 안정성을 확정하지 않는다. 결과 문서만 별도 PR로 반영하며 버전·발행을 반복하지 않는다.
+
 <a id="release-0-10-2-20261108"></a>
 
 ## 0.10.2 — pnpm·카탈로그·OSMD 동기화와 보안 수정 · 2026-11-08 발행
