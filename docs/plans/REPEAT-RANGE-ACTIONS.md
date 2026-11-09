@@ -7,6 +7,6 @@
 
 이전 문단 주소를 유지한다. 아래 링크의 원문·수치는 당시 기록이며 현행 Rule이 아니다.
 
-- <a id="반복-구간-시작삭제-동작-2026-10-22"></a>[반복 구간 시작·삭제 동작 (2026-10-22)](../decisions/0006-practice-navigation-and-overlays.md#이관-원문--repeat-range-actionsmd--1)
-- <a id="승인된-동작"></a>[승인된 동작](../decisions/0006-practice-navigation-and-overlays.md#이관-원문--repeat-range-actionsmd--2)
-- <a id="구현검증-기록"></a>[구현·검증 기록](../decisions/0006-practice-navigation-and-overlays.md#이관-원문--repeat-range-actionsmd--3)
+- <a id="반복-구간-시작삭제-동작-2026-10-22"></a>[반복 구간 시작·삭제 동작 (2026-10-22)](../records/archive/adr-0006-practice-navigation-and-overlays-sources.md#이관-원문--repeat-range-actionsmd--1)
+- <a id="승인된-동작"></a>[승인된 동작](../records/archive/adr-0006-practice-navigation-and-overlays-sources.md#이관-원문--repeat-range-actionsmd--2)
+- <a id="구현검증-기록"></a>[구현·검증 기록](../records/archive/adr-0006-practice-navigation-and-overlays-sources.md#이관-원문--repeat-range-actionsmd--3)

@@ -7,9 +7,9 @@
 
 이전 문단 주소를 유지한다. 아래 링크의 원문·수치는 당시 기록이며 현행 Rule이 아니다.
 
-- <a id="musicxml-입력-지원-계획"></a>[MusicXML 입력 지원 계획](../decisions/0004-browser-native-score-rendering.md#이관-원문--musicxml-supportmd--1)
-- <a id="사용-방법"></a>[사용 방법](../decisions/0004-browser-native-score-rendering.md#이관-원문--musicxml-supportmd--2)
-- <a id="범위와-한계"></a>[범위와 한계](../decisions/0004-browser-native-score-rendering.md#이관-원문--musicxml-supportmd--3)
-- <a id="구현-근거"></a>[구현 근거](../decisions/0004-browser-native-score-rendering.md#이관-원문--musicxml-supportmd--4)
-- <a id="2026-09-19-검증-결과"></a>[2026-09-19 검증 결과](../decisions/0004-browser-native-score-rendering.md#이관-원문--musicxml-supportmd--5)
-- <a id="곡별-보관-2026-09-19"></a>[곡별 보관 (2026-09-19)](../decisions/0004-browser-native-score-rendering.md#이관-원문--musicxml-supportmd--6)
+- <a id="musicxml-입력-지원-계획"></a>[MusicXML 입력 지원 계획](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--musicxml-supportmd--1)
+- <a id="사용-방법"></a>[사용 방법](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--musicxml-supportmd--2)
+- <a id="범위와-한계"></a>[범위와 한계](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--musicxml-supportmd--3)
+- <a id="구현-근거"></a>[구현 근거](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--musicxml-supportmd--4)
+- <a id="2026-09-19-검증-결과"></a>[2026-09-19 검증 결과](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--musicxml-supportmd--5)
+- <a id="곡별-보관-2026-09-19"></a>[곡별 보관 (2026-09-19)](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--musicxml-supportmd--6)

@@ -43,7 +43,7 @@ for (const file of files) {
           "transportHTML",
           "repeatBarHTML",
           "soundFieldsHTML",
-          "loopFieldsHTML",
+          "progressFieldHTML",
           "tempoFieldsHTML",
           "playbackBrandHTML",
           "metronomeControlHTML",

@@ -99,6 +99,8 @@ for (const name of owned)
 for (const file of [
   "src/modules/playback/playback-screen.ts",
   "src/modules/playback/playback-forms.ts",
+  "src/modules/playback/playback-settings.ts",
+  "src/modules/playback/playback-settings-layout.ts",
 ]) {
   const source = fs.readFileSync(file, "utf8"),
     ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);

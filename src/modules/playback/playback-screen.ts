@@ -1,6 +1,8 @@
 import {
   bindSoundAndViewSettings,
   bindPlaybackPreferences,
+  syncMetronomeControls,
+  syncSettingsChoices,
 } from "./playback-settings";
 import { readRecordingTempo } from "../../content/recording-tempo";
 import { beatTime as audioBeatTime } from "../../model/model";
@@ -17,11 +19,7 @@ import { sliderFromZoom } from "../score/score-zoom";
 import { mountLoopSlots } from "./loop-slots";
 import { selectPlaybackEngraving, type RibbonAsset } from "./playback-assets";
 import { mountPlaybackDrawer } from "./playback-drawer";
-import {
-  syncMetronomeControls,
-  syncSettingsChoices,
-  type SettingsCategory,
-} from "./playback-forms";
+import type { SettingsCategory } from "./playback-forms";
 import { createPlaybackTempo } from "./playback-tempo";
 import { installPhoneLandscapeSettings } from "./playback-settings-layout";
 import { createPlaybackWakeLock } from "./playback-wake-lock";
@@ -120,8 +118,6 @@ export interface PlaybackScreenHost {
   initialLastLoop?: Loop;
   ids: PlaybackBindings & {
     rewindButton: string;
-    mark: string;
-    sound: string;
     radiusAttribute: string;
     settings?: string;
   };

@@ -10,7 +10,7 @@
 
 1. 기존 키와 UI 카탈로그 연결을 찾고 한국어 정본에서 재사용/추가한다.
 2. 화면·접근성 이름에서 공통 API를 사용한다. 사용자 곡 콘텐츠 예외는 정확한 리터럴만 별도로 검토한다.
-3. 현재 [검사 실행 계약](verify.md#testing--개발-검사와-로컬-자산-준비)에 따라 `pnpm run check:i18n`과 변경 범위 검사를 실행한다. 전체 검증이 필요하면 `pnpm run verify`를 사용한다. 명령의 영향·허가는 전역/프로젝트 지침을 따른다.
+3. 현재 [검사 실행 계약](verify.md#testing--개발-검사와-로컬-자산-준비)에 따라 `pnpm run check:i18n`과 변경 범위의 정적 검사를 실행한다. 릴리스 또는 사용자가 별도로 요청한 전체 검증에서는 `pnpm run verify`를 사용한다. 명령의 영향·허가는 전역/프로젝트 지침을 따른다.
 4. 정적 키·변수·UI 연결·콘텐츠 예외를 확인하고 실제 실행 범위와 미검증을 기록한다. 영어 화면 전체 검수는 번역 추가 때 수행한다.
 
 <a id="readme--개발과-검증"></a>
@@ -19,11 +19,14 @@
 
 [소스 권위](../reference/engineering/release.md#deployment-rules--배포-범위와-소스-권위)를 확인한 뒤 실제 프로젝트 루트에서 실행한다.
 
+웹앱 개발 중에는 정적 검사만 수행한다. 의존성 준비가 필요할 때 설치하고, 개발 변경은 다음 명령으로 확인한다.
+
 ```sh
 pnpm install --frozen-lockfile
-pnpm run verify:portable  # 로컬 악보 없이 코드·문서·타입·회귀 검사
-pnpm run verify           # 로컬 악보를 포함한 전체 회귀와 두 앱 빌드
+pnpm run check  # lint·서식·타입·문서·모듈 경계 등 정적 검사
 ```
+
+`pnpm run verify:portable`은 CI 또는 사용자가 별도로 요청한 portable 회귀 검사에 사용한다. `pnpm run verify`는 릴리스 또는 사용자가 별도로 요청한 전체 검증에 사용하며, 로컬 악보 회귀와 두 앱 빌드를 포함한다. 두 명령을 일반 개발 단계의 연속 실행 절차로 사용하지 않는다. 화면 테스트는 릴리스 때 수행하고 별도 사용자 요청은 우선한다. 실행 범위·허가와 미검증 기록은 [검증 Rule](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)과 [공통 검사·CI](verify.md#testing--공통-검사와-ci)를 따른다.
 
 ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `pnpm run lint:fix`는 자동 수정 가능한 ESLint 항목을 수정합니다. 설정과 검사 범위는 [개발 검사](../../docs/how-to/verify.md#testing--eslint)를 참고합니다.
 
@@ -53,7 +56,7 @@ ESLint는 JS·TS의 코드 규칙을, Prettier는 서식을 검사합니다. `pn
 
 1. `pnpm outdated --recursive --include-workspace-root`와 `pnpm audit`로 새 버전과 알려진 취약점을 확인한다. 보안 수정은 우선 처리하고 일반 업데이트도 지속적으로 반영한다.
 2. 중앙 YAML의 대상 버전을 최신 안정 버전의 정확한 번호로 바꾸고 `pnpm run catalog:sync`를 실행한다. 이 명령은 pnpm 설정 파서로 중앙 파일과 필요한 항목을 확인하고 사본을 복사한 다음 `pnpm install`로 연결과 잠금 파일을 갱신한다. 중앙 파일을 역으로 덮어쓰지 않는다. 설치가 실패하면 갱신된 사본과 실제 오류를 확인해 해결한 뒤 다시 실행한다. 하위 보안 override는 상위 패키지에 수정이 포함됐는지 확인한 뒤 조정한다.
-3. 필요한 호환성 코드를 수정하고 `pnpm run verify`를 실행한다. Sites 입력도 [발행 준비 절차](release.md#sites-publication--발행-순서)로 새로 내보내 독립 설치·빌드를 확인한다.
+3. 필요한 호환성 코드를 수정하고 개발 중에는 `pnpm run check`로 확인한다. 릴리스 또는 사용자가 요청한 전체 호환성 검증에서는 `pnpm run verify`를 실행하고, Sites 입력도 [발행 준비 절차](release.md#sites-publication--발행-순서)로 새로 내보내 독립 설치·빌드를 확인한다.
 4. 변경 버전·영향·검사 결과를 기록한다. 공개 앱은 사용자 발행 요청 후 새 빌드가 배포되어야 업데이트가 반영된다.
 
 새 의존성도 중앙 `catalog`에 먼저 추가한 뒤 해당 `package.json`에서 `catalog:`로 참조하고 동기화한다. `catalogMode: strict`를 유지한다. `pnpm add`·`pnpm update`가 프로젝트 사본을 수정할 수 있으므로 버전 변경은 중앙 파일에서 시작한다. 사본만 수정된 경우 차이를 검토하고 승인된 값을 중앙에 반영한 뒤 다시 동기화한다.

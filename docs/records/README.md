@@ -10,6 +10,7 @@
 - [Apple 로컬 도구 관측](apple-local-tools.md)
 - [iPad 환경과 진단 기록](ipad.md)
 - [문서 정리와 검증 기록](documentation.md)
+- [코드 정리와 정적 검증 기록](code-maintenance.md)
 
 ## 곡별 제작 기록
 
@@ -24,6 +25,10 @@
 
 ### 릴리스와 의존성
 
+- [0.10.8 문서·공통 재생 코드 정리 릴리스](archive/release-0.10.8.md)
+- [0.10.7 섹션 줄 간격 확보 릴리스](archive/release-0.10.7.md)
+- [0.10.6 정지 두 줄 스크롤 갱신 축소 릴리스](archive/release-0.10.6.md)
+- [0.10.5 MusicXML 경계·오선 정렬·상단 여백 릴리스](archive/release-0.10.5.md)
 - [0.10.4 상단 주법 표시·Actions 런타임 릴리스](archive/release-0.10.4.md)
 - [0.10.3 화면 준비·재생 부하·도구 호환성 릴리스](archive/release-0.10.3.md)
 - [jsdom·TypeScript 업그레이드와 API 호환성](archive/jsdom-typescript-upgrade-20261109.md)
@@ -45,6 +50,9 @@
 
 ### 재생·조판과 악보 수록
 
+- [폰 가로 설정 최적화 계획과 구현·검증 기록](archive/phone-landscape-settings-20261029.md)
+- [폰 가로 자동 악보 전용 모드 계획](archive/landscape-score-only-20261028.md)
+- [공통 Liquid Glass 효과 통일 계획](archive/liquid-glass-unification-20261028.md)
 - [5번째 마디 경계의 CPU·메모리 조사](archive/fifth-bar-load-20261109.md)
 - [화면 준비 경로 개선과 수정 전후 로딩 비교](archive/screen-preparation-20261109.md)
 - [Node·OSMD 경고 수정과 번들 로딩 비용](archive/runtime-loading-cost-20261109.md)
@@ -69,6 +77,19 @@
 - [문서 재구성 계획과 실행 이력](archive/documentation-reorganization.md)
 - [프로젝트 품질과 의존성 점검 기록](archive/project-quality.md)
 - [프로젝트 구조 개편 기록](archive/project-restructuring.md)
+
+### ADR 원문 보존 기록
+
+결정 요약과 상태는 [ADR 목록](../decisions/README.md)에, 긴 More Information 원문은 아래 기록에 둔다. 이전 문단별 연결과 보존 범위는 [분리 대응표](documentation-migration.md#긴-adr-원문의-기록-분리--2026-11-09)를 따른다.
+
+- [ADR-0004 브라우저 공통 조판 원문](archive/adr-0004-browser-native-score-rendering-sources.md)
+- [ADR-0005 연습 배치와 간격 원문](archive/adr-0005-practice-layout-and-spacing-sources.md)
+- [ADR-0006 탐색·화면 효과 원문](archive/adr-0006-practice-navigation-and-overlays-sources.md)
+- [ADR-0007 악기·주법 보완 원문](archive/adr-0007-native-drum-notation-sources.md)
+- [ADR-0018 공통 제작·인계 원문](archive/adr-0018-reusable-score-production-and-handoff-sources.md)
+- [ADR-0020 제작기·연습실 운영 원문](archive/adr-0020-local-editor-and-public-player-sources.md)
+- [ADR-0021 공통 UI·도움말 원문](archive/adr-0021-contextual-help-and-shared-ui-sources.md)
+- [ADR-0026 기기 내부 음원 분석 원문](archive/adr-0026-device-local-audio-analysis-sources.md)
 
 이관 문단의 출처와 새 주소는 [원문 이전표](documentation-migration.md)를 따른다. 실행 상태가 미확인인 과거 항목은 기록만 이전하며 완료로 바꾸지 않는다.
 

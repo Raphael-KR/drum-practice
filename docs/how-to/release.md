@@ -33,18 +33,24 @@
 - 정적 앱 입력: `dist/player/`. `dist/editor/`나 원본 미디어 폴더 전체를 발행하지 않는다.
 - 서버 입력: `server/player-worker.ts`. 서버·DB·개인정보의 허용 범위는 [배포 Rule](../reference/engineering/release.md#deployment-rules--배포-범위와-소스-권위)을 확인한다.
 
+### 커밋 전 패키지 준비
+
+패키지 변경은 [릴리스 스킬](../../.agents/skills/release-drum-practice/SKILL.md)의 변경 검토·로컬 검증 단계에서 끝낸다. 이후 작업 브랜치 커밋·PR/CI·main 검증이 같은 패키지와 회귀 입력을 대상으로 하도록 한다.
+
+패키지의 반복 렌더 캐시가 배포 크기를 늘려 정리가 필요한 경우 `node scripts/release/compact-score-packages.mjs <새 출력 폴더> <실제 패키지>...`로 후보를 만든다. 원본 패키지를 보존하고 ZIP 엔트리·manifest·인쇄 잉크·공통 재읽기를 대조한 뒤 수록본에 적용한다. canonical XML이 있는 MusicXML 페이지의 알려진 버전1 timeline metadata만 생략하며 동봉 글꼴·원음원·가사는 제거하지 않는다.
+
+변경한 패키지 해시와 실제 회귀 입력을 갱신하고 `pnpm run verify`로 전체 회귀와 두 앱 빌드를 확인한다. 해시·검증 결과는 관련 문서와 함께 커밋·검토 대상에 포함하되, Git에서 제외된 원본·패키지 파일을 새로 추적하지 않는다. 검증된 패키지는 main 빌드에서도 같은 바이트로 사용한다. CI의 portable 검사는 이 로컬 자산 검증을 대신하지 않는다.
+
 <a id="sites-publication--발행-순서"></a>
 
 ### 발행 순서
 
 사용자가 요청한 경우에만 commit, push, 공개 발행을 수행한다. 변경 범위와 기존 dirty 파일을 확인하고 이번 릴리스에 필요한 검사를 먼저 끝낸다.
 
-전체 릴리스의 변경 검토·작업 브랜치·PR 검토·CI·main 병합·공개 확인·브랜치 정리는 [프로젝트 릴리스 스킬](../../.agents/skills/release-drum-practice/SKILL.md)을 따른다. 아래는 검증된 main 코드에 적용하는 빌드·Sites 발행 세부 절차다.
+전체 릴리스의 변경 검토·작업 브랜치·PR 검토·CI·main 병합·공개 확인·브랜치 정리는 [프로젝트 릴리스 스킬](../../.agents/skills/release-drum-practice/SKILL.md)을 따른다. 패키지 변경은 위 [커밋 전 준비](#커밋-전-패키지-준비)에서 끝낸다. 아래는 검증된 main 코드와 준비된 자산에 적용하는 빌드·Sites 발행 세부 절차다.
 
 1. `src/app-versions.json`과 [버전 정책](../reference/engineering/release.md#app-versions--앱-공통-버전)을 확인한다. 문서만 변경하면 버전을 올리지 않는다.
-2. 드럼 회귀와 분리 빌드를 검사한다.
-
-   패키지의 반복 렌더 캐시가 배포 크기를 늘리는 경우 먼저 `scripts/release/compact-score-packages.mjs <새 출력 폴더> <실제 패키지>...`로 후보를 만든다. 원본 패키지를 보존하고 ZIP 엔트리·manifest·인쇄 잉크·공통 재읽기를 대조한 뒤 수록본에 적용한다. canonical XML이 있는 MusicXML 페이지의 알려진 버전1 timeline metadata만 생략하며 동봉 글꼴·원음원·가사는 제거하지 않는다. 변경한 패키지 해시와 실제 회귀 입력을 갱신하고 아래 검사를 수행한다.
+2. 준비된 패키지와 회귀 입력이 검증 때와 같은지 확인한 뒤 드럼 회귀와 분리 빌드를 검사한다. 발행 단계에서 패키지를 다시 정리하거나 해시·회귀 입력을 수정하지 않는다. 입력 변경이 필요하면 [커밋 전 준비](#커밋-전-패키지-준비)와 관련 커밋·PR/CI·main 검증을 거쳐 새 후보를 확정한다.
 
    ```sh
    pnpm run test:drum
@@ -73,4 +79,4 @@ DB 관련 작업이 포함되면 [저장·마이그레이션 경계](../referenc
 
 ### 오픈소스 고지 생성과 확인
 
-설치된 lockfile의 의존성을 준비한 뒤 기존 `pnpm run generate`가 고지를 생성한다. 원문 누락이면 빌드 실패를 해결하고, `pnpm run check:docs`는 생성 UI 문서·파일 링크만 검사하므로 라이선스 검토를 대신하지 않는다. 공개 발행은 [발행 절차](release.md#sites-publication--sites-발행-절차)의 요청·확인 범위에서만 수행한다.
+설치된 lockfile의 의존성을 준비한 뒤 기존 `pnpm run generate`가 고지를 생성한다. 원문 누락이면 빌드 실패를 해결하고, `pnpm run check:docs`는 생성 UI 문서·파일 링크·Markdown 문단 앵커를 검사하므로 라이선스 검토를 대신하지 않는다. 공개 발행은 [발행 절차](release.md#sites-publication--sites-발행-절차)의 요청·확인 범위에서만 수행한다.

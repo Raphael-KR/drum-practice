@@ -10,7 +10,7 @@
 
 `main.ts`와 `playback-runtime.ts`가 공통 `playback-screen.ts`를 호출한다. 드럼연습실 진입점 `player-app.ts`는 `mountPlaybackRuntime`을 호출한다. `webPlaybackBindings`는 제작기, `playerPlaybackBindings`는 연습실의 컨트롤 ID를 연결한다.
 
-화면 마크업은 playback-forms/playback-ui, 화면 조립은 playback-shell, 자산 수명주기는 playback-assets가 소유한다. 스타일은 playback-base.css/playback-ui.css와 연습실 전용 player.css를 사용한다.
+화면 마크업은 playback-forms/playback-ui, 설정 카드 선택·스크롤은 playback-settings-layout, 설정 동기화는 playback-settings, 화면 조립은 playback-shell, 자산 수명주기는 playback-assets가 소유한다. 반복 구간 콘텐츠는 호스트가 기존 `loopExtra` 슬롯으로 전달한다. 스타일은 playback-base.css/playback-ui.css와 연습실 전용 player.css를 사용한다. 세부 책임은 [구조 정본의 공통 모듈 책임](../reference/engineering/architecture.md#project-structure--의존-규칙)을 따른다.
 
 | ID | 소유자 / 환경 연결 |
 |---|---|
@@ -28,7 +28,7 @@
 | P12 | 공통 sound/metronome change + soundFieldsHTML |
 | P13 | view/zoom change + syncDisplay |
 | P14 | quickRepeat/useLoop/stopLoop |
-| P15 | fillLoop/loopFromForm/bounds + loopFieldsHTML |
+| P15 | 구간 선택·저장: `mountLoopSlots`(loop-slots); 적용·검증: `useLoop`(playback-screen) → `changePlaybackLoop`(playback-actions); 콘텐츠: playback-shell의 `loopExtra` 슬롯 |
 | P16 | mark/renderLists + marker-ui |
 | P17 | settingsFrameHTML/selectPlaybackSettings |
 | P18 | 공통 preference 입력; read/write만 주입 |

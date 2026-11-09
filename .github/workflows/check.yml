@@ -16,4 +16,6 @@ jobs:
       # The committed include and lockfile are sufficient; no personal catalog path.
       - name: Install from repository catalog and lockfile
         run: pnpm install --frozen-lockfile
-      - run: pnpm run verify:portable
+      # check:docs inside check validates local file links and Markdown anchors.
+      - name: Common static checks (including document anchors) and portable tests
+        run: pnpm run verify:portable

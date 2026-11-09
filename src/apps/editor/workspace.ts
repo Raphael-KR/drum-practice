@@ -3,10 +3,8 @@ import buildInfo from "../../generated/build-info.generated.json";
 import { showAppBuildLabel } from "../../shared/ui/app-build-label";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { appInfoContent } from "../../shared/ui/app-info";
-import {
-  selectPlaybackSettings,
-  type SettingsCategory,
-} from "../../modules/playback/playback-forms";
+import type { SettingsCategory } from "../../modules/playback/playback-forms";
+import { selectPlaybackSettings } from "../../modules/playback/playback-settings-layout";
 import { mountPlaybackShell } from "../../modules/playback/playback-shell";
 import { webPlaybackBindings } from "../../modules/playback/playback-ui";
 import { componentName } from "../../shared/ui/ui-standard";
@@ -101,8 +99,6 @@ export function arrangeWorkspace() {
       ids: {
         ...webPlaybackBindings,
         rewindButton: "jump",
-        mark: "open-marker-dialog",
-        sound: "open-sound-dialog",
         settings: "open-settings-dialog",
         radiusAttribute: "data-loop-radius",
       },

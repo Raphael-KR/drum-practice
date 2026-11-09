@@ -7,5 +7,5 @@
 
 이전 문단 주소를 유지한다. 아래 링크의 원문·수치는 당시 기록이며 현행 Rule이 아니다.
 
-- <a id="musicxml-svg-표시-및-압축-캐시"></a>[MusicXML SVG 표시 및 압축 캐시](../decisions/0004-browser-native-score-rendering.md#이관-원문--svg-renderingmd--1)
-- <a id="형식"></a>[형식](../decisions/0004-browser-native-score-rendering.md#이관-원문--svg-renderingmd--2)
+- <a id="musicxml-svg-표시-및-압축-캐시"></a>[MusicXML SVG 표시 및 압축 캐시](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--svg-renderingmd--1)
+- <a id="형식"></a>[형식](../records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--svg-renderingmd--2)
