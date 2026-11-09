@@ -62,7 +62,43 @@ it("removes marked headings only from practice pages, retaining musical labels",
   expect(await blob.text()).toContain("Title");
 });
 
-import { framePracticeStaffs } from "../../src/modules/score/practice-staff-layout";
+import {
+  framePracticeStaffs,
+  MUSICXML_TOP_SPACES,
+  type StaffPosition,
+} from "../../src/modules/score/practice-staff-layout";
+it("reserves eight spaces for MusicXML and expands all measures for higher marks", () => {
+  const a: Region = {
+    id: "a",
+    page: 0,
+    x: 0,
+    y: 0.125,
+    w: 0.3,
+    h: 0.12,
+    beatXs: [0, 1],
+  };
+  const b = { ...a, id: "b", y: 0.525 };
+  const regions = [a, b];
+  const staffs = new Map<string, StaffPosition>([
+    ["a", { top: 0.2, gap: 0.01, nativePageRatio: 1 }],
+    ["b", { top: 0.6, gap: 0.01, nativePageRatio: 1 }],
+  ]);
+  framePracticeStaffs(regions, staffs, MUSICXML_TOP_SPACES);
+  expect(staffs.get("a")!.frame?.above).toBe(8);
+  b.y = 0.495;
+  b.h = 0.15;
+  framePracticeStaffs(regions, staffs, MUSICXML_TOP_SPACES);
+  for (const region of regions) {
+    const staff = staffs.get(region.id)!;
+    const layout = practiceStaffLayout(region, staff, 300, 100);
+    const scale = parseFloat(layout.size.split(" ")[1]);
+    const offset = parseFloat(layout.position.split(" ")[1]);
+    expect(staff.frame?.above).toBeCloseTo(10.5);
+    expect(region.y * scale + offset).toBeGreaterThanOrEqual(-1e-8);
+    expect(staff.gap * scale).toBeCloseTo(10);
+    expect(layout.staffMiddle).toBeCloseTo(125);
+  }
+});
 it("aligns PDF staves while retaining the full lyric-bearing crop", () => {
   const regions: Region[] = [
     { id: "a", page: 0, x: 0.1, y: 0.1, w: 0.3, h: 0.12, beatXs: [0, 1] },
@@ -169,4 +205,30 @@ it("scales native playback rows uniformly regardless of source page aspect or cr
       expect(ph / pw).toBeCloseTo(ratio);
       expect(ph * staff.gap).toBeCloseTo((275 / w) * ratio * 0.01);
     }
+});
+
+it("keeps first-system sections together when the SVG canvas starts above zero", async () => {
+  const source: Region = {
+    id: "r",
+    page: 0,
+    x: 0.1,
+    y: 0.005,
+    w: 0.3,
+    h: 0.12,
+    beatXs: [0.2, 1],
+  };
+  const display = { ...source, x: 0.126, w: 0.274 };
+  const input =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -11 1000 1000"><rect data-section-top="safe" x="121" y="-0.5"/><text data-section-top="safe" x="124" y="11.75">Intro</text><text x="500" y="120">Other</text></svg>';
+  const blob = new Blob([input], { type: "image/svg+xml" });
+  const doc = new DOMParser().parseFromString(
+    await (await practicePage(blob, [{ source, display }])).text(),
+    "image/svg+xml",
+  );
+  expect(doc.documentElement.getAttribute("viewBox")).toBe("0 -11 1000 1000");
+  expect(Number(doc.querySelector("rect")!.getAttribute("x"))).toBeCloseTo(147);
+  expect(Number(doc.querySelector("text")!.getAttribute("x"))).toBeCloseTo(150);
+  expect(doc.querySelector("rect")!.getAttribute("y")).toBe("-0.5");
+  expect(doc.querySelectorAll("text")[1].getAttribute("x")).toBe("500");
+  expect(await blob.text()).toBe(input);
 });

@@ -2,6 +2,7 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import { displayPage } from "./score-pages";
 import { detectStaff } from "./staff-geometry";
 import type { Region } from "../../model/model";
+export const MUSICXML_TOP_SPACES = 8;
 export interface StaffPosition {
   /** Native quarter width divided by native staff gap; ribbon-only scaling. */
   ribbonQuarterInGaps?: number;
@@ -78,12 +79,13 @@ export function measurePageStaff(
 export function framePracticeStaffs(
   regions: Region[],
   staffs: Map<string, StaffPosition>,
+  minimumAbove = 7,
 ) {
   if (regions.some((r) => !staffs.has(r.id))) {
     staffs.clear();
     return;
   }
-  const frame = { above: 7, below: 8 };
+  const frame = { above: minimumAbove, below: 8 };
   for (const r of regions) {
     const s = staffs.get(r.id)!;
     frame.above = Math.max(frame.above, (s.top - r.y) / s.gap);
@@ -115,11 +117,14 @@ export function practiceStaffLayout(
         );
   const pageWidth = width / region.w,
     pageHeight = gap / staff.gap;
+  const staffMiddle = ((staff.frame?.above ?? 7) + 2) * gap;
+  const sourceMiddle = (staff.top + 2 * staff.gap) * pageHeight;
   return {
     height: gap * frameHeight,
-    staffMiddle: ((staff.frame?.above ?? 7) + 2) * gap,
+    staffMiddle,
     size: `${pageWidth}px ${pageHeight}px`,
-    position: `${-region.x * pageWidth}px ${(staff.frame?.above ?? 7) * gap - staff.top * pageHeight}px`,
+    // Align the third staff line, independently of each system's ink margins.
+    position: `${-region.x * pageWidth}px ${staffMiddle - sourceMiddle}px`,
   };
 }
 
@@ -143,7 +148,7 @@ export async function practicePage(
   const view = (doc.documentElement.getAttribute("viewBox") || "")
     .split(/\s+/)
     .map(Number);
-  const [, , width, height] = view;
+  const [, originY, width, height] = view;
   // Rehearsal frames and text form one pair. Move both by the same prefix
   // amount on the practice copy so trimming cannot cut the section name.
   if (width > 0 && height > 0)
@@ -151,7 +156,7 @@ export async function practicePage(
       if (display.x <= source.x) continue;
       for (const element of doc.querySelectorAll('[data-section-top="safe"]')) {
         const x = Number(element.getAttribute("x")),
-          y = Number(element.getAttribute("y"));
+          y = Number(element.getAttribute("y")) - originY;
         if (
           x >= source.x * width &&
           x < (source.x + source.w) * width &&

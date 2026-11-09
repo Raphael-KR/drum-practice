@@ -45,11 +45,17 @@ export function renderMeasure({
   if (layout) {
     const pageHeight = parseFloat(layout.size.split(" ")[1]);
     const offset = parseFloat(layout.position.split(" ")[1]);
-    // Native technical marks can extend above the stored system ink bounds.
-    // Expose eight more CSS pixels without moving or scaling the engraving.
-    const top = Math.max(0, r.y * pageHeight + offset - (isSVG ? 8 : 0));
+    const top = Math.max(0, r.y * pageHeight + offset);
     const bottom = Math.max(0, height - ((r.y + r.h) * pageHeight + offset));
     trim = `clip-path:inset(${top}px 0 ${bottom}px 0);`;
+  }
+  // CSS background images can round large SVG pages and their offsets
+  // independently. A shared SVG viewport keeps the third staff line aligned.
+  let engraving = "";
+  if (isSVG && layout) {
+    const [pageWidth, pageHeight] = layout.size.split(" ").map(parseFloat);
+    const [x, y] = layout.position.split(" ").map(parseFloat);
+    engraving = `<svg class="score-engraving" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 ${width} ${height}"><image href="${esc(pageURL)}" x="${x}" y="${y}" width="${pageWidth}" height="${pageHeight}" preserveAspectRatio="none"/></svg>`;
   }
   let overlay = "";
   if (isSVG && highlight?.measures.has(i)) {
@@ -59,7 +65,7 @@ export function renderMeasure({
     const offsetY = layout
       ? Number(layout.position.split(" ")[1].replace("px", ""))
       : -r.y * scaledHeight;
-    overlay = `<svg class="note-highlight" aria-hidden="true" data-highlight-measure="${i}" preserveAspectRatio="none" viewBox="${r.x * highlight.width} ${(-offsetY / scaledHeight) * highlight.height} ${r.w * highlight.width} ${(height / scaledHeight) * highlight.height}">${highlight.measures.get(i)}</svg>`;
+    overlay = `<svg class="note-highlight" aria-hidden="true" data-highlight-measure="${i}" preserveAspectRatio="none" viewBox="${r.x * highlight.width} ${(highlight.originY ?? 0) + (-offsetY / scaledHeight) * highlight.height} ${r.w * highlight.width} ${(height / scaledHeight) * highlight.height}">${highlight.measures.get(i)}</svg>`;
   }
   const centered = s.measureLyrics?.find((l) => l.measureId === m.id);
   const measureText = centered
@@ -117,9 +123,9 @@ export function renderMeasure({
     String(width) +
     "px;height:" +
     String(height) +
-    "px;background-image:url('" +
-    String(pageURL) +
-    "');background-size:" +
+    "px;" +
+    (engraving ? "" : `background-image:url('${pageURL}');`) +
+    "background-size:" +
     String(layout?.size ?? `${100 / r.w}% ${100 / r.h}%`) +
     ";background-position:" +
     String(
@@ -127,6 +133,7 @@ export function renderMeasure({
         `${(r.x / (1 - r.w || 1)) * 100}% ${(r.y / (1 - r.h || 1)) * 100}%`,
     ) +
     '">' +
+    engraving +
     String(overlay) +
     '</div><div class="lyrics" style="top:' +
     String(height + 6) +

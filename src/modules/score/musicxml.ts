@@ -22,6 +22,7 @@ import { REST_LAYOUT_VERSION, restCenterShift } from "./whole-rest-layout";
 import { compressSVG } from "./score-pages";
 import JSZip from "jszip";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import type { VexFlowMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure";
 import {
   ribbonSpacing,
   gridPosition,
@@ -30,6 +31,7 @@ import {
 } from "./ribbon-engraving";
 import { displayPage } from "./score-pages";
 import { type Region } from "../../model/model";
+import { MUSICXML_TOP_SPACES } from "./practice-staff-layout";
 
 export interface XMLMeasure {
   label: string;
@@ -360,7 +362,7 @@ async function renderMusicXMLPass(
     osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 0;
     osmd.EngravingRules.NewSystemAtXMLNewSystemAttribute = true;
     osmd.EngravingRules.NewPageAtXMLNewPageAttribute = true;
-    // Keep rehearsal boxes above cymbal stems, inside the seven-space top margin.
+    // Keep rehearsal boxes above cymbal stems at their seven-space anchor.
     osmd.EngravingRules.RehearsalMarkYOffset = 25;
     osmd.EngravingRules.StemWidth = 0.1;
     osmd.EngravingRules.RenderMultipleRestMeasures = false;
@@ -434,32 +436,30 @@ async function renderMusicXMLPass(
       host.querySelectorAll(".vf-clef").forEach((clef) => clef.remove());
     }
     // VexFlow places rehearsal boxes differently at system starts. Normalize
-    // their visible top edge to the practice viewport's seven-space headroom.
-    for (const text of host.querySelectorAll<SVGTextElement>(
-      ".vf-measure > text",
-    )) {
-      let frame = text.previousElementSibling;
-      if (frame?.tagName === "path" && !frame.getAttribute("d"))
-        frame = frame.previousElementSibling;
-      const staff = text.parentElement?.querySelector<SVGPathElement>("path");
-      if (
-        frame?.tagName !== "rect" ||
-        frame.getAttribute("fill") !== "none" ||
-        !staff
-      )
-        continue;
-      const dy =
-        staff.getBBox().y -
-        REHEARSAL_TOP * 10 -
-        Number(frame.getAttribute("y"));
-      for (const element of [frame, text]) {
-        element.setAttribute(
-          "y",
-          String(Number(element.getAttribute("y")) + dy),
-        );
-        element.setAttribute("data-section-top", "safe");
+    // their top edge to the shared seven-space section anchor.
+    for (const row of osmd.GraphicSheet.MeasureList)
+      for (const g of row) {
+        const measure = g?.getSVGGElement();
+        if (!measure) continue;
+        const stave = (g as VexFlowMeasure).getVFStave();
+        // OSMD 2.3 encloses each section in its own native SVG group.
+        for (const section of measure.querySelectorAll(".vf-stavesection")) {
+          const frame = section.querySelector("rect");
+          const text = section.querySelector("text");
+          if (!frame || !text) continue;
+          const dy =
+            stave.getYForLine(0) -
+            REHEARSAL_TOP * stave.getSpacingBetweenLines() -
+            Number(frame.getAttribute("y"));
+          for (const element of [frame, text]) {
+            element.setAttribute(
+              "y",
+              String(Number(element.getAttribute("y")) + dy),
+            );
+            element.setAttribute("data-section-top", "safe");
+          }
+        }
       }
-    }
     if (timeline)
       host.querySelectorAll(".vf-timesignature").forEach((e) => e.remove());
     const svgs = Array.from(host.querySelectorAll("svg"));
@@ -597,36 +597,32 @@ async function renderMusicXMLPass(
           text.setAttribute("data-score-heading", "true");
       }
     // Crop against actual system ink, not a fixed nine-space lower margin.
-    const systemBounds = svgs.map((svg) => {
-      const rows = new Map<number, { top: number; bottom: number }>();
-      for (const measure of svg.querySelectorAll<SVGGraphicsElement>(
-        ".vf-measure",
-      )) {
-        const line = Array.from(measure.children).find(
-          (e) =>
-            e.localName === "path" &&
-            /^M[\d. -]+L[\d. -]+$/.test(e.getAttribute("d") || ""),
+    const systemBounds = svgs.map(
+      () => new Map<number, { top: number; bottom: number }>(),
+    );
+    const pageTops = svgs.map(() => 0);
+    // OSMD 2.3 nests staff paths inside .vf-stave. Use the native measure
+    // group and staff coordinate instead of depending on direct path children.
+    for (const row of osmd.GraphicSheet.MeasureList)
+      for (const g of row) {
+        const measure = g?.getSVGGElement();
+        if (!measure) continue;
+        const pi = g.ParentMusicSystem.Parent.PageNumber - 1;
+        const rows = systemBounds[pi];
+        const stave = (g as VexFlowMeasure).getVFStave();
+        const key = Math.round(stave.getYForLine(0) * 100);
+        pageTops[pi] = Math.min(
+          pageTops[pi],
+          stave.getYForLine(0) -
+            MUSICXML_TOP_SPACES * stave.getSpacingBetweenLines(),
         );
-        const points = line
-          ?.getAttribute("d")
-          ?.match(/-?\d+(?:\.\d+)?/g)
-          ?.map(Number);
-        if (
-          !points ||
-          points.length !== 4 ||
-          Math.abs(points[1] - points[3]) > 0.01
-        )
-          continue;
-        const key = Math.round(points[1] * 100),
-          box = measure.getBBox(),
+        const box = measure.getBBox(),
           previous = rows.get(key);
         rows.set(key, {
           top: Math.min(previous?.top ?? Infinity, box.y),
           bottom: Math.max(previous?.bottom ?? -Infinity, box.y + box.height),
         });
       }
-      return rows;
-    });
     // Native wedges live outside .vf-measure. Include their ink in playback
     // crop bounds, otherwise an above-staff crescendo is cut at the beam top.
     for (const row of osmd.GraphicSheet.MeasureList)
@@ -634,9 +630,7 @@ async function renderMusicXMLPass(
         if (!g) continue;
         const page = g.ParentMusicSystem.Parent;
         const key = Math.round(
-          (g.PositionAndShape.AbsolutePosition.y -
-            page.PositionAndShape.AbsolutePosition.y) *
-            1000,
+          (g as VexFlowMeasure).getVFStave().getYForLine(0) * 100,
         );
         const bounds = systemBounds[page.PageNumber - 1].get(key);
         if (!bounds) continue;
@@ -661,18 +655,23 @@ async function renderMusicXMLPass(
           }
         }
       }
-    // Keep XML page/row boundaries; trim only the unused SVG canvas below ink.
-    // Regions below are normalized against these final page dimensions.
-    for (const svg of svgs) {
+    // Extend the viewBox above zero when the first system's marks need room.
+    // Keep native glyph coordinates and XML system breaks; normalize the page
+    // origin for regions, staff positions and highlight projection below.
+    for (const [pi, svg] of svgs.entries()) {
       const ink = svg.getBBox(),
         view = svg.viewBox.baseVal;
-      const bottom = Math.min(view.height, Math.ceil(ink.y + ink.height + 30));
-      if (bottom > 0) {
+      const top = Math.floor(Math.min(view.y, pageTops[pi], ink.y - 5));
+      const bottom = Math.min(
+        view.y + view.height,
+        Math.ceil(ink.y + ink.height + 30),
+      );
+      if (bottom > top) {
         svg.setAttribute(
           "viewBox",
-          `${view.x} ${view.y} ${view.width} ${bottom}`,
+          `${view.x} ${top} ${view.width} ${bottom - top}`,
         );
-        svg.setAttribute("height", String(bottom));
+        svg.setAttribute("height", String(bottom - top));
       }
     }
     const pages = await Promise.all(
@@ -695,8 +694,9 @@ async function renderMusicXMLPass(
         p = box.AbsolutePosition,
         pp = page.PositionAndShape.AbsolutePosition;
       // OSMD SVG viewBox coordinates use ten units per engraving unit.
-      const width = svg.viewBox.baseVal.width,
-        height = svg.viewBox.baseVal.height;
+      const view = svg.viewBox.baseVal;
+      const width = view.width,
+        height = view.height;
       if (!(width > 0 && height > 0))
         throw Error(i18nText("musicxml.message417"));
       const sx = 1;
@@ -709,10 +709,19 @@ async function renderMusicXMLPass(
                   parsed.measures[i].denominator) *
                 timeline.quarter)
           : Math.min(width, (p.x - pp.x + box.BorderRight) * 10 * sx);
-      const staffY = (p.y - pp.y) * 10;
+      const stave = (g as VexFlowMeasure).getVFStave();
+      const staffY = stave.getYForLine(0);
       const bounds = systemBounds[pi].get(Math.round(staffY * 100));
-      const y = Math.max(0, bounds ? bounds.top - 5 : staffY - 50),
-        bottom = Math.min(height, bounds ? bounds.bottom + 5 : staffY + 95);
+      const y = Math.max(
+          view.y,
+          bounds
+            ? bounds.top - 5
+            : staffY - MUSICXML_TOP_SPACES * stave.getSpacingBetweenLines(),
+        ),
+        bottom = Math.min(
+          view.y + height,
+          bounds ? bounds.bottom + 5 : staffY + 95,
+        );
       const w = right - x,
         h = bottom - y;
       if (w <= 0 || h <= 0) throw Error(i18nText("musicxml.message418"));
@@ -760,7 +769,7 @@ async function renderMusicXMLPass(
         id: `xml-r${i + 1}`,
         page: pi,
         x: x / width,
-        y: y / height,
+        y: (y - view.y) / height,
         w: w / width,
         h: h / height,
         beatXs,
@@ -768,14 +777,12 @@ async function renderMusicXMLPass(
     }
     const staffs = regions.map((r, i) => {
       const stave = (
-        osmd.GraphicSheet.MeasureList[
-          i
-        ][0] as import("opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure").VexFlowMeasure
+        osmd.GraphicSheet.MeasureList[i][0] as VexFlowMeasure
       ).getVFStave();
-      const height = svgs[r.page].viewBox.baseVal.height;
+      const view = svgs[r.page].viewBox.baseVal;
       return {
-        top: stave.getYForLine(0) / height,
-        gap: (stave.getYForLine(1) - stave.getYForLine(0)) / height,
+        top: (stave.getYForLine(0) - view.y) / view.height,
+        gap: (stave.getYForLine(1) - stave.getYForLine(0)) / view.height,
       };
     });
     return {
