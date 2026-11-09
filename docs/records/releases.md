@@ -4,6 +4,15 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-10-5-20261109"></a>
+
+## 0.10.5 — MusicXML 경계·오선 정렬·상단 여백 · 2026-11-09 발행
+
+- 두 앱0.10.4→0.10.5 patch. 실제 OSMD 시스템 경계와 오선 제3선의 공통 SVG 좌표를 사용하고 섹션 높이·최소 위8간격/SVG 상단 캔버스를 확보했다. 첫 Intro·하이햇 주법을 보존하고 이웃 시스템 음표를 가린다. 원본/패키지·저장 스키마·PDF 표시를 유지한다. [실행 기록과 한계](archive/release-0.10.5.md).
+- 구현 `301901fbe8fc95d67625c09eafe96243b71810fb`·[PR #36](https://github.com/Raphael-KR/drum-practice/pull/36)·제품 main `53b7276ce9d2333e60ba06303896091fb7ad6886`·소스 빌드 `02dae729e4a1`. 자체 검토·PR/main CI, Node22/pnpm12의 전체813테스트·정적 검사·두 앱 빌드와 실제1줄/2줄 화면을 확인했다. Safari MCP hidden 상태로 ego-browser를 사용했고 실제 Safari/기기 성공으로 확대하지 않는다.
+- Sites 소스 `41abe715152c934723cd01eceb736149ab54fd7b`, 버전97 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_8c14ccf93c048191859e5722aa6067d2`), 배포 `appgdep_6af19abae3488191956e618f8bacb754`: **succeeded**, **2026-11-09 19:04:56 KST**. 기존 public Site에 player만 발행했고47파일 세 위치 해시·공개 읽기51항목과 루트/Sites audit0건을 확인했다. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site/).
+- 기존 큰 청크·Sites 도구 punycode 사용 중단·CI Ubuntu 이미지 전환 경고는 비차단이다. 실제 iOS/iPadOS 기기·시뮬레이터·사람 청취·공개 재생은 수행하지 않았다. 결과 문서만 별도 PR로 반영하며 버전·발행을 반복하지 않는다.
+
 <a id="release-0-10-4-20261109"></a>
 
 ## 0.10.4 — 상단 주법 표시·Actions 런타임 개선 · 2026-11-09 발행
