@@ -4,6 +4,15 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-10-7-20261109"></a>
+
+## 0.10.7 — 섹션 줄 간격 확보 · 2026-11-09 발행
+
+- 두 앱 0.10.6→0.10.7 patch. 섹션이 있는 줄의 위쪽 공간을 native 시스템 배치 전에 확보해 ‘갑자기’ 37마디 아래의 [A] 조각과 38마디 위의 이전 오선 유입을 수정했다. 공통 캐시 정책 v40, 원본/저장 호환성 유지. [실행 기록과 화면 근거](archive/release-0.10.7.md).
+- 구현 `0c8235f8cbb392852f9919c81d14bc693bcee431`·[PR #40](https://github.com/Raphael-KR/drum-practice/pull/40)·제품 main `62c6453ac7ff9a8ece9fac26695a8e7346fe8562`·소스 빌드 `59d159930935`. 자체 검토·PR/main CI·전체 817테스트·정적 검사·두 앱 빌드 통과. 기존 저장본 37·38마디를 두 앱의 1줄·2줄에서 직접 확인했다. Safari MCP 거절/연결 유실 뒤 ego-browser PC 검수를 사용했다.
+- Sites 소스 `9c427664199e1ba94d843dab6cd0f0f7e7dcb68f`, 버전99, 배포 `appgdep_6af1b534fbd081918e4612580811265a`: **succeeded**, **2026-11-09 20:57:53 KST**. 기존 public Site에 player만 발행했다. 47파일 세 위치 해시·공개 읽기 51항목·루트/Sites audit 0건을 확인했다. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site/).
+- Safari 응답형·iOS/iPadOS 실기기·시뮬레이터·공개 실제 재생/청취 검증으로 확대하지 않는다. 결과 문서는 별도 PR로 반영하며 버전·발행을 반복하지 않는다.
+
 <a id="release-0-10-6-20261109"></a>
 
 ## 0.10.6 — 정지 두 줄 스크롤 갱신 축소 · 2026-11-09 발행
