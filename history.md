@@ -1,3 +1,9 @@
+## 2026-11-09 — 0.10.8 문서·공통 재생 코드 정리 발행 완료
+
+- [PR #42](https://github.com/Raphael-KR/drum-practice/pull/42)의 자체 검토·PR/main CI를 통과했다. 구현 `ca1c23e`와 제품 main `615764c`의 tree가 같고, main 재빌드에서 소스 `90b12fc30945`를 재현했다. 정적 검사·전체 817테스트·두 앱 빌드와 공통 설정/메트로놈 동기화·연습실 재생/위치 조절을 확인했다.
+- 기존 public Sites에 player만 발행했다. 소스 `350ba06d`·버전100·배포 `appgdep_6af1ce59b2c0819190fab32f27b847d3`가 22:45:12 KST에 succeeded. 47파일 세 위치 SHA256·공개 읽기 51항목·루트/Sites audit 0건을 확인했다. 수록 패키지·카탈로그·lockfile·사용자 자료를 보존했다.
+- [실행 기록과 검수 한계](docs/records/archive/release-0.10.8.md)를 남겼다. Safari MCP의 연결 실패 후 ego-browser PC/Chromium 화면 모사를 사용했으며 iOS/iPadOS 실기기·시뮬레이터 검증은 제외했다. 결과 문서는 별도 PR로 반영하고 이번에 병합한 브랜치만 정리한다.
+
 ## 2026-11-09 — 0.10.8 문서·공통 재생 코드 정리 릴리스 진행
 
 - 문서 정리·공통 앵커 검사·ADR 원문 분리·exports 안내와 공통 재생 폼/설정 코드 정리를 함께 릴리스한다. 기능·저장 계약 변경이 없는 개선이므로 두 앱을0.10.7→0.10.8 patch 증가한다.
