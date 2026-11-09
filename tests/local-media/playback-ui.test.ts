@@ -12,6 +12,9 @@ import { renderMeasure } from "../../src/modules/playback/playback-measure";
 import { installUIStandard } from "../../src/shared/ui/ui-standard";
 import type { Song } from "../../src/model/model";
 import { describeHelpControl } from "../../src/modules/help/help-controls";
+import { Blob as NodeBlob } from "node:buffer";
+import { highlightPage } from "../../src/modules/score/note-highlight";
+import { practiceStaffLayout } from "../../src/modules/score/practice-staff-layout";
 
 for (const [surface, bindings] of [
   ["web", webPlaybackBindings],
@@ -120,6 +123,64 @@ it("renders safe lyrics and a correctly hidden marker from a single measure comp
   expect(
     document.querySelector(".score-marker-icon path")!.getAttribute("fill"),
   ).toBe("#f52d35");
+});
+
+it("projects native notes and their highlight to the same height with an extended SVG origin", async () => {
+  const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
+  const r = {
+    id: s.measures[0].regionId,
+    page: 0,
+    x: 0.1,
+    y: 0.1,
+    w: 0.3,
+    h: 0.3,
+    beatXs: [0, 1],
+  };
+  const highlight = await highlightPage(
+    new NodeBlob(
+      [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -11 1000 1000"><path data-note-measure="0" data-note-beat="0" d="M100 200L110 205"/></svg>',
+      ],
+      { type: "image/svg+xml" },
+    ) as unknown as Blob,
+  );
+  expect(highlight?.originY).toBe(-11);
+  const layout = practiceStaffLayout(
+    r,
+    { top: 0.2, gap: 0.01, nativePageRatio: 1 },
+    300,
+    200,
+  );
+  document.body.innerHTML = renderMeasure({
+    s,
+    m: s.measures[0],
+    i: 0,
+    width: 300,
+    r,
+    ly: [],
+    layout,
+    highlight,
+    pageURL: "blob:score",
+    pageRatio: 1,
+    isSVG: true,
+    positionInMeasure: () => 0,
+  });
+  const image = document.querySelector(".score-engraving image")!;
+  const overlay = document.querySelector(".note-highlight")!;
+  const [, top, , height] = overlay
+    .getAttribute("viewBox")!
+    .split(" ")
+    .map(Number);
+  const nativeNoteY =
+    Number(image.getAttribute("y")) +
+    (200 - highlight!.originY!) *
+      (Number(image.getAttribute("height")) / highlight!.height);
+  const highlightY = (200 - top) * (layout.height / height);
+  expect(highlightY).toBeCloseTo(nativeNoteY);
+  expect(image.getAttribute("href")).toBe("blob:score");
+  expect(document.querySelector(".crop")!.getAttribute("style")).not.toContain(
+    "background-image",
+  );
 });
 
 import { icon } from "../../src/shared/ui/icon-svg";

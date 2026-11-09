@@ -12,6 +12,7 @@ import {
   practicePage,
   measurePageStaff,
   framePracticeStaffs,
+  MUSICXML_TOP_SPACES,
   type StaffPosition,
 } from "../score/practice-staff-layout";
 export interface RibbonAsset {
@@ -185,9 +186,13 @@ export async function preparePlaybackAssets(
         );
         try {
           const ratios = prepared.pageRatios;
-          // Native words can extend above the default seven-space frame.
+          // Native words can extend above the minimum eight-space frame.
           // Keep complete source-system crops visible without changing glyph scale.
-          framePracticeStaffs(data.regions, prepared.practiceStaffs);
+          framePracticeStaffs(
+            data.regions,
+            prepared.practiceStaffs,
+            MUSICXML_TOP_SPACES,
+          );
           data.regions.forEach((region: Region, index: number) => {
             const staff = prepared.practiceStaffs.get(region.id);
             if (!staff || !Number.isFinite(staff.top) || !(staff.gap > 0))

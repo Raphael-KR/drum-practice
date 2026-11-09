@@ -154,6 +154,8 @@ function safeGlyph(source: Element): Element | undefined {
 export interface HighlightPage {
   width: number;
   height: number;
+  /** Native SVG origin, including any space reserved above the first system. */
+  originY?: number;
   measures: Map<number, string>;
 }
 export async function highlightPage(
@@ -232,7 +234,12 @@ export async function highlightPage(
         new XMLSerializer().serializeToString(group),
     );
   }
-  return { width: view[2], height: view[3], measures };
+  return {
+    width: view[2],
+    height: view[3],
+    ...(view[1] ? { originY: view[1] } : {}),
+    measures,
+  };
 }
 
 // Engraved glyph/beam data is immutable for an SVG's lifetime. Row/view
