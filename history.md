@@ -1,3 +1,9 @@
+## 2026-11-09 — 0.10.6 정지 두 줄 스크롤 발행 완료
+
+- [PR #38](https://github.com/Raphael-KR/drum-practice/pull/38)의 자체 검토·PR/main CI를 통과했다. 구현 `7577244`와 제품 main `236454f`의 tree가 같고 main 재빌드에서 소스 `6df761ec77bf`를 재현했다. 전체 817테스트·정적 검사·두 앱 빌드와 선택 유지·상하 휠·재생 재개를 확인했다.
+- 기존 public Sites에 player만 발행했다. 소스 `b548379a`·버전98·배포 `appgdep_6af1aa40199c8191ae15fb098d3ae0d3`가 20:11:09 KST에 succeeded. 정본/사본/Worker 47파일 SHA256·공개 읽기 51항목·루트/Sites audit 0건을 확인했다.
+- [실행 기록과 브라우저 검수 한계](docs/records/archive/release-0.10.6.md)를 남겼다. Safari MCP 연결 오류로 ego-browser와 추가 인앱 검수를 사용했으며 Safari·FPS·실기기/시뮬레이터 성공으로 확대하지 않는다. 결과 문서는 별도 PR로 반영하고 이번에 병합한 브랜치만 정리한다.
+
 ## 2026-11-09 — 0.10.6 정지 두 줄 스크롤 릴리스 준비
 
 - 목표: 정지 두 줄 보기의 반복 표시 갱신과 선택 마디가 되돌아가는 경로를 수정한 코드를 검증해 공개한다.
