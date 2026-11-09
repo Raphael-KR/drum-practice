@@ -42,6 +42,8 @@
 
 CI의 `actions/checkout@v7`·`actions/setup-node@v7`·`pnpm/action-setup@v6`는 액션 자체를 Node 24로 실행한다. 프로젝트 검사에 사용하는 Node는 별도로 `.nvmrc`의 22 LTS를 따르며, pnpm 버전·frozen 설치·잠금 파일 기반 캐시·검사 명령은 기존 설정을 유지한다. 액션 런타임의 Node 20 폐기 경고를 없애려고 앱의 Node 버전을 바꾸거나 경고 억제 환경변수를 넣지 않는다.
 
+Vite의 500kB 청크 경고와 테스트의 Node SQLite 실험 API 경고는 현재 유지한다. 당장 수정하지 않는 이유와 재검토·개선 기준은 [유지하는 번들·SQLite 경고](../reference/engineering/verification.md#verification-rules--유지하는-번들sqlite-경고)를 따른다. 실제 검사 실패와 이 두 안내 경고를 구분하며, 경고 출력을 숨기거나 기존 검사를 축소하지 않는다.
+
 <a id="testing--eslint"></a>
 
 ### ESLint
