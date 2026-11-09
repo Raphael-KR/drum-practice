@@ -40,6 +40,8 @@
 - `pnpm run check:docs`: 생성 UI 문서와 Markdown의 상대 파일 링크만 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 외부 URL·절대 로컬 경로·앵커 내용은 검사하지 않는다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
 - 원격 CI 결과는 push 이후 별도로 확인한다. 로컬 통과를 원격 CI 실행 성공으로 기록하지 않는다.
 
+CI의 `actions/checkout@v7`·`actions/setup-node@v7`·`pnpm/action-setup@v6`는 액션 자체를 Node 24로 실행한다. 프로젝트 검사에 사용하는 Node는 별도로 `.nvmrc`의 22 LTS를 따르며, pnpm 버전·frozen 설치·잠금 파일 기반 캐시·검사 명령은 기존 설정을 유지한다. 액션 런타임의 Node 20 폐기 경고를 없애려고 앱의 Node 버전을 바꾸거나 경고 억제 환경변수를 넣지 않는다.
+
 <a id="testing--eslint"></a>
 
 ### ESLint

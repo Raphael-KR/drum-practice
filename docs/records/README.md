@@ -24,6 +24,7 @@
 
 ### 릴리스와 의존성
 
+- [0.10.4 상단 주법 표시·Actions 런타임 릴리스](archive/release-0.10.4.md)
 - [0.10.3 화면 준비·재생 부하·도구 호환성 릴리스](archive/release-0.10.3.md)
 - [jsdom·TypeScript 업그레이드와 API 호환성](archive/jsdom-typescript-upgrade-20261109.md)
 - [0.10.2 의존성·보안 릴리스](archive/release-0.10.2.md)

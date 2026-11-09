@@ -1,3 +1,26 @@
+## 2026-11-09 — 0.10.4 릴리스 준비
+
+- 사용자 릴리스 요청에 따라 상단 주법 잘림 표시와 GitHub Actions 런타임 변경을 함께 검증한다. 기존 기능의 표시·호환성 보완이므로 두 앱 0.10.3 → 0.10.4 patch를 선택했다. 이번 전체 fixture·임시 시험 DB 사용을 명시적으로 허가받았다.
+- 전체 검사·‘갑자기’ 8/9마디 화면·PR/main CI·Sites 발행 결과와 한계는 [릴리스 기록](docs/records/archive/release-0.10.4.md)에 기록한다.
+
+## 2026-11-09 — MusicXML 연습 화면 상단 주법 기호 여유
+
+- 목표: 사용자가 보고한 ‘갑자기’ 8·9마디의 하이햇 주법 기호 상단 잘림을 표시 범위에서 보완한다.
+- 범위: 공통 `renderMeasure`의 MusicXML 상단 clip을 기존 시스템 범위보다 8 CSS px 더 열고 0px으로 제한했다. 1줄·2줄·균등 보기 및 두 앱이 같은 경로를 사용한다. [표시 정본](docs/reference/score/rendering.md#svg-score-rules--7-마디-좌표와-자르기)에도 반영했다.
+- 완료 조건: 음표·주법 자체의 크기/위치, 하단 자르기·프레임 높이·가사·박/음원 시각, PDF 표시를 유지하면서 MusicXML의 위쪽 표시 여유를 늘린다. 원본 MusicXML·패키지·저장 스키마·SVG 출력·캐시 정책은 변경하지 않는다.
+- 제외: 기존 Actions 미커밋 변경, 새 기호 매핑·곡별 보정·새 시험 자료/DB·앱 버전 인상·화면 테스트·커밋·푸시·발행.
+- 검증: 개발 중 정적 검사만 수행하는 기존 결정에 따라 공통 정적 검사·기존 변경/원본 해시 보존·빌드 식별자를 확인한다. 실제 8·9마디의 화면 확인은 릴리스 검수로 남긴다.
+- 결과: `pnpm run check`의 lint·서식·앱/도구/hosting 타입·i18n·구조/경계·159문서와 `git diff --check` 통과. 기존 Actions 변경·해당 이력·수록 ‘갑자기’ 패키지 SHA256 보존을 확인했다. 앱 버전 0.10.3 유지, 소스 빌드 `528e89dece13`. 실행 근거는 `.tmp/hihat-top-20261109/`에 보존한다.
+
+## 2026-11-09 — GitHub Actions Node 20 경고 수정
+
+- 목표: 최신 CI가 지적한 checkout/setup-node의 Node 20 실행 런타임 선언을 지원 버전으로 교체한다. 앱의 Node 버전 문제와 구분한다.
+- 범위: `.github/workflows/check.yml`의 `actions/checkout`·`actions/setup-node`를 v4 → v7로 올리고 검사 실행 문서를 갱신했다. 확인한 안정 릴리스는 각각 [7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1)·[7.1.0](https://github.com/actions/setup-node/releases/tag/v7.1.0)이며 두 액션과 기존 pnpm 액션의 공식 정의가 `node24`를 사용한다.
+- 호환성: 기존 GitHub-hosted runner 2.338.2는 Node 24 액션의 최소 2.327.1을 충족한다. 현재 트리거는 push/pull_request이고 별도 registry-url·토큰 설정이 없어 v7의 신뢰 이벤트 fork checkout·레지스트리 dummy token 변경 대상이 아니다. `.nvmrc` 22·pnpm 12.18.0·캐시·frozen 설치·권한·검사 명령을 유지한다.
+- 완료 조건·검증: 워크플로 문법·사용 입력과 Node 24 선언, 두 액션 참조 외 설정 보존 및 공통 정적 검사를 확인한다. 실제 원격 CI의 경고 제거는 다음 push 후 확인하며 이전 실행의 경고가 사라졌다고 기록하지 않는다.
+- 검증 결과: 공식 체크섬을 확인한 임시 actionlint 1.7.12의 워크플로 검사와 `pnpm run check`(lint·447파일 서식·앱/도구/hosting 타입·i18n·187소스 구조/경계·159문서)가 통과했다. Git 원본과 대조해 액션 참조 두 곳 외 YAML 바이트가 같은지, 세 액션의 Node 24 정의·기존 입력 지원·Node/pnpm pin 보존을 확인했다. `git diff --check` 통과. 근거는 `.tmp/actions-node24-20261109/`에 보존한다.
+- 제외: 앱 코드·저장 형식·버전 변경, 합성 자료/시험 DB·화면 테스트·원격 CI 실행·커밋·푸시·발행. 로컬 실행과 다음 원격 CI 확인을 구분하며 기존 릴리스의 과거 경고 기록은 유지했다.
+
 ## 2026-11-09 — 0.10.3 발행 완료
 
 - [PR #32](https://github.com/Raphael-KR/drum-practice/pull/32)의 자체 검토·PR CI·main 병합/CI를 마쳤다. 구현 `a6115c1`과 제품 main `52cacb9`의 tree가 같고 main에서 두 앱을 재빌드해 소스 `8c051b046bc1`을 재현했다. 전체 810테스트·정적 검사·두 앱 실제 재생/저장 검수와 루트/Sites audit 0건을 확인했다.

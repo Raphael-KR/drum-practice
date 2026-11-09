@@ -45,7 +45,9 @@ export function renderMeasure({
   if (layout) {
     const pageHeight = parseFloat(layout.size.split(" ")[1]);
     const offset = parseFloat(layout.position.split(" ")[1]);
-    const top = Math.max(0, r.y * pageHeight + offset);
+    // Native technical marks can extend above the stored system ink bounds.
+    // Expose eight more CSS pixels without moving or scaling the engraving.
+    const top = Math.max(0, r.y * pageHeight + offset - (isSVG ? 8 : 0));
     const bottom = Math.max(0, height - ((r.y + r.h) * pageHeight + offset));
     trim = `clip-path:inset(${top}px 0 ${bottom}px 0);`;
   }
