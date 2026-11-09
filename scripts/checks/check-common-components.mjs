@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 import { sourceFiles } from "./source-files.mjs";
 const files = sourceFiles();
 const report = {

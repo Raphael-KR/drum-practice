@@ -12,7 +12,7 @@
 
 ### 실행 범위
 
-모든 명령은 프로젝트 루트에서 실행한다. Node.js 22 LTS(22.13 이상, `.nvmrc`)와 `pnpm install --frozen-lockfile`로 설치한 의존성을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
+모든 명령은 프로젝트 루트에서 실행한다. Node.js 22 LTS(22.22.2 이상, `.nvmrc`)와 `pnpm install --frozen-lockfile`로 설치한 의존성을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
 
 - `pnpm run test:portable`: 로컬 악보 없이 실행 가능한 unit 및 integration 검사. 기존 테스트의 메모리 저장소·DOM·mock을 재사용한다.
 - `pnpm run test:local-media`: 보존된 실제 악보·음원 자료를 사용하는 검사. 자료가 없으면 명시적으로 실패한다.
@@ -44,7 +44,9 @@
 
 ### ESLint
 
-`eslint.config.mjs`의 flat config를 사용한다. ESLint 10과 typescript-eslint 8의 `recommended` 규칙을 JS·TS에 적용하며, 타입 정보를 사용하는 추가 규칙은 아직 켜지 않았다. 타입 검사는 기존 `tsc --noEmit`이 맡는다. 설정 방식은 [typescript-eslint 공식 안내](https://typescript-eslint.io/getting-started/)를 따른다.
+`eslint.config.mjs`의 flat config를 사용한다. ESLint 10과 typescript-eslint 8의 `recommended` 규칙을 JS·TS에 적용하며, 타입 정보를 사용하는 추가 규칙은 아직 켜지 않았다. 타입 검사는 TypeScript 7의 `tsc --noEmit`이 맡는다. 설정 방식은 [typescript-eslint 공식 안내](https://typescript-eslint.io/getting-started/)를 따른다.
+
+TypeScript 7의 네이티브 컴파일러는 기존 JavaScript compiler API를 제공하지 않는다. `pnpm-workspace.yaml`은 typescript-eslint 8의 TypeScript peer를 공식 `@typescript/typescript6` API 패키지의 직접 의존성으로 교체한다. 프로젝트의 AST 검사·분석 도구도 같은 API 패키지를 명시적으로 import한다. 루트 `typescript`와 `tsc`는 7을 사용하며 API를 사용하는 도구는 6으로 분리한다. 검사 규칙·경고를 끄거나 지원 범위를 허위로 넓히지 않는다. [공식 병행 사용 안내](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)와 [pnpm peer → 직접 의존성 전환](https://pnpm.io/settings/dependency-resolution#overriding-peer-dependencies)을 따른다.
 
 - `pnpm run lint`: 전체 검사. 오류 또는 경고가 있으면 실패한다.
 - `pnpm run lint:fix`: 자동 수정 가능한 항목을 수정한 뒤 같은 기준으로 검사한다. 실행 후 diff를 검토한다.

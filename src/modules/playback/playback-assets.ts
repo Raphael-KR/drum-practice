@@ -4,6 +4,7 @@ import {
   validateRibbonTimeline,
 } from "../score/ribbon-timeline";
 import { displayPage } from "../score/score-pages";
+import { parsePlaybackSVG } from "./playback-svg";
 import type { Song, Region } from "../../model/model";
 import { displayRegion } from "../score/score-view";
 import { highlightPage, type HighlightPage } from "../score/note-highlight";
@@ -77,10 +78,7 @@ export async function preparePlaybackAssets(
     let nativeStaffs = options.nativeStaffs;
     let firstSVG: Document | undefined;
     if (allowRibbon && song.scoreFormat === "musicxml" && pages[0]) {
-      const doc = new DOMParser().parseFromString(
-        await pages[0].text(),
-        "image/svg+xml",
-      );
+      const doc = parsePlaybackSVG(await pages[0].text());
       firstSVG = doc;
       const metadata = doc.querySelector(
         `metadata[data-ribbon-timeline="${RIBBON_TIMELINE_VERSION}"]`,
@@ -109,10 +107,7 @@ export async function preparePlaybackAssets(
         index === 0 && firstSVG
           ? firstSVG
           : blob.type === "image/svg+xml"
-            ? new DOMParser().parseFromString(
-                await blob.text(),
-                "image/svg+xml",
-              )
+            ? parsePlaybackSVG(await blob.text())
             : undefined;
       firstSVG = undefined;
       // Extract highlights before practice-only heading/prefix adjustments.

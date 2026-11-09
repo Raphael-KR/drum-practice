@@ -24,6 +24,8 @@
 
 ### 릴리스와 의존성
 
+- [0.10.3 화면 준비·재생 부하·도구 호환성 릴리스](archive/release-0.10.3.md)
+- [jsdom·TypeScript 업그레이드와 API 호환성](archive/jsdom-typescript-upgrade-20261109.md)
 - [0.10.2 의존성·보안 릴리스](archive/release-0.10.2.md)
 - [minimatch 보안 수정과 호환성 검증](archive/minimatch-security-20261108.md)
 - [pnpm 실행 버전·카탈로그·OSMD 패치 동기화](archive/pnpm-catalog-sync-20261108.md)
@@ -42,6 +44,9 @@
 
 ### 재생·조판과 악보 수록
 
+- [5번째 마디 경계의 CPU·메모리 조사](archive/fifth-bar-load-20261109.md)
+- [화면 준비 경로 개선과 수정 전후 로딩 비교](archive/screen-preparation-20261109.md)
+- [Node·OSMD 경고 수정과 번들 로딩 비용](archive/runtime-loading-cost-20261109.md)
 - [메트로놈 4분·8분·끄기 구현과 검증](archive/metronome-subdivision-20261028.md)
 
 - [렌더러 메모리 조사와 중복 할당 개선](archive/runtime-memory-20261024.md)
