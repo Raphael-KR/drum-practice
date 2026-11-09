@@ -236,7 +236,9 @@ export function updateScoreFrame(h: {
             1,
           )
         : clamp(playedThrough - measureIndex, 0, 1);
-    e.style.setProperty("--played", `${progress * 100}%`);
+    const played = `${progress * 100}%`;
+    if (e.style.getPropertyValue("--played") !== played)
+      e.style.setProperty("--played", played);
     e.classList.toggle(
       "progress-edge",
       s.settings.view === "rows" &&

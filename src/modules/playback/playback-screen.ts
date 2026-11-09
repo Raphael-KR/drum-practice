@@ -246,6 +246,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     lastLoop: Loop | undefined = h.initialLastLoop;
   const repeatPresets = new Map<number, ReturnType<typeof repeatPreset>>();
   let disposed = false;
+  let framePending = true;
+  let framedSong: Song | undefined;
+  let framedTime: number | undefined;
+  let framedSelection: number | undefined;
+  let framedFocus: Element | null | undefined;
+  let framedCopyActive = false;
   const available = () => h.ready() && !h.busy();
   const canRepeat = () => available() && repeatEnabled();
   function position(index: number, beat: number, width: number) {
@@ -424,6 +430,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
   }
   function renderTrack() {
+    framePending = true;
     if (!h.ready()) return;
     refreshSources();
     gestures.cancel();
@@ -500,6 +507,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     }
   }
   function onState() {
+    framePending = true;
     wakeLock.setPlaying(h.ready() && h.player().playing);
     if (!h.ready()) return;
     const p = h.player();
@@ -531,6 +539,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     }
   }
   function renderLists() {
+    framePending = true;
     if (!h.ready()) return;
     const s = h.song();
     if (pruneMarkerOverflow(s)) h.changed();
@@ -654,7 +663,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     {
       song: h.song,
       player: () => ({ loop: h.player().loop, current: selectionTime }),
-      changed: h.changed,
+      changed: () => {
+        framePending = true;
+        h.changed();
+      },
       pause: () => {
         gestures.cancel();
         pause();
@@ -677,7 +689,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       playing: () => h.player().playing,
       view: () => h.song().settings.view,
       cancel: gestures.cancel,
-      browse: () => renderRows(locate(h.song(), h.player().current()).index),
+      browse: () => renderRows(selectionIndex()),
       scrub: (delta) =>
         seek(
           scrubTime(
@@ -824,6 +836,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     const p = h.player(),
       s = h.song(),
       time = p.current();
+    framePending = false;
+    framedSong = s;
+    framedTime = time;
+    framedSelection = selectedIndex;
+    framedFocus = document.activeElement;
+    framedCopyActive = performance.now() < copiedUntil;
     const positionButton = root.querySelector<HTMLElement>(`#${ids.position}`);
     if (positionButton) {
       const label =
@@ -935,6 +953,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     h.settingsChanged?.();
   }
   function syncDisplay() {
+    framePending = true;
     scoreOnlyView.sync();
     if (h.ready()) prepareTempo();
     settingsLayout.sync(scoreOnlyView.active());
@@ -1177,7 +1196,25 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const animate = () => {
     if (disposed) return;
     raf = requestAnimationFrame(animate);
-    frame();
+    if (!h.ready()) return;
+    const p = h.player();
+    const copyActive = performance.now() < copiedUntil;
+    // Native vertical browsing needs no score/overlay updates while paused.
+    // Explicit frame calls remain immediate; state/layout/list changes request
+    // one update, and playback, scrubbing and range previews keep animating.
+    if (
+      p.playing ||
+      h.song().settings.view !== "rows" ||
+      framePending ||
+      h.song() !== framedSong ||
+      p.current() !== framedTime ||
+      selectedIndex !== framedSelection ||
+      document.activeElement !== framedFocus ||
+      !!scrub ||
+      loopSlots.awaitingEndpoint ||
+      copyActive !== framedCopyActive
+    )
+      frame();
   };
   raf = requestAnimationFrame(animate);
   disposers.push(() => cancelAnimationFrame(raf));
@@ -1196,6 +1233,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   observer?.observe(stage);
   observer?.observe(root.querySelector<HTMLElement>("main")!);
   function reset() {
+    framePending = true;
     loopSlots?.cancel();
     gestures.cancel();
     clearPreset();
