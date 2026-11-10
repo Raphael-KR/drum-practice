@@ -20,10 +20,11 @@
 - Safari MCP는 `Transport closed`로 연결하지 못해 ego-browser Chromium을 사용했다. 별도 접두사의 시험 IndexedDB와 메모리 local/sessionStorage로 기존 사용자 DB를 보존했다.
 - PC 1366×900에서 두 앱의 SVG 전체 보기·가사·번호·제목·부제·메타정보를 캡처해 확인했다. 제작기에서 Real Paradis를 열고 시험본 제목 변경→저장→페이지 재진입→다시 열기로 저장 결과를 확인한 뒤 원래 제목으로 저장했다. 가사 515개와 오류 없는 전체 보기를 확인했다.
 - 드럼연습실에서 1줄/2줄 전환, 실제 재생의 5마디 통과·후속 마디 진행, AudioContext running, BPM94→47 변환과 94 복귀를 확인했다. 소리의 사람 청취나 실제 iOS/iPadOS 검증으로 확대하지 않는다.
+- PR 최종 자체 검토에서 제작기의 가사를 모두 지운 경우에만 저장 전 전체 보기가 이전 가사를 사용하던 조건문을 제거했다. 항상 현재 편집 상태의 조판용 사본을 만든다. 변경 파일 lint·서식·앱 타입과 관련 3파일 14테스트를 통과했고, 실제 Real Paradis의 가사 515개→0개 사본을 native SVG로 출력해 원본 보존과 가사 제거를 확인했다. 전체 검사 이후의 이 집중 검사 근거는 `empty-lyrics-focused.log`, `empty-lyrics-output.json`이다.
 
 ## 근거와 한계
 
-- 최종 제품 소스 빌드: `18204daa776d`. 증거 폴더: `.tmp/release-0.11.1/`.
+- 최종 제품 소스 빌드: `23f80934024d`. 증거 폴더: `.tmp/release-0.11.1/`.
 - 전체 검사: `verify-release.log`. 실제 6곡 출력: `native-output-final.json`과 `native-output-qa.mjs`. 화면: `editor-full-score.png`, `player-full-score-final.png`. 재생: `playback.json`. 패키지 보존: `assets-before.json`.
 - 기존 Vite 큰 청크 경고·Node SQLite experimental 경고는 유지한다. [보류 근거와 재검토 기준](runtime-loading-cost-20261109.md)을 따른다.
 - iOS/iPadOS 실기기·시뮬레이터·Safari 응답형 검수는 수행하지 않았다. 공개 파일 확인과 실제 로컬 UI 검증을 구분한다.

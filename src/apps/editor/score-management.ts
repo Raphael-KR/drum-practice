@@ -397,10 +397,7 @@ export function setupScoreManagement(
         (await (
           await import("../../modules/score/musicxml-parse")
         ).readMusicXML(score.source));
-      const canonical =
-        snapshot.lyrics.length || snapshot.measureLyrics?.length
-          ? writeCanonical(snapshot, source)
-          : source;
+      const canonical = writeCanonical(snapshot, source);
       const fullScore = await prepareFullScore(
         snapshot,
         canonical,
