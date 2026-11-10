@@ -12,6 +12,7 @@ const needed = new Set([
   "data/reference/test-fixtures/musicxml-candidate.musicxml",
   "data/reference/test-fixtures/tom-moving-28-portland.drumscore",
   "data/reference/test-fixtures/red-sunset-wedge-native-20261024.json",
+  "data/reference/test-fixtures/ioi-suddenly-canonical-v1.musicxml",
 ]);
 if (fs.existsSync("public/demo/song.json")) {
   const song = JSON.parse(fs.readFileSync("public/demo/song.json", "utf8"));

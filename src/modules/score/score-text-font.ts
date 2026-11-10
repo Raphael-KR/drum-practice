@@ -5,6 +5,10 @@ import "./score-text-font.css";
 import { encodeAsset } from "../../platform/storage/binary-asset";
 
 export const SCORE_TEXT_FONT_FAMILY = "Pretendard";
+/** VexFlow section points -> OSMD label units (ten SVG pixels per unit). */
+export function scoreTextHeight(sectionPoints: number) {
+  return (sectionPoints * (96 / 72)) / 10;
+}
 const EMBEDDED_FONT_VERSION = "Pretendard-1.3.9";
 const weights = [400, 700] as const;
 type FontData = Record<(typeof weights)[number], string>;

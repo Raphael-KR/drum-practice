@@ -117,6 +117,8 @@ def inspect_artifacts(spec, root):
         "XML metadata read; schema and musical correctness require their own evidence"
     ]
     canonical = xml.findtext(
+        "identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v2']"
+    ) or xml.findtext(
         "identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v1']"
     )
     if canonical:

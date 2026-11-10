@@ -156,7 +156,7 @@
 ### 메타 정보와 가사
 
 - 해당 곡의 MusicXML에 악보, 원제·표시제목·가수·작사·작곡 등의 메타 정보, 가사 리듬 성부를 모아 관리한다. 기존 프로젝트의 MusicXML 저장 계약을 유지한다.
-- 음표·쉼표 대응을 판독한 가사는 드럼과 독립된 가사 리듬 성부의 음표에 `lyric/text`로 연결한다. 보컬 악보가 있으면 그 리듬을 사용한다. 인쇄 드럼 악보에서는 가사와 실제 음표/쉼표의 대응을 판독해 음악적 위치와 표시 음가를 저장한다. 추정 위치는 제작 근거에 따로 남긴다.
+- 음표·쉼표 대응을 판독한 가사는 같은 드럼 파트·보표 안에서 리듬이 독립된 가사 성부의 음표에 `lyric/text`로 연결한다. 보컬 악보가 있으면 그 리듬을 사용한다. 인쇄 드럼 악보에서는 가사와 실제 음표/쉼표의 대응을 판독해 음악적 위치와 표시 음가를 저장한다. 추정 위치는 제작 근거에 따로 남긴다.
 - 악보 우선이다. 가수의 실제 가창이 악보와 달라도 가사 위치·음가를 바꾸지 않는다. 실제 가창 시각·길이 측정·기록과 STT 성공을 요구하지 않는다. [변환 정책의 가사 기준](production.md#musicxml-conversion-policy--가사-기준--악보-우선)을 따른다.
 - 가사 위치 정본은 초 단위 타임스탬프가 아니라 악보 위치다. 음원과 악보의 재생 동기화 정보는 이와 별개다. 마디 귀속만 확인되는 문구는 [마디 가사 계약](musicxml.md#measure-lyrics--마디-단위-인쇄-가사-계약)을 사용하며 음표 위치·음가를 임의로 만들지 않는다.
 - 영어는 영어로 유지한다. 이 문서는 기존 가사 싱크나 메타데이터 필드 이름을 새로 변경하지 않는다.
@@ -188,4 +188,4 @@
 
 - MusicXML 표준은 [percussion](https://www.w3.org/2021/06/musicxml40/tutorial/percussion/), [notehead](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/notehead/), [rest](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/rest/)를 따른다. 프로젝트 채택과 전용 표준 확인을 구분한다.
 - 과거 조사 보관본·QA 파일의 존재나 예전 버전 PASS를 새 지원 판정으로 사용하지 않는다. 새 항목/엔진 버전은 실제 근거와 한계를 기록한다.
-- 범례·고스트·스티킹은 [ADR-0007](../../decisions/0007-native-drum-notation.md), 섹션/words는 [ADR-0009](../../decisions/0009-musicxml-section-direction-layout.md), O+는 [ADR-0011](../../decisions/0011-hi-hat-open-close-position.md), 가사·메타정보는 [ADR-0013](../../decisions/0013-score-based-lyric-positions.md)·[ADR-0014](../../decisions/0014-score-artist-and-kit-metadata.md)에서 선택 이유·대체·당시 검증을 확인한다.
+- 범례·고스트·스티킹은 [ADR-0007](../../decisions/0007-native-drum-notation.md), 섹션/words는 [ADR-0009](../../decisions/0009-musicxml-section-direction-layout.md), O+는 [ADR-0011](../../decisions/0011-hi-hat-open-close-position.md), 가사 저장 위치는 [ADR-0029](../../decisions/0029-shared-staff-lyric-voices.md), 가사 기준·메타정보는 [ADR-0013](../../decisions/0013-score-based-lyric-positions.md)·[ADR-0014](../../decisions/0014-score-artist-and-kit-metadata.md)에서 선택 이유·대체·당시 검증을 확인한다.

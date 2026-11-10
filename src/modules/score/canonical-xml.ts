@@ -5,16 +5,23 @@ import {
   validateMeasureLyrics,
   type Song,
   type Lyric,
-  type MeasureLyric,
 } from "../../model/model";
 import type { RecordData } from "../../model/record";
 import { migrateLyricPositions, projectLyrics } from "../lyrics/lyric-score";
-const PART = "DrumPracticeLyrics",
-  FIELD = "drum-practice:score:v1",
-  DIV = 9600;
-const kids = (e: Element, name: string) =>
-  Array.from(e.children).filter((c) => c.localName === name);
-const child = (e: Element, name: string) => kids(e, name)[0];
+import {
+  LEGACY_LYRIC_PART as PART,
+  CANONICAL_FIELD as FIELD,
+  LEGACY_CANONICAL_FIELD,
+  LYRIC_DIVISIONS as DIV,
+  canonicalManifest as manifest,
+  type CanonicalManifest,
+} from "./canonical-metadata";
+import {
+  xmlAdd as add,
+  xmlChild as child,
+  xmlChildren as kids,
+} from "./canonical-xml-dom";
+import { removeLyricVoices, writeLyricVoices } from "./canonical-lyric-voice";
 function parse(text: string) {
   if (/<!ENTITY/i.test(text)) throw Error(i18nText("canonical-xml.message011"));
   const d = new DOMParser().parseFromString(text, "application/xml");
@@ -25,46 +32,10 @@ function parse(text: string) {
     throw Error(i18nText("canonical-xml.message012"));
   return d;
 }
-function add(
-  parent: Element,
-  name: string,
-  text?: string | number,
-  attrs: Record<string, string> = {},
-) {
-  const e = parent.ownerDocument.createElement(name);
-  if (text !== undefined) e.textContent = String(text);
-  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
-  parent.append(e);
-  return e;
-}
 function put(parent: Element, name: string, text: string) {
   const e = child(parent, name) || add(parent, name);
   e.textContent = text;
   return e;
-}
-interface Manifest {
-  version: 1;
-  measureLyrics?: MeasureLyric[];
-  partId: string;
-  audioName: string;
-  audioSHA256?: string;
-  measures: {
-    id: string;
-    label: string;
-    beats: number;
-    denominator: number;
-    start: number;
-    end: number;
-    beatTimes?: number[];
-    occurrence: number;
-  }[];
-  lyrics: { voice: string; id: string; confirmed: boolean }[];
-}
-function manifest(d: Document): Manifest | undefined {
-  const e = Array.from(
-    d.querySelectorAll("identification > miscellaneous > miscellaneous-field"),
-  ).find((e) => e.getAttribute("name") === FIELD);
-  return e ? JSON.parse(e.textContent || "") : undefined;
 }
 export function metadataFromXML(text: string) {
   const d = parse(text),
@@ -160,6 +131,7 @@ export function writeCanonical(
   const misc = child(ident, "miscellaneous") || add(ident, "miscellaneous");
   for (const name of [
     FIELD,
+    LEGACY_CANONICAL_FIELD,
     "drum-practice:display-title",
     "drum-practice:lyric-text",
   ])
@@ -176,96 +148,66 @@ export function writeCanonical(
   const partList = child(root, "part-list") || add(root, "part-list");
   if (!old && kids(root, "part").some((p) => p.id === PART))
     throw Error(i18nText("canonical-xml.message013"));
-  kids(root, "part")
-    .filter((p) => p.id === (old?.partId || PART))
-    .forEach((p) => p.remove());
-  kids(partList, "score-part")
-    .filter((p) => p.id === (old?.partId || PART))
-    .forEach((p) => p.remove());
-  const sp = add(partList, "score-part", undefined, { id: PART });
-  add(sp, "part-name", i18nText("canonical-xml.message014"));
-  const part = add(root, "part", undefined, { id: PART });
-  const offsets: number[] = [];
-  let total = 0;
-  s.measures.forEach((m) => {
-    offsets.push(total);
-    total += (m.beats * 4) / m.denominator;
-  });
-  const rows = s.lyrics.map((l, i) => {
-    const p = l.scorePosition!;
-    const mi = s.measures.findIndex((m) => m.id === p.measureId);
-    return {
-      l,
-      voice: String(i + 1),
-      start: offsets[mi] + p.quarterOffset,
-      end: Math.min(total, offsets[mi] + p.quarterOffset + p.durationQuarters),
-    };
-  });
-  if (rows.some((r) => r.start >= total || r.end <= r.start))
-    throw Error(i18nText("canonical-xml.message015"));
-  for (let i = 0; i < s.measures.length; i++) {
-    const sm = s.measures[i],
-      len = (sm.beats * 4) / sm.denominator,
-      m = add(part, "measure", undefined, { number: sm.label }),
-      a = add(m, "attributes");
-    add(a, "divisions", DIV);
-    const time = add(a, "time");
-    add(time, "beats", sm.beats);
-    add(time, "beat-type", sm.denominator);
-    const clef = add(a, "clef");
-    add(clef, "sign", "percussion");
-    if (i === 0) {
-      const direction = add(m, "direction");
-      const type = add(direction, "direction-type"),
-        met = add(type, "metronome");
-      add(met, "beat-unit", "quarter");
-      add(met, "per-minute", s.bpm);
-      add(direction, "sound", undefined, { tempo: String(s.bpm) });
-    }
-    const events = rows.filter(
-      (r) => r.start < offsets[i] + len - 1e-8 && r.end > offsets[i] + 1e-8,
-    );
-    if (!events.length) {
-      const n = add(m, "note", undefined, { "print-object": "no" });
-      add(n, "rest");
-      add(n, "duration", Math.round(len * DIV));
-      continue;
-    }
-    for (let j = 0; j < events.length; j++) {
-      const r = events[j],
-        start = Math.max(0, r.start - offsets[i]),
-        end = Math.min(len, r.end - offsets[i]);
-      if (j) {
-        add(add(m, "backup"), "duration", Math.round(len * DIV));
-      }
-      const rest = (length: number) => {
-        if (length < 1e-8) return;
-        const n = add(m, "note", undefined, { "print-object": "no" });
-        add(n, "rest");
-        add(n, "duration", Math.round(length * DIV));
-        add(n, "voice", r.voice);
-      };
-      rest(start);
-      const n = add(m, "note", undefined, {
-        "print-object": "no",
-        "print-lyric": "yes",
-      });
-      const un = add(n, "unpitched");
-      add(un, "display-step", "C");
-      add(un, "display-octave", "4");
-      add(n, "duration", Math.max(1, Math.round((end - start) * DIV)));
-      add(n, "voice", r.voice);
-      const lyric = add(n, "lyric", undefined, { name: "pronunciation" });
-      if (Math.abs(r.start - (offsets[i] + start)) < 1e-8) {
-        add(lyric, "syllabic", "single");
-        add(lyric, "text", r.l.text);
-      } else add(lyric, "extend", undefined, { type: "continue" });
-      rest(len - end);
-    }
+  if (old?.version === 1) {
+    kids(root, "part")
+      .find((p) => p.id === old.partId)
+      ?.remove();
+    kids(partList, "score-part")
+      .find((p) => p.id === old.partId)
+      ?.remove();
   }
-  const data: Manifest = {
-    version: 1,
-    partId: PART,
+  const candidates = kids(root, "part").filter(
+    (p) => p.id !== "DrumPracticeVocalSource",
+  );
+  let part =
+    candidates.find(
+      (p) => p.id === (old?.version === 2 ? old.partId : s.scorePartId),
+    ) || candidates[0];
+  if (!part) {
+    // Audio/PDF-only records still need lyric timing, but no invented drum notation.
+    const sp = add(partList, "score-part", undefined, { id: PART });
+    add(sp, "part-name", i18nText("canonical-xml.message014"));
+    part = add(root, "part", undefined, { id: PART });
+  }
+  if (part.id === PART) {
+    part.replaceChildren();
+    s.measures.forEach((sm, index) => {
+      const m = add(part!, "measure", undefined, { number: sm.label });
+      const a = add(m, "attributes");
+      add(a, "divisions", DIV);
+      const previous = s.measures[index - 1];
+      if (
+        !previous ||
+        previous.beats !== sm.beats ||
+        previous.denominator !== sm.denominator
+      ) {
+        const time = add(a, "time");
+        add(time, "beats", sm.beats);
+        add(time, "beat-type", sm.denominator);
+      }
+      if (!index) {
+        add(add(a, "clef"), "sign", "percussion");
+        const direction = add(m, "direction");
+        const met = add(add(direction, "direction-type"), "metronome");
+        add(met, "beat-unit", "quarter");
+        add(met, "per-minute", s.bpm);
+        add(direction, "sound", undefined, { tempo: String(s.bpm) });
+      }
+      const note = add(m, "note", undefined, { "print-object": "no" });
+      add(note, "rest");
+      add(note, "duration", ((sm.beats * 4) / sm.denominator) * DIV);
+      add(note, "voice", "1");
+    });
+  }
+  if (old?.version === 2 && old.partId === part.id)
+    removeLyricVoices(
+      part,
+      old.lyrics.map((l) => l.voice),
+    );
+  const identities = writeLyricVoices(part, s);
+  const data: CanonicalManifest = {
+    version: 2,
+    partId: part.id,
     audioName: s.audioName,
     audioSHA256: audioSHA256 || old?.audioSHA256,
     measures: s.measures.map(
@@ -283,23 +225,19 @@ export function writeCanonical(
     ...(s.measureLyrics?.length
       ? { measureLyrics: s.measureLyrics.map((l) => ({ ...l })) }
       : {}),
-    lyrics: rows.map(({ l, voice }) => ({
-      voice,
-      id: l.id,
-      confirmed: l.confirmed,
-    })),
+    lyrics: identities,
   };
   add(misc, "miscellaneous-field", JSON.stringify(data), { name: FIELD });
   return new XMLSerializer().serializeToString(d);
 }
 export function readCanonical(text: string, s: Song): void {
-  s.lyricText =
-    Array.from(parse(text).querySelectorAll("miscellaneous-field")).find(
-      (e) => e.getAttribute("name") === "drum-practice:lyric-text",
-    )?.textContent || undefined;
   const d = parse(text),
     data = manifest(d);
-  if (!data || data.version !== 1)
+  s.lyricText =
+    Array.from(d.querySelectorAll("miscellaneous-field")).find(
+      (e) => e.getAttribute("name") === "drum-practice:lyric-text",
+    )?.textContent || undefined;
+  if (!data || (data.version !== 1 && data.version !== 2))
     throw Error(i18nText("canonical-xml.message016"));
   if (
     data.measures.length !== s.measures.length ||
@@ -328,12 +266,15 @@ export function readCanonical(text: string, s: Song): void {
   if (bpm > 0) s.bpm = bpm;
   s.firstBeat = s.measures[0]?.start ?? s.firstBeat;
   const lyrics = new Map<string, Lyric>();
-  let divisions = DIV;
+  const activeVoice = new Map<string, Lyric>();
+  let divisions = data.version === 1 ? DIV : 1;
   kids(part, "measure").forEach((m, i) => {
     let cursor = 0;
-    const div = m.querySelector("attributes > divisions");
-    if (div) divisions = Number(div.textContent);
     for (const e of Array.from(m.children)) {
+      if (e.localName === "attributes") {
+        const div = child(e, "divisions");
+        if (div) divisions = Number(div.textContent);
+      }
       const duration =
         Number(child(e, "duration")?.textContent || 0) / divisions;
       if (e.localName === "backup") {
@@ -353,9 +294,19 @@ export function readCanonical(text: string, s: Song): void {
             .map((t) => t.textContent)
             .join("");
       if (lyric && kids(lyric, "text").length) {
-        const meta = data.lyrics.find((l) => l.voice === voice);
-        if (!meta) throw Error(i18nText("canonical-xml.message019"));
-        lyrics.set(voice, {
+        const meta =
+          data.version === 1
+            ? data.lyrics.find((l) => l.voice === voice)
+            : data.lyrics.find((l) => l.noteId === e.id);
+        if (!meta) {
+          if (data.version === 2) {
+            // Imported drum lyrics are not the managed lyric voice.
+            if (!child(e, "chord")) cursor += duration;
+            continue;
+          }
+          throw Error(i18nText("canonical-xml.message019"));
+        }
+        const restored: Lyric = {
           id: meta.id,
           text: value || "",
           confirmed: meta.confirmed,
@@ -366,9 +317,11 @@ export function readCanonical(text: string, s: Song): void {
             quarterOffset: cursor,
             durationQuarters: duration,
           },
-        });
+        };
+        lyrics.set(meta.id, restored);
+        activeVoice.set(voice, restored);
       } else if (lyric && child(lyric, "extend")) {
-        const l = lyrics.get(voice);
+        const l = activeVoice.get(voice);
         if (l) l.scorePosition!.durationQuarters += duration;
       }
       if (!child(e, "chord")) cursor += duration;
@@ -379,7 +332,14 @@ export function readCanonical(text: string, s: Song): void {
     new Set(s.measures.map((m) => m.id)),
   );
   s.measureLyrics = data.measureLyrics?.map((l) => ({ ...l }));
-  s.lyrics = [...lyrics.values()];
+  s.lyrics = data.lyrics.map((meta) => {
+    const lyric = lyrics.get(meta.id);
+    if (!lyric)
+      throw Error(
+        `Missing canonical lyric: id=${meta.id}, voice=${meta.voice}, version=${data.version}`,
+      );
+    return lyric;
+  });
   projectLyrics(s);
 }
 export async function ensureCanonical(record: RecordData) {
@@ -500,8 +460,10 @@ export function importedCanonical(text: string, s: Song): string | undefined {
 }
 export function hasDrumNotation(text: string) {
   const d = parse(text),
-    p = manifest(d)?.partId;
+    data = manifest(d);
   return kids(d.documentElement, "part").some(
-    (e) => e.id !== p && e.id !== "DrumPracticeVocalSource",
+    (e) =>
+      e.id !== (data?.version === 1 ? data.partId : PART) &&
+      e.id !== "DrumPracticeVocalSource",
   );
 }

@@ -75,6 +75,7 @@ TypeScript 7의 네이티브 컴파일러는 기존 JavaScript compiler API를 �
 | `data/reference/grid_verified.json` | 보존된 가사/박자 검수 입력. |
 | `data/reference/test-fixtures/musicxml-candidate.musicxml` | 쉼표 보정 회귀 입력. |
 | `data/reference/test-fixtures/tom-moving-28-portland.drumscore` | 구형 패키지 교체 호환 회귀 입력. |
+| `data/reference/test-fixtures/ioi-suddenly-canonical-v1.musicxml` | 같은 보표 전환 전 갑자기 v1 정본. 보존된 `data/production/shared-staff-lyrics-20261110/ioi-suddenly/before.musicxml`의 바이트 사본이며 SHA256은 `8f3ad3a47aa4453dc19fb71a514761f0665d9a429327478712c352852de6eaaf`다. 구형 읽기/전환과 현행 v2 수록본의 반복 저장을 별도로 검사한다. |
 | `data/reference/test-fixtures/red-sunset-wedge-native-20261024.json` | 실제 Safari/OSMD2.2.1의 붉은 노을113마디 인쇄·한 줄·두 줄·균등 조판 좌표. `data/production/red-sunset-crescendo-20261024/score.musicxml`(SHA256 `27cd2812c64eaa455399a7e8400e5feb4d26ffe06cdd6b5e233eb64bbebd1a68`)의 실측이며 생성한 합성 악보가 아니다. 기존 검증 자료에서 복사하며 측정 전후 근거는 `.tmp/wedge-endpoint-20261024/`다. |
 
 player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons/`가 필요하다. 로컬 미디어가 없는 환경은 portable 검사까지만 검증됐다고 보고한다. 패키지 회귀나 player 빌드를 통과했다고 보고하지 않는다.

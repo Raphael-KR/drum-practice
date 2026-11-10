@@ -11,7 +11,7 @@ it("ships the approved 112/2 to 113/2.5 crescendo in both source and canonical X
   const manifest = JSON.parse(await zip.file("manifest.json")!.async("string"));
   const source = await zip.file(manifest.source.path)!.async("nodebuffer");
   expect(createHash("sha256").update(source).digest("hex")).toBe(
-    "27cd2812c64eaa455399a7e8400e5feb4d26ffe06cdd6b5e233eb64bbebd1a68",
+    "ef2524aeef2b986aff3c452d13355cdc249842a661e12b9a29eff23408a6e3cc",
   );
   expect(manifest.canonicalXML).toBe(source.toString("utf8"));
   expect(manifest.song.id).toBe("yb-red-sunset-20f9b136");

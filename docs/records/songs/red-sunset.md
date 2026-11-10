@@ -734,3 +734,11 @@ Python 명령은 lxml·pdfplumber가 설치된 `/Users/raphael/.cache/codex-runt
 - 새 파일13,559,217bytes, SHA256 `cf57783b65f512ccd67506481971044495952bdc088a41e986b544773496af14`. 기존 원본·교체 전 패키지·캐시 생략 전 후보를 보존했다. 원음원·대체PDF/페이지·가사·ID·BPM134/첫 박11.27·마디/박 시각·마커·반복·설정과 다른 수록5곡은 그대로다.
 - 실제 Safari에서 새 제공 파일의 해시·공통 패키지 왕복·네이티브3조판 각137마디와 runtime ready를 확인했다. 저장 콜백 없는 실제 공통 runtime에서1줄/2줄 크레센도 표시를 대조했다. 사용자 라이브러리는 readonly 전후 비교로 보존했고 검수 후 미리보기 화면을 닫았다. **기존 개인 저장곡은 자동 교체하지 않아 여전히 이전992ad594… XML을 사용한다.**
 - 집중4파일11검사, 전체129파일763검사·lint·서식433파일·타입/구조/문서·두 앱 빌드/경계가 통과했고 player 빌드의 패키지 해시도 public과 같다. 앱0.8.13/빌드9240c536bcb7 유지. 청취·iPad·공개 확인, 버전 인상·커밋·push·발행 없음. 근거는 `.tmp/red-sunset-crescendo-bundle-20261024/`에 있다.
+
+
+## 같은 보표 가사 성부 v2 제작 정본 — 2026-11-10
+
+- 현행 제작 MusicXML: `data/production/shared-staff-lyrics-20261110/red-sunset/score.musicxml`. SHA256 `ef2524aeef2b986aff3c452d13355cdc249842a661e12b9a29eff23408a6e3cc`. 이전 `data/production/red-sunset-crescendo-20261024-final/score.musicxml`은 보존했다.
+- 공통 작성기로 P1의 독립 숨긴 가사 성부에 전환했다. 137마디·가사 0개·가사 구간 0개·성부 없음이며 드럼·가사 시각/음가·겹침/마디 연장·ID/확정 상태·마디 문구·음원 연결은 정적 대조에서 같다.
+- MusicXML 4.0 XSD·독립 XML/유리수 대조·전체 canonical Song 왕복·반복 직렬화 검사 PASS. 가사 없는 곡에는 빈 가사 성부를 만들지 않았다. 제목 의미는 그대로이며 공통 작성기의 movement-title 추가 여부를 별도 기록했다.
+- [일괄 전환·문제 해결·검증 범위](../archive/shared-staff-score-migration-20261110.md). 근거 `data/production/shared-staff-lyrics-20261110/red-sunset/verification.json`. 앱 수록·새 SVG·재생/청취·커밋·배포는 이번 제작 검증에 포함하지 않는다.

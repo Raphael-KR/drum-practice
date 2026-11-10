@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-23
+date: 2026-11-10
 ---
 
 # MusicXML 원문을 정본으로 보존하고 Song을 파생한다
@@ -17,6 +17,8 @@ date: 2026-10-23
 ## Decision Outcome
 
 RecordData.canonicalXML을 정본으로 유지한다. 렌더러로 XML을 재생성하지 않으며 안정 마디 ID·음원 해시·연결점·확장 필드를 보존한다. 저장/교환과 편집 경계는 정본 계약을 따른다.
+
+2026-11-10 [ADR-0029](0029-shared-staff-lyric-voices.md)가 별도 가사 파트 작성 방식을 같은 드럼 보표의 가사 성부로 대체한다. 아래 이관 원문의 v1 계약은 당시 기록으로 보존한다.
 
 ### Consequences
 

@@ -188,6 +188,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
           "open-reader-settings",
         ),
         song: s,
+        canonicalXML: options.canonicalXML,
         scores: variants,
         fail,
       });

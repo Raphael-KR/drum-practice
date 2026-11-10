@@ -10,6 +10,7 @@ import type { GraphicalMeasure } from "opensheetmusicdisplay/build/dist/src/Musi
 import type { PointF2D } from "opensheetmusicdisplay/build/dist/src/Common/DataObjects/PointF2D";
 import type { FontStyles } from "opensheetmusicdisplay/build/dist/src/Common/Enums/FontStyles";
 import type { RehearsalBounds } from "./rehearsal-layout";
+import { scoreTextHeight } from "./score-text-font";
 
 interface Calculator {
   calculateRehearsalMarks(): void;
@@ -65,8 +66,9 @@ export function installPlaybackWords(
       const sourceLeft = shape.RelativePosition.x + shape.BorderLeft;
       // Resize around the source left edge. Section size is points;
       // OSMD label height is ten SVG pixels.
-      label.Label.fontHeight =
-        (osmd.EngravingRules.RehearsalMarkFontSize * (96 / 72)) / 10;
+      label.Label.fontHeight = scoreTextHeight(
+        osmd.EngravingRules.RehearsalMarkFontSize,
+      );
       label.setLabelPositionAndShapeBorders();
       shape.RelativePosition.x = sourceLeft - shape.BorderLeft;
       const measure = osmd.GraphicSheet.MeasureList[index]?.[staff];

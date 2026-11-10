@@ -454,3 +454,11 @@ SoCal EXS에는 키50 zone이 없고 고음 탐 zone은 키48이다. 위 연결�
 이번 재제작에서 `render_portland_exercise.py`는XML경로를 events 부모 폴더의 tom-moving-source.musicxml에서 읽으며 --xml 옵션은 없다. 잘못 지정한 첫 명령의 인자 오류를 확인하고 문서/기존 CLI 계약대로 --events/--out만 사용해 완료했다. 최종 verifier는 새 제작본 검사와 앱 수록 검사를 구분하기 위해 --check-public을 지정했을 때만 실제public 바이트를 검사한다. 기본 검사에서 미수록 상태를 통과했다고 표현하지 않으며 publicBytesMatch=null로 기록한다.
 
 - 개발 인계: 사용자 확정 앱 담당 `드럼연습실 웹앱 개발` 작업01a0afc9-ca21-7371-9390-06eb07c017e9에 최신 제목·S-H-M-F·final-01경로/해시·검증 및 기존ID/연습기록/설정 보존 조건 전달 성공. 앱 반영 완료는 아직 확인하지 않음.
+
+
+## 같은 보표 가사 성부 v2 제작 정본 — 2026-11-10
+
+- 현행 제작 MusicXML: `data/production/shared-staff-lyrics-20261110/tom-moving/score.musicxml`. SHA256 `8beb89826461eb7fd65bff16244e74c4cd01b9478f1656c487650fa876842839`. 이전 `data/production/tom-moving/final/tom-moving-final.musicxml`은 보존했다.
+- 공통 작성기로 P1의 독립 숨긴 가사 성부에 전환했다. 28마디·가사 0개·가사 구간 0개·성부 없음이며 드럼·가사 시각/음가·겹침/마디 연장·ID/확정 상태·마디 문구·음원 연결은 정적 대조에서 같다.
+- MusicXML 4.0 XSD·독립 XML/유리수 대조·전체 canonical Song 왕복·반복 직렬화 검사 PASS. 가사 없는 곡에는 빈 가사 성부를 만들지 않았다. 제목 의미는 그대로이며 공통 작성기의 movement-title 추가 여부를 별도 기록했다.
+- [일괄 전환·문제 해결·검증 범위](../archive/shared-staff-score-migration-20261110.md). 근거 `data/production/shared-staff-lyrics-20261110/tom-moving/verification.json`. 앱 수록·새 SVG·재생/청취·커밋·배포는 이번 제작 검증에 포함하지 않는다.

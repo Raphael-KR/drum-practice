@@ -2190,3 +2190,28 @@ v2에서 남긴 **136개 검토 항목**의 번호를 유지하고 복원한 와
 ### 공통v29 연습 캐시 갱신 — 2026-10-23
 
 - [좁은 지시문 조판 수정](../archive/playback-words-layout-20261023.md)에 맞춰 파생 캐시를 재생성했다. 최신 패키지 SHA256 `9e7fd088049d930382953eb45f5e4a713434f17c871f73ec379eaf6bbd90d71a`,30,113,720bytes. source/canonical은 위의f4a30724…를 유지하며 원음원·PDF/대체 페이지·가사·ID·시간표·마커·반복·설정 보존을 공통 왕복과 독립 ZIP 대조로 확인했다. 공통 경로의 실제110마디/3쪽 렌더는 경고 없이 통과했고 전체126파일756검사·두 앱 빌드/경계도 통과했다. 이번 후속에서 별도 청취나 공개 발행은 수행하지 않았다. 근거 `.tmp/playback-words-20261023/`.
+
+
+## 같은 보표 가사 성부 v2 제작 정본 — 2026-11-10
+
+- 현행 제작 MusicXML: `data/production/shared-staff-lyrics-20261110/real-paradis/score.musicxml`. SHA256 `45b1f48399ece2d5c124955ab709f075f39f4fbf88b3a7327c64e048d6043cb6`. 이전 `data/production/real-paradis-sections-20261023/score.musicxml`은 보존했다.
+- 공통 작성기로 P1의 독립 숨긴 가사 성부에 전환했다. 110마디·가사 515개·가사 구간 561개·성부 3, 4이며 드럼·가사 시각/음가·겹침/마디 연장·ID/확정 상태·마디 문구·음원 연결은 정적 대조에서 같다.
+- MusicXML 4.0 XSD·독립 XML/유리수 대조·전체 canonical Song 왕복·반복 직렬화 검사 PASS. 가사 없는 곡에는 빈 가사 성부를 만들지 않았다. 제목 의미는 그대로이며 공통 작성기의 movement-title 추가 여부를 별도 기록했다.
+- [일괄 전환·문제 해결·검증 범위](../archive/shared-staff-score-migration-20261110.md). 근거 `data/production/shared-staff-lyrics-20261110/real-paradis/verification.json`. 앱 수록·새 SVG·재생/청취·커밋·배포는 이번 제작 검증에 포함하지 않는다.
+
+
+## 편집 열기의 9마디 쉼표 성부 오류 조사 — 2026-11-10
+
+- 대상은 v2 제작 정본 `45b1f48399ece2d5c124955ab709f075f39f4fbf88b3a7327c64e048d6043cb6`이며 public 패키지 source/canonicalXML과 바이트 해시가 같다. MusicXML 4.0 XSD를 다시 통과했다.
+- 9마디 voice3에 있는 `print-object="no" dynamics="0"` 쉼표 두 개는 승인된 독립 가사 성부의 시간 간격이다. 실제 드럼은 voice1/2이고 가사 소유 성부는 메타데이터상 voice3/4다.
+- 원인은 `score-rest-correction.ts`의 `fixAllDrumRestPositions`가 P1의 모든 쉼표를 드럼으로 간주하고 voice1/2 외에는 message530을 던지는 것이다. `prepareEditorScore`가 `correctStoredRests`를 호출하므로 편집 열기가 막힌다. 가사 쉼표를 전체 쉼 마디 판정에 넣는 경로도 함께 점검해야 한다.
+- 실제 공통 함수를 Node22/JSDOM/Vite SSR에서 원본 사본에 실행했다. 전환 전 정본은 changed=false로 통과, v2 정본은 정확히 ‘9마디의 알 수 없는 쉼표 성부입니다.’ 재현, 기존 공통 playbackNotationXML로 소유 가사 블록만 제외한 메모리 진단 사본은 changed=false로 통과했다. 드럼 쉼표 집계도 전환 전과 같다(cymbal15/drum10/kick237/fullBar5). 이 사본을 정본으로 저장하거나 가사를 삭제하지 않았다.
+- 근거 `data/production/shared-staff-lyrics-20261110/real-paradis/editor-open-diagnostic/result.json` 및 재현 명령 reproduce.mjs. 정본 교정 대상이 아니라 편집 준비 경로의 v2 호환성 문제다. 앱 담당이 메타데이터/공통 소유 성부 식별을 사용해 가사 리듬을 드럼 쉼표 교정과 silentMeasure 판정에서 제외하고 전체 XML의 가사 블록·backup은 보존해야 한다. 숫자3/4 하드코딩이나 모든 숨긴 쉼표 무시로 일반화하지 않는다.
+- 정본·public·앱 코드·사용자 저장본·history.md는 변경하지 않았다. GUI에서 실제 편집 열기/저장 성공은 아직 확인하지 않았으며 앱 수정·검증은 개발 담당 범위다.
+
+### 개발 후속 — 2026-11-11
+
+- 위 제작 진단을 근거로 공통 `canonical-lyric-voice`의 소유 블록 탐색을 읽기 전용 `lyricVoiceNotes`와 기존 블록 제거가 공유하도록 분리했다. 주석이 없을 때도 v2의 `partId`·소유 voice와 연속 블록 검사를 사용한다.
+- 쉼표 교정과 `silentMeasure`는 같은 드럼 전용 목록을 사용한다. 가사 리듬의 음표·쉼표는 판정 대상에서만 제외하고 XML 요소·`backup`·메타데이터는 보존한다. 성부 번호3/4와 `print-object`만으로 제외하지 않는다. 비소유 성부의 기존 오류는 유지하며 실제 마디·성부와 기대값을 진단 로그에 기록한다.
+- 현재 수록된 실제 패키지의 v2 정본으로 드럼 집계(cymbal15/drum10/kick237/fullBar5)와 `changed=false`·출력 원문 동일성을 확인하는 회귀검사를 추가했다. 정적 검사 제한에 따라 이 테스트와 실제 GUI 편집 열기/저장은 실행하지 않았다. 과거 제작 진단의 PASS를 수정 후 실행 결과로 사용하지 않는다.
+- 이번 변경은 앱 코드·검사·문서에 한정한다. 정본·public 패키지·사용자 저장 데이터·과거 진단 파일은 변경하지 않으며, 검사 결과는 [개발 기록](../../../history.md#2026-11-11--편집-준비의-가사-성부-쉼표-호환성-수정)에 기록한다.

@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-23
+date: 2026-11-10
 ---
 
 # 가사는 악보 위치와 음가를 정본으로 저장한다
@@ -16,7 +16,9 @@ date: 2026-10-23
 
 ## Decision Outcome
 
-후자를 채택한다. measureId·quarterOffset·durationQuarters와 DrumPracticeLyrics를 유지하고 time/end/grid는 재생 캐시로 취급한다. 보컬 입력은 원래 리듬을 읽고 DrumPracticeVocalSource도 보존한다.
+후자를 채택한다. measureId·quarterOffset·durationQuarters를 유지하고 time/end/grid는 재생 캐시로 취급한다. 보컬 입력은 원래 리듬을 읽고 DrumPracticeVocalSource도 보존한다.
+
+2026-11-10 [ADR-0029](0029-shared-staff-lyric-voices.md)에 따라 새 저장 위치는 같은 드럼 보표의 독립 성부다. 악보 기준 리듬과 가창 시각을 구분하는 이 결정은 유지한다. 아래 독립 파트 표기는 당시 기록이다.
 
 ### Consequences
 

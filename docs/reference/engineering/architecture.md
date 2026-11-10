@@ -54,6 +54,8 @@ pnpm 사용자 공통 저장소의 파일을 공유하고 프로젝트에는 필
 
 MusicXML 조판의 공개 진입점은 `musicxml.ts`다. 입력 읽기/검증은 `musicxml-parse.ts`, 엔진 설정과 조판 훅은 `musicxml-engine.ts`, 공통 기호 표시 처리는 `musicxml-glyphs.ts`, SVG 경계·마디/박 좌표 추출은 `musicxml-geometry.ts`가 맡는다. 입력 → 엔진 → 기호 표시 → 경계 확정 → 글꼴 내장/압축 → 좌표 추출 순서를 유지한다. 다중 조판 pass·캐시·임시 host 해제는 진입점에 남기며, 기존 parse/read/type/interpolate export 경로를 유지한다. 출력 규칙은 [조판 정본](../score/rendering.md#browser-musicxml-rendering--구현-경계)을 따른다.
 
+SVG 전체 보기의 표준 가사는 `full-score-lyrics.ts`에서 같은 드럼 보표의 가사 성부를 OSMD로 출력한다. `canonical-lyric-voice.ts`는 새 정본 작성과 구형 전체 보기의 읽기용 전환을 공유한다. `canonical-metadata.ts`는 v1 독립 파트와 v2 성부·음절 ID 계약을 구분한다. `full-score-view.ts`는 두 앱의 지연 준비·연속 SVG 표시를 공유하고, `full-score-layout.ts`는 원본 줄 구성 위에 일정한 오선 간격과 제목 아래 기본 BPM·가수를 배치한다. 전체 보기의 간격은 연주용 pass로 전달하지 않으며 별도 정책 키로 공통 파생 캐시를 사용한다. 제작기의 미저장 가사 반영만 기존 정본 작성 함수를 사용하고 재생앱에는 제작 의존성을 추가하지 않는다. 배치·마디 문구·글꼴·배율 계약은 [전체 보기 규칙](../score/rendering.md#svg-score-rules--2-전체-페이지-생성)을 따른다.
+
 제작기 입력 모듈은 mount 시점의 기록을 복사하지 않고 host getter로 현재 기록을 읽는다. 기존 정본 검증·구형 기록 이관·저장·음원/자산 교체 순서를 유지하며, 보관함 복원 시 재생 중지·저장 타이머 해제·편집 세션 초기화는 main의 `beforeRestore` 콜백으로 실행한다. 모듈 분리는 기존 호환 경로를 늘리거나 곡별 예외를 추가하는 근거가 아니다.
 
 `score-management.ts`는 파일 작업 버튼을 곡 정보의 연결 영역과 내보내기 영역에 직접 만든다. 임시 파일 팝업에서 옮기거나 표시명을 나중에 덮어쓰지 않는다. DOM 조회는 제작기 공통 `editor-dom.ts`를 사용하며, 버튼 ID·접근성 연결·파일 처리 콜백은 유지한다. UI 카탈로그에는 실제 화면에 남는 컴포넌트만 등록한다.
