@@ -44,6 +44,12 @@
 - `pnpm run check:docs`: 생성 UI 문서, Markdown의 상대 파일 링크와 문단 앵커를 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 같은 문서의 `#앵커`, 중복 제목의 접미사와 명시적 HTML 앵커도 확인한다. 외부 URL·절대 로컬 경로·비 Markdown 파일의 fragment는 검사하지 않는다. 자세한 입력 형식과 제외 범위는 [문서 검사 계약](../reference/engineering/documentation.md#documentation-rules--문서-변경-검증)을 따른다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
 - 원격 CI 결과는 push 이후 별도로 확인한다. 로컬 통과를 원격 CI 실행 성공으로 기록하지 않는다.
 
+CI는 `pull_request`와 `main`의 `push`에서 실행한다. PR이 열린 작업 브랜치의 push와 PR 갱신에 같은 검사를 두 번 예약하지 않는다. PR 전 작업 브랜치의 push·태그 push는 자동 검사 대상이 아니며 필요한 로컬 검사는 `verify:portable`로 수행한다. PR의 병합 예정 코드와 병합된 main은 입력이 다르므로 두 검증은 유지한다.
+
+정상 소스의 i18n·재생 소유권·공통 컴포넌트·소스 경계 검사는 `check`가 한 번 담당한다. 테스트에서는 같은 스크립트의 정상 통과를 재실행하지 않고 위반을 탐지하는 회귀와 실제 UI·저장 동작을 확인한다. `test:portable`·`test:drum`만 실행한 결과는 공통 정적 검사까지 통과한 결과가 아니다.
+
+함수 중복 후보와 호출 목록은 상시 통과 조건이 아닌 수동 검토 자료다. 필요할 때 `node scripts/checks/check-common-components.mjs --audit` 또는 `node scripts/checks/check-playback-architecture.mjs --audit`를 실행한다. 전자는 `docs/experiments/common-components-audit.json`, 후자는 `docs/experiments/playback-call-sites.json`을 생성한다. 기본 검사는 이 보고서를 다시 쓰지 않는다. 공통 모듈 사용·재생 소유권·직접 저장소 의존 금지 검사는 그대로 실행한다.
+
 CI의 `actions/checkout@v7`·`actions/setup-node@v7`·`pnpm/action-setup@v6`는 액션 자체를 Node 24로 실행한다. 프로젝트 검사에 사용하는 Node는 별도로 `.nvmrc`의 22 LTS를 따르며, pnpm 버전·frozen 설치·잠금 파일 기반 캐시·검사 명령은 기존 설정을 유지한다. 액션 런타임의 Node 20 폐기 경고를 없애려고 앱의 Node 버전을 바꾸거나 경고 억제 환경변수를 넣지 않는다.
 
 Vite의 500kB 청크 경고와 테스트의 Node SQLite 실험 API 경고는 현재 유지한다. 당장 수정하지 않는 이유와 재검토·개선 기준은 [유지하는 번들·SQLite 경고](../reference/engineering/verification.md#verification-rules--유지하는-번들sqlite-경고)를 따른다. 실제 검사 실패와 이 두 안내 경고를 구분하며, 경고 출력을 숨기거나 기존 검사를 축소하지 않는다.

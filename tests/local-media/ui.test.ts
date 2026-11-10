@@ -246,7 +246,6 @@ it("opens the saved score through the catalog, exposes fixed range slots and app
   await vi.waitFor(() =>
     expect(document.querySelectorAll(".measure")).toHaveLength(110),
   );
-  expect(document.querySelectorAll(".measure")).toHaveLength(110);
   await vi.waitFor(async () =>
     expect((await allRecords()).some((r) => r.song.id === "real-paradis")).toBe(
       true,

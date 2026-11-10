@@ -158,35 +158,24 @@ for (const file of [
 ]) {
   const source = fs.readFileSync(file, "utf8"),
     ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
-  const forbidden = new Set([
-    "src/platform/storage/storage.ts",
-    "src/apps/editor/workspace.ts",
-    "src/apps/editor/score-management.ts",
-    "src/apps/editor/editor-session.ts",
-    "src/apps/editor/main.ts",
-    "src/apps/player/player-app.ts",
-  ]);
+  // App imports are checked for all source files by check-source-boundaries.
   function imports(n) {
-    if (ts.isStringLiteral(n) && forbidden.has(resolveSource(file, n.text)))
-      assert.fail(`${file}: host dependency ${n.text}`);
+    if (
+      ts.isStringLiteral(n) &&
+      resolveSource(file, n.text) === "src/platform/storage/storage.ts"
+    )
+      assert.fail(`${file}: storage dependency ${n.text}`);
     ts.forEachChild(n, imports);
   }
   imports(ast);
 }
-const inventory = fs.readFileSync(
-  "docs/plans/PLAYBACK-SCREEN-INVENTORY.md",
-  "utf8",
-);
-for (const id of [
-  ...Array.from({ length: 25 }, (_, i) => `P${String(i + 1).padStart(2, "0")}`),
-  ...Array.from({ length: 6 }, (_, i) => `E${String(i + 1).padStart(2, "0")}`),
-])
-  assert(inventory.includes(`| ${id} |`), `Missing inventory item ${id}`);
-fs.mkdirSync("docs/experiments", { recursive: true });
-fs.writeFileSync(
-  "docs/experiments/playback-call-sites.json",
-  JSON.stringify(report, null, 2),
-);
+if (process.argv.includes("--audit")) {
+  fs.mkdirSync("docs/experiments", { recursive: true });
+  fs.writeFileSync(
+    "docs/experiments/playback-call-sites.json",
+    JSON.stringify(report, null, 2),
+  );
+}
 console.log(
-  `PASS: 2 hosts / 1 playback owner / ${owned.length} owned operations / 31 inventory entries`,
+  `PASS: 2 hosts / 1 playback owner / ${owned.length} owned operations`,
 );

@@ -7,18 +7,11 @@ const files = [
   ...sourceFiles(),
   "tools/score-production/musicxml/common/package.mjs",
 ];
+const audit = process.argv.includes("--audit");
 const report = {
   files,
   primitives: [],
   duplicates: [],
-  exceptions: {
-    "src/apps/editor/editor-original-view.ts":
-      "Original-page URLs belong to this viewer; byte decoding uses shared displayPage.",
-    "src/apps/editor/score-review.ts":
-      "Comparison canvas loads original pages rather than practice crops.",
-    "src/shared/ui/licenses.ts":
-      "download attribute is link metadata; execution calls shared download.",
-  },
 };
 const fingerprints = new Map();
 for (const file of files) {
@@ -28,9 +21,11 @@ for (const file of files) {
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) {
       const name = n.expression.getText(ast);
       if (
-        /createElement|createObjectURL|revokeObjectURL|Image|btoa|atob|mountPlaybackShell|preparePlaybackAssets|setIconButton|download/.test(
-          name,
-        )
+        name === "mountPlaybackShell" ||
+        (audit &&
+          /createElement|createObjectURL|revokeObjectURL|Image|btoa|atob|preparePlaybackAssets|setIconButton|download/.test(
+            name,
+          ))
       )
         report.primitives.push({
           file,
@@ -81,6 +76,7 @@ for (const file of files) {
     }
     // Compare function token structure, ignoring local identifier spelling. Candidates require human review.
     if (
+      audit &&
       (ts.isFunctionDeclaration(n) ||
         ts.isArrowFunction(n) ||
         ts.isFunctionExpression(n)) &&
@@ -132,11 +128,14 @@ for (const file of [
     1,
     `${file}: common shell mount`,
   );
-fs.mkdirSync("docs/experiments", { recursive: true });
-fs.writeFileSync(
-  "docs/experiments/common-components-audit.json",
-  JSON.stringify(report, null, 2),
-);
-console.log(
-  `PASS: ${files.length} source files scanned; ${report.primitives.length} primitive call sites inventoried; ${report.duplicates.length} normalized duplicate function candidates (manual review required)`,
-);
+console.log(`PASS: ${files.length} source files; shared component boundaries`);
+if (audit) {
+  fs.mkdirSync("docs/experiments", { recursive: true });
+  fs.writeFileSync(
+    "docs/experiments/common-components-audit.json",
+    JSON.stringify(report, null, 2),
+  );
+  console.log(
+    `AUDIT: ${report.primitives.length} primitive call sites inventoried; ${report.duplicates.length} normalized duplicate function candidates (manual review required)`,
+  );
+}

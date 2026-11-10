@@ -27,9 +27,11 @@
 | 악보 | [악보 조판과 표시](reference/score/rendering.md) |
 | 악보 | [공통 제작 도구와 로컬 분석 계약](reference/score/tools.md) |
 
-## 기계 입력 예외
+<a id="기계-입력-예외"></a>
 
-[화면 소유권 표](plans/PLAYBACK-SCREEN-INVENTORY.md)의 P01–P25·E01–E06은 검사 코드가 직접 읽으므로 원래 경로와 표를 유지한다. 정본 20개 외의 별도 기계 입력이며 두 번째 사본을 만들지 않는다. 생성 UI·자산 문서는 [문서 안내](README.md#유지하는-특수-경로)를 따른다. 전체 원문 분류와 이관 검증은 [문서 기록](records/documentation.md)에 두며 여기에는 나열하지 않는다.
+## 화면 소유권 참고표
+
+[화면 소유권 표](plans/PLAYBACK-SCREEN-INVENTORY.md)는 원래 경로와 표를 유지하는 설계 참고 자료다. 2026-11-11부터 고정 ID 존재 검사를 제거했으며 정본 20개 외의 기계 입력으로 취급하지 않는다. 생성 UI·자산 문서는 [문서 안내](README.md#유지하는-특수-경로)를 따른다. 전체 원문 분류와 이관 검증은 [문서 기록](records/documentation.md)에 두며 여기에는 나열하지 않는다.
 
 <details>
 <summary>이전 문단 주소</summary>

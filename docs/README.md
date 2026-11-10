@@ -19,7 +19,7 @@
 
 ## 유지하는 특수 경로
 
-- [화면 소유권 표](plans/PLAYBACK-SCREEN-INVENTORY.md): 검사 코드가 직접 읽는 유일한 표. `plans/`의 기계 입력 예외다.
+- [화면 소유권 표](plans/PLAYBACK-SCREEN-INVENTORY.md): 화면 분리 설계와 기존 참조를 보존하는 참고표. 검사 코드의 입력은 아니다.
 - [UI 컴포넌트 목록](product/UI-COMPONENTS.md): 코드 카탈로그에서 생성하는 참조다.
 - [범례 자산 안내](design/legend-diagram/README.md), [Pretendard 배치·라이선스](../src/modules/score/vendor/pretendard/README.md): 생성·자산 경로를 유지한다.
 - [보존한 범례·화면 검수 자료](../exports/README.md): `exports/`의 SVG와 과거 캡처 용도·보존 범위를 구분한다.

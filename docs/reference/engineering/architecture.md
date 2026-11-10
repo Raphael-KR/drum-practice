@@ -113,7 +113,7 @@ DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·
 
 `scripts/checks/source-files.mjs`가 src 전체를 재귀 탐색한다. 공통 UI, i18n, 재생 소유권, app/model/shared 경계를 검사하며 두 앱 빌드 뒤 player 번들의 제작 기능 유입을 차단한다.
 
-공통 컴포넌트 검사는 src TypeScript와 위 브라우저 제작 도구를 대상으로 SHA-256·Base64 직접 계산과 동작 아이콘 경로 조립이 각각의 공통 구현 안에 있는지도 확인한다. 함수 중복 후보 검사는 최소 토큰 수를 쓰므로 결과 0개가 작은 마크업·CSS 중복까지 없다는 뜻은 아니다. 해당 부분은 선택자·조건·적용 순서와 실제 호출부를 함께 검토한다.
+공통 컴포넌트 검사는 src TypeScript와 위 브라우저 제작 도구를 대상으로 SHA-256·Base64 직접 계산과 동작 아이콘 경로 조립이 각각의 공통 구현 안에 있는지도 확인한다. 함수 중복 후보와 호출 목록은 [명시적 수동 감사](../../how-to/verify.md#testing--공통-검사와-ci)에서만 생성한다. 최소 토큰 수를 쓰므로 후보 0개가 작은 마크업·CSS 중복까지 없다는 뜻은 아니다. 해당 부분은 선택자·조건·적용 순서와 실제 호출부를 함께 검토한다.
 
 테스트는 unit·integration·local-media로 구분한다. 가사 교정 회귀검사 6개는 `tests/local-media/lyric-feedback-fixture.ts`에서 실제 demo의 교정 전 자료를 준비한다. 각 revision과 기대값·검증 본문은 개별 검사에 유지하며 앱의 저장/이관 코드와 합치지 않는다. 로컬 미디어가 없으면 필요한 검사가 실패하며 조용히 건너뛰지 않는다. 자세한 자산 목록과 실행 조건은 [검사 문서](../../how-to/verify.md#testing--개발-검사와-로컬-자산-준비)를 따른다.
 
@@ -127,8 +127,10 @@ DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·
 
 목록 상단바는 `library-header-actions` 안에 주 작업(`library-import`), 앱 전환(`library-app-link`), 공통 컨트롤(`library-common-actions`)을 배치한다. 제작기도 기존 새로고침·설정·도움말 컨트롤을 사용하며 공방 예약만 연습실에 둔다. 모양·간격은 공통 목록 CSS, 색상은 앱별 변수로 결정한다.
 
-## 코드가 읽는 화면 소유권 표
+<a id="코드가-읽는-화면-소유권-표"></a>
 
-[P01–P25·E01–E06 표](../../plans/PLAYBACK-SCREEN-INVENTORY.md)는 `scripts/checks/check-playback-architecture.mjs`의 입력이므로 기존 경로에 둔다. 이 파일에 동일 표를 복제하지 않는다. 경로 이동은 소비 코드와 관련 검사까지 함께 바꾸는 별도 작업에서 수행한다.
+## 화면 소유권 참고표
+
+[P01–P25·E01–E06 표](../../plans/PLAYBACK-SCREEN-INVENTORY.md)는 화면 분리 설계와 기존 참조를 보존하는 참고표다. 2026-11-11부터 검사 코드가 고정 ID 31개의 존재를 읽지 않는다. 실제 호출 소유권은 `check-playback-architecture.mjs`, 앱 의존 경계는 `check-source-boundaries.mjs`가 검사한다. 표를 복제하거나 행 개수를 제품 검증 기준으로 사용하지 않는다.
 
 [생성 UI 참조](../../product/UI-COMPONENTS.md), [범례 자산](../../design/legend-diagram/README.md), [글꼴 배치](../../../src/modules/score/vendor/pretendard/README.md)도 생성·배치 경로를 유지한다.
