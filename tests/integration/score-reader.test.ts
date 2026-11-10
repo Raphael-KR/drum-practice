@@ -41,8 +41,6 @@ function setup() {
     scorePartId: "drums",
     lyrics: [],
     lyricText: "<script>lyrics</script>",
-    measures: [{ id: "9", label: "9", regionId: "9" }],
-    regions: [{ id: "9", page: 0, x: 0.1, y: 0.2, w: 0.8, h: 0.4, beatXs: [] }],
   } as unknown as Song;
   const pages = [new Blob([svg], { type: "image/svg+xml" })];
   vi.mocked(renderFullScore).mockResolvedValue({
@@ -73,8 +71,6 @@ it("opens shared full-score SVG without HTML numbers and frees image URLs on clo
   const surface = root.querySelector(".full-score-page")!;
   expect(surface.children).toHaveLength(1);
   expect(surface.firstElementChild!.tagName).toBe("IMG");
-  expect(root.querySelector(".score-reader-pages svg")).toBeNull();
-  expect(root.querySelector("img")).not.toBeNull();
   root.querySelector<HTMLDialogElement>("dialog")!.close();
   expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:page");
   expect(root.querySelector("img")).toBeNull();

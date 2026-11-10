@@ -19,7 +19,8 @@
     "check:playback": "node scripts/checks/check-playback-architecture.mjs && node scripts/checks/check-common-components.mjs && pnpm run check:structure",
     "dev:editor": "vite --host 127.0.0.1 --open /editor.html",
     "dev:player": "vite --host 127.0.0.1 --open /player.html",
-    "build:apps": "pnpm run generate && pnpm run check:i18n && pnpm run check:docs && pnpm run typecheck:app && pnpm run check:playback && vite build --mode editor && vite build --mode player && node scripts/checks/check-app-boundaries.mjs",
+    "build:apps": "pnpm run generate && pnpm run check:i18n && pnpm run check:docs && pnpm run typecheck:app && pnpm run check:playback && pnpm run bundle:apps",
+    "bundle:apps": "vite build --mode editor && vite build --mode player && node scripts/checks/check-app-boundaries.mjs",
     "test:drum": "node scripts/checks/check-local-assets.mjs && vitest run",
     "version:app": "node scripts/release/bump-app-version.mjs",
     "check:structure": "node scripts/checks/check-source-boundaries.mjs",
@@ -44,7 +45,7 @@
     "check:docs": "node scripts/build/ui-docs.mjs --check && node scripts/checks/check-docs.mjs",
     "check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run check:dependencies && pnpm run check:i18n && pnpm run check:playback && pnpm run check:docs",
     "verify:portable": "pnpm run check && pnpm run test:portable",
-    "verify": "pnpm run check && pnpm run test:drum && pnpm run build"
+    "verify": "pnpm run check && pnpm run test:drum && pnpm run bundle:apps"
   },
   "dependencies": {
     "jszip": "catalog:",

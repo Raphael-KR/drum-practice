@@ -69,7 +69,7 @@ it("갑자기: repeated saves neither duplicate lyrics nor delete drum notation"
 
 it("갑자기: legacy full-score preparation uses the shared voice writer in a copy", () => {
   const parsed = parseMusicXML(legacySource, "P1");
-  prepareFullScoreLyrics(parsed, legacySource, song);
+  prepareFullScoreLyrics(parsed, song);
   const prepared = new XMLSerializer().serializeToString(parsed.document);
   const rendered = parseMusicXML(prepared, "P1");
   expect(rendered.parts).toHaveLength(1);

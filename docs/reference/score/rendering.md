@@ -78,8 +78,8 @@
 
 - 드럼연습실과 PC 악보제작기는 공통 `prepareFullScore` → `renderFullScore` → `full-score-view` 경로를 사용한다. 표준 음절 가사는 OSMD의 `drawLyrics`로 SVG 안에 출력한다. 별도의 HTML 음절 행·크기 관찰자·충돌 재배치는 사용하지 않는다.
 - v2 정본은 드럼 파트·같은 보표의 독립 가사 성부를 그대로 전달한다. 가사 음표·쉼표는 숨기고 `HiddenVoicesKeepLayout`·`RenderLyricsOfHiddenVoices`로 가사만 출력한다. 보표·크레센도·가사 간격은 OSMD 기본 배치를 사용하며 SVG에서 별도 가사 보표를 지우거나 가사를 이동하지 않는다.
-- v1의 독립 가사 파트는 승인된 [정본 전환](musicxml.md#musicxml-canonical--저장-계약)에 따라 읽기용 사본에만 같은 성부로 구성한다. `canonical-lyric-voice.ts`를 저장 경로와 공유하고 독립 onset·duration·마디 연장·겹침을 유지한다. 가까운 드럼 음표로 스냅하지 않는다. 현재 파일·DB에는 쓰지 않는다.
-- 시간 정보가 없는 `Song.measureLyrics`는 가짜 음표나 박 위치를 만들지 않고 해당 마디 중앙의 OSMD `GraphicalLabel`로 출력한다. 실제 마디 폭 안에서 줄바꿈하고 native 하단 경계에 높이를 반영한다. 같은 줄에 음절 가사가 있으면 그 아래에 배치한다. OSMD의 줄 끝 예고 기호용 `IsExtraGraphicalMeasure`는 원본 마디가 없는 보조 항목이므로 마디 문구 대상에서 제외한다. `lyricText`만으로 음절 시각·마디 귀속을 만들지 않는다.
+- v1의 독립 가사 파트는 승인된 [정본 전환](musicxml.md#musicxml-canonical--저장-계약)에 따라 읽기용 사본에만 같은 성부로 구성한다. 선택 파트를 파싱한 문서에 남아 있는 공통 manifest로 v1을 판별하며 원문을 다시 파싱하지 않는다. `canonical-lyric-voice.ts`를 저장 경로와 공유하고 독립 onset·duration·마디 연장·겹침을 유지한다. 가까운 드럼 음표로 스냅하지 않는다. 현재 파일·DB에는 쓰지 않는다.
+- 시간 정보가 없는 `Song.measureLyrics`는 가짜 음표나 박 위치를 만들지 않고 해당 마디 중앙의 OSMD `GraphicalLabel`로 출력한다. `installFullScoreMeasureLyrics`는 마디 문구가 있을 때만 배치·그리기 훅을 등록하며, OSMD 기본 음절 가사는 이 훅과 독립적으로 출력한다. 실제 마디 폭 안에서 줄바꿈하고 native 하단 경계에 높이를 반영한다. 같은 줄에 음절 가사가 있으면 그 아래에 배치한다. OSMD의 줄 끝 예고 기호용 `IsExtraGraphicalMeasure`는 원본 마디가 없는 보조 항목이므로 마디 문구 대상에서 제외한다. `lyricText`만으로 음절 시각·마디 귀속을 만들지 않는다.
 - 음절·마디 문구 모두 Pretendard와 공통 `scoreTextHeight` 환산을 사용한다. `LyricsHeight = RehearsalMarkFontSize × (96/72) ÷ 10`으로 섹션·지시문과 같은 크기를 지정한다. 기본 10pt는 13⅓ SVG px이며 가사·악보는 한 SVG 이미지 안에서 함께 확대·축소된다. 글꼴 로딩·SVG 내장도 공통 모듈을 재사용한다.
 - 가사 유무와 무관하게 전체 보기를 열 때 전용 연속 조판을 한 번 수행하고 공통 파생 캐시에 저장한다. 키는 원문·파트·마디 ID·마디 문구·가수·기본 BPM과 위 마디 번호 절의 전체 보기 전용 정책을 포함한다. 이전 정책의 캐시와 구분하며 동일 요청은 합친다. 창 크기·스크롤·재생 프레임마다 재조판하지 않는다.
 - 전체 보기의 가사 간격은 연습용 인쇄·1줄·2줄·균등 조판에 전달하지 않는다. 연습용 조판 사본에서는 앱 소유 가사 리듬 블록을 제외해 새 음표 기준점·간격이 추가되지 않게 하고 기존 HTML 가사를 유지한다. 전체 보기에서는 XML의 줄 시작 의미를 유지하고 OSMD가 계산한 가사 높이를 해당 줄의 하단 경계에 포함한다. 제작기의 미저장 가사 편집은 기존 정본 작성 함수를 읽기용 사본에 적용해 표시하며 원본 레코드를 저장하지 않는다. 재생앱에는 정본 작성 모듈을 포함하지 않는다.

@@ -8,19 +8,15 @@ import {
 import type { StaffLine } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/StaffLine";
 import type { GraphicalStaffEntry } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalStaffEntry";
 import type { Song } from "../../model/model";
-import { parseMusicXML, type XMLScore } from "./musicxml-parse";
+import type { XMLScore } from "./musicxml-parse";
 import { canonicalManifest } from "./canonical-metadata";
 import { writeLyricVoices } from "./canonical-lyric-voice";
 import { SCORE_TEXT_FONT_FAMILY, scoreTextHeight } from "./score-text-font";
 
 /** Upgrade legacy storage in a read-only copy with the same voice writer used by saving. */
-export function prepareFullScoreLyrics(
-  parsed: XMLScore,
-  xml: string,
-  song: Song,
-) {
-  const source = parseMusicXML(xml, parsed.partId, true).document;
-  const data = canonicalManifest(source);
+export function prepareFullScoreLyrics(parsed: XMLScore, song: Song) {
+  // Selecting the drum part preserves the document-level canonical manifest.
+  const data = canonicalManifest(parsed.document);
   if (data?.version !== 1) return;
   const part = parsed.document.querySelector("score-partwise > part")!;
   // v1's separate lyric part superseded the imported drum-note lyrics.
@@ -35,13 +31,14 @@ interface LyricsCalculator {
   ): GraphicalStaffEntry[];
 }
 
-/** Keep native lyric layout and SVG output separate from playback engraving. */
-export function installFullScoreLyrics(
+/** Add untimed measure text below OSMD's native syllable lyrics. */
+export function installFullScoreMeasureLyrics(
   osmd: OpenSheetMusicDisplay,
   song: Song,
 ) {
+  if (!song.measureLyrics?.length) return;
   const textByIndex = new Map(
-    (song.measureLyrics ?? []).map((lyric) => [
+    song.measureLyrics.map((lyric) => [
       song.measures.findIndex((m) => m.id === lyric.measureId),
       lyric.text,
     ]),

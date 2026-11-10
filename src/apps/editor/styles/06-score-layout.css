@@ -1,4 +1,4 @@
-/* Editor workspace and full-score viewer; playback layout lives in its module. */
+/* Editor workspace; playback and full-score viewers use their shared modules. */
 .crop {
   position: relative;
 }
