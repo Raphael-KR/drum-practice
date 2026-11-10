@@ -4,7 +4,7 @@ import type { ControlHelp } from "../../shared/ui/help-bubble";
 import catalog from "../../shared/ui/ui-catalog.json";
 import { componentName } from "../../shared/ui/ui-standard";
 import type { MessageKey } from "../../shared/i18n/i18n";
-export const helpControlSelector =
+const helpControlSelector =
   "button, a[href], input:not([type=hidden]), select, textarea, [role=button], [role=slider], [role=tab]";
 export function helpControl(
   target: EventTarget | null,

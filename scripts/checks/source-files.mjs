@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-/** The same complete, stable source inventory is used by all static guards. */
+/** Shared TypeScript source inventory for static guards. */
 export function sourceFiles(root = "src") {
   return fs
     .readdirSync(root, { withFileTypes: true })

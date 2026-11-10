@@ -1,6 +1,6 @@
 import korean from "./locales/ko.json";
 export type MessageKey = keyof typeof korean;
-export const locale = "ko-KR";
+const locale = "ko-KR";
 /** Text-only messages. Markup and escaping remain the caller's responsibility. */
 export function t(
   key: MessageKey,
@@ -8,7 +8,7 @@ export function t(
 ): string {
   const text: string = korean[key];
   if (text === undefined) throw new Error(`Unknown translation key: ${key}`);
-  return text.replace(/\{([a-zA-Z_$][\w$]*)\}/g, (token, name) => {
+  return text.replace(/\{([a-zA-Z_$][\w$]*)\}/g, (_token, name) => {
     if (!Object.hasOwn(values, name))
       throw new Error(`Missing translation value ${name}: ${key}`);
     const value = values[name];

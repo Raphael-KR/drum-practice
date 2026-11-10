@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { songBeforeLyricFeedback } from "./lyric-feedback-fixture";
 import { describe, it, expect } from "vitest";
 import {
   applyListeningFeedbackBatch,
@@ -7,18 +7,9 @@ import {
 } from "../../src/content/lyric-feedback-batch";
 import { validateSong } from "../../src/model/model";
 import type { Song } from "../../src/model/model";
-function fixture(): Song {
-  const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
-  const old = s.lyricArchive?.find(
-    (a) => a.revision === feedbackBatchRevision + "-before",
-  );
-  if (old) s.lyrics = structuredClone(old.lyrics);
-  s.lyricShifts = s.lyricShifts?.filter((r) => r !== feedbackBatchRevision);
-  return s;
-}
 describe("accumulated listening feedback", () => {
   it("applies all coordinates, confirms prefix, preserves tail and raw times, runs once", () => {
-    const s = fixture(),
+    const s = songBeforeLyricFeedback(feedbackBatchRevision),
       before = structuredClone(s.lyrics),
       last = before.findIndex((l) => l.id === "v2-l88");
     expect(applyListeningFeedbackBatch(s)).toBe(11);
@@ -46,7 +37,7 @@ describe("accumulated listening feedback", () => {
         s.lyrics.find((l) => l.id === "v2-l88")!.text = "other";
       },
     ]) {
-      const s = fixture();
+      const s = songBeforeLyricFeedback(feedbackBatchRevision);
       mutate(s);
       const before = structuredClone(s);
       expect(applyListeningFeedbackBatch(s)).toBe(0);

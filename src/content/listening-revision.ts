@@ -5,7 +5,7 @@ import {
 } from "../modules/lyrics/listening-alignment";
 import { lyricFingerprint } from "../modules/lyrics/lyric-timing";
 import original from "./lyric-reading-data";
-export const newListeningAnchors: ListeningAnchor[] = [
+const newListeningAnchors: ListeningAnchor[] = [
   { id: "v2-l0", time: 20.828, confirmed: true },
   { id: "v2-l1", time: 22.103, confirmed: true },
   { id: "v2-l5", time: 23.367, confirmed: true },

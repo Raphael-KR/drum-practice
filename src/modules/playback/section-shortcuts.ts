@@ -1,5 +1,5 @@
 import type { Song } from "../../model/model";
-export const SECTION_SHORTCUT_COUNT = 9;
+const SECTION_SHORTCUT_COUNT = 9;
 
 export interface SectionShortcut {
   name: string;

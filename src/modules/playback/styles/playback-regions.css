@@ -1,0 +1,303 @@
+/* Portrait and phone landscape share a title row above all playback controls. */
+@media (orientation: portrait),
+  (orientation: landscape) and (max-width: 1023px) and (max-height: 480px) {
+  .has-song .playback-ui header {
+    display: grid;
+    gap: 8px;
+  }
+  .has-song .playback-ui header .brand {
+    display: contents;
+  }
+  .has-song .playback-ui header .brand h1 {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    margin: 0;
+    width: 100%;
+  }
+  .has-song .playback-ui header .brand > .playback-tempo {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .has-song .playback-ui header .metronome-toggle {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .has-song .playback-ui header .actions {
+    grid-row: 2;
+    justify-self: end;
+    margin-left: 0;
+  }
+}
+
+/* Borderless playback regions retain their distinct original surface colors. */
+.has-song .drawer-playback {
+  background: var(--surface);
+}
+.has-song .drawer-playback header,
+.drawer-playback #practice > .stage,
+.drawer-playback .playback-dock .transport,
+.drawer-playback .drawer-panel {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.drawer-playback #practice > .stage {
+  background: white;
+}
+.drawer-playback .playback-dock .transport {
+  background: var(--dock-surface);
+}
+.drawer-playback .playback-drawer {
+  border: 0;
+  border-radius: 0;
+}
+
+/* Full-bleed color bands: safe areas belong inside each colored region. */
+.has-song #app.drawer-playback {
+  --playback-safe-bottom: env(safe-area-inset-bottom, 0px);
+  padding: 0;
+}
+.has-song .drawer-playback header {
+  background: var(--header-surface);
+  padding-top: 8px;
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+}
+.has-song .drawer-playback main {
+  padding: 0;
+}
+.drawer-playback #practice,
+.drawer-playback #practice:not(.score-review) {
+  gap: 0;
+}
+.drawer-playback .playback-dock .transport {
+  padding-left: max(8px, env(safe-area-inset-left, 0px));
+  padding-right: max(8px, env(safe-area-inset-right, 0px));
+}
+.drawer-playback .playback-drawer {
+  border-bottom: var(--playback-safe-bottom) solid var(--liquid-glass-edge);
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+}
+@media (orientation: landscape) {
+  :root:fullscreen .has-song #app.drawer-playback {
+    --playback-safe-bottom: 6px;
+    padding: 0;
+  }
+}
+
+/* Flat region dividers, without restoring enclosing cards or outer gaps. */
+.has-song .drawer-playback header {
+  border-bottom: 1px solid #cbd6e7;
+}
+.drawer-playback .playback-dock .transport {
+  border-top: 1px solid var(--dock-edge);
+}
+.drawer-playback .playback-drawer {
+  border-top: 2px solid var(--liquid-glass-edge);
+}
+
+/* Let Safari own the page-edge rubber band when dragging the title. */
+:root:has(.drawer-playback),
+:root:fullscreen:has(.drawer-playback) {
+  overscroll-behavior-y: auto;
+}
+body.has-song:has(.drawer-playback),
+:root:fullscreen body.has-song:has(.drawer-playback) {
+  overflow: visible;
+  overscroll-behavior-y: auto;
+}
+.has-song .drawer-playback header {
+  touch-action: pan-y;
+}
+
+/* The root supplies the browser backdrop; the white body stays distinct when pulled. */
+:root:has(.drawer-playback) {
+  background: var(--header-surface);
+}
+body.has-song:has(.drawer-playback) {
+  background: #fff;
+}
+
+/* Match the alumni site's opaque, top-edge sticky header for Safari tint sampling. */
+.has-song .drawer-playback > header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding-top: calc(2px + env(safe-area-inset-top, 0px));
+  background: var(--header-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Keep the portrait control board clear of the bottom screen edge. */
+@media (orientation: portrait) {
+  .has-song #app.drawer-playback {
+    box-sizing: border-box;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    --playback-safe-bottom: 0px;
+  }
+  .drawer-playback .playback-drawer {
+    height: 290px;
+  }
+}
+
+/* Portrait shortcuts give the section name and measure their own lines. */
+@media (orientation: portrait) {
+  .drawer-playback .section-shortcuts button {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+  .drawer-playback .section-shortcuts span {
+    text-align: left;
+  }
+}
+
+/* Align shortcut labels without changing their type, colors or dimensions. */
+.drawer-playback .section-shortcuts button {
+  justify-content: center;
+}
+.drawer-playback .section-shortcuts strong,
+.drawer-playback .section-shortcuts span {
+  text-align: center;
+}
+@media (orientation: portrait) {
+  .drawer-playback .section-shortcuts button {
+    align-items: center;
+  }
+}
+
+/* Equal number columns keep the slash centered for one to three digits. */
+.drawer-playback .playback-dock .progress-number {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1ch minmax(0, 1fr);
+  width: 94px;
+  min-width: 94px;
+  align-items: center;
+  gap: 4px;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.drawer-playback .playback-dock .progress-number input {
+  width: 100%;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.drawer-playback .playback-dock .progress-number span {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+.drawer-playback .playback-dock .progress-separator {
+  text-align: center;
+}
+.drawer-playback .playback-dock .progress-total {
+  text-align: left;
+}
+
+/* Remove one original row + its 4px gap; preserve the original button height. */
+.drawer-playback .section-shortcuts,
+.drawer-playback .loop-slots {
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+}
+.drawer-playback .playback-drawer {
+  height: 135.5px;
+}
+@media (orientation: portrait), (max-width: 800px) {
+  .drawer-playback .playback-drawer {
+    height: 218px;
+  }
+}
+
+/* Header placement only; appearance comes from the shared segmented control. */
+.playback-ui header .row-view-toggle {
+  align-self: center;
+  flex: 0 0 auto;
+}
+@media (orientation: portrait),
+  (orientation: landscape) and (max-width: 1023px) and (max-height: 480px) {
+  .has-song .playback-ui header {
+    grid-template-columns: auto auto auto minmax(0, 1fr);
+  }
+  .has-song .playback-ui header .row-view-toggle {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: center;
+  }
+  .has-song .playback-ui header .actions {
+    grid-column: 4;
+  }
+}
+
+/* Match the adjacent rewind count field's neutral numeric-input appearance. */
+.drawer-playback .playback-dock .progress-number {
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.drawer-playback .playback-dock .progress-number input,
+.drawer-playback .playback-dock .progress-number span {
+  color: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+/* Unlit faces stay readable; only the current section receives backlight. */
+.drawer-playback .section-shortcuts button[data-section-measure] {
+  background: #d5dbe2;
+  border-color: #b5bec9;
+  color: #344155;
+  box-shadow: inset 0 2px 5px #24304418;
+}
+/* Section destinations retain their red bookmark identity when unlit. */
+.drawer-playback .section-shortcuts button.is-marked {
+  background: #a92b34;
+  border-color: #832630;
+  color: #fff;
+}
+.drawer-playback .section-shortcuts button.is-marked strong,
+.drawer-playback .section-shortcuts button.is-marked span {
+  color: inherit;
+}
+
+/* White backlight seen through the button's white or red face. */
+.drawer-playback .section-shortcuts button.is-current-section {
+  background: linear-gradient(
+    180deg,
+    #fff 0%,
+    #fff 42%,
+    #f1f4f7 82%,
+    #e0e6ed 100%
+  );
+  border-color: #b9c5d2;
+  box-shadow:
+    inset 0 2px 1px #fff,
+    inset 0 -2px 3px #8193a433,
+    0 2px 3px #34415533,
+    0 0 9px 1px #ffffffcc;
+}
+
+.drawer-playback .section-shortcuts button.is-current-section.is-marked {
+  background: radial-gradient(
+    ellipse at center,
+    #ff303b 0%,
+    #ff1825 65%,
+    #f52d35 100%
+  );
+  border-color: #ff4650;
+  color: #fff;
+  box-shadow:
+    inset 0 0 16px #ff3440,
+    0 0 5px 2px #ff2635aa,
+    0 0 14px #ff263580;
+}

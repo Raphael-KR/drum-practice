@@ -1,6 +1,6 @@
 /** Only the surface snapshot moves; trigger buttons are geometry anchors. */
 let transitioning = false;
-export function transitionSurface(
+function transitionSurface(
   surface: HTMLElement,
   opener: HTMLElement,
   opening: boolean,

@@ -183,7 +183,10 @@
         "web": "#metronome-choices",
         "player": "#metronome-choices"
       },
-      "name": { "ko": "component.metronome.name", "en": "Metronome" },
+      "name": {
+        "ko": "component.metronome.name",
+        "en": "Metronome"
+      },
       "accessible": {
         "ko": "component.metronome.accessible",
         "en": "Metronome"
@@ -326,40 +329,6 @@
       }
     },
     {
-      "id": "mark",
-      "parent": "playback.primary",
-      "role": "",
-      "selectors": {
-        "web": "#open-marker-dialog",
-        "player": "#mark"
-      },
-      "name": {
-        "ko": "component.mark.name",
-        "en": "Mark current measure"
-      },
-      "accessible": {
-        "ko": "component.mark.accessible",
-        "en": "Mark current measure"
-      }
-    },
-    {
-      "id": "sound",
-      "parent": "playback.primary",
-      "role": "",
-      "selectors": {
-        "web": "#open-sound-dialog",
-        "player": "#sound"
-      },
-      "name": {
-        "ko": "component.sound.name",
-        "en": "Sound"
-      },
-      "accessible": {
-        "ko": "component.sound.accessible",
-        "en": "Sound"
-      }
-    },
-    {
       "id": "loop",
       "parent": "playback.repeat",
       "role": "",
@@ -445,76 +414,8 @@
       }
     },
     {
-      "id": "loopStart",
-      "parent": "loop",
-      "role": "",
-      "selectors": {
-        "web": "#loop-a",
-        "player": "#loop-a"
-      },
-      "name": {
-        "ko": "component.loopStart.name",
-        "en": "Loop start measure"
-      },
-      "accessible": {
-        "ko": "component.loopStart.accessible",
-        "en": "Loop start measure"
-      }
-    },
-    {
-      "id": "loopEnd",
-      "parent": "loop",
-      "role": "",
-      "selectors": {
-        "web": "#loop-b",
-        "player": "#loop-b"
-      },
-      "name": {
-        "ko": "component.loopEnd.name",
-        "en": "Loop end measure"
-      },
-      "accessible": {
-        "ko": "component.loopEnd.accessible",
-        "en": "Loop end measure"
-      }
-    },
-    {
-      "id": "loopStartBeat",
-      "parent": "loop",
-      "role": "",
-      "selectors": {
-        "web": "#loop-ab",
-        "player": "#loop-ab"
-      },
-      "name": {
-        "ko": "component.loopStartBeat.name",
-        "en": "Loop start beat"
-      },
-      "accessible": {
-        "ko": "component.loopStartBeat.accessible",
-        "en": "Loop start beat"
-      }
-    },
-    {
-      "id": "loopEndBeat",
-      "parent": "loop",
-      "role": "",
-      "selectors": {
-        "web": "#loop-bb",
-        "player": "#loop-bb"
-      },
-      "name": {
-        "ko": "component.loopEndBeat.name",
-        "en": "Loop end boundary beat"
-      },
-      "accessible": {
-        "ko": "component.loopEndBeat.accessible",
-        "en": "Loop end boundary beat"
-      }
-    },
-    {
       "id": "musicVolume",
-      "parent": "sound",
+      "parent": "settings",
       "role": "",
       "selectors": {
         "web": "#music-volume",
@@ -531,7 +432,7 @@
     },
     {
       "id": "clickVolume",
-      "parent": "sound",
+      "parent": "settings",
       "role": "",
       "selectors": {
         "web": "#click-volume",
@@ -707,7 +608,10 @@
         "web": "#open-metronome-settings",
         "player": "#open-metronome-settings"
       },
-      "name": { "ko": "component.metronome.name", "en": "Metronome" },
+      "name": {
+        "ko": "component.metronome.name",
+        "en": "Metronome"
+      },
       "accessible": {
         "ko": "component.metronome.accessible",
         "en": "Metronome"
@@ -721,8 +625,14 @@
         "web": "#open-tempo-settings",
         "player": "#open-tempo-settings"
       },
-      "name": { "ko": "component.tempo.name", "en": "Practice BPM" },
-      "accessible": { "ko": "component.tempo.accessible", "en": "Practice BPM" }
+      "name": {
+        "ko": "component.tempo.name",
+        "en": "Practice BPM"
+      },
+      "accessible": {
+        "ko": "component.tempo.accessible",
+        "en": "Practice BPM"
+      }
     },
     {
       "id": "settings.score",
@@ -776,42 +686,8 @@
       }
     },
     {
-      "id": "manage.edit",
-      "parent": "settings.score",
-      "role": "",
-      "selectors": {
-        "web": "#manage-edit",
-        "player": ""
-      },
-      "name": {
-        "ko": "component.manage.edit.name",
-        "en": "Edit"
-      },
-      "accessible": {
-        "ko": "component.manage.edit.accessible",
-        "en": "Edit"
-      }
-    },
-    {
-      "id": "manage.files",
-      "parent": "settings.score",
-      "role": "",
-      "selectors": {
-        "web": "#manage-files",
-        "player": ""
-      },
-      "name": {
-        "ko": "component.manage.files.name",
-        "en": "Files"
-      },
-      "accessible": {
-        "ko": "component.manage.files.accessible",
-        "en": "Files"
-      }
-    },
-    {
       "id": "file.xml",
-      "parent": "manage.files",
+      "parent": "settings.score",
       "role": "",
       "selectors": {
         "web": "#file-xml",
@@ -827,42 +703,8 @@
       }
     },
     {
-      "id": "file.pdf",
-      "parent": "manage.files",
-      "role": "",
-      "selectors": {
-        "web": "#file-pdf",
-        "player": ""
-      },
-      "name": {
-        "ko": "component.file.pdf.name",
-        "en": "Original PDF score"
-      },
-      "accessible": {
-        "ko": "component.file.pdf.accessible",
-        "en": "Original PDF score"
-      }
-    },
-    {
-      "id": "file.lyrics",
-      "parent": "manage.files",
-      "role": "",
-      "selectors": {
-        "web": "#file-lyrics",
-        "player": ""
-      },
-      "name": {
-        "ko": "component.file.lyrics.name",
-        "en": "Upload lyrics"
-      },
-      "accessible": {
-        "ko": "component.file.lyrics.accessible",
-        "en": "Upload lyrics"
-      }
-    },
-    {
       "id": "file.audio",
-      "parent": "manage.files",
+      "parent": "settings.score",
       "role": "",
       "selectors": {
         "web": "#file-audio",
@@ -879,7 +721,7 @@
     },
     {
       "id": "file.export",
-      "parent": "manage.files",
+      "parent": "settings.score",
       "role": "",
       "selectors": {
         "web": "#file-export",
@@ -1150,14 +992,6 @@
     "reload": {
       "ko": "common.reload",
       "en": "Reload"
-    },
-    "close": {
-      "ko": "common.close",
-      "en": "Close"
-    },
-    "scoreHelp": {
-      "ko": "common.scoreHelp",
-      "en": "Tap while playing to pause. Tap while paused to select a measure; double-tap to play from it. Scroll horizontally in one-line view; vertically in paused two-line view."
     }
   }
 }

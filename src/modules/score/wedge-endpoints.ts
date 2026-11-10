@@ -37,8 +37,9 @@ export function wedgeAnchor(
   return Math.max(0, Math.min(right, x));
 }
 
-/** OSMD 2.2.1 blends a stop offset with the preceding note's duration.
+/** Stop offsets were blended with the preceding note's duration in OSMD 2.2.1.
  * Bind explicit interior stops to native timed entries before alignment/drawing.
+ * Retain explicit stop positions until the corresponding native output is verified.
  * Keep barline handling, verbal dynamics, soft accents and source times native.
  */
 export function installWedgeEndpoints(osmd: OpenSheetMusicDisplay) {

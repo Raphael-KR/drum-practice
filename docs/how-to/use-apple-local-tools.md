@@ -49,3 +49,13 @@ manifest의 `anchors`에 사용자가 확인한 구간 ID·글자·시각·출�
 ```json
 {"anchors":[{"id":"user-bar15-ko","segmentId":"part01","text":"こ","time":37.09022813444695,"reviewer":"user","source":"15마디 네 번째 팔분음표"}]}
 ```
+
+<a id="apple-local-workflow--기존-정렬-결과-재현"></a>
+
+### 기존 정렬 결과 재현
+
+`reconcile_alignment.py --directory`는 Real Paradis v2의 기존 정렬 자료를 재현하는 별도 CLI다. [당시 제작 기록](../records/songs/real-paradis.md)과 [앵커 프로필](../../tools/apple-local/profiles/real-paradis-alignment-v2.json)을 함께 확인한다. 일반 가사 검토에는 위 `review:local` 절차를 사용한다.
+
+- 지정 폴더의 `units.json`과 `aligned-mix.json`·`aligned-vocals.json`·`aligned-short.json`을 읽는다. 프로필의 음절 인덱스·글자가 일치해야 한다.
+- 기존 계약대로 같은 폴더의 `new-lyrics.json`·`evidence.json`에 쓴다. 실행 전 원본과 이전 결과를 보존하고 출력 위치의 덮어쓰기 허가를 확인한다.
+- 다른 곡의 정렬 결합은 `reconcile(units, runs, anchors)`에 그 곡의 검증된 앵커를 전달한다. 재현용 프로필을 복사하거나 추정값을 청취 확인으로 바꾸지 않는다.

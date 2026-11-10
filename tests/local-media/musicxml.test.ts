@@ -10,7 +10,6 @@ import {
 import {
   applyXMLTiming,
   replaceWithMusicXML,
-  scoreArchivePath,
   scoreFormat,
 } from "../../src/modules/score/score-import";
 import { validateSong, type Song } from "../../src/model/model";
@@ -147,8 +146,6 @@ it("preserves timeline, lyrics, loops, marker and old song on geometry replaceme
     }),
   );
   validateSong(next);
-  expect(scoreArchivePath(next)).toBe("media/score.musicxml");
-  expect(scoreArchivePath(before)).toBe("media/score.pdf");
   const record = {
     song: next,
     pdf: new Blob([xml]),

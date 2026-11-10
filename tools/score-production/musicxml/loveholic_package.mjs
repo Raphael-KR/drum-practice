@@ -7,10 +7,11 @@ import {
   prepareCanonical,
 } from "./common/package.mjs";
 import profiles from "./profiles/songs.json";
+import { version as osmdVersion } from "opensheetmusicdisplay/package.json";
 const config = profiles["loveholic"];
 /* Run only through the existing localhost Vite app for this reviewed source.
  * Creates and rereads a package in memory; never modifies an IndexedDB record.
- * A loopback evidence receiver saves the new artifact under docs/experiments.
+ * The loopback evidence receiver saves artifacts to its configured output path.
  */
 import { renderMusicXML } from "/src/modules/score/musicxml.ts";
 import { readScorePackage } from "/src/modules/library/score-package.ts";
@@ -210,8 +211,7 @@ export async function refresh({ packageName, evidencePort = 5187 }) {
       regions: result.regions,
       measures: result.parsed.measures,
       warnings: result.parsed.warnings,
-      engine:
-        "OSMD 2.1.2 / current src/modules/score/musicxml.ts, time-proportional SVG ribbon",
+      engine: `OSMD ${osmdVersion} / current src/modules/score/musicxml.ts, time-proportional SVG ribbon`,
       browser: navigator.userAgent,
     },
     evidencePort,
@@ -519,7 +519,7 @@ export async function build({
       warnings: result.parsed.warnings,
       title: result.parsed.title,
       bpm: result.parsed.bpm,
-      engine: "OSMD 2.1.2 / current src/modules/score/musicxml.ts",
+      engine: `OSMD ${osmdVersion} / current src/modules/score/musicxml.ts`,
       browser: navigator.userAgent,
     },
     evidencePort,

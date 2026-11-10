@@ -15,9 +15,7 @@ export function editorHTML() {
     i18nText("editorHome.playerLink") +
     '</a><div class="actions library-common-actions"><button id="library-button">' +
     i18nText("icons.message054") +
-    '</button><button id="edit-button" hidden>' +
-    i18nText("main.message099") +
-    '</button></div></div></header>\n<main class="library-main"><section class="welcome editor-home" id="welcome"><div id="editor-home-list" class="library-sections" aria-live="polite"></div><button id="demo-button" hidden></button><button id="welcome-library" hidden></button></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
+    '</button></div></div></header>\n<main class="library-main"><section class="welcome editor-home" id="welcome"><div id="editor-home-list" class="library-sections" aria-live="polite"></div><button id="welcome-library" hidden></button></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
     i18nText("main.message112") +
     '</button></div></div>\n<div id="review-tools" hidden><span id="review-message">' +
     i18nText("main.message113") +
@@ -31,27 +29,12 @@ export function editorHTML() {
         i18nText("main.message116") +
         '"></canvas>',
     ) +
-    '\n<div class="seekrow"><span id="elapsed">0:00</span><input id="seek" aria-label="' +
-    i18nText("main.message117") +
-    '" type="range" min="0" max="300" step="0.01" value="0"><span id="duration">0:00</span></div>\n' +
     '<div class="panels"><section class="panel">' +
     practiceLoopHTML() +
     '</section><section class="panel">' +
     practiceMarkerHTML(true) +
-    "<details><summary>" +
-    i18nText("main.message146") +
-    '</summary><p class="subtle">' +
-    i18nText("main.message147") +
-    '</p><label><input id="include-media" type="checkbox" checked>' +
-    i18nText("main.message148") +
-    '</label><div class="flex"><button id="export">' +
-    i18nText("main.message149") +
-    "</button><label>" +
-    i18nText("main.message150") +
-    '<input id="restore" type="file" accept=".zip"></label></div></details></section></div><p class="keyboard">' +
+    '</section></div><p class="keyboard">' +
     i18nText("main.message151") +
-    '</p><p class="subtle" id="alignment-note">' +
-    i18nText("main.message152") +
     '</p></section></main>\n<dialog id="new-dialog">' +
     dialogHeader(i18nText("main.message154"), "", "new-dialog", "") +
     "<p>" +
@@ -118,7 +101,7 @@ export function editorHTML() {
     i18nText("main.message182") +
     '</h3><div class="flex"><label>' +
     i18nText("main.message183") +
-    '<input id="measure-label" type="text" style="width:95px"></label><label>' +
+    '<input id="measure-label" type="text"></label><label>' +
     i18nText("main.message184") +
     '<input id="measure-beats" type="number" min="1" max="16"></label><label>' +
     i18nText("main.message164") +
@@ -130,7 +113,7 @@ export function editorHTML() {
     i18nText("main.message187") +
     "</button></div><label>" +
     i18nText("main.message188") +
-    '<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1" style="width:100%"></label><p class="subtle">' +
+    '<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1"></label><p class="subtle">' +
     i18nText("main.message189") +
     '</p><div class="flex"><button id="preview-measure">' +
     i18nText("main.message190") +

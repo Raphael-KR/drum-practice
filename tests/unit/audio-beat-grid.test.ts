@@ -52,7 +52,7 @@ it("uses exact source beat timestamps and inverse beat coordinates, including pa
   expect(s.measures.at(-1)!.beats).toBe(1);
   const t = beatTime(s.measures[0], 2.5);
   expect(locate(s, t).beat).toBeCloseTo(2.5);
-  const c = makeCycle(0, 2.08, 3.64, 0.5, 0, s.measures[1], true);
+  const c = makeCycle(0, 2.08, 3.64, 0.5, s.measures[1], true);
   expect(c.countBeatSeconds).toBeCloseTo(0.42 / 0.5);
 });
 it("can switch fixed/variable without losing user state and rejects corrupt timing", () => {

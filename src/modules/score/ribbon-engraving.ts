@@ -6,21 +6,13 @@ type LayoutCalculator = MusicSheetCalculator & {
 };
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { gridPhase, RIBBON_HEAD_ANCHOR } from "./ribbon-timeline";
-/** OSMD 2.1.x adapter: change musical positions before native engraving, never scale glyphs. */
+/** Native spacing adapter, introduced with OSMD 2.1: move musical positions, never scale glyphs. */
 export interface RibbonSpacing {
   quarter: number;
   uniformQuarters?: number;
   rowWidth?: number;
   fixedGrid?: boolean;
   offset: number;
-  constraints?: {
-    measure: number;
-    beat: number;
-    quarter: number;
-    boundary: boolean;
-    left: number;
-    right: number;
-  }[];
 }
 export function ribbonSpacing(osmd: OpenSheetMusicDisplay): RibbonSpacing {
   let quarter = 64,
@@ -56,24 +48,12 @@ export function ribbonSpacing(osmd: OpenSheetMusicDisplay): RibbonSpacing {
     });
     measures.push(entries);
   }
-  const constraints: NonNullable<RibbonSpacing["constraints"]> = [];
-  for (const [measure, entries] of measures.entries())
+  for (const entries of measures)
     for (let i = 1; i < entries.length; i++) {
       const prev = entries[i - 1],
         next = entries[i],
         delta = next.q - prev.q;
       if (delta > 1e-7) {
-        constraints.push({
-          measure: measure + 1,
-          beat: prev.q,
-          quarter: Math.max(
-            (prev.right + next.left + 4) / delta,
-            i === entries.length - 1 ? (offset + prev.right + 4) / delta : 0,
-          ),
-          boundary: i === entries.length - 1,
-          left: next.left,
-          right: prev.right,
-        });
         quarter = Math.max(
           quarter,
           (prev.right + next.left + 4) / delta,
@@ -88,7 +68,6 @@ export function ribbonSpacing(osmd: OpenSheetMusicDisplay): RibbonSpacing {
     rowWidth,
     quarter: Math.ceil(quarter),
     offset: Math.ceil(offset),
-    constraints: constraints.sort((a, b) => b.quarter - a.quarter).slice(0, 8),
   };
 }
 export function installRibbonEngraving(
@@ -201,9 +180,10 @@ export function rowPositions(
   });
 }
 
-/** OSMD 2.1.x treats an end-offset at the barline as the next system's x=0.
+/** Barline stops were interpreted as the next system's x=0 in OSMD 2.1.x.
  * For playback's one-measure systems, anchor that stop to the last timed entry;
  * native wedge layout then extends it to this measure's right boundary.
+ * Retain this layout contract until native barline-stop rendering is verified.
  * Scope the adaptation to the calculation; never mutate the canonical input.
  */
 export function installMeasureEndWedges(osmd: OpenSheetMusicDisplay) {

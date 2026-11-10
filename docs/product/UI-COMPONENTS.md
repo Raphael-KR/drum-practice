@@ -27,19 +27,13 @@
 | rewindCount | 되감을 마디 수 | 되감을 마디 수 | Measures to rewind | playback.actions |
 | position | 현재 마디와 위치 복사 | 현재 마디와 위치 복사 | Copy current measure and position | playback.primary |
 | progress | 현재 마디 | 현재 마디 | Song progress | playback.navigation |
-| mark | 현재 마디 마킹 | 현재 마디 마킹 | Mark current measure | playback.primary |
-| sound | 소리 | 소리 | Sound | playback.primary |
 | loop | 구간 반복 | 반복 켜기·끄기 | Adjust loop | playback.repeat |
 | loopOff | 반복 해제 | 반복 해제 | Turn loop off | playback.secondary |
 | markers | 마커 버튼 5개 | 마커 버튼 5개 | Five marker slots | playback.navigation |
 | view | 악보 스타일 | 악보 스타일 | Score layout | settings |
 | zoom | 악보 크기 | 악보 크기 | Score size | settings |
-| loopStart | 시작 마디 | 시작 마디 | Loop start measure | loop |
-| loopEnd | 끝 마디 | 끝 마디 | Loop end measure | loop |
-| loopStartBeat | 시작 박 | 시작 박 | Loop start beat | loop |
-| loopEndBeat | 끝 경계 박 | 끝 경계 박 | Loop end boundary beat | loop |
-| musicVolume | 음원 음량 | 음원 음량 | Music volume | sound |
-| clickVolume | 메트로놈 음량 | 메트로놈 음량 | Metronome volume | sound |
+| musicVolume | 음원 음량 | 음원 음량 | Music volume | settings |
+| clickVolume | 메트로놈 음량 | 메트로놈 음량 | Metronome volume | settings |
 | tempoValue | 연습 BPM | 연습 BPM | Practice BPM | tempo |
 | close | 닫기 | 닫기 | Close | — |
 | pdf | 악보를 PDF로 보기 | 악보를 PDF로 보기 | Use PDF score | settings |
@@ -54,13 +48,9 @@
 | settings.score | 악보 | 악보 | Score management | settings |
 | settings.audio | 백업 | 사용자 설정 백업·복원 | Audio | settings |
 | settings.info | 정보 | 정보 | About | settings |
-| manage.edit | 편집 | 편집 | Edit | settings.score |
-| manage.files | 파일 | 파일 | Files | settings.score |
-| file.xml | MusicXML | MusicXML | MusicXML | manage.files |
-| file.pdf | 원본 PDF 악보 | 원본 PDF 악보 | Original PDF score | manage.files |
-| file.lyrics | 가사 업로드 | 가사 업로드 | Upload lyrics | manage.files |
-| file.audio | 원본 음원 | 원본 음원 | Original audio | manage.files |
-| file.export | 내보내기 | 내보내기 | Export | manage.files |
+| file.xml | MusicXML | MusicXML | MusicXML | settings.score |
+| file.audio | 원본 음원 | 원본 음원 | Original audio | settings.score |
+| file.export | 내보내기 | 내보내기 | Export | settings.score |
 | export.selected | 선택한 파일 내보내기 | 선택한 파일 내보내기 | Export selected files | file.export |
 | lyrics.all | 전체 가사 보기 | 전체 가사 보기 | All lyrics | settings.score |
 | score.pdf | PDF 전체 악보 보기 | PDF 전체 악보 보기 | Full PDF score | settings.score |

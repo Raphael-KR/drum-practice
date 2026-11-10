@@ -1,0 +1,70 @@
+.settings-panel[data-settings-panel="audio"] {
+  background: #fff5e5;
+}
+.practice-file-controls {
+  min-width: 0;
+}
+.practice-file-controls > p {
+  margin: 0;
+}
+.practice-file-controls > [data-practice-audio] {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+.practice-file-status {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+.practice-file-status:empty {
+  display: none;
+}
+.practice-file-status.is-error {
+  color: #b42318;
+  font-weight: 600;
+}
+
+/* Compact confirmations share the app surface and button styles. */
+dialog.confirmation-dialog {
+  width: min(360px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 24px;
+  border-radius: 24px;
+  box-shadow: 0 16px 48px #14243d26;
+}
+.confirmation-dialog:focus {
+  outline: none;
+}
+.confirmation-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--dialog-control-gap, 10px);
+  margin-bottom: 24px;
+}
+.confirmation-app-icon {
+  display: block;
+  border-radius: 14px;
+  box-shadow: 0 3px 8px #14243d1a;
+}
+.confirmation-body p {
+  margin: 0;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+.confirmation-title {
+  display: block;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+.confirmation-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--dialog-control-gap, 10px);
+  margin-top: 24px;
+}
+.confirmation-actions button {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 24px;
+  font-weight: 600;
+}

@@ -1,4 +1,6 @@
 @import "../../score/score-text-font.css";
+@import "../../lyrics/score-lyrics.css";
+@import "../../score/full-score-view.css";
 
 /* Canonical playback presentation. Both hosts load this after their adapters. */
 
@@ -7,13 +9,11 @@
   overflow: hidden;
   background: white;
   border: 1px solid #d8dfd6;
-  border-radius: 18px;
   height: 360px;
   touch-action: pan-y;
 }
 .ribbon {
   position: absolute;
-  top: 42px;
   left: 0;
   display: flex;
   will-change: transform;
@@ -22,15 +22,12 @@
   position: relative;
   flex: none;
   border-right: 1px solid #c9d5cd;
-  height: 285px;
   cursor: pointer;
 }
 .measure .label {
   position: absolute;
-  top: -26px;
   left: 9px;
   font-size: 12px;
-  color: #667b71;
 }
 .measure .crop {
   position: absolute;
@@ -39,6 +36,10 @@
   width: 100%;
   height: 215px;
   background-repeat: no-repeat;
+}
+/* Waveform crops share one fixed baseline in both hosts and viewport layouts. */
+.measure.audio-measure .crop {
+  height: 100px;
 }
 .score-engraving {
   position: absolute;
@@ -52,21 +53,11 @@
   left: 0;
   right: 0;
   top: 226px;
-  height: 48px;
-  color: #19614f;
   font-weight: 600;
-}
-.syllable {
-  position: absolute;
-  white-space: nowrap;
-  font-size: 15px;
-  transform: translateX(-50%);
 }
 .playhead {
   position: absolute;
   left: 33.333%;
-  top: 25px;
-  bottom: 25px;
   width: 2px;
   background: #e53935;
   pointer-events: none;
@@ -85,35 +76,19 @@
   background: white;
   border: 1px solid #d8dfd6;
   border-radius: 15px;
-  padding: 15px;
   margin-top: 14px;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 14px;
   flex-wrap: wrap;
-}
-.two-rows .stage {
-  height: 580px;
 }
 .two-rows .ribbon {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   width: 100%;
-  top: 35px;
-  gap: 28px 0;
   transform: none !important;
   will-change: auto;
 }
 .two-rows .ribbon > .measure {
   width: auto !important;
-}
-.two-rows .measure {
-  height: 230px;
-}
-.two-rows .measure.active {
-  background: #f4eee4;
-  box-shadow: inset 0 -3px #d6783a;
 }
 .two-rows .playhead {
   display: none;
@@ -147,11 +122,6 @@
 @media (max-width: 850px) {
   .transport {
     gap: 10px;
-  }
-}
-@media (max-width: 850px) {
-  .syllable {
-    font-size: 15px;
   }
 }
 @media (max-width: 850px) {
@@ -219,16 +189,6 @@
 @media (min-width: 900px) and (max-height: 800px) {
   .transport {
     padding: 6px 10px;
-  }
-}
-@media (min-width: 900px) and (max-height: 800px) {
-  .two-rows .stage {
-    height: 350px;
-  }
-}
-@media (min-width: 900px) and (max-height: 800px) {
-  .two-rows .measure {
-    height: 142px;
   }
 }
 
@@ -338,7 +298,6 @@
   min-width: 76px;
   height: 48px;
   min-height: 48px;
-  padding: 8px 12px;
   font-size: 18px;
 }
 .measure::after {
@@ -539,7 +498,6 @@ button.icon-button[hidden] {
   margin: 0;
 }
 .playback-ui [data-numeric-drag-bound],
-.playback-ui .number-drag,
 .playback-ui .playback-rewind,
 .playback-ui #count,
 .playback-ui .playback-progress,
@@ -550,10 +508,6 @@ button.icon-button[hidden] {
   text-align: center;
   font-variant-numeric: tabular-nums;
   cursor: move;
-}
-.playback-ui .dragging {
-  background: var(--accent-soft);
-  border-color: var(--accent);
 }
 .playback-ui #practice {
   gap: 8px;
@@ -636,16 +590,9 @@ button.icon-button[hidden] {
 }
 .playback-ui .repeat-controls {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
   padding: 4px 0;
   flex: none;
-}
-.repeat-heading {
-  color: var(--muted);
-  font-size: 13px;
-  white-space: nowrap;
 }
 .repeat-presets {
   display: flex;
@@ -680,9 +627,6 @@ button.icon-button[hidden] {
 }
 .repeat-controls .playback-adjust .icon-caption {
   font-size: 13px;
-}
-.playback-ui .quick-markers button {
-  min-height: 48px;
 }
 .playback-ui #tempo-dialog {
   width: min(440px, 94vw);
@@ -730,11 +674,6 @@ button.icon-button[hidden] {
 @media (max-width: 1100px) {
   .playback-ui .transport-right {
     gap: 4px;
-  }
-}
-@media (max-width: 1100px) {
-  .repeat-heading {
-    flex-basis: 100%;
   }
 }
 @media (max-width: 899px) {
@@ -951,9 +890,6 @@ button.icon-button[hidden] {
   .marker-slots button {
     width: 44px;
   }
-}
-.playback-ui #sound-dialog {
-  width: min(440px, calc(100vw - 32px));
 }
 .playback-ui #practice:not(.two-rows) > .stage {
   margin-block: auto;

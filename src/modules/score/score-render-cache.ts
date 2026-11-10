@@ -1,6 +1,7 @@
 /** Disposable derived data only: never writes source scores or practice state. */
 import type { Region } from "../../model/model";
 import { version as osmdVersion } from "opensheetmusicdisplay/package.json";
+import { sha256 } from "../../platform/browser/sha256";
 export const SCORE_RENDER_POLICY = `osmd-${osmdVersion}:drum-print-ribbon-v40-section-system-spacing:svg1500:quarter-native:rows4`;
 export interface RenderedScore {
   pages: Blob[];
@@ -11,12 +12,6 @@ interface StoredScore {
   touched: number;
   regions: Region[];
   pages: { bytes: ArrayBuffer; type: string; digest: string }[];
-}
-async function digest(bytes: ArrayBuffer) {
-  return Array.from(
-    new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
-    (b) => b.toString(16).padStart(2, "0"),
-  ).join("");
 }
 const DATABASE = "drum-score-render-cache";
 const pending = new Map<
@@ -29,10 +24,7 @@ export async function scoreRenderKey(
   policy = SCORE_RENDER_POLICY,
 ) {
   const bytes = new TextEncoder().encode(JSON.stringify([policy, partId, xml]));
-  return Array.from(
-    new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
-    (b) => b.toString(16).padStart(2, "0"),
-  ).join("");
+  return sha256(bytes);
 }
 async function database(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -83,7 +75,7 @@ async function read(key: string): Promise<RenderedScore | undefined> {
     if (
       (
         await Promise.all(
-          value.pages.map(async (p) => (await digest(p.bytes)) === p.digest),
+          value.pages.map(async (p) => (await sha256(p.bytes)) === p.digest),
         )
       ).some((ok) => !ok)
     )
@@ -100,7 +92,7 @@ async function write(key: string, value: RenderedScore) {
   const pages = await Promise.all(
     value.pages.map(async (p) => {
       const bytes = await p.arrayBuffer();
-      return { bytes, type: p.type, digest: await digest(bytes) };
+      return { bytes, type: p.type, digest: await sha256(bytes) };
     }),
   );
   const db = await database();

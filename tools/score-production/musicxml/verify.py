@@ -6,6 +6,7 @@ from fractions import Fraction as F
 from pathlib import Path
 from lxml import etree as E
 from convert import INSTRUMENTS
+from common.musicxml import validate_schema, read_timeline
 
 # Read from original crops. Symbols denote source staff positions; R = rest.
 EXPECTED = {
@@ -23,9 +24,6 @@ EXPECTED = {
     },
 }
 IDS = {"X": "crash", "H": "hh", "S": "snare", "L": "tom-low", "K": "kick", "R": "rest"}
-
-
-from common.musicxml import Resolver, validate_schema, read_timeline
 
 
 def verify(xml, ir, schema):

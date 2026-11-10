@@ -4,5 +4,5 @@
     "lib": ["ES2022"],
     "types": ["node"]
   },
-  "include": ["build/**/*.ts", "db/**/*.ts", "*.config.ts"]
+  "include": ["build/**/*.ts", "*.config.ts"]
 }

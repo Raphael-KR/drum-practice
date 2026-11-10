@@ -88,15 +88,7 @@ await cp(
   resolve(target, "player-assets/player.html"),
   resolve(target, "player-assets/index.html"),
 );
-for (const entry of [
-  "build",
-  "scripts",
-  "db",
-  "drizzle",
-  "index.html",
-  "vite.config.ts",
-  "drizzle.config.ts",
-])
+for (const entry of ["build", "scripts", "index.html", "vite.config.ts"])
   await cp(resolve(source, "hosting", entry), resolve(target, entry), {
     recursive: true,
   });
@@ -116,7 +108,7 @@ await writeFile(
   `// Generated HTML response; kept out of public static routing.\nexport const playerDocument=${JSON.stringify(playerDocument)};\n`,
 );
 delete manifest.static;
-manifest.d1 = "DB";
+delete manifest.d1;
 manifest.r2 = null;
 await writeFile(
   resolve(target, ".openai/hosting.json"),
@@ -128,7 +120,7 @@ await writeFile(
 );
 await writeFile(
   resolve(target, "README.md"),
-  "# 드럼연습실\n\nCanonical source: /Users/raphael/Playground/drum-practice\n\nPlayer-only assets with security headers. Audio and analysis stay on each device. The D1 binding is retained only to apply the final table-removal migration. Authoring app remains local-only. Run scripts/release/prepare-sites.mjs in the canonical project, then pnpm install --frozen-lockfile and pnpm run build here. Dependency versions and the pruned lockfile are generated from the canonical pnpm workspace; do not edit them here.\n",
+  "# 드럼연습실\n\nCanonical source: /Users/raphael/Playground/drum-practice\n\nPlayer-only assets with security headers. Audio and analysis stay on each device. No database binding or migrations are shipped. Authoring app remains local-only. Run scripts/release/prepare-sites.mjs in the canonical project, then pnpm install --frozen-lockfile and pnpm run build here. Dependency versions and the pruned lockfile are generated from the canonical pnpm workspace; do not edit them here.\n",
 );
 const digests = [];
 async function scan(dir = "") {

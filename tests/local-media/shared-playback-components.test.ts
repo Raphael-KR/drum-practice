@@ -3,11 +3,13 @@ import { expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import {
   updateRepeatControls,
-  repeatFields,
-  repeatPoint,
   repeatPreset,
-  fillRepeatFields,
 } from "../../src/modules/playback/repeat-ui";
+import {
+  savedLoopSlots,
+  storeLoopSlot,
+} from "../../src/modules/playback/loop-slots";
+import { loopMeasureRange } from "../../src/modules/playback/practice-controls";
 import {
   timeAtScroll,
   buildScoreTrack,
@@ -29,32 +31,29 @@ it("restores a partial ending beat instead of extending to end of measure", () =
     a = s.measures[8],
     b = s.measures[9];
   const l = {
+    id: "partial",
+    name: "partial",
     start: a.start + (a.end - a.start) / 4,
     end: b.start + (b.end - b.start) * 0.625,
   };
-  const fields = repeatFields(s, l);
-  expect(fields.precise).toBe(true);
-  expect(
-    repeatPoint(s, fields.startMeasure, fields.startBeat, false),
-  ).toBeCloseTo(l.start, 4);
-  expect(repeatPoint(s, fields.endMeasure, fields.endBeat, true)).toBeCloseTo(
-    l.end,
-    4,
-  );
-  document.body.innerHTML =
-    '<div id="fields"><input id="loop-a"><input id="loop-b"><input id="loop-ab"><input id="loop-bb"></div>';
-  fillRepeatFields(document.getElementById("fields")!, s, l);
-  expect(
-    Number((document.getElementById("loop-bb") as HTMLInputElement).value),
-  ).toBeCloseTo(1 + b.beats * 0.625);
-  expect(() => repeatPoint(s, 1, NaN, false)).toThrow();
+  s.loops = [];
+  delete s.repeatSlots;
+  storeLoopSlot(s, 0, l);
+  const restored = savedLoopSlots(JSON.parse(JSON.stringify(s)))[0]!;
+  expect(restored).toEqual(l);
+  expect(loopMeasureRange(s, restored.start, restored.end)).toEqual({
+    first: 8,
+    last: 9,
+  });
+  expect(restored.end).toBeLessThan(b.end);
 });
-it("presets clamp at song boundaries and roundtrip complete measures", () => {
+it("presets clamp at song boundaries and cover complete measures", () => {
   const s = song();
   const p = repeatPreset(s, s.measures[0].start, s.measures.at(-1)!.end, 4);
-  const f = repeatFields(s, p.loop);
-  expect(f.precise).toBe(false);
+  const range = loopMeasureRange(s, p.loop.start, p.loop.end);
+  expect(range).toEqual({ first: 0, last: 4 });
   expect(p.loop.start).toBe(s.measures[0].start);
+  expect(p.loop.end).toBe(s.measures[4].end);
 });
 it("rebuilt tracks retain array identity used by scroll seeking and exit loops", () => {
   const s = song();

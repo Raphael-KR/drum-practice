@@ -1,4 +1,5 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
+import { sha256 } from "../../platform/browser/sha256";
 import { matchBundledPDFLayout } from "../../content/score-system-layout";
 import type { RecordData } from "../../model/record";
 import { activeScore, songScores } from "../score/song-scores";
@@ -13,12 +14,7 @@ const sourcePDFHash =
 const bundledXMLHash =
   "31d6e7d3eec6655950abf74679595b4b8bfb721d584a1acd3fafd10e7aa3727a";
 async function hash(blob: Blob) {
-  return Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()),
-    ),
-    (b) => b.toString(16).padStart(2, "0"),
-  ).join("");
+  return sha256(await blob.arrayBuffer());
 }
 /** Repair only the identifiable legacy demo metadata, preserving later user edits. */
 export async function repairBundledMetadata(

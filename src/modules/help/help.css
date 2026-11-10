@@ -83,55 +83,7 @@ header .actions #app-help-button {
   background: white;
   color: #243044;
 }
-#app-help-dialog .help-content {
-  position: absolute;
-  right: 16px;
-  top: calc(max(16px, env(safe-area-inset-top)) + 80px);
-  bottom: max(16px, env(safe-area-inset-bottom));
-  width: min(350px, calc(100% - 32px));
-  overflow: auto;
-  background: #f4f7fc;
-  border-radius: 18px;
-  padding: 20px;
-  box-sizing: border-box;
-  z-index: 2;
-  touch-action: pan-y;
-}
-.help-cards section + section {
-  border-top: 1px solid #d5dfed;
-  padding-top: 16px;
-  margin-top: 16px;
-}
-.help-cards h3 {
-  font-size: 17px;
-  margin: 0 0 8px;
-  color: #215bc0;
-}
-.help-cards p,
-.help-shortcuts {
-  font-size: 15px;
-  line-height: 1.65;
-  margin: 0;
-  white-space: pre-line;
-  word-break: keep-all;
-}
-.help-shortcuts {
-  border-top: 1px solid #d5dfed;
-  padding-top: 16px;
-  margin-top: 20px;
-  color: #4a5b72;
-}
-.help-pages {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 16px;
-}
-.help-pages[hidden] {
-  display: none;
-}
-.help-marks {
+.help-regions {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -157,11 +109,6 @@ header .actions #app-help-button {
   font: bold 16px sans-serif;
 }
 @media (max-width: 640px) {
-  #app-help-dialog .help-content {
-    top: auto;
-    max-height: 55%;
-    bottom: calc(max(16px, env(safe-area-inset-bottom)) + 80px);
-  }
   #app-help-dialog .dialoghead {
     width: calc(100% - 32px);
   }
@@ -290,24 +237,6 @@ html.help-modal-transition .score-legend-illustration .glass-colour {
   filter: none;
 }
 
-/* Shared fixed-surface content transition. */
-.surface-content-enter {
-  animation: surface-content-enter 160ms ease-out;
-}
-@keyframes surface-content-enter {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .surface-content-enter {
-    animation: none;
-  }
-}
-
 /* Drawers reveal below their fixed top edge; modal buttons remain anchors only for modals. */
 html.surface-drawer-transition.help-modal-closing::view-transition-old(
     help-modal-morph
@@ -334,65 +263,6 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
   .help-legend > .legend-portrait {
     display: block;
   }
-}
-
-.help-cards ul {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 15px;
-  line-height: 1.5;
-  word-break: keep-all;
-}
-.help-cards li + li {
-  margin-top: 4px;
-}
-#app-help-dialog.compact-playback-help .dialoghead {
-  width: min(440px, calc(100% - 24px));
-  right: 12px;
-  top: max(8px, env(safe-area-inset-top));
-  padding: 8px 14px;
-}
-#app-help-dialog.compact-playback-help .help-content {
-  width: min(440px, calc(100% - 24px));
-  right: 12px;
-  top: calc(max(8px, env(safe-area-inset-top)) + 68px);
-  bottom: max(8px, env(safe-area-inset-bottom));
-  max-height: none;
-  padding: 14px;
-}
-.compact-playback-help .help-cards h3 {
-  font-size: 16px;
-  margin-bottom: 6px;
-}
-.compact-playback-help .help-cards section + section {
-  margin-top: 12px;
-  padding-top: 12px;
-}
-.compact-playback-help .help-shortcuts {
-  font-size: 13px;
-  line-height: 1.4;
-  margin-top: 12px;
-  padding-top: 10px;
-}
-@media (orientation: landscape) and (max-height: 650px) {
-  #app-help-dialog.compact-playback-help .help-content {
-    width: min(1000px, calc(100% - 24px));
-  }
-  .compact-playback-help .help-cards {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-  }
-  .compact-playback-help .help-cards section + section {
-    border-top: 0;
-    margin: 0;
-    padding: 0;
-  }
-}
-
-/* Full score/lyrics readers need only their close control. */
-#app-help-button[hidden] {
-  display: none;
 }
 
 /* Contextual speech bubbles stay beside their actual controls. */
@@ -456,19 +326,6 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
 .score-area-help-body > p:last-child {
   margin-bottom: 0;
 }
-#app-help-dialog.speech-help .help-content {
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-height: none;
-  padding: 0;
-  overflow: visible;
-  background: transparent;
-  border-radius: 0;
-  pointer-events: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
 .speech-help .help-bubble {
   position: absolute;
   box-sizing: border-box;
@@ -492,25 +349,6 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
   font-size: 14px;
   line-height: 1.55;
 }
-.speech-help .help-shortcuts {
-  display: none;
-}
-#app-help-dialog.speech-help .help-pages {
-  position: absolute;
-  right: 12px;
-  bottom: max(12px, env(safe-area-inset-bottom));
-  margin: 0;
-  padding: 6px;
-  gap: 10px;
-  border-radius: 16px;
-  background: #f4f7fcee;
-  border: 1px solid #d5dfed;
-  pointer-events: auto;
-  max-width: calc(100% - 24px);
-  box-sizing: border-box;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
 .speech-help .help-target {
   border: 2px solid #4079dc;
   background: #ffffff15;
@@ -531,7 +369,6 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
 @media (max-width: 640px) {
   #app-help-dialog.speech-help .help-legend-button {
     margin: 0;
-    padding: 0 10px;
   }
 }
 
@@ -542,11 +379,6 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
   #app-help-dialog.speech-help .help-legend-button {
     font-size: 14px;
     padding: 0 8px;
-  }
-  #app-help-dialog.speech-help .help-pages {
-    gap: 6px;
-    padding: 4px;
-    font-size: 14px;
   }
 }
 
@@ -633,11 +465,6 @@ html.surface-drawer-transition.help-modal-closing::view-transition-old(
 }
 
 /* Names sit across component borders without moving the underlying controls. */
-.help-regions {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
 .help-regions[hidden] {
   display: none;
 }

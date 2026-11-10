@@ -3,8 +3,6 @@ import { type Song, type Region } from "../../model/model";
 import type { XMLScore } from "./musicxml";
 export const scoreFormat = (name: string): "pdf" | "musicxml" =>
   /\.(musicxml|xml|mxl)$/i.test(name) ? "musicxml" : "pdf";
-export const scoreArchivePath = (song: Song) =>
-  song.scoreFormat === "musicxml" ? "media/score.musicxml" : "media/score.pdf";
 export function applyXMLTiming(song: Song, parsed: XMLScore) {
   if (song.measures.length !== parsed.measures.length)
     throw Error(i18nText("score-import.message479"));

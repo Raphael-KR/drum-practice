@@ -1,15 +1,11 @@
 import { markerIcon } from "../../shared/ui/marker-icon";
 import { t as i18nText } from "../../shared/i18n/i18n";
-import {
-  xAtBeat,
-  type Song,
-  type Measure,
-  type Region,
-} from "../../model/model";
+import { type Song, type Measure, type Region } from "../../model/model";
 import { markedMeasureIndices } from "./marker-slots";
 import type { HighlightPage } from "../score/note-highlight";
 import type { practiceStaffLayout } from "../score/practice-staff-layout";
 import { escapeHTML as esc } from "../../shared/ui/html";
+import { scoreLyricsHTML } from "../lyrics/score-lyrics";
 export interface MeasureView {
   s: Song;
   m: Measure;
@@ -67,33 +63,18 @@ export function renderMeasure({
       : -r.y * scaledHeight;
     overlay = `<svg class="note-highlight" aria-hidden="true" data-highlight-measure="${i}" preserveAspectRatio="none" viewBox="${r.x * highlight.width} ${(highlight.originY ?? 0) + (-offsetY / scaledHeight) * highlight.height} ${r.w * highlight.width} ${(height / scaledHeight) * highlight.height}">${highlight.measures.get(i)}</svg>`;
   }
-  const centered = s.measureLyrics?.find((l) => l.measureId === m.id);
-  const measureText = centered
-    ? `<span class="measure-lyric">${esc(centered.text)}</span>`
-    : "";
-  const syl = ly
-    .map((l) => {
-      const b = ((l.time - m.start) / (m.end - m.start)) * m.beats;
-      // A changed musical position invalidates its reviewed PDF display anchor.
-      const anchor =
-        !isSVG && l.scorePosition?.measureId === m.id
-          ? r.lyricAnchors?.find(
-              (a) =>
-                a.lyricId === l.id &&
-                Math.abs(a.quarterOffset - l.scorePosition!.quarterOffset) <
-                  1e-8,
-            )
-          : undefined;
-      const x = anchor
-        ? anchor.x
-        : s.settings.view === "ribbon"
-          ? positionInMeasure(i, b, width) / width
-          : xAtBeat(r, m, b);
-      // The crop uses width pixels; percentage offsets include the measure border.
-      const left = anchor ? `${x * width}px` : `${x * 100}%`;
-      return `<span class="syllable"${anchor ? ' data-pdf-lyric-anchor="true"' : ""} title="${l.confirmed ? i18nText("main.message232") : i18nText("main.message233")}" style="left:${left};${l.text.length > 4 ? `font-size:14px;white-space:normal;max-width:95%;${anchor ? "" : "transform:none;"}` : ""}">${esc(l.text)}</span>`;
-    })
-    .join("");
+  const lyrics = scoreLyricsHTML({
+    song: s,
+    measure: m,
+    region: r,
+    width,
+    lyrics: ly,
+    isSVG,
+    positionAtBeat:
+      s.settings.view === "ribbon"
+        ? (beat) => positionInMeasure(i, beat, width) / width
+        : undefined,
+  });
   return (
     '<div class="measure' +
     (markedMeasureIndices(s).has(i) ? " is-marked" : "") +
@@ -138,8 +119,7 @@ export function renderMeasure({
     '</div><div class="lyrics" style="top:' +
     String(height + 6) +
     'px">' +
-    String(syl) +
-    measureText +
+    lyrics +
     "</div></div>"
   );
 }

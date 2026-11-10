@@ -15,11 +15,7 @@ import { updateNoteHighlights, notePulseBeats } from "../score/note-highlight";
 import { updatePlayhead } from "./playback-ui";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { engravingHeight } from "./playback-layout";
-export function resizeScoreStage(
-  stage: HTMLElement,
-  ribbon: HTMLElement,
-  s: Song,
-) {
+function resizeScoreStage(stage: HTMLElement, ribbon: HTMLElement, s: Song) {
   const staffMiddle =
     s.settings.view === "ribbon"
       ? ribbon.querySelector<HTMLElement>(".crop[data-staff-middle]")?.dataset

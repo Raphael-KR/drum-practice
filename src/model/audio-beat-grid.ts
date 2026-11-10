@@ -1,5 +1,5 @@
 /** Shared bounded timestamp contract: source audio seconds, never playback-rate seconds. */
-export const MAX_AUDIO_BEATS = 20000;
+const MAX_AUDIO_BEATS = 20000;
 export function validBeatTimes(
   value: unknown,
   duration: number,

@@ -6,7 +6,7 @@ import {
 } from "./section-shortcuts";
 import { t } from "../../shared/i18n/i18n";
 import { escapeHTML as esc } from "../../shared/ui/html";
-import { locate, type Song, type Loop } from "../../model/model";
+import { locate, type Song } from "../../model/model";
 import type { createPlaybackScreen } from "./playback-screen";
 
 export function practiceLoopHTML() {
@@ -15,19 +15,14 @@ export function practiceLoopHTML() {
 export function practiceMarkerHTML(heading = false) {
   return `${heading ? `<h2>${t("icons.message069")}</h2>` : ""}<div id="section-shortcuts" class="section-shortcuts" role="group" aria-label="${t("sections.shortcuts")}"></div>`;
 }
-type Playback = Pick<
-  ReturnType<typeof createPlaybackScreen>,
-  "seek" | "mark" | "renderLists"
->;
+type Playback = Pick<ReturnType<typeof createPlaybackScreen>, "seek">;
 interface Options {
   root: HTMLElement;
   song(): Song;
   canonicalXML?(): string | undefined;
   playback(): Playback;
-  player(): { current(): number; loop?: Loop };
-  changed(): void;
+  player(): { current(): number };
   fail(error: unknown): void;
-  paginate?(id: string): void;
 }
 /** Named practice items belong to playback, including the author's preview. */
 export function attachPracticeManagement(h: Options) {
@@ -56,13 +51,7 @@ export function attachPracticeManagement(h: Options) {
   });
   function render() {
     const song = h.song(),
-      marked = markedMeasureIndices(song),
-      active = h.player().loop;
-    const activeLabel = get("active-loop");
-    if (activeLabel)
-      activeLabel.textContent = active
-        ? t("main.message271", { value1: active.name })
-        : t("main.message270");
+      marked = markedMeasureIndices(song);
     const sections = readSectionShortcuts(h.canonicalXML?.() ?? "").filter(
       (section) => !!song.measures[section.measureIndex],
     );

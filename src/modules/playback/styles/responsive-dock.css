@@ -1,0 +1,152 @@
+/* Narrow tablet portrait: preserve the three dock groups in two rows. */
+@media (min-width: 720px) and (max-width: 899px) and (orientation: portrait) {
+  .drawer-playback .playback-dock .transport {
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 10px 8px;
+  }
+  .drawer-playback .dock-play {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+    margin-right: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
+    gap: 8px;
+  }
+  .drawer-playback .dock-play #home {
+    grid-column: 1;
+    justify-self: end;
+    position: static;
+  }
+  .drawer-playback .dock-play #play {
+    grid-column: 2;
+  }
+  .drawer-playback .dock-rewind {
+    grid-column: 3;
+    justify-self: start;
+    position: static;
+  }
+  .drawer-playback .dock-navigation {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+  .drawer-playback .dock-repeat {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+  }
+  .drawer-playback .playback-dock .repeat-presets {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Each phone volume channel owns a full horizontal slider row. */
+@media (max-width: 480px) and (orientation: portrait) {
+  #settings-dialog .playback-sound-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  #settings-dialog .volume-channel {
+    grid-template-columns: 5em minmax(0, 1fr) 3.5em;
+  }
+}
+
+/* Wide headers stay on one row, except for the compact phone landscape above. */
+@media (min-width: 900px) and (min-height: 481px), (min-width: 1024px) {
+  .has-song .playback-ui header {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+  .has-song .playback-ui header .brand {
+    display: flex;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    gap: 12px;
+  }
+  .has-song .playback-ui header .brand h1 {
+    width: auto;
+    min-width: 0;
+  }
+  .has-song .playback-ui header .actions {
+    display: flex;
+    flex-wrap: nowrap;
+    margin-left: auto;
+  }
+}
+
+/* Keep the existing wide transport and shortcut layout in phone landscape too. */
+@media (min-width: 900px) {
+  .drawer-playback .playback-dock .transport {
+    grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 0;
+  }
+  .drawer-playback .dock-navigation {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .drawer-playback .dock-play {
+    grid-column: 2;
+    grid-row: 1;
+    margin-right: 0;
+  }
+  .drawer-playback .dock-play #home {
+    position: absolute;
+    right: calc(100% + 10px);
+  }
+  .drawer-playback .dock-rewind {
+    position: absolute;
+    left: calc(100% + 6px);
+  }
+  .drawer-playback .dock-repeat {
+    grid-column: 3;
+    grid-row: 1;
+    justify-content: flex-end;
+  }
+  .drawer-playback .playback-drawer {
+    height: 135.5px;
+  }
+  .drawer-playback .section-shortcuts button {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Keep all three groups clear at the narrow end of the wide layout. */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .drawer-playback .playback-dock {
+    --playback-control-size: 44px;
+  }
+  .drawer-playback .playback-dock .repeat-presets button {
+    min-width: 52px;
+    font-size: 14px;
+  }
+  .drawer-playback .transport-rewind-number {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+}
+
+@media (min-width: 720px) {
+  /* Match the comparison canvas's minimum render height before sharing space. */
+  .drawer-playback #practice.score-review > .stage {
+    min-height: 220px;
+  }
+}
+
+/* All viewport widths: give unused height to the three shortcut/range rows.
+   Keep each breakpoint's existing board height as its non-shrinking basis. */
+.drawer-playback #practice > .playback-dock {
+  flex: 1 0 auto;
+}
+.drawer-playback #practice > .playback-dock > .transport {
+  flex: 0 0 auto;
+}
+.drawer-playback #practice > .playback-dock > .playback-drawer {
+  flex: 1 0 auto;
+}

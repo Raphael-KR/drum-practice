@@ -15,17 +15,21 @@ import { estimateTempo } from "../../src/modules/audio/analysis";
 const fixture = (): Song =>
   JSON.parse(readFileSync("public/demo/song.json", "utf8"));
 describe("actual score timeline", () => {
-  it("aligns count-in with the first musical beat after leading audio or a fractional seek", () => {
+  it("counts four strokes before musical entry and preserves a fractional resume position", () => {
     const m = fixture().measures[0];
     for (const from of [0, m.start, m.start + 0.2]) {
       for (const rate of [0.8, 1]) {
-        const c = makeCycle(1, from, m.end, rate, 2, m);
+        const c = makeCycle(1, from, m.end, rate, m, true);
         const bs = (m.end - m.start) / m.beats;
-        const next =
-          m.start + Math.max(0, Math.ceil((from - m.start) / bs - 1e-8)) * bs;
-        const firstMusicClick = c.musicAt + (next - from) / rate;
+        const entry = c.musicAt + Math.max(0, m.start - from) / rate;
         const lastCount = c.countAt + (c.count - 1) * c.countBeatSeconds;
-        expect(firstMusicClick - lastCount).toBeCloseTo(bs / rate, 8);
+        expect(c.count).toBe(4);
+        expect(entry - lastCount).toBeCloseTo(bs / rate, 8);
+        expect(cyclePosition(c, c.musicAt)).toBe(from);
+        const off = makeCycle(1, from, m.end, rate, m);
+        expect(off.count).toBe(0);
+        expect(off.musicAt).toBe(1);
+        expect(cyclePosition(off, off.musicAt)).toBe(from);
       }
     }
   });
@@ -70,7 +74,7 @@ describe("actual score timeline", () => {
     for (const rate of [0.5, 0.8, 0.81, 1, 1.2]) {
       let at = 10;
       for (let i = 0; i < 20; i++) {
-        const c = makeCycle(at, m.start, end, rate, 0, m);
+        const c = makeCycle(at, m.start, end, rate, m);
         expect(cyclePosition(c, c.musicAt)).toBe(m.start);
         expect(cyclePosition(c, c.endAt)).toBeCloseTo(end, 9);
         at = c.endAt;
@@ -78,12 +82,12 @@ describe("actual score timeline", () => {
       expect(at).toBeCloseTo(10 + (20 * (end - m.start)) / rate, 8);
     }
   });
-  it("counts two bars of five and connects at the original position", () => {
+  it("counts four quarter notes in 5/4 and connects at the original position", () => {
     const s = fixture(),
       m = s.measures[83],
-      c = makeCycle(1, m.start, m.end, 0.8, 2, m);
-    expect(c.count).toBe(10);
-    expect(c.musicAt - 1).toBeCloseTo((10 * (m.end - m.start)) / 5 / 0.8, 9);
+      c = makeCycle(1, m.start, m.end, 0.8, m, true);
+    expect(c.count).toBe(4);
+    expect(c.musicAt - 1).toBeCloseTo((4 * (m.end - m.start)) / 5 / 0.8, 9);
     expect(cyclePosition(c, c.musicAt - 1)).toBe(m.start);
   });
   it("reflow respects eighth-note denominator", () => {
@@ -142,7 +146,7 @@ it("schedules exactly four quarter-note count-off strokes in any meter and playb
         start: 0,
         end: (((beats * 60) / 94) * 4) / denominator,
       };
-      const c = makeCycle(10, 0.23, m.end, rate, 0, m, true);
+      const c = makeCycle(10, 0.23, m.end, rate, m, true);
       expect(c.count).toBe(4);
       expect(c.beats).toBe(4);
       expect(c.countAt).toBe(10);
@@ -179,7 +183,7 @@ it("aligns quarter count-off with the first beat while preserving leading audio 
         start: lead,
         end: lead + (4 * 60) / 94,
       };
-      const c = makeCycle(10, 0, m.end, rate, 0, m, true);
+      const c = makeCycle(10, 0, m.end, rate, m, true);
       const first = c.musicAt + lead / rate;
       const last = c.countAt + 3 * c.countBeatSeconds;
       expect(first - last).toBeCloseTo(60 / 94 / rate, 10);
@@ -187,8 +191,8 @@ it("aligns quarter count-off with the first beat while preserving leading audio 
       expect(c.countAt).toBeGreaterThanOrEqual(10 - 1e-10);
       expect(cyclePosition(c, c.musicAt)).toBe(0);
       expect(cyclePosition(c, first)).toBeCloseTo(lead, 10);
-      expect(makeCycle(10, 0, m.end, rate, 0, m, false).musicAt).toBe(10);
-      const onBeat = makeCycle(10, m.start, m.end, rate, 0, m, true);
+      expect(makeCycle(10, 0, m.end, rate, m, false).musicAt).toBe(10);
+      const onBeat = makeCycle(10, m.start, m.end, rate, m, true);
       expect(onBeat.musicAt).toBeCloseTo(10 + (4 * 60) / 94 / rate, 10);
     }
 });

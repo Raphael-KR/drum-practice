@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import {
   deleteMarkerSlot,
   toggleMeasureMarker,
-  markMeasure,
   sortedMarkerSlots,
   markedMeasureIndices,
 } from "../../src/modules/playback/marker-slots";
@@ -15,7 +14,7 @@ const fixture = (): Song => ({
 it("shows five empty slots and anchors markers at the beginning of the measure", () => {
   const s = fixture();
   expect(sortedMarkerSlots(s)).toEqual(Array(5).fill(undefined));
-  markMeasure(s, s.measures[9].start + 0.6, "a");
+  toggleMeasureMarker(s, s.measures[9].start + 0.6, "a");
   expect(s.markers[0].time).toBe(s.measures[9].start);
   expect(markedMeasureIndices(s)).toEqual(new Set([9]));
   expect(sortedMarkerSlots(s).filter(Boolean)).toHaveLength(1);
@@ -29,7 +28,7 @@ it("evicts by creation order, not displayed measure order, and survives JSON rel
     [39, "e"],
     [49, "f"],
   ] as const)
-    markMeasure(s, s.measures[index].start, id);
+    toggleMeasureMarker(s, s.measures[index].start, id);
   expect(sortedMarkerSlots(s).map((m) => m?.id)).toEqual([
     "b",
     "c",
@@ -38,7 +37,7 @@ it("evicts by creation order, not displayed measure order, and survives JSON rel
     "f",
   ]);
   s = JSON.parse(JSON.stringify(s));
-  markMeasure(s, s.measures[4].start, "d");
+  toggleMeasureMarker(s, s.measures[4].start, "d");
   expect(s.markers.map((m) => m.id)).toEqual(["b", "c", "e", "f", "d"]);
   expect(sortedMarkerSlots(s).map((m) => m?.id)).toEqual([
     "d",
@@ -49,18 +48,19 @@ it("evicts by creation order, not displayed measure order, and survives JSON rel
   ]);
   expect(markedMeasureIndices(s).has(29)).toBe(false);
 });
-it("refreshes a duplicate without using another slot", () => {
+it("removes a marked measure without duplicating it or disturbing other markers", () => {
   const s = fixture();
   for (const [i, id] of [
     [9, "a"],
     [19, "b"],
     [29, "c"],
   ] as const)
-    markMeasure(s, s.measures[i].start, id);
-  markMeasure(s, s.measures[9].start + 0.3, "unused");
-  markMeasure(s, s.measures[39].start, "d");
-  expect(s.markers.map((m) => m.id)).toEqual(["b", "c", "a", "d"]);
-  expect(s.markers).toHaveLength(4);
+    toggleMeasureMarker(s, s.measures[i].start, id);
+  toggleMeasureMarker(s, s.measures[9].start + 0.3, "unused");
+  toggleMeasureMarker(s, s.measures[39].start, "d");
+  expect(s.markers.map((m) => m.id)).toEqual(["b", "c", "d"]);
+  expect(s.markers).toHaveLength(3);
+  expect(markedMeasureIndices(s).has(9)).toBe(false);
 });
 
 it("toggles the current measure while permanently evicting old markers or consuming a name on removal", () => {

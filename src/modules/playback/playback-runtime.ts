@@ -343,7 +343,6 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
       song,
       playback: () => playback,
       player: () => player,
-      changed,
       fail,
     });
   async function preparePages(pages = currentPages, score: Song = s) {

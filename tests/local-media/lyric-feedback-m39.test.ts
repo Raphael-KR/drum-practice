@@ -1,22 +1,13 @@
-import { readFileSync } from "node:fs";
+import { songBeforeLyricFeedback } from "./lyric-feedback-fixture";
 import { it, expect } from "vitest";
 import {
   applyListeningFeedbackM39,
   feedbackCorrections,
   feedbackBatchRevision,
 } from "../../src/content/lyric-feedback-m39";
-import { validateSong, type Song } from "../../src/model/model";
-function fixture() {
-  const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
-  const archive = s.lyricArchive?.find(
-    (a) => a.revision === feedbackBatchRevision + "-before",
-  );
-  if (archive) s.lyrics = structuredClone(archive.lyrics);
-  s.lyricShifts = s.lyricShifts?.filter((r) => r !== feedbackBatchRevision);
-  return s;
-}
+import { validateSong } from "../../src/model/model";
 it("applies owner corrections and English split once, preserving earlier anchors and the tail", () => {
-  const s = fixture(),
+  const s = songBeforeLyricFeedback(feedbackBatchRevision),
     before = structuredClone(s.lyrics);
   const last = before.findIndex((l) => l.id === "v2-l192");
   expect(applyListeningFeedbackM39(s)).toBe(9);
@@ -52,10 +43,10 @@ it("applies owner corrections and English split once, preserving earlier anchors
   expect(s).toEqual(once);
 });
 it("does not overwrite other songs or unexpected user wording", () => {
-  const s = fixture();
+  const s = songBeforeLyricFeedback(feedbackBatchRevision);
   s.id = "other";
   expect(applyListeningFeedbackM39(s)).toBe(0);
-  const t = fixture();
+  const t = songBeforeLyricFeedback(feedbackBatchRevision);
   t.lyrics.find((l) => l.id === "v2-l188")!.text = "custom";
   const before = structuredClone(t);
   expect(applyListeningFeedbackM39(t)).toBe(0);

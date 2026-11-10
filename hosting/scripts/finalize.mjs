@@ -1,4 +1,4 @@
-import { cp, readFile, readdir, rm } from "node:fs/promises";
+import { cp, readFile, rm } from "node:fs/promises";
 import { createHash } from "node:crypto";
 // Preserve the canonical player build byte-for-byte. Vite builds only the document/security Worker.
 await cp("player-assets", "dist/client", { recursive: true });
@@ -18,13 +18,13 @@ if (
 const manifest = JSON.parse(
   await readFile("dist/.openai/hosting.json", "utf8"),
 );
-if (manifest.static || manifest.d1 !== "DB" || manifest.r2)
-  throw Error("Invalid retirement hosting configuration");
-if (!(await readdir("dist/.openai/drizzle")).some((f) => f.endsWith(".sql")))
-  throw Error("Missing migration");
+if (manifest.static || manifest.d1 || manifest.r2)
+  throw Error(
+    `Invalid player hosting configuration: static=${manifest.static} d1=${manifest.d1} r2=${manifest.r2}`,
+  );
 // Force document requests through the Worker, where CSP/frame headers are set.
 for (const entry of ["index.html", "player.html"])
   await rm(`dist/client/${entry}`);
 console.log(
-  `PASS: Player Worker and ${parity.files.length} matching player files (HTML delivered by Worker); no analysis API; D1 retained for table-removal migration`,
+  `PASS: Player Worker and ${parity.files.length} matching player files (HTML delivered by Worker); no analysis API or database binding`,
 );

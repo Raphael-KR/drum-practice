@@ -21,7 +21,7 @@ if (fs.existsSync("public/demo/song.json")) {
 const missing = [...needed].filter((file) => !fs.existsSync(file));
 if (missing.length) {
   console.error(
-    "Missing local assets; local-media tests/build are NOT verified. See docs/operations/TESTING.md.\n" +
+    "Missing local assets; local-media tests/build are NOT verified. See docs/how-to/verify.md.\n" +
       missing.join("\n"),
   );
   process.exitCode = 1;

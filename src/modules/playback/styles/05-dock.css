@@ -104,15 +104,8 @@
   min-width: 61px;
   padding: 6px;
 }
-.drawer-playback .playback-dock #rewind-drawer-toggle {
-  min-width: 44px;
-}
-.drawer-playback .drawer-selected {
-  box-shadow: inset 0 -3px var(--accent);
-}
 .drawer-playback .playback-drawer {
   box-sizing: border-box;
-  height: 176px;
   margin-top: 0;
   border: 1px solid var(--liquid-glass-edge);
   border-top: 3px solid var(--liquid-glass-edge);
@@ -128,56 +121,11 @@
   display: none;
 }
 .drawer-playback .drawer-panel {
-  height: 100%;
   overflow: auto;
   box-sizing: border-box;
-  padding: 14px 60px 14px 16px;
 }
 .drawer-playback .drawer-panel .tool-body {
   padding: 0;
-}
-.drawer-playback .drawer-range {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  min-height: 100%;
-  margin: 0;
-}
-.drawer-playback .drawer-range input[type="range"] {
-  width: auto;
-  flex: 1;
-  min-width: 80px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-.drawer-playback .drawer-range output {
-  min-width: 64px;
-  font-size: 22px;
-  font-weight: 600;
-}
-.drawer-playback .playback-loop-fields {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.drawer-playback .playback-loop-fields .flex {
-  flex-wrap: nowrap;
-}
-.drawer-playback .playback-loop-fields label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-.drawer-playback .playback-loop-fields input[type="number"] {
-  width: 68px;
-}
-.drawer-playback .playback-loop-fields #loop-range-help {
-  display: none;
-}
-.drawer-playback .drawer-panel .list {
-  margin-top: 8px;
 }
 .drawer-playback #practice {
   min-height: 0;
@@ -227,11 +175,6 @@
     flex-wrap: wrap;
   }
 }
-@media (hover: hover) {
-  .drawer-playback .drawer-range input:hover {
-    filter: brightness(0.94) drop-shadow(0 0 2px #315faf66);
-  }
-}
 body.has-song:has(.drawer-playback) {
   height: 100dvh;
   overflow: hidden;
@@ -249,34 +192,8 @@ body.has-song:has(.drawer-playback) {
 .has-song .drawer-playback main {
   overflow: hidden;
 }
-.drawer-playback .drawer-range input[type="number"] {
-  width: 90px;
-  font-size: 24px;
-}
-.drawer-playback [data-drawer-panel="loop"] > .tool-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 20px;
-}
-.drawer-playback .playback-loop-fields {
-  align-content: start;
-  gap: 8px;
-}
-.drawer-playback .playback-loop-fields label {
-  flex-direction: row;
-}
-.drawer-playback .loop-precision {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-.drawer-playback .drawer-panel .flex {
-  gap: 8px;
-  margin-bottom: 8px;
-}
 .drawer-playback .drawer-panel input[type="text"] {
   min-width: 60px;
-  width: 120px;
 }
 @media (max-width: 800px) {
   .drawer-playback [data-drawer-panel="loop"] > .tool-body {
@@ -319,9 +236,6 @@ body.has-song:has(.drawer-playback) {
   left: 50%;
   translate: -50% 0;
 }
-.drawer-playback .drawer-range input[type="range"] {
-  min-height: 44px;
-}
 @media (orientation: portrait) and (min-width: 650px) {
   .drawer-playback .playback-dock .transport {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -346,10 +260,8 @@ body.has-song:has(.drawer-playback) {
 
 /* One permanent glass control board, shared by both playback hosts. */
 .drawer-playback .playback-drawer {
-  height: 240px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: 54px minmax(0, 1fr);
   gap: 8px 12px;
   padding: 6px 12px;
 }
@@ -372,23 +284,11 @@ body.has-song:has(.drawer-playback) {
 .drawer-playback [data-drawer-panel="marker"] {
   grid-column: 1;
   grid-row: 2;
-  background: transparent;
   border: 0;
-  box-shadow: none;
 }
 .drawer-playback [data-drawer-panel="loop"] {
   grid-column: 2;
   grid-row: 2;
-}
-.drawer-playback .drawer-range {
-  gap: 8px;
-  min-height: 0;
-  height: 100%;
-  font-size: 14px;
-}
-.drawer-playback .drawer-range output {
-  font-size: 16px;
-  min-width: 36px;
 }
 .drawer-playback .playback-drawer button,
 .drawer-playback
@@ -398,9 +298,6 @@ body.has-song:has(.drawer-playback) {
   height: 44px;
   font-size: 14px;
   padding: 5px 8px;
-}
-.drawer-playback .drawer-range input[type="number"] {
-  width: 70px;
 }
 .drawer-playback .drawer-panel .flex {
   gap: 6px;
@@ -415,32 +312,9 @@ body.has-song:has(.drawer-playback) {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
 }
-.drawer-playback .playback-loop-fields {
-  gap: 6px;
-  font-size: 14px;
-}
-.drawer-playback .playback-loop-fields label {
-  gap: 4px;
-}
-.drawer-playback .playback-loop-fields input[type="number"] {
-  width: 56px;
-}
-.drawer-playback .drawer-panel .list {
-  margin-top: 4px;
-}
 @media (orientation: portrait), (max-width: 800px) {
   .drawer-playback .playback-drawer {
-    height: 380px;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: 62px 104px minmax(0, 1fr);
-  }
-  .drawer-playback [data-drawer-panel="marker"] {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-  .drawer-playback [data-drawer-panel="loop"] {
-    grid-column: 1 / -1;
-    grid-row: 3;
   }
   .drawer-playback
     [data-drawer-panel="marker"]
@@ -449,9 +323,6 @@ body.has-song:has(.drawer-playback) {
     display: flex;
     gap: 10px;
     align-items: start;
-  }
-  .drawer-playback [data-drawer-panel="marker"] .list {
-    flex: 1;
   }
 }
 
@@ -470,17 +341,8 @@ body.has-song:has(.drawer-playback) {
   display: flex;
   flex-direction: column;
 }
-.drawer-playback [data-drawer-panel="marker"] .list {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
 .drawer-playback [data-drawer-panel="marker"] .flex {
   flex-shrink: 0;
-}
-.drawer-playback [data-drawer-panel="loop"] .list {
-  max-height: 64px;
-  overflow: auto;
 }
 @media (orientation: portrait), (max-width: 800px) {
   .drawer-playback
@@ -492,53 +354,11 @@ body.has-song:has(.drawer-playback) {
   .drawer-playback [data-drawer-panel="marker"] .flex {
     max-width: 45%;
   }
-  .drawer-playback [data-drawer-panel="marker"] .list {
-    height: 100%;
-  }
-}
-.drawer-playback .drawer-panel .list {
-  grid-auto-rows: minmax(46px, auto);
-  align-content: start;
-}
-.drawer-playback .playback-loop-fields {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-}
-.drawer-playback .playback-loop-fields > .flex {
-  grid-column: 1 / -1;
-}
-.drawer-playback .playback-loop-fields #apply-loop {
-  align-self: end;
-}
-.drawer-playback .loop-precision label {
-  font-size: 13px;
-}
-.drawer-playback #loop-beat-controls {
-  gap: 4px;
-}
-.drawer-playback #loop-beat-controls label {
-  font-size: 12px;
-}
-.drawer-playback #loop-beat-controls input {
-  width: 48px;
-}
-.drawer-playback #loop-beat-controls {
-  margin: 0;
-}
-.drawer-playback #loop-beat-controls label {
-  flex-direction: row;
-  align-items: center;
-  gap: 3px;
-}
-.drawer-playback .playback-loop-fields > .flex {
-  margin: 0;
 }
 
 /* Keep the fixed control board within its panel bounds. */
 .drawer-playback .playback-drawer,
-.drawer-playback .drawer-panel,
-.drawer-playback .drawer-panel .list {
+.drawer-playback .drawer-panel {
   overflow: clip;
 }
 
@@ -662,6 +482,8 @@ body.has-song:has(.drawer-playback) {
 
 /* Fill the shortcut area vertically without changing the fixed control-board height. */
 .drawer-playback [data-drawer-panel="marker"] {
+  background: transparent;
+  box-shadow: none;
   padding-block: 0;
   margin-block: -4px;
 }

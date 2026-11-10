@@ -25,7 +25,6 @@ import { escapeHTML as esc } from "../../shared/ui/html";
 import { Player } from "./audio";
 import { $, num, val } from "./editor-dom";
 import type { editorSession } from "./editor-session";
-import { selectEditorPane } from "./workspace";
 interface ScoreEditorHost {
   cancelGestures(): void;
   selected: number;
@@ -93,18 +92,6 @@ export function createScoreEditor(h: ScoreEditorHost) {
     if (!editor.open) editor.showModal();
     await drawPage();
   }
-  action("edit-button", () => {
-    selectEditorPane("score");
-    return openEditor();
-  });
-  action("metadata-button", () => {
-    selectEditorPane("meta");
-    return openEditor();
-  });
-  action("lyrics-button", () => {
-    selectEditorPane("lyrics");
-    return openEditor();
-  });
   function updateMeasureForm() {
     const s = song();
     $("measure-select").innerHTML = s.measures

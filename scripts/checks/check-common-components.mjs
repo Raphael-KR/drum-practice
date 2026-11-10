@@ -2,14 +2,18 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 import ts from "@typescript/typescript6";
 import { sourceFiles } from "./source-files.mjs";
-const files = sourceFiles();
+// This browser-side production helper shares the app's package and byte codecs.
+const files = [
+  ...sourceFiles(),
+  "tools/score-production/musicxml/common/package.mjs",
+];
 const report = {
   files,
   primitives: [],
   duplicates: [],
   exceptions: {
-    "src/apps/editor/main.ts":
-      "Editor canvas image decoding uses selected page URL; authoring dialogs remain distinct bodies.",
+    "src/apps/editor/editor-original-view.ts":
+      "Original-page URLs belong to this viewer; byte decoding uses shared displayPage.",
     "src/apps/editor/score-review.ts":
       "Comparison canvas loads original pages rather than practice crops.",
     "src/shared/ui/licenses.ts":
@@ -37,6 +41,16 @@ for (const file of files) {
         assert(
           file === "src/platform/storage/binary-asset.ts",
           `${file}: binary codec bypass`,
+        );
+      if (name === "crypto.subtle.digest" && n.arguments[0]?.text === "SHA-256")
+        assert(
+          file === "src/platform/browser/sha256.ts",
+          `${file}: use the shared SHA-256 implementation`,
+        );
+      if (name === "svgFromPath")
+        assert(
+          file === "src/shared/ui/icon-svg.ts",
+          `${file}: define action icons in the shared icon catalog`,
         );
       if (
         [

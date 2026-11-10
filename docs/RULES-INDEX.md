@@ -6,7 +6,7 @@
 
 | 분야 | 정본 |
 | --- | --- |
-| 실행 | [프로젝트 지침](../AGENTS.md) |
+| 실행 | [프로젝트 지침](../AGENTS.md) — [수정과 실행의 네 가지 기본 규칙](../AGENTS.md#수정과-실행의-기본-규칙) |
 | 제품 | [제품 목표·범위·수용 기준](../PRD.md) |
 | 개발·운영 | [프로젝트 구조와 책임](reference/engineering/architecture.md) |
 | 개발·운영 | [문서 관리](reference/engineering/documentation.md) |

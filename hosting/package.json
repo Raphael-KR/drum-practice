@@ -7,15 +7,10 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "build": "node --import ./scripts/sites-env.mjs ./node_modules/vite/bin/vite.js build && node scripts/finalize.mjs",
-    "db:generate": "drizzle-kit generate"
-  },
-  "dependencies": {
-    "drizzle-orm": "catalog:"
+    "build": "node --import ./scripts/sites-env.mjs ./node_modules/vite/bin/vite.js build && node scripts/finalize.mjs"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "catalog:",
-    "drizzle-kit": "catalog:",
     "vite": "catalog:",
     "wrangler": "catalog:"
   }

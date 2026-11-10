@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { songBeforeLyricFeedback } from "./lyric-feedback-fixture";
 import { it, expect } from "vitest";
 import {
   applyListeningFeedbackM32,
@@ -6,17 +6,8 @@ import {
   feedbackBatchRevision,
 } from "../../src/content/lyric-feedback-m32";
 import { validateSong, type Song } from "../../src/model/model";
-function fixture(): Song {
-  const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
-  const archive = s.lyricArchive?.find(
-    (a) => a.revision === feedbackBatchRevision + "-before",
-  );
-  if (archive) s.lyrics = structuredClone(archive.lyrics);
-  s.lyricShifts = s.lyricShifts?.filter((r) => r !== feedbackBatchRevision);
-  return s;
-}
 it("applies latest feedback, splits again, preserves source times and tail, runs once", () => {
-  const s = fixture(),
+  const s = songBeforeLyricFeedback(feedbackBatchRevision),
     before = structuredClone(s.lyrics),
     end = before.findIndex((l) => l.id === "v2-l147");
   expect(applyListeningFeedbackM32(s)).toBe(21);
@@ -54,7 +45,7 @@ it("leaves unrelated or incompatible songs untouched", () => {
       s.lyrics.find((l) => l.id === "v2-l140")!.text = "edited";
     },
   ]) {
-    const s = fixture();
+    const s = songBeforeLyricFeedback(feedbackBatchRevision);
     mutate(s);
     const before = structuredClone(s);
     expect(applyListeningFeedbackM32(s)).toBe(0);

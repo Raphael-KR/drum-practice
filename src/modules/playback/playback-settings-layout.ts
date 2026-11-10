@@ -1,5 +1,4 @@
 import type { SettingsCategory } from "./playback-forms";
-import { t } from "../../shared/i18n/i18n";
 import { componentName } from "../../shared/ui/ui-standard";
 
 /** Move the existing inputs, including their listeners and in-progress values. */
@@ -124,11 +123,5 @@ export function selectPlaybackSettings(
     mark(category);
   };
   scroll();
-  const heading = root.querySelector<HTMLElement>("#settings-detail-heading")!;
-  heading.textContent =
-    category === "info"
-      ? t("main.message097")
-      : componentName(`settings.${category}`);
-  heading.hidden = true;
   return category;
 }

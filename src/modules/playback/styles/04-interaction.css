@@ -1,13 +1,3 @@
-/* Measure-only lyrics do not enter syllable timing or cross-measure label packing. */
-.measure-lyric {
-  display: block;
-  padding: 0 6px;
-  text-align: center;
-  font-size: 15px;
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
-
 .zoom-scale {
   flex: 1;
   min-width: 0;
@@ -160,7 +150,6 @@ button.metronome-toggle[data-metronome-mode="quarter"]:hover:not(:disabled) {
   font-size: 16px;
   font-weight: 600;
 }
-.playback-ui .repeat-heading,
 .playback-ui .playback-summary,
 .playback-ui .repeat-presets button,
 .playback-ui .repeat-controls .playback-adjust .icon-caption {

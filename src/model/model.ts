@@ -59,7 +59,6 @@ export interface Settings {
   musicVolume: number;
   clickVolume: number;
   countIn: number;
-  countEach: boolean;
   zoom: number;
   uniformSpacing?: boolean;
   view: "ribbon" | "rows" | "compare";
@@ -125,7 +124,6 @@ export const defaults = (): Settings => ({
   musicVolume: 0.5,
   clickVolume: 1,
   countIn: 1,
-  countEach: false,
   zoom: 1,
   view: "ribbon",
   position: 0,
@@ -273,7 +271,6 @@ export function makeCycle(
   from: number,
   to: number,
   rate: number,
-  countBars: number,
   m: Measure,
   quarterCountOff = false,
   observedBeatSeconds?: number,
@@ -281,7 +278,7 @@ export function makeCycle(
   const bs =
     ((observedBeatSeconds ?? beatTime(m, 1) - m.start) / rate) *
     (quarterCountOff ? m.denominator / 4 : 1);
-  const count = quarterCountOff ? 4 : countBars * m.beats;
+  const count = quarterCountOff ? 4 : 0;
   // Count-off ends on the score's first beat, not the beginning of leading audio.
   // Preserve that audio and never schedule its buffer before the requested start.
   const leadingSeconds = quarterCountOff

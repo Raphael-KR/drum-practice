@@ -44,7 +44,6 @@ export function helpItems(context?: HTMLElement): HelpItem[] {
       "loop-dialog": "help.loopBody",
       "marker-dialog": "help.markerBody",
       "tempo-dialog": "help.tempoBody",
-      "sound-dialog": "help.soundBody",
     };
     return [
       item(

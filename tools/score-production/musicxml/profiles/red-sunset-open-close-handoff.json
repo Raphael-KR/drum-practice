@@ -5,7 +5,7 @@
     "threadId": "01a0afc9-ca21-7371-9390-06eb07c017e9",
     "hostId": "local"
   },
-  "productionDocument": "docs/score-production/RED-SUNSET-OPEN-CLOSE-20261023.md",
+  "productionDocument": "docs/records/songs/red-sunset.md",
   "artifacts": {
     "musicxml": "data/production/red-sunset-open-close-20261023/score.musicxml",
     "fullSVG": "data/production/red-sunset-open-close-20261023/full-score.svg",

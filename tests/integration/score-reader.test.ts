@@ -32,6 +32,8 @@ function setup() {
     scoreFormat: "musicxml",
     lyrics: [],
     lyricText: "<script>lyrics</script>",
+    measures: [{ id: "9", label: "9", regionId: "9" }],
+    regions: [{ id: "9", page: 0, x: 0.1, y: 0.2, w: 0.8, h: 0.4, beatXs: [] }],
   } as unknown as Song;
   const fail = vi.fn();
   const reader = installScoreReader({
@@ -49,7 +51,9 @@ it("opens completed SVG with row-start overlays and frees image URLs on close", 
   await vi.waitFor(() =>
     expect(root.querySelector<HTMLDialogElement>("dialog")!.open).toBe(true),
   );
-  expect(root.querySelector(".score-reader-measure")!.textContent).toBe("9");
+  expect(root.querySelector(".full-score-measure-label")!.textContent).toBe(
+    "9",
+  );
   expect(root.querySelector(".score-reader-pages svg")).toBeNull();
   expect(root.querySelector("img")).not.toBeNull();
   root.querySelector<HTMLDialogElement>("dialog")!.close();

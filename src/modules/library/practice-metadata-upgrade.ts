@@ -1,5 +1,6 @@
 import labels from "../../content/bundled-practice-metadata.json";
 import type { RecordData } from "../../model/record";
+import { sha256 } from "../../platform/browser/sha256";
 
 /** Repair known old labels only when the recording matches its documented kit. */
 export async function practiceMetadataUpgrade(
@@ -31,13 +32,7 @@ export async function practiceMetadataUpgrade(
     !meta.oldArtists.includes(record.song.artist || "")
   )
     return;
-  const hash = await crypto.subtle.digest(
-    "SHA-256",
-    await record.audio.arrayBuffer(),
-  );
-  const hex = [...new Uint8Array(hash)]
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
+  const hex = await sha256(await record.audio.arrayBuffer());
   if (hex !== meta.audioSHA256) return;
   let canonicalXML = record.canonicalXML;
   if (canonicalXML) {

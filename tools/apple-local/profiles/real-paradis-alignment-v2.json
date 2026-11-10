@@ -1,0 +1,14 @@
+{
+  "songId": "real-paradis",
+  "anchors": [
+    { "index": 0, "text": "아", "time": 20.828, "confirmed": true },
+    { "index": 6, "text": "사", "time": 24.268, "confirmed": true },
+    { "index": 12, "text": "카", "time": 26.872, "confirmed": false },
+    {
+      "index": 36,
+      "text": "코",
+      "time": 37.09022813444695,
+      "confirmed": true
+    }
+  ]
+}

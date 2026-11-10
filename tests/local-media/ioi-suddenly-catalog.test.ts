@@ -70,8 +70,8 @@ it("aligns four count-off beats with the selected score beat at slow, original a
     for (const index of [0, 46, 92]) {
       const measure = record.song.measures[index];
       const from = index === 0 ? 0 : measure.start;
-      const on = makeCycle(10, from, measure.end, rate, 0, measure, true);
-      const off = makeCycle(10, from, measure.end, rate, 0, measure, false);
+      const on = makeCycle(10, from, measure.end, rate, measure, true);
+      const off = makeCycle(10, from, measure.end, rate, measure, false);
       expect(on.count).toBe(4);
       expect(on.musicAt + (measure.start - from) / rate).toBeCloseTo(
         on.countAt + 4 * on.countBeatSeconds,

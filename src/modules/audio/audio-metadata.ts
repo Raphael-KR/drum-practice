@@ -14,7 +14,7 @@ const clean = (text: string) =>
     .replace(/\s+/g, " ")
     .trim();
 /** Accept explicit artist/title separators; don't invent an artist from an unstructured filename. */
-export function splitTrackName(text: string): TrackMetadata | undefined {
+function splitTrackName(text: string): TrackMetadata | undefined {
   const name = clean(
     text.replace(/\.(mp3|m4a|wav|aac|ogg|flac|aif|aiff|webm)$/i, ""),
   );

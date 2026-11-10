@@ -43,7 +43,8 @@ function coordinate(element: Element, name: string): number | undefined {
   return Number.isFinite(number) ? number : undefined;
 }
 
-/** OSMD 2.1.x reads rehearsal text but drops its horizontal XML attributes.
+/** Compatibility for rehearsal horizontal attributes omitted in OSMD 2.1.x.
+ * Retain explicit XML alignment until native output is verified to preserve it.
  * Keep them on this rendering instance; source XML and SVG nodes stay untouched.
  */
 export function installRehearsalLayout(

@@ -408,7 +408,6 @@ export class Player {
       from,
       to,
       s.settings.rate,
-      0,
       m,
       countOff && !m.audioPrelude,
       observedBeatSeconds,

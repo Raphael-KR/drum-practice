@@ -12,7 +12,7 @@
 
 ### 실행 범위
 
-모든 명령은 프로젝트 루트에서 실행한다. Node.js 22 LTS(22.22.2 이상, `.nvmrc`)와 `pnpm install --frozen-lockfile`로 설치한 의존성을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
+모든 명령은 프로젝트 루트에서 실행한다. [작업 전 환경 확인](develop.md#development--작업-전-조회와-실행-환경)을 거쳐 `.nvmrc`의 Node.js 22 LTS(22.22.2 이상)와 지정된 pnpm·설치 의존성을 재사용한다. 최초 준비나 의존성 변경으로 설치가 필요할 때 `pnpm install --frozen-lockfile`을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
 
 - `pnpm run test:portable`: 로컬 악보 없이 실행 가능한 unit 및 integration 검사. 기존 테스트의 메모리 저장소·DOM·mock을 재사용한다.
 - `pnpm run test:local-media`: 보존된 실제 악보·음원 자료를 사용하는 검사. 자료가 없으면 명시적으로 실패한다.
@@ -27,7 +27,7 @@
 
 ### 공통 검사와 CI
 
-웹앱 개발 중에는 아래의 정적 검사 `pnpm run check`만 실행한다. 화면 테스트는 릴리스 때 수행하며, 그때 필요한 테스트·빌드도 함께 확인한다. 별도 사용자 요청은 우선하며, 자세한 범위는 [검증 Rule](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)을 따른다.
+웹앱 개발 중에는 [변경 영향과 검사 선택](../reference/engineering/verification.md#verification-rules--변경-영향과-검사-선택)에 따라 필요한 정적 검사부터 실행한다. 아래 목록은 명령의 역할이며 모든 작업에서 전부 실행하는 순서가 아니다. 문서만 변경하면 `check:docs`와 diff·보존 확인을 우선하고, 공통 기능·저장 호환성 등 영향이 넓으면 관련 검사 범위를 확대한다. 화면 테스트는 릴리스 때 수행하며 릴리스의 전체 검사·빌드는 유지한다. 별도 사용자 요청과 [실행 범위·허가 경계](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)를 따른다.
 
 - 최초 준비: `pnpm install --frozen-lockfile`. 루트와 hosting을 한 번에 설치하며 Git에 보관한 `config/shared-catalog.yaml` 사본과 공용 잠금 파일을 사용한다. 개인 중앙 경로는 필요하지 않다. 버전 갱신과 로컬 정본 대조는 [카탈로그 동기화 절차](develop.md#공유-의존성과-중앙-버전-갱신)를 따른다.
 - `pnpm run generate`: 라이선스·소스 빌드번호 생성. 모든 개발 진입점과 테스트·앱/도구 타입 검사의 pre 단계가 재사용한다.
@@ -37,6 +37,7 @@
 - `pnpm run build`는 `build:apps`와 동일하다. 구형 통합 dist 빌드는 사용하지 않는다. 빌드 중 문서는 수정하지 않고 `check:docs`로 생성 문서의 일치를 확인한다.
 - `pnpm run typecheck`: 앱(`tsconfig.json`), 브라우저 제작 도구(`tsconfig.tools.json`), hosting 빌드 설정(`hosting/tsconfig.json`)을 각각 검사한다. hosting의 설치된 Vite/Cloudflare 타입을 사용한다.
 - `pnpm run format:check`: Git 추적 파일과 아직 추가하지 않은 비제외 파일 중 JS/TS/JSON/CSS/HTML/YAML을 검사한다. Markdown·Python과 pnpm이 생성하는 `pnpm-lock.yaml`은 Prettier 대상이 아니다. 잠금 파일은 `pnpm install --frozen-lockfile`로 선언·카탈로그와의 일치를 검사한다. `.prettierrc.json`과 고정한 Prettier 버전을 사용한다.
+- Python·Swift 보조 도구를 정리할 때는 사용 가능한 Black·`swift-format`의 경로와 버전을 먼저 확인하고 변경 파일만 검사한다. 미사용 import는 다른 파일의 재수출 소비자까지 확인하고, 서식 변경은 구문·상수·실행문 보존을 대조한다. 이 검사는 도구 실행·음원 분석이나 모델 호출을 포함하지 않는다. [2026-11-10 후속 정리 기록](../records/code-maintenance.md#slop-followup-20261110)에 사용 환경과 검사 한계를 남겼다.
 - `pnpm run check:docs`: 생성 UI 문서, Markdown의 상대 파일 링크와 문단 앵커를 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 같은 문서의 `#앵커`, 중복 제목의 접미사와 명시적 HTML 앵커도 확인한다. 외부 URL·절대 로컬 경로·비 Markdown 파일의 fragment는 검사하지 않는다. 자세한 입력 형식과 제외 범위는 [문서 검사 계약](../reference/engineering/documentation.md#documentation-rules--문서-변경-검증)을 따른다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
 - 원격 CI 결과는 push 이후 별도로 확인한다. 로컬 통과를 원격 CI 실행 성공으로 기록하지 않는다.
 

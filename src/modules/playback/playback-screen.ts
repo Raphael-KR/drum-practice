@@ -1,49 +1,16 @@
-import {
-  bindSoundAndViewSettings,
-  bindPlaybackPreferences,
-  syncMetronomeControls,
-  syncSettingsChoices,
-} from "./playback-settings";
-import { readRecordingTempo } from "../../content/recording-tempo";
-import { beatTime as audioBeatTime } from "../../model/model";
-import { metronomeVolume } from "../../model/metronome";
-import { PHONE_LAYOUT_QUERY } from "../../platform/browser/phone-layout";
-import { closeDialogOnBackdrop } from "../../shared/ui/dialog-ui";
-import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
-import { setIconButton } from "../../shared/ui/icon-button";
-import { audioMeasureHTML } from "../audio/audio-practice-view";
-import { originalTempoMode } from "../audio/audio-time-map";
-import { formatSongTitle } from "../library/song-title";
-import { gridPhase } from "../score/ribbon-timeline";
-import { sliderFromZoom } from "../score/score-zoom";
-import { mountLoopSlots } from "./loop-slots";
-import { selectPlaybackEngraving, type RibbonAsset } from "./playback-assets";
-import { mountPlaybackDrawer } from "./playback-drawer";
-import type { SettingsCategory } from "./playback-forms";
-import { createPlaybackTempo } from "./playback-tempo";
-import { installPhoneLandscapeSettings } from "./playback-settings-layout";
-import { createPlaybackWakeLock } from "./playback-wake-lock";
-import { installScoreOnlyView } from "./score-only-view";
-import { syncCurrentSection } from "./section-shortcuts";
-/** The single playback screen owner. Hosts supply assets, persistence and authoring hooks. */
-import {
-  clamp,
-  locate,
-  uid,
-  xAtBeat,
-  type Loop,
-  type Song,
-} from "../../model/model";
+import { createPlaybackNavigation } from "./playback-navigation";
+import { locate, uid, type Loop, type Song } from "../../model/model";
 import {
   enterFullscreen,
   installScreenControls,
 } from "../../platform/browser/fullscreen";
+import { PHONE_LAYOUT_QUERY } from "../../platform/browser/phone-layout";
 import { t } from "../../shared/i18n/i18n";
-import { icon, tempoNote } from "../../shared/ui/icon-svg";
-import {
-  bindNumericDrag,
-  installNumericInputs,
-} from "../../shared/ui/numeric-drag";
+import { closeDialogOnBackdrop } from "../../shared/ui/dialog-ui";
+import { setIconButton } from "../../shared/ui/icon-button";
+import { icon } from "../../shared/ui/icon-svg";
+import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
+import { installNumericInputs } from "../../shared/ui/numeric-drag";
 import {
   componentName,
   installUIStandard,
@@ -51,10 +18,9 @@ import {
 } from "../../shared/ui/ui-standard";
 import type { Player } from "../audio/audio-core";
 import { installHelp } from "../help/help";
-import { lyricMeasureId } from "../lyrics/lyric-grid";
 import type { HighlightPage } from "../score/note-highlight";
 import type { StaffPosition } from "../score/practice-staff-layout";
-import { displayRegion } from "../score/score-view";
+import { mountLoopSlots } from "./loop-slots";
 import {
   deleteMarkerSlot,
   pruneMarkerOverflow,
@@ -66,35 +32,31 @@ import {
   syncMarkerBadges,
 } from "./marker-ui";
 import {
-  attachPlaybackGestures,
   beginPlaybackScrub,
   changePlaybackLoop,
   finishPlaybackScrub,
-  installPlaybackKeys,
-  installPlaybackWheel,
-  movePlaybackScrub,
   seekPlaybackFreely,
   validLoop,
   type ScrubSnapshot,
 } from "./playback-actions";
-import {
-  buildScoreTrack,
-  installScoreScroll,
-  updateScoreFrame,
-} from "./playback-frame";
-import {
-  layoutScoreLyrics,
-  measurePosition,
-  measureWidth,
-  renderScoreRows,
-  ribbonPosition,
-  scoreLayout,
-} from "./playback-layout";
-import { renderMeasure } from "./playback-measure";
+import { type RibbonAsset } from "./playback-assets";
+import { createPlaybackDisplay } from "./playback-display";
+import { mountPlaybackDrawer } from "./playback-drawer";
+import type { SettingsCategory } from "./playback-forms";
+import { buildScoreTrack, updateScoreFrame } from "./playback-frame";
 import { copyPosition, playbackPosition } from "./playback-position";
+import {
+  bindPlaybackPreferences,
+  bindSoundAndViewSettings,
+} from "./playback-settings";
+import { installPhoneLandscapeSettings } from "./playback-settings-layout";
+import { createPlaybackTempo } from "./playback-tempo";
+import { createPlaybackTrack } from "./playback-track";
 import { arrangePlaybackUI, type PlaybackBindings } from "./playback-ui";
-import { scrubTime } from "./practice-controls";
+import { createPlaybackWakeLock } from "./playback-wake-lock";
 import { repeatPreset, updateRepeatControls } from "./repeat-ui";
+import { installScoreOnlyView } from "./score-only-view";
+import { syncCurrentSection } from "./section-shortcuts";
 
 export interface PlaybackScreenHost {
   root: HTMLElement;
@@ -150,6 +112,7 @@ export interface PlaybackScreenHost {
   settingsChanged?(): void;
   settingsSelected?(category: SettingsCategory): void;
 }
+/** Owns selection, transport, repeats and listener lifetime for both app hosts. */
 export function createPlaybackScreen(h: PlaybackScreenHost) {
   const { root, ids } = h;
   arrangePlaybackUI(root, ids);
@@ -161,7 +124,6 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     root,
     h.settingsSelected,
   );
-  let applyingDisplayMode = false;
   const phoneLayout = window.matchMedia?.(PHONE_LAYOUT_QUERY);
   const repeatEnabled = () => !phoneLayout?.matches;
   root.classList.toggle("phone-layout", !repeatEnabled());
@@ -229,13 +191,22 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   const offsets: number[] = [],
     widths: number[] = [];
-  const rows = {
-    rowWindow: -1,
-    pausedBrowseIndex: -1,
-    renderedBrowseWidth: NaN,
-    playbackRowOrigin: 0,
-  };
-  let fittedRowWidth: number | undefined;
+  const track = createPlaybackTrack(h, {
+    stage,
+    ribbon,
+    scrubbing: () => !!scrub || !!loopSlots?.selecting,
+    resuming: () => !!scrub?.resume,
+  });
+  const {
+    rows,
+    position,
+    ribbonAsset,
+    widthOf,
+    measureHTML,
+    layoutLyrics,
+    rowCellWidth,
+    renderRows,
+  } = track;
   let scrub: ScrubSnapshot<{ center?: number; radius?: number }> | undefined;
   let center: number | undefined,
     radius: number | undefined,
@@ -250,181 +221,6 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   let framedCopyActive = false;
   const available = () => h.ready() && !h.busy();
   const canRepeat = () => available() && repeatEnabled();
-  function position(index: number, beat: number, width: number) {
-    const s = h.song(),
-      asset = ribbonAsset(index);
-    if (asset) {
-      if (s.settings.uniformSpacing) {
-        const m = s.measures[index];
-        return (
-          width *
-          gridPhase((beat * 4) / m.denominator, (m.beats * 4) / m.denominator)
-        );
-      }
-      if (s.settings.view === "rows")
-        return width * xAtBeat(asset.region, s.measures[index], beat);
-      // Ribbon motion retains the continuous musical timeline.
-      const timeline = h.assets().ribbon!.get(index)!;
-      return ribbonPosition(
-        width,
-        beat,
-        s.measures[index].beats,
-        timeline.phase,
-      );
-    }
-    if (s.audioPractice) {
-      const m = s.measures[index];
-      return (width * (audioBeatTime(m, beat) - m.start)) / (m.end - m.start);
-    }
-    return measurePosition(s, index, beat, width, widthOf);
-  }
-  function ribbonAsset(index: number) {
-    if (h.song().scoreFormat !== "musicxml") return undefined;
-    const asset = h.assets().ribbon?.get(index);
-    return selectPlaybackEngraving(
-      asset,
-      h.song().settings.uniformSpacing,
-      h.song().settings.view,
-    );
-  }
-  function widthOf(m: Song["measures"][number]) {
-    if (h.song().audioPractice)
-      return Math.max(120, (stage.clientWidth / 4) * h.song().settings.zoom);
-    const s = h.song(),
-      a = h.assets(),
-      timeline =
-        s.scoreFormat === "musicxml"
-          ? a.ribbon?.get(s.measures.indexOf(m))
-          : undefined,
-      r =
-        timeline?.region ??
-        displayRegion(
-          s,
-          s.regions.find((r) => r.id === m.regionId)!,
-        );
-    if (s.settings.uniformSpacing && timeline?.grid)
-      return (
-        (stage.clientWidth / 4) *
-        (s.settings.view === "ribbon" ? s.settings.zoom : 1)
-      );
-    return measureWidth(
-      s,
-      r,
-      stage.clientWidth,
-      timeline?.ratio ?? a.ratios[r.page] ?? 1.294,
-      timeline?.staff ?? a.staffs.get(r.id),
-    );
-  }
-  function measureHTML(m: Song["measures"][number], i: number, width: number) {
-    if (h.song().audioPractice) return audioMeasureHTML(h.song(), m, i, width);
-    const s = h.song(),
-      a = h.assets(),
-      timeline = ribbonAsset(s.measures.indexOf(m)),
-      r =
-        timeline?.region ??
-        displayRegion(
-          s,
-          s.regions.find((r) => r.id === m.regionId)!,
-        );
-    const staff = timeline?.staff ?? a.staffs.get(r.id),
-      isSVG = s.scoreFormat === "musicxml";
-    return renderMeasure({
-      s,
-      m,
-      i,
-      width,
-      r,
-      ly: s.lyrics.filter((l) => lyricMeasureId(s, l) === m.id),
-      layout: staff
-        ? scoreLayout(s, r, width, stage.clientWidth, staff)
-        : undefined,
-      highlight: timeline?.highlight ?? a.highlights[r.page],
-      pageURL: timeline?.url ?? a.urls[r.page],
-      pageRatio: timeline?.ratio ?? a.ratios[r.page] ?? 1.294,
-      isSVG,
-      positionInMeasure: (index, beat, cellWidth) =>
-        timeline && !s.settings.uniformSpacing
-          ? cellWidth * xAtBeat(r, s.measures[index], beat)
-          : position(index, beat, cellWidth),
-    });
-  }
-  function layoutLyrics() {
-    layoutScoreLyrics(stage, ribbon, h.song().settings.view);
-  }
-
-  function rowCellWidth() {
-    if (
-      fittedRowWidth !== undefined &&
-      fittedRowWidth === stage.clientWidth / 4
-    )
-      return fittedRowWidth;
-    const song = h.song();
-    const s: Song = { ...song, settings: { ...song.settings, view: "rows" } };
-    const base = stage.clientWidth / 4;
-    if (!stage.clientHeight) return base;
-    const assets = h.assets();
-    const naturalHeight = Math.max(
-      s.audioPractice ? 100 : 1,
-      ...s.regions.map((region) => {
-        const staff = assets.staffs.get(region.id);
-        return staff
-          ? scoreLayout(
-              s,
-              displayRegion(s, region),
-              base,
-              stage.clientWidth,
-              staff,
-            )?.height || 100
-          : 100;
-      }),
-    );
-    // Size rows from the full available width; surrounding UI must not shrink notation.
-    const width = base;
-    const selectedHeight =
-      s.settings.uniformSpacing && s.scoreFormat === "musicxml"
-        ? Math.max(
-            ...s.measures.map((_, i) => {
-              const asset = ribbonAsset(i);
-              return asset
-                ? scoreLayout(
-                    s,
-                    asset.region,
-                    base,
-                    stage.clientWidth,
-                    asset.staff,
-                  )!.height
-                : naturalHeight;
-            }),
-          )
-        : naturalHeight;
-    const fittedHeight = Math.max(naturalHeight, selectedHeight) + 30;
-    stage.style.setProperty(
-      "--two-row-stage-height",
-      `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`,
-    );
-    stage.style.setProperty("--fitted-row-width", `${stage.clientWidth}px`);
-    stage.style.setProperty("--row-content-height", `${fittedHeight}px`);
-    stage.style.setProperty("--browse-row-pitch", `${fittedHeight + 28}px`);
-    fittedRowWidth = width;
-    return width;
-  }
-  function renderRows(index: number) {
-    renderScoreRows(
-      {
-        stage,
-        ribbon,
-        song: h.song,
-        playing: h.player().playing,
-        scrubbing: !!scrub || !!loopSlots?.selecting,
-        resume: !!scrub?.resume,
-        measureHTML,
-        layoutLyrics,
-        cellWidth: rowCellWidth(),
-      },
-      rows,
-      index,
-    );
-  }
   function renderTrack() {
     framePending = true;
     if (!h.ready()) return;
@@ -433,7 +229,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     native = false;
     stationary = undefined;
     rows.rowWindow = rows.pausedBrowseIndex = -1;
-    fittedRowWidth = undefined;
+    track.invalidate();
     stage.classList.remove("paused-score-scroll", "paused-ribbon-scroll");
     stage.style.setProperty("--scroll-x", "0px");
     stage.scrollLeft = stage.scrollTop = 0;
@@ -599,59 +395,50 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     );
     if (previous) h.changed();
   }
-  const gestures = attachPlaybackGestures(stage, {
-    ready: available,
-    song: h.song,
-    player: h.player,
-    prepare: () => {
-      if (available()) void h.player().prepare?.().catch(h.fail);
-    },
-    resume: () => play(false),
-    pausedDoubleTap: (index) => {
-      if (!canRepeat()) return;
-      selectMeasure(index);
-      loopSlots?.endpoint(index);
-      frame();
-    },
-    pausedTap: (index) => {
-      if (
-        !available() ||
-        h.player().playing ||
-        index !== selectionIndex() ||
-        loopSlots?.awaitingEndpoint
-      )
-        return false;
-      selectMeasure(index);
-      run(() => play());
-      return true;
-    },
+  const navigation = createPlaybackNavigation(h, {
+    stage,
+    offsets,
+    widths,
+    rows,
+    position,
+    renderRows,
+    disposers,
+    listen,
+    input,
+    run,
+    available,
+    canRepeat,
+    selectionIndex,
+    selectMeasure,
+    play,
     pause,
     seek,
-    selected: (index, time) => {
-      rows.pausedBrowseIndex = index;
-      stationary = time;
+    beginScrub,
+    previewScrub,
+    finishScrub,
+    toggle,
+    mark,
+    frame,
+    get loopSlots() {
+      return loopSlots;
     },
-    fail: h.fail,
-    target: (e) =>
-      h.song().settings.view === "compare" && h.compare
-        ? h.compare.target(e)
-        : locate(h.song(), h.player().current()).index,
-    start: beginScrub,
-    move: (delta) =>
-      movePlaybackScrub(
-        {
-          song: h.song(),
-          stage,
-          state: scrub,
-          panStart,
-          widths,
-          duration: h.player().duration,
-          seek: previewScrub,
-        },
-        delta,
-      ),
-    finish: finishScrub,
+    get scrub() {
+      return scrub;
+    },
+    get panStart() {
+      return panStart;
+    },
+    get native() {
+      return native;
+    },
+    get stationary() {
+      return stationary;
+    },
+    set stationary(value) {
+      stationary = value;
+    },
   });
+  const { gestures } = navigation;
   disposers.push(gestures.dispose);
   const loopSlots: ReturnType<typeof mountLoopSlots> = mountLoopSlots(
     root,
@@ -679,104 +466,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   );
   disposers.push(loopSlots.dispose);
 
-  disposers.push(
-    installPlaybackWheel(stage, {
-      ready: available,
-      playing: () => h.player().playing,
-      view: () => h.song().settings.view,
-      cancel: gestures.cancel,
-      browse: () => renderRows(selectionIndex()),
-      scrub: (delta) =>
-        seek(
-          scrubTime(
-            h.song(),
-            h.player().current(),
-            -delta,
-            Math.max(150, stage.clientWidth / 4),
-            h.player().duration,
-          ),
-        ),
-    }),
-  );
-  disposers.push(
-    installScoreScroll(stage, {
-      enabled: () =>
-        available() &&
-        !h.player().playing &&
-        !loopSlots?.selecting &&
-        native &&
-        h.song().settings.view === "ribbon",
-      song: h.song,
-      offsets,
-      widths,
-      position,
-      seek,
-      selected: () => {
-        stationary = h.player().current();
-      },
-    }),
-  );
-  disposers.push(
-    bindNumericDrag(input(ids.progress), {
-      surface:
-        input(ids.progress).closest<HTMLElement>(".progress-number") ??
-        undefined,
-      onStart: beginScrub,
-      onPreview: (v) =>
-        previewScrub(
-          h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]
-            ?.start ?? 0,
-        ),
-      onCommit: (v) => {
-        if (scrub) finishScrub();
-        else if (h.ready())
-          seek(
-            h.song().measures[v - (h.song().measures[0]?.audioPrelude ? 0 : 1)]
-              ?.start ?? 0,
-          );
-      },
-      onCancel: () => finishScrub(true),
-    }),
-  );
-  disposers.push(bindNumericDrag(input(ids.rewind)));
-  disposers.push(bindNumericDrag(input(ids.tempoInput)));
-  disposers.push(
-    installPlaybackKeys({
-      ready: () => available() && !loopSlots?.selecting,
-      cancel: gestures.cancel,
-      toggle: () => run(toggle),
-      mark,
-      rows: () => h.song().settings.view === "rows",
-      rowStep: (delta) => {
-        // Two-row practice lays out four measures per row. Keep the column;
-        // an absent cell in the first/last/incomplete row is not a seek target.
-        const index = selectionIndex() + delta * 4;
-        const measure = h.song().measures[index];
-        if (measure) selectMeasure(index);
-      },
-      step: (delta) =>
-        selectMeasure(
-          clamp(selectionIndex() + delta, 0, h.song().measures.length - 1),
-        ),
-    }),
-  );
-  stage.tabIndex = 0;
-  stage.setAttribute("aria-label", componentName("score"));
-  listen(stage, "click", (e) => {
-    if ((e as MouseEvent).detail === 0 && available() && h.player().playing)
-      run(toggle);
-  });
-  listen(document, "pointerdown", (e) => {
-    if (e.target instanceof Element && !stage.contains(e.target))
-      gestures.cancel();
-  });
-  listen(document, "visibilitychange", () => {
-    if (document.hidden && h.ready()) {
-      gestures.cancel();
-      if (scrub) finishScrub(true);
-      h.player().pause();
-    }
-  });
+  navigation.bind();
   function progress() {
     const p = h.player(),
       v = input(ids.progress),
@@ -808,15 +498,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     ])
       if (v.getAttribute(name) !== value) v.setAttribute(name, value);
   }
-  const {
-    rate,
-    headerBpm,
-    syncHeaderBpm,
-    originalAudioBpm,
-    minimumPracticeBpm,
-    refreshSources,
-    prepareTempo,
-  } = createPlaybackTempo(h, {
+  const tempo = createPlaybackTempo(h, {
     get,
     input,
     available,
@@ -827,6 +509,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     listen,
     run,
   });
+  const { rate, syncHeaderBpm, refreshSources } = tempo;
   function frame() {
     if (!h.ready() || !h.song().measures.length) return;
     const p = h.player(),
@@ -878,155 +561,24 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     loopSlots?.refreshKeyboardPreview();
     h.afterFrame?.(time);
   }
+  // Keep one public screen API while the display module owns DOM synchronization.
+  const display = createPlaybackDisplay(h, {
+    get,
+    input,
+    tempo,
+    scoreOnlyView,
+    settingsLayout,
+    requestFrame: () => {
+      framePending = true;
+    },
+    syncRepeatAvailability,
+    isDisposed: () => disposed,
+  });
   function sync() {
-    if (!h.ready()) return;
-    refreshSources();
-    prepareTempo();
-    const s = h.song(),
-      bpm = originalTempoMode(s)
-        ? s.bpm
-        : Number((originalAudioBpm() * s.settings.rate).toFixed(3));
-    get(ids.title).textContent = formatSongTitle(s);
-    const info = root.querySelector<HTMLElement>("#recording-tempo-info");
-    if (info) {
-      const recording = readRecordingTempo(h.canonicalXML?.());
-      info.hidden = !recording;
-      info.textContent = recording
-        ? t("tempo.recordingEstimate", {
-            score: s.bpm,
-            recording: recording.bpmEstimate,
-            firstBeat: recording.firstBeatEstimateSeconds,
-          })
-        : "";
-    }
-    const tempo = get<HTMLButtonElement>(ids.tempo);
-    tempo.hidden = tempo.disabled = false;
-    tempo.innerHTML = `${tempoNote}<span id="original-tempo-value">= ${headerBpm()}</span>`;
-    tempo.setAttribute(
-      "aria-label",
-      t("main.message210", { value1: headerBpm() }),
-    );
-    tempo.title = t("main.message211");
-    const v = input(ids.tempoInput);
-    if (!h.busy()) v.value = String(bpm);
-    v.min = String(minimumPracticeBpm());
-    v.max = String(Math.floor(originalAudioBpm() * 1.2));
-    for (const [key, value] of [
-      ["now", v.value],
-      ["min", v.min],
-      ["max", v.max],
-    ])
-      v.setAttribute(`aria-value${key}`, value);
-    syncMetronomeControls(root, s.settings);
-    input("music-volume").value = String(s.settings.musicVolume);
-    input("click-volume").value = String(metronomeVolume(s.settings));
-    for (const id of ["music-volume", "click-volume"]) {
-      const output = root.querySelector(`#${id}-value`);
-      if (output)
-        output.textContent = `${Math.round(Number(input(id).value) * 100)}%`;
-    }
-    input("zoom").value = String(sliderFromZoom(s.settings.zoom));
-    input("zoom").setAttribute(
-      "aria-valuetext",
-      `${Math.round(s.settings.zoom * 100)}%`,
-    );
-    get("zoom-value").textContent = `${Math.round(s.settings.zoom * 100)}%`;
-    input("view").value = s.settings.view;
-    const select = get<HTMLSelectElement>("view");
-    get("view-selected-text").textContent =
-      select.selectedOptions[0]?.textContent || "";
-    root.querySelectorAll<HTMLElement>("[data-tempo]").forEach((b) => {
-      const active =
-        b.id === "tempo-reset"
-          ? originalTempoMode(s)
-          : !originalTempoMode(s) &&
-            Math.abs(Number(b.dataset.tempo) - bpm) < 0.01;
-      b.classList.toggle("primary", active);
-      b.setAttribute("aria-pressed", String(active));
-    });
-    syncDisplay();
-    h.player().volumes();
-    h.settingsChanged?.();
+    display.sync();
   }
   function syncDisplay() {
-    framePending = true;
-    scoreOnlyView.sync();
-    if (h.ready()) prepareTempo();
-    settingsLayout.sync(scoreOnlyView.active());
-    syncPhoneDisplayMode();
-    syncRepeatAvailability();
-    syncSettingsChoices(root);
-    const view = h.ready() ? h.song().settings.view : input("view").value;
-    const zoom = input("zoom");
-    zoom.closest("label")!.hidden =
-      view !== "ribbon" && !scoreOnlyView.active();
-    zoom.disabled = view !== "ribbon";
-    root
-      .querySelectorAll<HTMLButtonElement>("[data-row-view]")
-      .forEach((button) => {
-        button.setAttribute(
-          "aria-pressed",
-          String(button.dataset.rowView === view),
-        );
-        button.disabled = !h.ready() || h.busy();
-      });
-    const select = get<HTMLSelectElement>("view");
-    get("view-selected-text").textContent =
-      select.selectedOptions[0]?.textContent || "";
-    get("view-description").textContent = t(
-      view === "compare"
-        ? "main.message224"
-        : view === "rows"
-          ? "main.message225"
-          : "main.message226",
-    );
-    const pdf = h.ready() && h.song().scoreFormat !== "musicxml";
-    const spacing = input("uniform-spacing");
-    spacing.disabled =
-      !h.ready() ||
-      pdf ||
-      view === "compare" ||
-      !h.assets().ribbon?.get(0)?.grid;
-    spacing.checked = h.ready() && !!h.song().settings.uniformSpacing;
-    get("uniform-spacing-description").textContent = t(
-      spacing.disabled
-        ? "settings.uniformSpacingUnavailable"
-        : "settings.uniformSpacingDescription",
-    );
-    const control = input(h.display.highlightId);
-    control.disabled = view === "compare" || pdf;
-    control.checked =
-      !control.disabled && (scoreOnlyView.active() || h.highlight());
-    get("note-highlight-description").textContent = t(
-      view === "compare"
-        ? "main.message252"
-        : pdf
-          ? h.formats().includes("musicxml")
-            ? "main.message253"
-            : "main.message254"
-          : "main.message255",
-    );
-  }
-  function syncPhoneDisplayMode() {
-    if (
-      !h.ready() ||
-      h.busy() ||
-      applyingDisplayMode ||
-      !h.display.setPhoneLandscape
-    )
-      return;
-    const phone = scoreOnlyView.active();
-    applyingDisplayMode = true;
-    void Promise.resolve()
-      .then(() => {
-        if (!disposed && h.ready() && !h.busy())
-          return h.display.setPhoneLandscape!(phone);
-      })
-      .catch(h.fail)
-      .finally(() => {
-        applyingDisplayMode = false;
-        if (!disposed && phone !== scoreOnlyView.active()) syncDisplay();
-      });
+    display.syncDisplay();
   }
   action("play", toggle);
   action("home", () => seek(0));
@@ -1238,7 +790,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     lastLoop = undefined;
     stationary = undefined;
     native = false;
-    fittedRowWidth = undefined;
+    track.invalidate();
     rows.rowWindow = rows.pausedBrowseIndex = -1;
   }
   function dispose() {
@@ -1260,8 +812,6 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     seek,
     mark,
     useLoop,
-    stopLoop,
-    clearPreset,
     reset,
     dispose,
     cancel: gestures.cancel,

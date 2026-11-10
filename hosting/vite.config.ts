@@ -1,10 +1,6 @@
 import { defineConfig, type UserConfig } from "vite";
 import { sites } from "./build/sites-vite-plugin.ts";
-import { readFileSync } from "node:fs";
 export default defineConfig(async (): Promise<UserConfig> => {
-  const hosting: { d1: string } = JSON.parse(
-    readFileSync(new URL("./.openai/hosting.json", import.meta.url), "utf8"),
-  );
   const { cloudflare } = await import("@cloudflare/vite-plugin");
   return {
     publicDir: false,
@@ -23,13 +19,6 @@ export default defineConfig(async (): Promise<UserConfig> => {
             run_worker_first: true,
             html_handling: "none",
           },
-          d1_databases: [
-            {
-              binding: hosting.d1,
-              database_name: "site-creator-d1",
-              database_id: "00000000-0000-4000-8000-000000000000",
-            },
-          ],
         },
       }),
     ],

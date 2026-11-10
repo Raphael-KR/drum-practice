@@ -835,3 +835,26 @@ Safari `http://127.0.0.1:5173/player.html`의 실제 악보 업데이트 → 열
 | 음원 추정과 청취 근거 차이 | Loveholic 첫 박0.193초·실연136.232BPM 추정, 인쇄136 유지. 국소 위상·피크와 청취 오차 구분 | 초/중/끝 드리프트와 경쟁 위상 확인. 신호 목적함수를 정확도·청취 검증으로 보고하지 않음 |
 
 두 곡을 함께 확인한 당시 해시·수록 메타정보와 미확인 범위는 [공동 제작 관측](../production-tools.md#score-process-evidence--확인한-자료와-현재-미확인-사항--2026-10-04)에 한 번 보존한다.
+
+
+## 섹션 정렬 속성 명시 — 2026-11-09
+
+- 목표: 최신 Loveholic 정본의 섹션8개에 해당 마디 오선 시작점 좌측 정렬을 명시한다.
+- 범위: 기존 제작 XML·수록 source/canonical 일치 확인과 별도 XML 후보. 이름·마디·높이 및 기타 데이터 보존.
+- 완료 조건: 1·21·37·53·63·80·96·112마디 rehearsal에 default-x=0, relative-x=0, halign=left, justify=left만 추가한다.
+- 제외: public 패키지 덮어쓰기, 앱/src/history 수정, 브라우저·화면·재생, 합성 자료·시험DB, 커밋·push·발행.
+- 정적 검증: 제작 최종본·수록 source·canonicalXML은 SHA256 `af81c955e5056a9c0445ceec7733da067bb238695a0b24f86c1a0850c04fb481`로 바이트까지 일치했다. 후보는 MusicXML4.0 XSD 및 두 파트 시간표 동일성 검사를 통과했다. 추가한32속성을 제거하면 원문과 바이트까지 일치한다.
+- 후보: `data/production/loveholic-sections-20261109/score.musicxml`, SHA256 `28b0c44f290d6d363634264b09158f511d3477dd0b6886341ec94c507622a5da`. baseline·정확한8곳diff·verification.json·재현용prepare.py를 같은 폴더에 보존한다. 원음원·PDF는 재작성하지 않았으며 원본 수록 패키지SHA `26c73ab7a3e772422251e632f6e58af2284bfb739ca60c09921c1296ee947d93` 유지.
+- 원인/다음 기준: 예전 Loveholic 정본에는 rehearsal의 명시 가로 속성이 없었다. 정렬 의도는 renderer의 누락값 보정에 의존하지 않고 XML에 기록한다. 이번은 정적 검사만이며 실제 화면·앱 수록 반영 완료는 확인하지 않았다. 기존 개발 작업은 보존했다.
+- 기존 개발 채팅에 수정XML·정확한diff·검증 결과를 실제 전달했다. 전송 접수는 확인했으며 본문/receipt는 제작 폴더 `handoff/`에 보존한다. 앱 반영은 개발 담당의 별도 단계다.
+
+## 섹션 교정본 앱 수록 반영 — 2026-11-10
+
+- 사용자 승인에 따라 위 교정 XML을 로컬 `public/scores/loveholic.drumscore`에 반영했다. 제작 후보와 과거 제작 최종본은 보존했다. 이번 수록 XML 정본은 `data/production/loveholic-sections-20261109/score.musicxml`이다.
+- 변경은 ZIP의 `score/source`와 `manifest.json`의 `canonicalXML`·`source.size`뿐이다. 원본과 canonicalXML은 모두 SHA256 `28b0c44f290d6d363634264b09158f511d3477dd0b6886341ec94c507622a5da`, 957,045바이트다. 1·21·37·53·63·80·96·112마디의 rehearsal에 명시적 좌측 정렬 속성32개를 추가했으며, 이 속성을 제거하면 이전 XML과 바이트까지 같다.
+- 패키지 SHA256은 `26c73ab7a3e772422251e632f6e58af2284bfb739ca60c09921c1296ee947d93` → `bb7e6b03ddbdda8b94503c1e0eb142d9f00d5ef3cc2eb3863579c2aba061325c`, 크기는10,959,188 → 10,959,754바이트다. 교체 전 패키지와 적용 후보는 `.tmp/loveholic-sections-package-20261110/`에 보존했다.
+- 전체 Song·곡 ID·123마디·136 BPM·첫 박0.193초·가사·마커·반복·설정을 보존했다. 다른8개 ZIP 엔트리인 음원·PDF 원본/페이지·기존 SVG 페이지는 바이트까지 같다. 앱 코드·카탈로그·앱 버전/빌드번호·다른 수록 곡·사용자 저장소는 변경하지 않는다.
+- 저장 SVG는 재생성하지 않았다. 기존 `prepareBrowserScore`는 canonicalXML을 우선하여 화면용 SVG를 준비하고 `scoreRenderKey`에 XML 내용을 포함하므로, 교정본을 불러오면 다른 XML 입력으로 처리된다. 이는 코드 경로 확인이며 이번에 새 SVG를 생성하거나 실제 화면을 검증했다는 뜻은 아니다. 기존 보관함의 악보를 자동 교체하지 않았다.
+- 정적 자료 검사: 로컬 MusicXML4.0 XSD, 두 파트(`P1`, `DrumPracticeLyrics`)의 시간표 동일성, ZIP CRC와9개 자산의 경로·크기·완전성, manifest의 허용된 두 필드 외 동일성을 확인했다. 시스템 Python에 `lxml`이 없어 기존 번들 Python의 `lxml 6.1.1`을 사용했으며 새 설치는 하지 않았다.
+- 근거: `.tmp/loveholic-sections-package-20261110/package-verification.json`, `baseline.json`, `apply-package.py`. 이번 요청은 정적 검사만이며 화면·재생·저장/재열기 테스트·번들 빌드·커밋·푸시·발행은 하지 않는다.
+- 공통 정적 검사 결과: Node22.22.2·pnpm12.18.0에서 lint·452파일 서식·앱/도구/hosting 타입·의존성·i18n·공통 모듈/구조·문서/링크/앵커·diff 검사를 통과했다. `generate`를 실행하지 않고 같은 타입 검사 명령을 사용했으며, 생성 자산을 포함한 `src/`229파일과 다른 수록 패키지5개·Git HEAD/브랜치/index가 변경 전과 같음을 확인했다. 로그는 같은 폴더의 `static-checks.log`와 `preservation-check.json`이다.
