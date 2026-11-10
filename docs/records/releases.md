@@ -6,6 +6,15 @@
 
 이전 보존 기록(2026-10-28): 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 당시 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-11-1-20261111"></a>
+
+## 0.11.1 — OSMD 전체 악보·가사 성부 · 2026-11-11 발행
+
+- 두 앱 0.11.0→0.11.1 patch. SVG 전체 보기의 native 가사/마디 번호·연속 조판·두 칸 여백·제목/메타정보, v2 가사 성부 정본 6곡과 편집/저장 호환성을 개선했다. [범위·검증·한계](archive/release-0.11.1.md).
+- 최종 head `67938d8992761b720bac03487e354a247172d42e`·[PR #46](https://github.com/Raphael-KR/drum-practice/pull/46)·제품 main `4914d9399746d451f988d9de28f889cfb0505356`·소스 빌드 `23f80934024d`. 자체 검토·최신 PR/main CI·전체 816테스트·후속 집중 14테스트·정적 검사·main 두 앱 빌드를 통과했다. 실제 수록 6곡의 151줄 번호/가사/줄 구성과 ego PC의 두 앱 전체 SVG·제작기 저장/재열기·연습실 재생/BPM을 확인했다. Safari MCP 연결 실패로 대체했으며 iOS 실기기·시뮬레이터 검증은 제외했다.
+- Sites 소스 `daf4ac3a134294316b716f8adfdf182101eec5bf`, 버전102, 배포 `appgdep_6af3515a30b48191911756746c328ee3`: **succeeded**, **2026-11-11 02:16:29 KST**. 기존 public Site에 player만 발행했다. 48파일 세 위치 해시·공개 읽기 52항목을 확인했다.
+- 아카이브 `local-archives/releases/drum-practice-0.11.1-sites.tar.gz` SHA256 `61322247bd1a9fb9aa2e9e9bcca11edf2247c89c8a0f2a60fdd0546f065d258b`. 근거는 `.tmp/release-0.11.1/`에 보존한다. 번들 크기·SQLite·Sites 도구의 punycode 안내는 비차단 경고로 기록했다. 결과 문서는 별도 PR로 반영하며 제품 버전·발행을 반복하지 않는다.
+
 <a id="release-0-11-0-20261110"></a>
 
 ## 0.11.0 — SVG 전체 보기 가사·코드·문서 정리 · 2026-11-10 발행
