@@ -5,14 +5,18 @@ export { hasLyrics } from "../../modules/library/score-assets";
 import { bindNumericDrag } from "../../shared/ui/numeric-drag";
 import { installScoreEditorLayout } from "./score-editor-layout";
 import { t as i18nText } from "../../shared/i18n/i18n";
-import { installUIStandard, uiNameForId } from "../../shared/ui/ui-standard";
-import { fullScoreLabels } from "../../modules/score/full-score-labels";
+import { installUIStandard } from "../../shared/ui/ui-standard";
+import {
+  fullScoreSurface,
+  observeFullScoreLyrics,
+} from "../../modules/score/full-score-view";
 import { displayPage } from "../../modules/score/score-pages";
 import { icon } from "../../shared/ui/icons";
 import { songScores } from "../../modules/score/song-scores";
 import { selectEditorPane } from "./workspace";
 import type { RecordData } from "../../model/record";
 import { escapeHTML } from "../../shared/ui/html";
+import { $ } from "./editor-dom";
 export { escapeHTML } from "../../shared/ui/html";
 export function lyricDocument(r: RecordData) {
   if (r.song.lyricText) return r.song.lyricText;
@@ -110,16 +114,16 @@ interface Host {
   replaceAudio: (f: File) => Promise<void>;
   error: (e: unknown) => void;
 }
-export function setupScoreManagement(h: Host) {
-  const $ = (id: string) => document.getElementById(id)!;
-  const dialog = (id: string, title: string) => {
-    return createDialog(id, title, "management-dialog");
-  };
-  const files = dialog(
-      "song-files-dialog",
-      i18nText("score-management.message485"),
+export function setupScoreManagement(
+  h: Host,
+  openScoreReplacement: () => void,
+) {
+  const dialog = (id: string, title: string) =>
+    createDialog(id, title, "management-dialog");
+  const out = dialog(
+      "song-export-dialog",
+      i18nText("score-management.message486"),
     ),
-    out = dialog("song-export-dialog", i18nText("score-management.message486")),
     lyrics = dialog(
       "full-lyrics-dialog",
       i18nText("score-management.message487"),
@@ -136,10 +140,7 @@ export function setupScoreManagement(h: Host) {
     }
   };
   const row = (label: string, sub: string, name: string, id: string) =>
-    `<button id="${id}" class="management-row">${icon(name)}<span><strong>${uiNameForId(id, label)}</strong>${sub ? `<small>${sub}</small>` : ""}</span></button>`;
-  // Keep old handler targets, but expose one editing entry point.
-  $("score-edit-actions").hidden = true;
-  $("backup-dialog").hidden = true;
+    `<button id="${id}" class="management-row">${icon(name)}<span><strong>${label}</strong>${sub ? `<small>${sub}</small>` : ""}</span></button>`;
   const summary = document.createElement("section");
   summary.id = "score-summary";
   summary.className = "asset-chips score-header-chips";
@@ -213,39 +214,21 @@ export function setupScoreManagement(h: Host) {
     i18nText("editor.baseBpm");
   bindNumericDrag($("edit-bpm") as HTMLInputElement, { wheel: true });
   selectEditorPane("meta");
-  files.insertAdjacentHTML(
-    "beforeend",
-    row(
-      i18nText("term.MusicXML"),
-      i18nText("score-management.message490"),
-      "library",
-      "file-xml",
-    ) +
-      row(i18nText("score-management.message492"), "", "screen", "file-pdf") +
-      row(
-        i18nText("score-management.message494"),
-        "",
-        "sliders",
-        "file-audio",
-      ) +
-      row(i18nText("score-management.message486"), "", "export", "file-export"),
-  );
-  $("file-pdf").remove();
-  $("file-xml").querySelector("strong")!.textContent = i18nText(
-    "score.files.replace",
-  );
-  $("file-xml").onclick = () => $("replace-score-button").click();
+  filePane.innerHTML =
+    row(i18nText("score.files.replace"), "", "library", "file-xml") +
+    row(i18nText("score.files.replaceAudio"), "", "sliders", "file-audio");
+  timing.querySelector(".timing-fields")!.before(filePane);
+  $("file-xml").onclick = openScoreReplacement;
 
-  $("file-export").onclick = () => {
+  const exportTools = document.createElement("div");
+  exportTools.className = "connection-export";
+  const exportButton = document.createElement("button");
+  exportButton.id = "file-export";
+  exportButton.className = "management-row";
+  exportButton.onclick = () => {
     refresh();
     out.showModal();
   };
-  while (files.children.length > 1) filePane.append(files.children[1]);
-  files.remove();
-  timing.querySelector(".timing-fields")!.before(filePane);
-  const exportTools = document.createElement("div");
-  exportTools.className = "connection-export";
-  const exportButton = $("file-export");
   exportButton.setAttribute(
     "aria-label",
     i18nText("score-management.message486"),
@@ -254,10 +237,6 @@ export function setupScoreManagement(h: Host) {
   exportButton.innerHTML = icon("export");
   exportTools.append($("reflow"), exportButton);
   timing.append(exportTools);
-  $("file-audio").querySelector("strong")!.textContent = i18nText(
-    "score.files.replaceAudio",
-  );
-  $("file-xml").querySelector("small")?.remove();
   const audio = document.createElement("input");
   audio.type = "file";
   audio.accept = "audio/*";
@@ -299,7 +278,7 @@ export function setupScoreManagement(h: Host) {
       '</div><div class="management-footer"><span id="export-selection" role="status"></span><button id="export-selected" class="icon-button primary" aria-label="' +
       i18nText("score-management.message499") +
       '">' +
-      String(icon("export")) +
+      icon("export") +
       "</button></div>",
   );
   const selected = () =>
@@ -310,7 +289,7 @@ export function setupScoreManagement(h: Host) {
     const n = selected().length;
     $("export-selection").textContent = n
       ? i18nText("score-management.message501", {
-          n: n,
+          n,
           value2: n > 1 ? i18nText("score-management.message500") : "",
         })
       : i18nText("score-management.message502");
@@ -395,23 +374,26 @@ export function setupScoreManagement(h: Host) {
   svgPages.className = "full-svg-pages";
   svgDialog.append(svgPages);
   let svgURLs: string[] = [];
+  let stopLyricLayout: (() => void) | undefined;
   const releaseSVG = () => {
+    stopLyricLayout?.();
+    stopLyricLayout = undefined;
     svgPages.replaceChildren();
     svgURLs.forEach(URL.revokeObjectURL);
     svgURLs = [];
   };
   svgDialog.addEventListener("close", releaseSVG);
   svgButton.onclick = run(async () => {
+    const record = h.get();
     const score =
-      h.get() && songScores(h.get()!).find((s) => s.format === "musicxml");
-    if (!score?.pages.length)
+      record && songScores(record).find((s) => s.format === "musicxml");
+    if (!record || !score?.pages.length)
       throw Error(i18nText("score-management.message504"));
     svgButton.disabled = true;
     releaseSVG();
     try {
       for (const [i, page] of score.pages.entries()) {
         const decoded = await displayPage(page);
-        const labels = fullScoreLabels(await decoded.text());
         const url = URL.createObjectURL(decoded);
         svgURLs.push(url);
         const figure = document.createElement("figure");
@@ -420,28 +402,19 @@ export function setupScoreManagement(h: Host) {
           value1: i + 1,
           value2: score.pages.length,
         });
-        const img = document.createElement("img");
-        img.src = url;
-        img.alt = i18nText("score-management.message506", { value1: i + 1 });
-        const surface = document.createElement("div");
-        surface.className = "full-svg-surface";
-        surface.append(img);
-        for (const position of labels) {
-          const label = document.createElement("span");
-          label.className = "full-svg-measure-label";
-          label.textContent = position.label;
-          label.setAttribute(
-            "aria-label",
-            i18nText("marker-slots.message378", { value1: position.label }),
-          );
-          label.style.left = `${position.left}%`;
-          label.style.top = `${position.top}%`;
-          surface.append(label);
-        }
+        const surface = fullScoreSurface({
+          svg: await decoded.text(),
+          url,
+          alt: i18nText("score-management.message506", { value1: i + 1 }),
+          page: i,
+          score,
+          song: record.song,
+        });
         figure.append(caption, surface);
         svgPages.append(figure);
       }
       svgDialog.showModal();
+      stopLyricLayout = observeFullScoreLyrics(svgPages);
       svgDialog.scrollTop = 0;
     } catch (e) {
       releaseSVG();
@@ -469,7 +442,6 @@ export function setupScoreManagement(h: Host) {
     tab.setAttribute("aria-label", label);
     tab.textContent = label;
   }
-  $("lyrics-button").hidden = $("metadata-button").hidden = true;
   upload.insertAdjacentHTML(
     "beforeend",
     '<label class="form-field">' +
@@ -518,8 +490,7 @@ export function setupScoreManagement(h: Host) {
       "folder",
       "library-backup-restore",
     );
-  // Library backup is available even with no score open; legacy per-score
-  // controls in backup-dialog remain hidden.
+  // Library backup is available even with no score open.
   $("score-settings").append(backup);
   const restore = document.createElement("input");
   restore.type = "file";

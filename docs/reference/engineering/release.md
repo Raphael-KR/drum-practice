@@ -41,7 +41,7 @@
 - 기존 Sites 프로젝트: `appgprj_6ab0790baa048191aaee49f58c1ffe7b`
 - 공개 주소: [드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site)
 - 정적 앱 입력: `dist/player/`. `dist/editor/`나 원본 미디어 폴더 전체를 발행하지 않는다.
-- 서버: `server/player-worker.ts`가 HTML/보안 헤더와 정적 자산을 전달한다. `hosting/`의 D1 바인딩은 과거 분석 테이블 삭제 마이그레이션 적용을 위해서만 유지한다.
+- 서버: `server/player-worker.ts`가 HTML/보안 헤더와 정적 자산을 전달한다. `hosting/`은 DB 바인딩 없이 Worker와 player 자산만 준비한다. 보존 SQL은 배포 입력·마이그레이션 복사·빌드번호 계산에서 제외한다. 이전 생성 사본의 DB 설정은 준비 단계에서 제거하며 원격 DB는 조작하지 않는다.
 - 파일 해시·곡명·가수·분석 결과는 브라우저 내부에서만 처리한다. 자세한 필드·제한은 [음원 연습](../product/audio-practice.md#audio-practice--음원-연습)을 따른다.
 
 사용자가 요청한 단계만 commit·push·PR·merge·발행·브랜치 정리한다. 과거 실행 기록을 현재 릴리스 절차로 대신하지 않는다. 전체 흐름은 [릴리스 스킬](../../../.agents/skills/release-drum-practice/SKILL.md)을 따른다.

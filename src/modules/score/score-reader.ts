@@ -1,6 +1,6 @@
-import { icon, svgFromPath } from "../../shared/ui/icon-svg";
+import { icon } from "../../shared/ui/icon-svg";
 import { createDialog } from "../../shared/ui/dialog-ui";
-import { fullScoreLabels } from "./full-score-labels";
+import { fullScoreSurface, observeFullScoreLyrics } from "./full-score-view";
 import { t } from "../../shared/i18n/i18n";
 import type { Song } from "../../model/model";
 import { displayPage } from "./score-pages";
@@ -26,8 +26,11 @@ export function installScoreReader(options: Options) {
   let generation = 0,
     disposed = false,
     urls: string[] = [];
+  let stopLyricLayout: (() => void) | undefined;
   const release = () => {
     generation++;
+    stopLyricLayout?.();
+    stopLyricLayout = undefined;
     urls.splice(0).forEach((url) => URL.revokeObjectURL(url));
     body.replaceChildren();
   };
@@ -46,20 +49,19 @@ export function installScoreReader(options: Options) {
     b.title = label;
     const badge = document.createElement("span");
     badge.className = "score-reader-action-icon";
-    badge.innerHTML =
+    badge.innerHTML = icon(
       id === "runtime-full-svg"
-        ? icon("library")
-        : svgFromPath(
-            id === "runtime-full-pdf"
-              ? '<path d="M6 3h8l4 4v14H6Z M14 3v5h4 M9 12h6 M9 16h6"/>'
-              : '<path d="M5 5h14 M5 10h14 M5 15h10 M5 20h7"/>',
-          );
+        ? "library"
+        : id === "runtime-full-pdf"
+          ? "document"
+          : "text",
+    );
     const text = document.createElement("span");
     text.className = "score-reader-action-label";
     text.textContent = label;
     const arrow = document.createElement("span");
     arrow.className = "score-reader-action-arrow";
-    arrow.innerHTML = svgFromPath('<path d="m9 5 7 7-7 7"/>');
+    arrow.innerHTML = icon("chevron");
     b.append(badge, text, arrow);
     b.className = "score-reader-action";
     b.onclick = () => {
@@ -90,25 +92,23 @@ export function installScoreReader(options: Options) {
             value1: index + 1,
             value2: score.pages.length,
           });
-          const surface = document.createElement("div");
-          surface.className = "score-reader-surface";
-          const image = document.createElement("img");
-          image.src = url;
-          image.alt = `${label} · ${index + 1}`;
-          surface.append(image);
-          if (svg)
-            for (const position of fullScoreLabels(await decoded.text())) {
-              const number = document.createElement("span");
-              number.className = "score-reader-measure";
-              number.textContent = position.label;
-              number.setAttribute(
-                "aria-label",
-                t("marker-slots.message378", { value1: position.label }),
-              );
-              number.style.left = `${position.left}%`;
-              number.style.top = `${position.top}%`;
-              surface.append(number);
-            }
+          const surface = svg
+            ? fullScoreSurface({
+                svg: await decoded.text(),
+                url,
+                alt: `${label} · ${index + 1}`,
+                page: index,
+                score: score.song,
+                song: options.song,
+              })
+            : document.createElement("div");
+          surface.classList.add("score-reader-surface");
+          if (!svg) {
+            const image = document.createElement("img");
+            image.src = url;
+            image.alt = `${label} · ${index + 1}`;
+            surface.append(image);
+          }
           figure.append(caption, surface);
           fragment.append(figure);
         }
@@ -117,6 +117,7 @@ export function installScoreReader(options: Options) {
         body.replaceChildren(fragment);
         title(label);
         dialog.showModal();
+        stopLyricLayout = observeFullScoreLyrics(body);
         body.scrollTop = 0;
       } finally {
         prepared.forEach((url) => URL.revokeObjectURL(url));

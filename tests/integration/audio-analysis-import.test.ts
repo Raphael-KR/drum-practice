@@ -28,7 +28,6 @@ vi.mock("../../src/modules/audio/audio-tempo", () => ({
 }));
 import {
   readAudioPractice,
-  reanalyzeAudioPractice,
   ensureAudioBeatTracking,
 } from "../../src/modules/audio/audio-practice";
 import { analyzeAudioBeats } from "../../src/modules/audio/audio-beat-analysis";
@@ -117,7 +116,7 @@ it("reanalyzes mismatched duration and uses filename fallback locally and does n
   expect(storeAudioAnalysis).toHaveBeenCalledTimes(1);
 });
 
-it("imports and reuses the whole beat map; explicit reanalysis preserves personal state", async () => {
+it("imports and reuses the whole beat map; reopening preserves personal state without reanalysis", async () => {
   decoder();
   const times = [0.2, 0.7, 1.18, 1.64, 2.08, 2.5, 2.9, 3.28, 3.64];
   vi.mocked(analyzeAudioBeats).mockResolvedValue(times);
@@ -130,8 +129,9 @@ it("imports and reuses the whole beat map; explicit reanalysis preserves persona
   expect(analyzeAudioBeats).toHaveBeenCalledTimes(1);
   first.song.markers = [{ id: "m", name: "m", time: 1 }];
   first.song.loops = [{ id: "l", name: "l", start: 1, end: 3 }];
-  const refreshed = await reanalyzeAudioPractice(first);
-  expect(analyzeAudioBeats).toHaveBeenCalledTimes(2);
+  const refreshed = await ensureAudioBeatTracking(first);
+  expect(refreshed).toBe(first);
+  expect(analyzeAudioBeats).toHaveBeenCalledTimes(1);
   expect(refreshed.song.id).toBe(first.song.id);
   expect(refreshed.audio).toBe(first.audio);
   expect(refreshed.song.markers).toEqual(first.song.markers);
@@ -199,18 +199,17 @@ it("keeps restored practice speed within the supported range after a large tempo
   expect(next.song.settings.rate).toBe(0.5);
   expect(next.song.audioPractice!.followTempo).toBe(true);
 });
-it("preserves a manual bar-one reference through reanalysis and never includes it in the automatic cache", async () => {
+it("preserves a manual bar-one reference when reopening and never includes it in the automatic cache", async () => {
   decoder();
   const first = await readAudioPractice(new File(["bytes"], "live.mp3"));
   const { setAudioBarOne } =
     await import("../../src/modules/audio/audio-practice");
   first.song = setAudioBarOne(first.song, 1.7);
-  vi.mocked(analyzeAudioBeats).mockResolvedValue([
-    0.2, 0.69, 1.17, 1.65, 2.14, 2.63, 3.12, 3.6,
-  ]);
-  const next = await reanalyzeAudioPractice(first);
+  const next = await ensureAudioBeatTracking(first);
+  expect(next).toBe(first);
+  expect(analyzeAudioBeats).toHaveBeenCalledTimes(1);
   expect(next.song.audioPractice!.barOne).toEqual({
-    time: 1.65,
+    time: 1.7,
     source: "manual",
   });
   expect(

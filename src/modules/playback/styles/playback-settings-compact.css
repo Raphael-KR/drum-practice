@@ -1,0 +1,160 @@
+.tempo-reference {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(48px, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+.tempo-reference button {
+  white-space: nowrap;
+}
+
+/* Phone landscape uses the same controls in one selected card. The class is
+   owned by the shared viewport adapter, including while a dialog stays open. */
+#settings-dialog.settings-phone-landscape {
+  --settings-sidebar-width: 120px;
+  --settings-column-gap: 16px;
+}
+#settings-dialog.settings-phone-landscape
+  > .dialoghead:has(> .playback-sound-fields) {
+  grid-template-columns:
+    calc(
+      var(--settings-sidebar-width) + var(--settings-column-gap) -
+        var(--dialog-control-gap)
+    )
+    minmax(0, 1fr) auto;
+}
+#settings-dialog.settings-phone-landscape > .dialoghead > h2 {
+  grid-column: auto;
+}
+#settings-dialog.settings-phone-landscape .settings-layout {
+  display: grid;
+  grid-template-columns: var(--settings-sidebar-width) minmax(0, 1fr);
+  gap: var(--settings-column-gap);
+}
+#settings-dialog.settings-phone-landscape .settings-sidebar {
+  width: var(--settings-sidebar-width);
+  overflow: auto;
+}
+#settings-dialog.settings-phone-landscape .settings-nav {
+  flex-direction: column;
+  padding: 0;
+  gap: 7px;
+}
+#settings-dialog.settings-phone-landscape .settings-nav button {
+  flex: none;
+  flex-direction: row;
+  min-height: 48px;
+  padding: 8px;
+  gap: 6px;
+  justify-content: flex-start;
+}
+#settings-dialog.settings-phone-landscape .settings-nav .icon-caption {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+#settings-dialog.settings-phone-landscape .settings-detail {
+  padding: 0;
+}
+#settings-dialog.settings-phone-landscape .settings-panel {
+  box-sizing: border-box;
+  min-height: 100%;
+  margin: 0;
+  padding: 12px;
+  gap: 8px;
+  align-content: start;
+}
+.settings-phone-landscape
+  [data-settings-panel="screen"]
+  > :not(.settings-section-heading):not(.playback-zoom-row):not(
+    :has(#view)
+  ):not(:has(#uniform-spacing)),
+.settings-phone-landscape [data-setting-value="compare"] {
+  display: none;
+}
+.settings-phone-landscape .settings-choice-row:has(#view) {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+.settings-phone-landscape #view-description,
+.settings-phone-landscape #uniform-spacing-description {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.settings-phone-landscape .settings-switch {
+  padding: 4px 0;
+}
+.settings-phone-landscape .settings-choice-row button {
+  padding-inline: 8px;
+  font-size: 13px;
+}
+.settings-phone-landscape .playback-zoom-row {
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+.settings-phone-landscape .playback-zoom-row .settings-item-title {
+  flex-basis: auto;
+}
+.settings-phone-landscape .settings-metronome-row {
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+}
+.settings-phone-landscape #metronome-choices-title {
+  display: none;
+}
+.settings-phone-landscape #tempo-settings > .tool-body {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(140px, 0.9fr) minmax(210px, 1.3fr);
+  grid-template-rows: 60px 40px 48px;
+  gap: 8px;
+  align-items: stretch;
+}
+.settings-phone-landscape .tempo-number {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  min-width: 0;
+}
+.settings-phone-landscape .tempo-number .playback-tempo-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  padding: 4px;
+  font-size: 28px;
+}
+.settings-phone-landscape #tempo-status {
+  grid-column: 1;
+  grid-row: 2;
+  min-height: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: auto;
+}
+.settings-phone-landscape .tempo-choices {
+  display: contents;
+}
+.settings-phone-landscape #tempo-options {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  gap: 8px;
+  grid-template-rows: repeat(3, minmax(48px, 1fr));
+}
+.settings-phone-landscape .tempo-reference {
+  grid-column: 1;
+  grid-row: 3;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: 48px;
+  gap: 6px;
+}
+.settings-phone-landscape :is(#tempo-options, .tempo-reference) button {
+  min-width: 0;
+  padding: 6px;
+  font-size: 13px;
+}

@@ -58,7 +58,7 @@
    pnpm run check:playback
    ```
 
-3. 정본의 `scripts/release/prepare-sites.mjs`로 기존 사본을 준비한다. pnpm이 검증된 커밋의 `config/shared-catalog.yaml` 사본과 lockfile을 해석하고 hosting 전용 manifest·잠금 파일·설정을 내보낸다. 개인 중앙 YAML을 이 단계에서 다시 동기화하지 않는다. 사본에서 의존성 버전을 독립 수정하지 않는다. 이 스크립트는 이전 생성 사본을 교체하므로 프로젝트 ID·경로와 사본의 별도 수정 유무를 먼저 확인한다.
+3. 정본의 `scripts/release/prepare-sites.mjs`로 기존 사본을 준비한다. pnpm이 검증된 커밋의 `config/shared-catalog.yaml` 사본과 lockfile을 해석하고 hosting 전용 manifest·잠금 파일·설정을 내보낸다. 개인 중앙 YAML을 이 단계에서 다시 동기화하지 않는다. 생성 사본에서 D1 바인딩·Drizzle 설정과 마이그레이션을 제거하며, SQL 기록은 내보내지 않는다. 원격 DB를 변경하거나 삭제하는 단계는 없다. 사본에서 의존성 버전을 독립 수정하지 않는다. 이 스크립트는 이전 생성 사본을 교체하므로 프로젝트 ID·경로와 사본의 별도 수정 유무를 먼저 확인한다.
 
    pnpm 버전 pin을 포함하는 잠금 파일 생성은 캐시를 우선 사용하되, 빠진 공급망 검사 메타데이터는 레지스트리에서 읽을 수 있다. 완전 오프라인을 강제해 검사를 실패시키거나 보안 정책을 끄지 않는다. 생성 후 아래의 frozen 설치로 manifest·lockfile 일치를 확인한다.
 

@@ -33,14 +33,30 @@ class VerificationTests(unittest.TestCase):
             folder = Path(tmp)
             xml = folder / "commented.musicxml"
             tree.write(str(xml))
-            with patch.object(sys, "argv", ["compare", "--claude", str(xml),
-                              "--codex", str(xml), "--out", str(folder)]):
+            with patch.object(
+                sys,
+                "argv",
+                [
+                    "compare",
+                    "--claude",
+                    str(xml),
+                    "--codex",
+                    str(xml),
+                    "--out",
+                    str(folder),
+                ],
+            ):
                 with redirect_stdout(io.StringIO()):
                     compare_main()
             result = json.loads((folder / "comparison.json").read_text())
-            self.assertEqual(result["results"]["Codex"]["metrics"]["attack_and_duration"]["f1"], 100)
+            self.assertEqual(
+                result["results"]["Codex"]["metrics"]["attack_and_duration"]["f1"], 100
+            )
             excerpt = E.parse(str(folder / "codex-excerpt.musicxml"))
-            self.assertEqual([m.get("number") for m in excerpt.findall("./part/measure")], ["9", "12", "84"])
+            self.assertEqual(
+                [m.get("number") for m in excerpt.findall("./part/measure")],
+                ["9", "12", "84"],
+            )
 
     def test_missing_note(self):
         def mutate(t):

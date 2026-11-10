@@ -111,6 +111,8 @@
 
 **실패 시 확인:** 매핑 정본과 그 승인 이력 → 곡별 제작 문서·원본 fixture → 과거 제작 세션 → MusicXML/OSMD/Audiveris 공식 자료. PDF X간격이나 마디 합계를 맞추기 위한 임의 음가 조정은 하지 않는다. 새 대체 매핑이 필요하면 매핑 정본의 보고·사용자 결정 절차를 따른다.
 
+수정 전에는 [정본과 앱의 수정 책임](../reference/score/musicxml.md#musicxml-canonical--정본과-앱의-수정-책임)에 따라 원인을 구분한다. 누락 속성·표기 규칙 위반은 정본 교정으로 처리하고, 올바른 XML의 해석·표시 오류는 해당 구간과 근거를 공통 렌더러 담당에게 전달한다. 앱 보정으로 정본 검사를 통과한 것처럼 처리하지 않는다.
+
 <a id="score-production-process--5-음원-첫-박bpm마디-시간-연결"></a>
 
 ### 5. 음원 첫 박·BPM·마디 시간 연결
@@ -168,15 +170,15 @@
 | `src/modules/score/canonical-xml.ts`, `src/modules/score/musicxml.ts`, `src/modules/library/score-package.ts` | 브라우저 DOM/Blob 계약, 현재 공통 정본/조판/ZIP API | 새 곡도 공통 계약으로 저장·렌더·재읽기 |
 | `src/modules/score/browser-score.ts`, `src/platform/storage/practice-library.ts` | 공통 조판 결과와 실제 저장/업데이트 계약 | 실제 앱 수록·재열기에 사용 |
 
-실행 환경에는 Node/package lock, Python interpreter·라이브러리, Poppler/ffmpeg, 로컬 XSD의 `musicxml.xsd/xml.xsd/xlink.xsd`, 사용한 Audiveris/OSMD 버전을 기록한다. `tools/score-production/musicxml/requirements.txt`의 기존 환경에 numpy·ffmpeg까지 포함된다고 가정하지 않는다. 이동된 venv는 별도 재생성하거나 정상 interpreter를 확인한다. [Loveholic 재현 절](../records/songs/loveholic.md#loveholic-conversion--근거재현-경로)은 해당 곡의 정확한 선행 파일과 명령 예다.
+실행 전에 [기록된 환경과 필수 의존성](develop.md#development--작업-전-조회와-실행-환경)을 확인한다. 해당 작업에 필요한 Node/package lock, Python interpreter·라이브러리, Poppler/ffmpeg, 로컬 XSD의 `musicxml.xsd/xml.xsd/xlink.xsd`, Audiveris/OSMD 경로·버전을 기록하고 사용 가능한 환경을 재사용한다. `tools/score-production/musicxml/requirements.txt`의 기존 환경에 numpy·ffmpeg까지 포함된다고 가정하지 않는다. 이동된 venv도 실제 interpreter·모듈 사용 가능 여부부터 확인하며, 재생성을 먼저 하지 않는다. [Loveholic 재현 절](../records/songs/loveholic.md#loveholic-conversion--근거재현-경로)은 해당 곡의 정확한 선행 파일과 명령 예다.
 
-변환/저장 코드 변경에는 관련 `musicxml`, `canonical-xml`, `score-package` 테스트부터 실행하고, 영향 범위에 따라 `pnpm run test:drum`·TypeScript·관련 Python 검사를 수행한다. 실제 fixture가 없는 실패를 삭제로 우회하지 않는다. 현재 테스트는 `tests/{unit,integration,local-media}`만 수집한다. `pnpm run build`는 두 앱을 분리 빌드하며 독립 HTML 내보내기 템플릿은 생성하지 않는다. 문서만 변경한 작업에는 악보 재생성·앱 빌드·청취를 실행한 것처럼 기록하지 않는다.
+변환/저장 코드 변경에는 [변경 영향과 검사 선택](../reference/engineering/verification.md#verification-rules--변경-영향과-검사-선택)에 따라 관련 검사를 고른다. 회귀검사 실행 범위일 때는 `musicxml`, `canonical-xml`, `score-package`의 집중 검사부터 실행하고, 공통 기능·저장 호환성 영향에 따라 `pnpm run test:drum`·TypeScript·관련 Python 검사로 확대한다. 정적 검사만 요청된 작업에서는 테스트·빌드를 실행하지 않는다. 실제 fixture가 없는 실패를 삭제로 우회하지 않는다. 현재 테스트는 `tests/{unit,integration,local-media}`만 수집한다. `pnpm run build`는 두 앱을 분리 빌드하며 독립 HTML 내보내기 템플릿은 생성하지 않는다. 문서만 변경한 작업에는 악보 재생성·앱 빌드·청취를 실행한 것처럼 기록하지 않는다.
 
 <a id="score-production-process--문제-조사와-과거-근거"></a>
 
 ### 문제 조사와 과거 근거
 
-막히면 [변환 정책의 확인 순서](../reference/score/production.md#musicxml-conversion-policy--막힘과-문서-모순)를 따른다. 실제 증상·재현 조건·입력 식별·환경/버전·실패 명령/구간을 기록하고 해당 순서로 근거를 좁힌다. 과거 세션이 접근되지 않으면 제작 문서로 대조하고 한계를 남긴다.
+막히면 [변환 정책의 확인 순서](../reference/score/production.md#musicxml-conversion-policy--막힘과-문서-모순)를 따른다. 실제 증상·재현 조건·입력 식별·환경/버전·실패 명령/구간을 기록하고 해당 순서로 근거를 좁힌다. 자료 조회는 [필요 범위부터 읽는 절차](develop.md#development--작업-전-조회와-실행-환경)에 따라 파일·구간부터 찾는다. 과거 세션이 접근되지 않으면 제작 문서로 대조하고 한계를 남긴다.
 
 해결 후 확인한 원인·바꾼 코드/설정/명령/경로·보존한 원본·실제 대조/재실행/규격/재읽기/화면 증거·재사용 조건·금지할 재시도·남은 한계를 해당 곡의 `docs/records/songs/<곡 식별자>.md` 또는 공통 [제작 도구 기록](../records/production-tools.md)에 남기고 history에 연결한다. 원인 미확정인 실행 회복을 근본 해결로 보고하지 않는다.
 
@@ -283,7 +285,7 @@ python3 tools/score-production/musicxml/handoff_production.py receipt --help
 
 ### 실행 예시
 
-저장소 루트에서 실행한다. `python3`는 `lxml`, `numpy`, `pdfplumber`, `Pillow`가 설치된 인터프리터여야 한다. `ffmpeg`, `ffprobe`, 원본 래스터가 필요한 어댑터에는 `pdftoppm`도 필요하다. 기본 시스템 Python에 패키지가 없으면 확인된 번들 Python이나 프로젝트 환경을 사용한다.
+저장소 루트에서 실행한다. 아래의 `python3`는 실행 전에 경로와 필요한 모듈을 확인한 인터프리터를 뜻한다. 기록된 번들 Python이나 프로젝트 환경을 먼저 확인해 재사용하고, 필요하면 명령의 `python3`를 확인한 실행 파일의 절대경로로 바꾼다. 도구별로 `lxml`, `numpy`, `pdfplumber`, `Pillow`의 실제 import 가능 여부를 확인한다. `ffmpeg`, `ffprobe`, 원본 래스터가 필요한 어댑터의 `pdftoppm`도 실제 사용 가능 여부를 확인한다. 시스템 기본 Python에 해당 의존성이 있다고 가정해 먼저 실행하지 않는다.
 
 ```bash
 python3 tools/score-production/musicxml/prepare_inputs.py --pdf data/production/loveholic/source/source.pdf --audio data/production/loveholic/audio/source.mp3 --out .tmp/loveholic-new-input --raster-dpi 144

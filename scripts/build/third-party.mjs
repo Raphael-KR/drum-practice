@@ -73,7 +73,7 @@ async function collect(root) {
     await collect(dependencyRoot);
   }
 }
-export async function writeThirdParty() {
+async function writeThirdParty() {
   seen.clear();
   entries.length = 0;
   const pkg = JSON.parse(await readFile("package.json", "utf8"));

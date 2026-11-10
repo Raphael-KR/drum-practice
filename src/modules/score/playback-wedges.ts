@@ -10,8 +10,9 @@ interface Piece {
   measure: GraphicalMeasure;
 }
 
-/** OSMD 2.1.x finishes expression alignment before sizing/drawing systems.
- * Adapt this one calculator instance; OSMD recreates its SVG drawer on render.
+/** Place playback wedges after expression alignment and before system sizing/drawing.
+ * This hook originated with OSMD 2.1.x; its phase ordering is the retained contract.
+ * Adapt this calculator instance because rendering recreates the SVG drawer.
  */
 export function installPlaybackWedges(
   osmd: OpenSheetMusicDisplay,
@@ -31,7 +32,7 @@ export function installPlaybackWedges(
  * Rejoin only multi-measure native wedges before the native SVG drawer runs.
  * Printed layout, canonical expressions, single-bar wedges and soft accents stay native.
  */
-export function layoutPlaybackWedges(
+function layoutPlaybackWedges(
   osmd: OpenSheetMusicDisplay,
   spacing: RibbonSpacing,
 ) {

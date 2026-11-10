@@ -23,7 +23,7 @@
 - [UI 컴포넌트 목록](product/UI-COMPONENTS.md): 코드 카탈로그에서 생성하는 참조다.
 - [범례 자산 안내](design/legend-diagram/README.md), [Pretendard 배치·라이선스](../src/modules/score/vendor/pretendard/README.md): 생성·자산 경로를 유지한다.
 - [보존한 범례·화면 검수 자료](../exports/README.md): `exports/`의 SVG와 과거 캡처 용도·보존 범위를 구분한다.
-- 코드·인계 설정이 참조하는 이전 주소와 과거 문단 진입점은 유지한다. 완료된 작업의 `plans/`에는 이전 주소·앵커 안내만 남기고 계획 원문은 `records/archive/`에 보존한다. 실제 결과는 [완료 기록 목록](records/README.md#완료-계획연구과거-시안)에서 찾는다. 통합 때 삭제한 주소의 새 목적지는 [원문 이전표](records/documentation-migration.md)를 따른다. 새 작업에서는 위 절차와 정본을 사용한다.
+- 완료된 계획 원문은 `records/archive/`에 보존하며 [완료 기록 목록](records/README.md#완료-계획연구과거-시안)에서 찾는다. 2026-11-10에 구형 문서 안내 파일과 CLI 래퍼의 주소 지원을 종료했다. 현재 코드·인계 설정은 정식 경로를 사용한다. [원문 이전표](records/documentation-migration.md)와 [지원 종료 경로](records/retired-paths.json)는 과거 출처를 찾기 위한 기록이며 이전 주소로 연결해 주는 기능은 아니다. 유지 중인 문서의 문단 앵커는 보존한다.
 
 <details>
 <summary>이전 문단 주소</summary>

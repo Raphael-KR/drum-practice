@@ -1,13 +1,7 @@
-/* Paused two-row mode is a chronological score document, independent of audio. */
-
-/* Exact rhythmic glyph overlay; staff lines and source-page colors stay intact. */
+/* Editor workspace and full-score viewer; playback layout lives in its module. */
 .crop {
   position: relative;
 }
-
-/* White-hot noteheads, a cool rim and a broad local halo; no score-wide tint. */
-
-/* Same compact row geometry while playing and browsing a paused score. */
 
 #svg-full-dialog {
   width: min(1100px, 96vw);
@@ -40,26 +34,15 @@
   gap: 8px;
 }
 
-.full-svg-surface {
-  position: relative;
-}
-.full-svg-measure-label {
-  position: absolute;
+.full-svg-pages .full-score-measure-label {
   transform: translate(calc(-100% - 6px), -50%);
   color: var(--muted);
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  pointer-events: none;
 }
 /* Keep scrolling notation out of the whole-score header's top inset. */
 #svg-full-dialog .dialoghead {
   box-shadow: 0 -24px 0 0 var(--panel, #f5f7fc);
 }
-/* The paused browser may scroll further, but its resting frame shows two rows. */
-
-/* Paused browsing uses the same content-following gestures as playback HTML. */
-
 /* Fit the viewport without scaling text or the score's internal scroll surface. */
 html,
 body {
@@ -68,7 +51,6 @@ body {
   min-width: 0;
 }
 
-/* Shared UI hierarchy: keep both playback bars together at every viewport width. */
 /* Unified score editor */
 [data-pane="meta"],
 #editor-meta,
@@ -94,14 +76,6 @@ body {
   --tab-color: #20bf49;
   --tab-label: #073c17;
 }
-[data-pane="files"],
-#editor-files,
-[data-active-pane="files"] {
-  --tab-tone: #fff7d6;
-  --tab-ink: #775900;
-  --tab-color: #f4c400;
-  --tab-label: #473600;
-}
 #editor-dialog.score-workspace-dialog[open] {
   width: 96vw;
   max-width: 1440px;
@@ -120,7 +94,6 @@ body {
   align-items: center;
   margin: 0;
   padding: 8px 8px 0;
-  border-bottom: 1px solid #ccd3df;
 }
 .score-workspace-dialog .dialoghead h2 {
   margin: 0;
@@ -141,9 +114,6 @@ body {
   border: 1px solid #cbd5e1;
   border-bottom: 0;
   border-radius: 9px 9px 0 0;
-  background: var(--tab-tone);
-  color: var(--tab-ink);
-  opacity: 0.7;
   margin-top: 6px;
 }
 #score-workspace-tabs button[aria-selected="true"] {
@@ -151,7 +121,6 @@ body {
   padding-top: 16px;
   margin-top: 0;
   font-weight: 700;
-  box-shadow: 0 2px 0 var(--tab-tone);
 }
 .score-workspace-dialog #score-summary {
   display: flex;
@@ -215,14 +184,9 @@ body {
   padding: 24px;
   box-shadow: 0 3px 14px rgba(40, 35, 70, 0.035);
 }
-.metadata-card h3,
 .score-workspace-dialog .metadata-timing h3 {
   margin: 0 0 8px;
   font-size: 19px;
-}
-.metadata-card > .subtle {
-  margin: 0 0 24px;
-  font-size: 13px;
 }
 .score-workspace-dialog .metadata-fields {
   gap: 20px 24px;
@@ -516,8 +480,12 @@ body {
 #editor-score .score-inspector > .flex > label {
   flex: 1;
 }
+#measure-label {
+  width: 95px;
+}
+#beat-xs,
 #editor-score #measure-label {
-  width: 100% !important;
+  width: 100%;
 }
 #editor-score #apply-measure {
   width: 100%;
@@ -831,13 +799,6 @@ body {
     padding: 12px;
   }
 }
-.practice-dock button.icon-button {
-  flex-direction: column;
-  min-height: 54px;
-  padding: 4px;
-  background: white;
-  border-color: var(--line);
-}
 #slower .icon-caption,
 #faster .icon-caption {
   font-size: 16px;
@@ -860,12 +821,6 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-}
-.editor-home-empty {
-  padding: 32px 24px;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 20px;
 }
 .editor-player-link {
   font-weight: 600;

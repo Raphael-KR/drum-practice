@@ -7,7 +7,7 @@ import {
   xAtBeat,
 } from "../../model/model";
 import { displayRegion } from "../score/score-view";
-import { packLabels } from "../lyrics/lyric-layout";
+import { layoutLyricRow } from "../lyrics/lyric-layout";
 import {
   practiceStaffLayout,
   staffFrameHeight,
@@ -34,11 +34,7 @@ export function engravingHeight(stageWidth: number, zoom: number) {
   return (clamp(stageWidth * 0.245, 170, 340) * zoom) / 2;
 }
 /** 100% shows sixteen quarter notes; uniform glyph scale at every zoom. */
-export function ribbonHeight(
-  width: number,
-  zoom: number,
-  staff?: StaffPosition,
-) {
+function ribbonHeight(width: number, zoom: number, staff?: StaffPosition) {
   return staff?.ribbonQuarterInGaps
     ? (((width / 16) * zoom) / staff.ribbonQuarterInGaps) *
         staffFrameHeight(staff)
@@ -317,9 +313,8 @@ export function layoutScoreLyrics(
     rows.get(row)!.push({ el, rect });
   });
   for (const items of rows.values()) {
-    const positions = packLabels(
-      items.map(({ rect }) => ({ left: rect.left, width: rect.width })),
-      2,
+    layoutLyricRow(
+      items,
       // Clamp to the row content edge, not the moving viewport in ribbon mode.
       view === "rows"
         ? (items[0].el
@@ -328,13 +323,5 @@ export function layoutScoreLyrics(
             stage.getBoundingClientRect().left) + 4
         : ribbon.getBoundingClientRect().left + 4,
     );
-    const baseline = Math.max(...items.map(({ rect }) => rect.top));
-    items.forEach(({ el, rect }, i) => {
-      // Source-reviewed PDF underlay must stay at the corresponding note center.
-      el.style.marginLeft = el.dataset.pdfLyricAnchor
-        ? "0px"
-        : `${positions[i] - rect.left}px`;
-      el.style.top = `${baseline - rect.top}px`;
-    });
   }
 }

@@ -14,15 +14,12 @@ async function files(dir) {
   );
   return nested.flat();
 }
-export async function writeBuildInfo() {
+async function writeBuildInfo() {
   const hosting = [
     ...(await files("hosting/build")),
     ...(await files("hosting/scripts")),
-    ...(await files("hosting/db")),
-    ...(await files("hosting/drizzle")),
     "hosting/package.json",
     "hosting/vite.config.ts",
-    "hosting/drizzle.config.ts",
   ];
   const inputs = [
     ...(await files("src")),

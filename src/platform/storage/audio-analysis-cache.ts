@@ -3,12 +3,10 @@ import {
   type AudioAnalysis,
 } from "../../model/audio-analysis-contract";
 import { openScoreDatabase } from "./score-database";
+import { sha256 } from "../browser/sha256";
 
 export async function audioFileHash(bytes: ArrayBuffer): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest), (b) =>
-    b.toString(16).padStart(2, "0"),
-  ).join("");
+  return sha256(bytes);
 }
 /** This cache belongs to the current browser/origin. It never uses the network. */
 export async function loadAudioAnalysis(

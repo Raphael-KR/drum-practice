@@ -5,7 +5,7 @@
     "threadId": "01a0afc9-ca21-7371-9390-06eb07c017e9",
     "hostId": "local"
   },
-  "productionDocument": "docs/score-production/IOI-SUDDENLY-CONVERSION.md",
+  "productionDocument": "docs/records/songs/ioi-suddenly.md",
   "artifacts": {
     "musicxml": "data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly-final.musicxml",
     "package": "data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly.drumscore",

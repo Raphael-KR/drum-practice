@@ -1,5 +1,6 @@
 import bundled from "./bundled-recording-tempo.json";
 import type { RecordData } from "../model/record";
+import { sha256 } from "../platform/browser/sha256";
 
 const FIELD = "drum-practice:recording-tempo:v1";
 export interface RecordingTempo {
@@ -56,13 +57,7 @@ export async function recordingTempoUpgrade(
     !xml.includes("</miscellaneous>")
   )
     return;
-  const hash = await crypto.subtle.digest(
-    "SHA-256",
-    await record.audio.arrayBuffer(),
-  );
-  const hex = [...new Uint8Array(hash)]
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
+  const hex = await sha256(await record.audio.arrayBuffer());
   if (hex !== estimate.audioSHA256) return;
   const text = JSON.stringify(estimate)
     .replaceAll("&", "&amp;")

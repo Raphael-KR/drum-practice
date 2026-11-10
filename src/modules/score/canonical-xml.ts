@@ -1,4 +1,5 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
+import { sha256 } from "../../platform/browser/sha256";
 import {
   validMeasureBeatTimes,
   validateMeasureLyrics,
@@ -412,14 +413,7 @@ const hashes = new WeakMap<Blob, Promise<string>>();
 async function audioHash(blob: Blob) {
   let p = hashes.get(blob);
   if (!p) {
-    p = blob
-      .arrayBuffer()
-      .then((b) => crypto.subtle.digest("SHA-256", b))
-      .then((b) =>
-        Array.from(new Uint8Array(b), (v) =>
-          v.toString(16).padStart(2, "0"),
-        ).join(""),
-      );
+    p = blob.arrayBuffer().then(sha256);
     hashes.set(blob, p);
   }
   return p;

@@ -8,6 +8,8 @@ import {
   createScorePackage,
   readScorePackage,
 } from "../../../../src/modules/library/score-package.ts";
+import { sha256 } from "../../../../src/platform/browser/sha256.ts";
+import { encodeAsset } from "../../../../src/platform/storage/binary-asset.ts";
 
 // Vite's transformed directory URL may omit its final slash. Every song path
 // below is repository-relative, so retain the directory boundary explicitly.
@@ -16,19 +18,10 @@ export const projectBase = new URL(
   import.meta.url,
 ).pathname.replace(/\/?$/, "/");
 export async function sha(blob) {
-  return Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()),
-    ),
-    (n) => n.toString(16).padStart(2, "0"),
-  ).join("");
+  return sha256(await blob.arrayBuffer());
 }
 export async function base64(blob) {
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let text = "";
-  for (let i = 0; i < bytes.length; i += 8192)
-    text += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  return btoa(text);
+  return (await encodeAsset(blob)).base64;
 }
 export async function saveEvidence(endpoint, data, port) {
   const response = await fetch(`http://127.0.0.1:${port}/${endpoint}`, {

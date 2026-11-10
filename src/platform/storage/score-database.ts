@@ -3,7 +3,7 @@ import type { Song } from "../../model/model";
 type MigrationRecord = { song: Pick<Song, "id"> };
 import { t } from "../../shared/i18n/i18n";
 /** Both local apps own one score library on the same origin. */
-export const SCORE_DATABASE = "drum-practice";
+const SCORE_DATABASE = "drum-practice";
 const MIGRATION = "player-library-v1";
 export const RETIRED_SCORE_ID = "tom-moving-original-v1";
 /** User explicitly retired the 16-bar edition, including recoverable archives. */

@@ -29,7 +29,9 @@ export function drumBeamSlope(ys: number[], span: number, staffGap: number) {
   if (directions.size !== 1 || span <= 0) return 0;
   return Math.sign(ys.at(-1)! - ys[0]) * Math.min(0.08, staffGap / 2 / span);
 }
-/** OSMD 2.1/VexFlow adapter, applied before native stem extension and beam drawing. */
+/** Native beam adapter, introduced with OSMD 2.1/VexFlow.
+ * Keep the drum beam rule before native stem extension and drawing.
+ */
 export function installDrumBeams(osmd: OpenSheetMusicDisplay) {
   const calculator = osmd.GraphicSheet.GetCalculator as unknown as {
     calculateMeasureXLayout(row: BeamMeasure[]): number;

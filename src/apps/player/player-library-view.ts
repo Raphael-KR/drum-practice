@@ -2,6 +2,7 @@ import { librarySectionHTML } from "../../modules/library/score-catalog";
 import { AUDIO_FILE_ACCEPT } from "../../modules/audio/audio-practice";
 import { escapeHTML } from "../../shared/ui/html";
 import { icon } from "../../shared/ui/icon-svg";
+import { iconButtonHTML } from "../../shared/ui/icon-button";
 import { t } from "../../shared/i18n/i18n";
 
 const BOOKING_URL =
@@ -24,8 +25,8 @@ export function libraryHTML(showEditor: boolean): string {
         ${editorLink}
       </div>
       <div class="actions library-common-actions">
-        <button id="library-refresh" type="button" aria-label="${escapeHTML(t("library.refresh"))}" title="${escapeHTML(t("library.refresh"))}">${icon("reload")}</button>
-        <button id="library-settings" class="icon-button" type="button" title="${escapeHTML(t("icons.message059"))}" aria-label="${escapeHTML(t("icons.message059"))}">${icon("settings")}</button>
+        ${iconButtonHTML("library-refresh", icon("reload"), t("library.refresh"))}
+        ${iconButtonHTML("library-settings", icon("settings"), t("icons.message059"))}
       </div>
     </div>
   </header>

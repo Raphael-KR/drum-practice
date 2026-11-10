@@ -9,7 +9,7 @@ from collections import Counter, defaultdict
 from fractions import Fraction as F
 from pathlib import Path
 from lxml import etree as E
-from verify import Resolver
+from common.musicxml import Resolver
 
 # Source-read tokens: glyph/staff roles; labels do not establish a source drum legend.
 # R rest, X high cross cymbal, Y top-line cross cymbal, H above-staff hi-hat,
@@ -210,9 +210,7 @@ def main():
     p.add_argument("--out", type=Path, required=True)
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
-    schema_path = (
-        Path(__file__).resolve().parents[3] / "data/reference/musicxml/schema"
-    )
+    schema_path = Path(__file__).resolve().parents[3] / "data/reference/musicxml/schema"
     parser = E.XMLParser(no_network=True)
     parser.resolvers.add(Resolver(schema_path))
     schema = E.XMLSchema(E.parse(str(schema_path / "musicxml.xsd"), parser))

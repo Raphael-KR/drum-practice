@@ -3,8 +3,6 @@ import { t } from "../../shared/i18n/i18n";
 
 export interface RepeatControls {
   radiusAttribute: string;
-  summaryId: string;
-  stopId: string;
 }
 /** Same visible content; only event-routing identifiers belong to each host. */
 export function repeatControlsHTML(ids: RepeatControls) {

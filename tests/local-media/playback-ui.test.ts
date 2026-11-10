@@ -30,7 +30,7 @@ for (const [surface, bindings] of [
       })}
       <section class="repeat-controls" ${bindings.repeat ? `id="${bindings.repeat}"` : ""}>
         <button id="${bindings.adjust}"></button>
-        ${repeatControlsHTML({ radiusAttribute: surface === "web" ? "data-loop-radius" : "data-radius", summaryId: bindings.summary, stopId: bindings.stop })}
+        ${repeatControlsHTML({ radiusAttribute: surface === "web" ? "data-loop-radius" : "data-radius" })}
         <div id="${bindings.markers}" class="marker-slots"></div>
       </section></div>`;
     const root = document.getElementById("app")!;

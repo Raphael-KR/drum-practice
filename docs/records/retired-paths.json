@@ -1,0 +1,166 @@
+[
+  {
+    "from": "docs/architecture/MUSICXML-SUPPORT.md",
+    "to": "docs/records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--musicxml-supportmd--1"
+  },
+  {
+    "from": "docs/architecture/RECORDING-TEMPO-APP.md",
+    "to": "docs/decisions/0015-score-tempo-and-recording-estimates.md#이관-원문--recording-tempo-appmd--1"
+  },
+  {
+    "from": "docs/architecture/SVG-RENDERING.md",
+    "to": "docs/records/archive/adr-0004-browser-native-score-rendering-sources.md#이관-원문--svg-renderingmd--1"
+  },
+  {
+    "from": "docs/operations/TESTING.md",
+    "to": "docs/how-to/verify.md#testing--개발-검사와-로컬-자산-준비"
+  },
+  {
+    "from": "docs/plans/COUNT-OFF-NAVIGATION.md",
+    "to": "docs/records/archive/adr-0006-practice-navigation-and-overlays-sources.md#이관-원문--count-off-navigationmd--1"
+  },
+  {
+    "from": "docs/plans/REPEAT-RANGE-ACTIONS.md",
+    "to": "docs/records/archive/adr-0006-practice-navigation-and-overlays-sources.md#이관-원문--repeat-range-actionsmd--1"
+  },
+  {
+    "from": "docs/plans/dependency-updates-20261024.md",
+    "to": "docs/records/archive/dependency-updates-20261024.md"
+  },
+  {
+    "from": "docs/plans/landscape-score-only-20261028.md",
+    "to": "docs/records/archive/landscape-score-only-20261028.md"
+  },
+  {
+    "from": "docs/plans/liquid-glass-unification-20261028.md",
+    "to": "docs/records/archive/liquid-glass-unification-20261028.md"
+  },
+  {
+    "from": "docs/plans/phone-landscape-settings-20261029.md",
+    "to": "docs/records/archive/phone-landscape-settings-20261029.md"
+  },
+  {
+    "from": "docs/plans/playback-words-full-width-20261023.md",
+    "to": "docs/records/archive/playback-words-full-width-20261023.md"
+  },
+  {
+    "from": "docs/plans/playback-words-layout-20261023.md",
+    "to": "docs/records/archive/playback-words-layout-20261023.md"
+  },
+  {
+    "from": "docs/plans/red-sunset-crescendo-bundle-20261024.md",
+    "to": "docs/records/archive/red-sunset-crescendo-bundle-20261024.md"
+  },
+  {
+    "from": "docs/plans/release-0.8.13.md",
+    "to": "docs/records/archive/release-0.8.13.md"
+  },
+  {
+    "from": "docs/plans/release-0.8.14.md",
+    "to": "docs/records/archive/release-0.8.14.md"
+  },
+  {
+    "from": "docs/plans/release-0.8.15.md",
+    "to": "docs/records/archive/release-0.8.15.md"
+  },
+  {
+    "from": "docs/plans/release-0.8.16.md",
+    "to": "docs/records/archive/release-0.8.16.md"
+  },
+  {
+    "from": "docs/plans/release-0.8.17.md",
+    "to": "docs/records/archive/release-0.8.17.md"
+  },
+  {
+    "from": "docs/plans/release-0.8.18.md",
+    "to": "docs/records/archive/release-0.8.18.md"
+  },
+  {
+    "from": "docs/plans/ribbon-meter-size-20261024.md",
+    "to": "docs/records/archive/ribbon-meter-size-20261024.md"
+  },
+  {
+    "from": "docs/plans/runtime-memory-20261024.md",
+    "to": "docs/records/archive/runtime-memory-20261024.md"
+  },
+  {
+    "from": "docs/plans/runtime-performance-20261024.md",
+    "to": "docs/records/archive/runtime-performance-20261024.md"
+  },
+  {
+    "from": "docs/plans/safari-two-row-scroll-20261024.md",
+    "to": "docs/records/archive/safari-two-row-scroll-20261024.md"
+  },
+  {
+    "from": "docs/plans/two-song-bundle-update-20261023.md",
+    "to": "docs/records/archive/two-song-bundle-update-20261023.md"
+  },
+  {
+    "from": "docs/plans/vite-security-update-20261024.md",
+    "to": "docs/records/archive/vite-security-update-20261024.md"
+  },
+  {
+    "from": "docs/plans/wedge-endpoint-20261024.md",
+    "to": "docs/records/archive/wedge-endpoint-20261024.md"
+  },
+  {
+    "from": "docs/product/IPAD-LANDSCAPE-UX.md",
+    "to": "docs/records/archive/adr-0005-practice-layout-and-spacing-sources.md#이관-원문--ipad-landscape-uxmd--1"
+  },
+  {
+    "from": "docs/product/RIBBON-READABILITY.md",
+    "to": "docs/records/archive/adr-0005-practice-layout-and-spacing-sources.md#이관-원문--ribbon-readabilitymd--1"
+  },
+  {
+    "from": "docs/score-production/IOI-SUDDENLY-CONVERSION.md",
+    "to": "docs/records/songs/ioi-suddenly.md#ioi-suddenly-conversion--ioi--갑자기-제작실측"
+  },
+  {
+    "from": "docs/score-production/LYRIC-SYNC-CORRECTION.md",
+    "to": "docs/records/songs/real-paradis.md#lyric-sync-correction--가사-싱크-보정--2026-09-19"
+  },
+  {
+    "from": "docs/score-production/LYRIC-SYNC-SUSPECTS.md",
+    "to": "docs/records/songs/real-paradis.md#lyric-sync-suspects--가사-싱크-교정-목록--¼박-격자-기준"
+  },
+  {
+    "from": "docs/score-production/RED-SUNSET-OPEN-CLOSE-20261023.md",
+    "to": "docs/records/songs/red-sunset.md#red-sunset-open-close-20261023--붉은-노을-o-가로-배치-교정"
+  },
+  {
+    "from": "docs/score-production/RED-SUNSET-REBUILD-20261023.md",
+    "to": "docs/records/songs/red-sunset.md#red-sunset-rebuild-20261023--붉은-노을--최신-제작-원칙-전곡-재제작"
+  },
+  {
+    "from": "scripts/build-info.mjs",
+    "to": "scripts/build/build-info.mjs"
+  },
+  {
+    "from": "hosting/drizzle/0000_fluffy_hobgoblin.sql",
+    "to": "docs/records/archive/server-analysis-migrations/0000_fluffy_hobgoblin.sql"
+  },
+  {
+    "from": "hosting/drizzle/0001_whole_doctor_faustus.sql",
+    "to": "docs/records/archive/server-analysis-migrations/0001_whole_doctor_faustus.sql"
+  },
+  {
+    "from": "hosting/drizzle/0002_regular_jetstream.sql",
+    "to": "docs/records/archive/server-analysis-migrations/0002_regular_jetstream.sql"
+  },
+  {
+    "from": "hosting/drizzle/meta/0000_snapshot.json",
+    "to": "docs/records/archive/server-analysis-migrations/meta/0000_snapshot.json"
+  },
+  {
+    "from": "hosting/drizzle/meta/0001_snapshot.json",
+    "to": "docs/records/archive/server-analysis-migrations/meta/0001_snapshot.json"
+  },
+  {
+    "from": "hosting/drizzle/meta/0002_snapshot.json",
+    "to": "docs/records/archive/server-analysis-migrations/meta/0002_snapshot.json"
+  },
+  {
+    "from": "hosting/drizzle/meta/_journal.json",
+    "to": "docs/records/archive/server-analysis-migrations/meta/_journal.json"
+  }
+]

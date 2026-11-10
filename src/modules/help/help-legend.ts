@@ -1,7 +1,7 @@
 import { scoreLegendPortraitSVG } from "../score/vendor/score-legend-portrait-svg";
 import { scoreLegendSVG } from "../score/vendor/score-legend-svg";
 import { t, type MessageKey } from "../../shared/i18n/i18n";
-export const legendItems = [
+const legendItems = [
   {
     id: "closed",
     group: "cymbals",

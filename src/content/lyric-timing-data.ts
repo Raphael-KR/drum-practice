@@ -1,4 +1,4 @@
-// Estimated timing correction; source evidence: docs/score-production/LYRIC-SYNC-CORRECTION.md.
+// Estimated timing correction; source evidence: docs/records/songs/real-paradis.md.
 export default {
   songId: "real-paradis",
   lyricCount: 556,

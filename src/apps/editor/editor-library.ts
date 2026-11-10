@@ -11,7 +11,6 @@ import { downloadScore } from "../../modules/library/download-score";
 import { readScorePackage } from "../../modules/library/score-package";
 import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import type { RecordData } from "../../model/record";
-import { chooseRecent } from "../../modules/library/recent-score";
 import {
   allRecords,
   deleteRecord,
@@ -104,7 +103,7 @@ export function createEditorLibrary(h: LibraryHost) {
       if (!selected) throw new Error(`Score missing: id=${entry.id}`);
       stage = "open-editor";
       await activate(selected);
-      await refreshRecentScore(true);
+      await refreshCatalog(true);
       await openEditor();
       h.tell(correctionNotice.message());
     } catch (cause) {
@@ -128,16 +127,15 @@ export function createEditorLibrary(h: LibraryHost) {
   async function openLibrary() {
     if (opening) return;
     await h.showHome();
-    await refreshRecentScore();
+    await refreshCatalog();
   }
   action("library-button", openLibrary);
   action("welcome-library", openLibrary);
-  async function refreshRecentScore(force = false) {
+  async function refreshCatalog(force = false) {
     if (opening && !force) return;
     const epoch = ++homeEpoch;
     const records = (await allRecords()).filter((r) => !r.song.audioPractice);
     if (epoch !== homeEpoch || (opening && !force)) return;
-    const recent = chooseRecent(records);
     const catalog = scoreCatalog(records);
     $("editor-home-list").innerHTML =
       '<div id="editor-home-favorites" class="practice-records" hidden></div>' +
@@ -168,7 +166,7 @@ export function createEditorLibrary(h: LibraryHost) {
         opening = true;
         try {
           await deleteRecord(entry.id);
-          await refreshRecentScore(true);
+          await refreshCatalog(true);
         } catch (cause) {
           try {
             console.error("Editor catalog deletion failed", {
@@ -187,9 +185,6 @@ export function createEditorLibrary(h: LibraryHost) {
       }
       void openCatalogEntry(catalog[Number(button.dataset.editorOpen)], button);
     };
-    $("demo-button").textContent = recent
-      ? i18nText("main.message223", { value1: recent.song.title })
-      : i18nText("main.message289");
   }
-  return { open: openLibrary, refreshRecent: refreshRecentScore };
+  return { open: openLibrary, refreshCatalog };
 }

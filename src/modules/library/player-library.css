@@ -1,7 +1,6 @@
 .player-library,
 body:not(.has-song) #app:has(.editor-home) {
   font-size: 18px;
-  max-width: 1120px;
   margin: auto;
   padding: 24px;
 }
@@ -53,8 +52,7 @@ body:not(.has-song) #app:has(.editor-home) > header .brand {
   margin: 0;
   overflow-wrap: anywhere;
 }
-.practice-card-actions,
-.package-choice {
+.practice-card-actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
@@ -118,10 +116,6 @@ body:not(.has-song) #app:has(.editor-home) > header .editor-player-link {
 }
 
 /* The first screen supplies Safari's persistent top-edge color before any tap. */
-.player-library,
-body:not(.has-song) #app:has(.editor-home) {
-  padding-top: 0;
-}
 .player-library > .library-header,
 body:not(.has-song) #app:has(.editor-home) > .library-header {
   position: sticky;
@@ -326,10 +320,6 @@ body:not(.has-song) #app:has(.editor-home) .library-sections {
 body:not(.has-song) #app:has(.editor-home) .library-heading {
   margin-bottom: 10px;
 }
-.player-library .library-heading h2,
-body:not(.has-song) #app:has(.editor-home) .library-heading h2 {
-  font-size: 18px;
-}
 .player-library .practice-records,
 body:not(.has-song) #app:has(.editor-home) .practice-records {
   gap: 6px;
@@ -337,7 +327,6 @@ body:not(.has-song) #app:has(.editor-home) .practice-records {
 .player-library .practice-card,
 body:not(.has-song) #app:has(.editor-home) .practice-card {
   padding: 6px 12px;
-  gap: 16px;
   border-radius: 10px;
   min-width: 0;
 }
@@ -395,7 +384,6 @@ body:not(.has-song) #app:has(.editor-home) .practice-card .icon-button {
   body:not(.has-song) #app:has(.editor-home) .practice-card {
     flex-direction: column;
     align-items: stretch;
-    gap: 6px;
     padding: 8px 10px;
   }
   .player-library .practice-card-actions,

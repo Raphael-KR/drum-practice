@@ -3,7 +3,7 @@ import { t } from "../../shared/i18n/i18n";
 export const MAX_AUDIO_FILE_BYTES = 100 * 1024 * 1024;
 export const MAX_AUDIO_SECONDS = 30 * 60;
 export const AUDIO_DECODE_SAMPLE_RATE = 32000;
-export const MAX_AUDIO_PCM_BYTES = 256 * 1024 * 1024;
+const MAX_AUDIO_PCM_BYTES = 256 * 1024 * 1024;
 
 export function checkAudioFileSize(file: Pick<Blob, "size">): void {
   if (!file.size) throw Error(t("audioPractice.empty"));

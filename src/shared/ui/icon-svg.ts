@@ -29,8 +29,18 @@ const paths: Record<string, string> = {
   reload: '<path d="M20 7v5h-5M20 12a8 8 0 1 0-2 6M20 12l-3-5"/>',
   expand: '<path d="M9 3H3v6m0-6 7 7m5 11h6v-6m0 6-7-7"/>',
   collapse: '<path d="M3 10h7V3m0 7L3 3m18 11h-7v7m0-7 7 7"/>',
+  pencil: '<path d="m4 16 12-12 4 4L8 20l-5 1Zm10-10 4 4"/>',
+  lyrics:
+    '<path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2ZM7 8h10M7 12h7"/>',
+  folder:
+    '<path d="M3 6h7l2 3h9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm0 0V4h7l2 2h7a2 2 0 0 1 2 2v1"/>',
+  export: '<path d="M8 9H4v12h16V9h-4M12 15V2m-4 4 4-4 4 4"/>',
+  document: '<path d="M6 3h8l4 4v14H6Z M14 3v5h4 M9 12h6 M9 16h6"/>',
+  text: '<path d="M5 5h14 M5 10h14 M5 15h10 M5 20h7"/>',
+  chevron: '<path d="m9 5 7 7-7 7"/>',
+  speed: '<path d="m5 4 8 8-8 8m7-16 8 8-8 8"/>',
 };
-export function svgFromPath(path: string) {
+function svgFromPath(path: string) {
   return `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${path}</svg>`;
 }
 

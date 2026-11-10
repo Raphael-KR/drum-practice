@@ -2,8 +2,6 @@
 :root {
   font-family:
     -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
-  color: #203d37;
-  background: #f5f4ef;
   font-synthesis: none;
   font-size: 15px;
 }
@@ -42,11 +40,6 @@ button:disabled {
   opacity: 0.5;
   cursor: wait;
 }
-button.primary {
-  background: #17594d;
-  color: white;
-  border-color: #17594d;
-}
 button.danger {
   color: #aa4233;
 }
@@ -65,7 +58,6 @@ input[type="number"] {
 }
 input[type="range"] {
   padding: 0;
-  accent-color: #267562;
 }
 textarea {
   width: 100%;
@@ -97,7 +89,6 @@ small,
   color: #68786f;
 }
 header {
-  padding: 17px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -107,7 +98,6 @@ header {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 .actions {
   display: flex;
@@ -219,8 +209,4 @@ button {
 }
 :root {
   --border: var(--line);
-}
-button.on {
-  background: var(--accent);
-  color: white;
 }

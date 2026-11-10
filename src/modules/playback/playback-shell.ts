@@ -81,8 +81,6 @@ export function mountPlaybackShell(
         adjust: ids.adjust,
         markers: ids.markers,
         radiusAttribute: ids.radiusAttribute,
-        summaryId: ids.summary,
-        stopId: ids.stop,
       }),
   );
   const panel = (name: string, title: string, body: string) => {

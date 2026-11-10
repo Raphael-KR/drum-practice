@@ -2,9 +2,6 @@
 input::-webkit-inner-spin-button {
   appearance: none;
 }
-.spacer {
-  flex: 1;
-}
 
 details {
   margin-top: 24px;
@@ -16,13 +13,3 @@ pre {
   max-height: 40vh;
   overflow: auto;
 }
-@media (max-width: 650px) {
-}
-
-/* Match the approved app workspace (workspace.ts/style.css), without authoring UI. */
-
-/* Paused browsing moves score content, not a reversed timeline indicator. */
-
-/* Fit the viewport without scaling text or the score's internal scroll surface. */
-
-/* Shared UI hierarchy: keep both playback bars together at every viewport width. */

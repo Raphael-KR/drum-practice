@@ -25,7 +25,7 @@ const keys = [
   "denominator",
   "confidence",
 ];
-export const isAudioHash = (hash: string) => /^[a-f0-9]{64}$/.test(hash);
+const isAudioHash = (hash: string) => /^[a-f0-9]{64}$/.test(hash);
 export function validAudioAnalysis(
   value: unknown,
   hash: string,

@@ -1,4 +1,4 @@
-// Provisional estimates; uncertain positions are listed in docs/score-production/LYRIC-SYNC-SUSPECTS.md.
+// Provisional estimates; uncertain positions are listed in docs/records/songs/real-paradis.md.
 export default {
   songId: "real-paradis",
   lyricCount: 556,

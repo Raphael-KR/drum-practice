@@ -23,6 +23,8 @@
 
 ### 마이그레이션과 배포 경계
 
-기존 마이그레이션 이력은 보존한다. 이력에 있는 DROP을 롤백·새 시험의 삭제 명령으로 실행하지 않는다. D1 바인딩·마이그레이션 도구와 런타임 읽기/쓰기를 구분하며 Worker는 DB를 사용하지 않는다. 적용 식별자·당시 요청은 [ADR-0026](../../decisions/0026-device-local-audio-analysis.md)을 따른다.
+과거 마이그레이션 SQL·스냅샷·저널은 [보관 디렉터리](../../records/archive/server-analysis-migrations/)에 바이트 그대로 보존한다. SQL을 운영 명령으로 다시 실행하지 않는다. 삭제 회귀검사의 입력 경로만 보관 위치로 바꿨으며, 기존 원격 삭제 확인 기록과 현재 상태를 구분한다.
+
+D1 바인딩과 Drizzle 의존성·설정·생성 스크립트는 제거했다. Sites 준비·Vite 구성·메타데이터 복사·발행 검사도 DB 없는 Worker 계약을 사용한다. Worker 보안 헤더와 정본 player 자산 SHA-256 일치 검사는 유지한다. 이번 정리는 원격 DB 변경·삭제를 포함하지 않으며 새 발행·사이트 갱신 검증은 릴리스에서 수행한다. [지원 종료 기록](../../records/code-maintenance.md#retired-support-20261110)을 따른다.
 
 원격 자료 삭제는 실제 환경의 확인이 있어야 보고한다. 삭제 관측은 [발행 기록](../../records/releases.md#sites-publication-history--sites-발행공개-확인-기록)에서 확인한다. 공급자 내부 보존본·백업까지 삭제했다고 주장하지 않는다.

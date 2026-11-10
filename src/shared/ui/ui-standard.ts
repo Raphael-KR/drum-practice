@@ -18,12 +18,6 @@ export function componentName(
   const value = accessible ? entry.accessible : entry.name;
   return locale === "ko" ? t(value.ko as MessageKey) : value.en;
 }
-export function uiNameForId(id: string, fallback: string): string {
-  const item = catalog.components.find((entry) =>
-    Object.values(entry.selectors).includes(`#${id}`),
-  );
-  return item ? t(item.name.ko as MessageKey) : fallback;
-}
 /** Shared layout/semantics for the editor and player apps. */
 export function installUIStandard(
   surface: "web" | "player",
@@ -71,7 +65,6 @@ export function installUIStandard(
   const triggers: Record<string, string[]> = {
     "settings-dialog": ["open-settings-dialog", "settings"],
     "tempo-dialog": ["original-tempo", "bpm"],
-    "sound-dialog": ["open-sound-dialog", "sound"],
     "loop-dialog": ["open-loop-dialog", "adjust"],
   };
   for (const dialog of root.querySelectorAll<HTMLDialogElement>("dialog")) {

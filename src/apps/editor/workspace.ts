@@ -31,11 +31,6 @@ function rememberedCategory(): SettingsCategory {
   }
   return lastCategory;
 }
-export function updateViewWidth() {
-  const select = document.getElementById("view") as HTMLSelectElement;
-  const mirror = document.getElementById("view-selected-text");
-  if (mirror) mirror.textContent = select.selectedOptions[0]?.textContent || "";
-}
 export function selectSettingsCategory(category: SettingsCategory) {
   lastCategory = selectPlaybackSettings(document, category);
   try {
@@ -85,14 +80,8 @@ export function arrangeWorkspace() {
   practice.querySelector(".statusline")!.append(el("error-notice"));
   const loops = el("loop-slots").closest(".panel")!;
   const markers = el("section-shortcuts").closest(".panel")!;
-  const backup = markers.querySelector("details")!;
-  backup.querySelector("summary")!.remove();
   loops.querySelector("h2")?.remove();
   markers.querySelector("h2")!.remove();
-  markers.insertAdjacentHTML(
-    "beforeend",
-    '<span id="active-loop" hidden></span><button id="quick-add-marker" hidden></button>',
-  );
   const { screen: screenBody, addSettings: settingsPanel } = mountPlaybackShell(
     el("app"),
     {
@@ -122,38 +111,7 @@ export function arrangeWorkspace() {
       i18nText("main.message346") +
       "</button></div>",
   );
-  updateViewWidth();
-  const scoreSettings = settingsPanel(
-    "score",
-    "score-settings",
-    "open-score-settings",
-  );
-  const group = (title: string, id: string) => {
-    const section = document.createElement("section");
-    section.id = id;
-    section.className = "settings-group score-management-group";
-    const heading = document.createElement("h4");
-    heading.textContent = title;
-    section.append(heading);
-    scoreSettings.append(section);
-    return section;
-  };
-  const edit = group(
-    i18nText("score-management.message489"),
-    "score-edit-actions",
-  );
-  el("edit-button").textContent = i18nText("icons.message072");
-  edit.append(el("original-button"), el("edit-button"));
-  edit.insertAdjacentHTML(
-    "beforeend",
-    '<button id="lyrics-button" type="button">' +
-      i18nText("icons.message073") +
-      '</button><button id="metadata-button" type="button">' +
-      i18nText("icons.message074") +
-      "</button>",
-  );
-  const backupBody = group(i18nText("workspace.message563"), "backup-dialog");
-  backupBody.append(...backup.children, el("alignment-note"));
+  settingsPanel("score", "score-settings", "open-score-settings");
   const info = settingsPanel("info", "info-settings", "open-info-settings");
   info.append(
     appInfoContent(appVersions.editor.version, buildInfo, { scoreInfo: true }),
@@ -170,20 +128,8 @@ export function arrangeWorkspace() {
   el("busy").textContent = i18nText("workspace.message566");
   log.append(el("busy"));
   info.append(log);
-  backup.remove();
   practice.querySelector(".panels")!.remove();
   selectSettingsCategory(rememberedCategory());
-
-  const seek = el("seek");
-  const wrap = document.createElement("div");
-  wrap.className = "seek-control";
-  seek.before(wrap);
-  wrap.append(seek);
-  wrap.insertAdjacentHTML(
-    "beforeend",
-    '<output id="seek-position" hidden></output>',
-  );
-  (seek.closest(".seekrow") as HTMLElement).hidden = true;
 
   // Editing has explicit tabs; lyrics and metadata no longer sit below a PDF page.
   const editor = el("editor-dialog");
@@ -253,7 +199,7 @@ export function selectEditorPane(name: string) {
   currentEditorPane = name;
   const editor = document.getElementById("editor-dialog");
   if (editor) editor.dataset.activePane = name;
-  for (const id of ["score", "lyrics", "meta", "files", "sections"]) {
+  for (const id of ["score", "lyrics", "meta", "sections"]) {
     if (!document.getElementById(`editor-${id}`)) continue;
     document.getElementById(`editor-${id}`)!.hidden = id !== name;
     const b = document.querySelector(`[data-pane="${id}"]`)!;
@@ -265,51 +211,4 @@ export function selectEditorPane(name: string) {
     document.getElementById(`editor-${id}`)!.setAttribute("role", "tabpanel");
   }
   if (scroller) scroller.scrollTop = editorScroll.get(name) || 0;
-}
-
-const listPages = new Map<string, { page: number; count: number }>();
-export function paginateList(id: string) {
-  const list = document.getElementById(id)!;
-  const items = [...list.children] as HTMLElement[];
-  let state = listPages.get(id) || { page: 0, count: items.length };
-  const pages = Math.max(1, Math.ceil(items.length / 6));
-  if (items.length > state.count) state.page = pages - 1;
-  state = { page: Math.min(state.page, pages - 1), count: items.length };
-  listPages.set(id, state);
-  let pager = document.getElementById(`${id}-pager`);
-  if (!pager) {
-    pager = document.createElement("div");
-    pager.id = `${id}-pager`;
-    pager.className = "pager";
-    list.after(pager);
-  }
-  const render = () => {
-    items.forEach(
-      (item, i) => (item.hidden = Math.floor(i / 6) !== state.page),
-    );
-    pager!.hidden = pages === 1;
-    pager!.innerHTML =
-      "<button " +
-      String(state.page === 0 ? "disabled" : "") +
-      " data-prev>" +
-      i18nText("workspace.message572") +
-      "</button><span>" +
-      String(state.page + 1) +
-      " / " +
-      String(pages) +
-      "</span><button " +
-      String(state.page === pages - 1 ? "disabled" : "") +
-      " data-next>" +
-      i18nText("workspace.message573") +
-      "</button>";
-    (pager!.querySelector("[data-prev]") as HTMLButtonElement).onclick = () => {
-      state.page--;
-      render();
-    };
-    (pager!.querySelector("[data-next]") as HTMLButtonElement).onclick = () => {
-      state.page++;
-      render();
-    };
-  };
-  render();
 }

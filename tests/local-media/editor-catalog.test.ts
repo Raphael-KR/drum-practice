@@ -75,7 +75,7 @@ it("merges the real catalog once, keeps the saved record, and groups basic and p
 });
 it("returns to the common home catalog without creating a second list dialog", async () => {
   const { h, library } = setup();
-  await library.refreshRecent();
+  await library.refreshCatalog();
   expect(document.querySelectorAll("#editor-home-basic article")).toHaveLength(
     2,
   );
@@ -92,7 +92,7 @@ it("returns to the common home catalog without creating a second list dialog", a
 it("opens the saved edit without download or replacement", async () => {
   vi.mocked(allRecords).mockResolvedValue([record]);
   const { h, library } = setup();
-  await library.refreshRecent();
+  await library.refreshCatalog();
   loveholicButton().click();
   await vi.waitFor(() => expect(h.openEditor).toHaveBeenCalledOnce());
   expect(h.activate).toHaveBeenCalledWith(record);
@@ -102,7 +102,7 @@ it("opens the saved edit without download or replacement", async () => {
 it("downloads a missing score, saves it, and enters the editor; repeat clicks start only once", async () => {
   const { h, library } = setup();
   vi.mocked(downloadScore).mockResolvedValue(blob);
-  await library.refreshRecent();
+  await library.refreshCatalog();
   const button = loveholicButton();
   button.click();
   button.click();
@@ -117,7 +117,7 @@ it("keeps a record saved by another tab during download", async () => {
     vi.mocked(allRecords).mockResolvedValue([record]);
     return blob;
   });
-  await library.refreshRecent();
+  await library.refreshCatalog();
   loveholicButton().click();
   await vi.waitFor(() => expect(h.openEditor).toHaveBeenCalledOnce());
   expect(h.activate).toHaveBeenCalledWith(record);
@@ -129,7 +129,7 @@ it("restores the button after failure and permits retry", async () => {
   vi.mocked(downloadScore)
     .mockRejectedValueOnce(new Error("offline"))
     .mockResolvedValueOnce(blob);
-  await library.refreshRecent();
+  await library.refreshCatalog();
   const button = loveholicButton();
   button.click();
   await vi.waitFor(() => expect(h.error).toHaveBeenCalledOnce());
@@ -148,11 +148,11 @@ it("keeps the download button and progress during a focus-triggered refresh", as
       finish = resolve;
     });
   });
-  await library.refreshRecent();
+  await library.refreshCatalog();
   const button = loveholicButton();
   button.click();
   await vi.waitFor(() => expect(button.textContent).toContain("42%"));
-  await library.refreshRecent();
+  await library.refreshCatalog();
   expect(loveholicButton()).toBe(button);
   expect(button.disabled).toBe(true);
   finish(blob);
@@ -162,7 +162,7 @@ it("rejects a package belonging to a different catalog entry before saving", asy
   const { h, library } = setup();
   const log = vi.spyOn(console, "error").mockImplementation(() => {});
   vi.mocked(downloadScore).mockResolvedValueOnce(blob);
-  await library.refreshRecent();
+  await library.refreshCatalog();
   document
     .querySelector<HTMLButtonElement>("#editor-home-basic [data-editor-open]")!
     .click();
@@ -183,7 +183,7 @@ it("rejects a package belonging to a different catalog entry before saving", asy
 it("keeps deletion on the home card, requires confirmation, and restores the bundled import action", async () => {
   vi.mocked(allRecords).mockResolvedValue([record]);
   const { library, h } = setup();
-  await library.refreshRecent();
+  await library.refreshCatalog();
   const remove = document.querySelector<HTMLButtonElement>(
     `[data-score-id="${record.song.id}"] [data-editor-remove]`,
   )!;

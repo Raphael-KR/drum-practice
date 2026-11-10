@@ -27,7 +27,7 @@ export function soundFieldsHTML() {
     })
     .join("")}</div>`;
 }
-export function zoomFieldHTML() {
+function zoomFieldHTML() {
   return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("playback.message455")}</strong><span class="zoom-scale"><input id="zoom" type="range" min="0" max="100" step="0.5" value="50" list="zoom-ticks"><datalist id="zoom-ticks">${ZOOM_TICKS.map((p) => `<option value="${p}"></option>`).join("")}</datalist><span class="zoom-tick-labels" aria-hidden="true">${ZOOM_TICKS.map((p) => `<span>${Math.round(zoomFromSlider(p) * 100)}%</span>`).join("")}</span></span><output id="zoom-value" for="zoom">100%</output></label>`;
 }
 export function progressFieldHTML(id: string) {
@@ -60,7 +60,7 @@ export function screenSettingsHTML(
   compare = false,
 ) {
   return (
-    `<div class="settings-choice-row"><div class="settings-choice-buttons segmented-control" role="group" aria-label="${t("main.message108")}">${["ribbon", "rows", ...(compare ? ["compare"] : [])].map((value, i) => `<button type="button" data-setting-control="view" data-setting-value="${value}" title="${t((["main.message109", "main.message110", "main.message111"] as const)[i])}">${t((["main.message109", "main.message110", "main.message111"] as const)[i])}</button>`).join("")}</div><p id="view-description" class="subtle"></p><span id="view-selected-text" hidden></span><select id="view" hidden><option value="ribbon">${t("main.message109")}</option><option value="rows">${t("main.message110")}</option>${compare ? `<option value="compare">${t("main.message111")}</option>` : ""}</select></div>` +
+    `<div class="settings-choice-row"><div class="settings-choice-buttons segmented-control" role="group" aria-label="${t("main.message108")}">${["ribbon", "rows", ...(compare ? ["compare"] : [])].map((value, i) => `<button type="button" data-setting-control="view" data-setting-value="${value}" title="${t((["main.message109", "main.message110", "main.message111"] as const)[i])}">${t((["main.message109", "main.message110", "main.message111"] as const)[i])}</button>`).join("")}</div><p id="view-description" class="subtle"></p><select id="view" hidden><option value="ribbon">${t("main.message109")}</option><option value="rows">${t("main.message110")}</option>${compare ? `<option value="compare">${t("main.message111")}</option>` : ""}</select></div>` +
     `<div id="pdf-view-row" class="settings-choice-row"><div class="settings-choice-buttons segmented-control" role="group" aria-label="${t("settings.scoreFormat")}"><button type="button" data-setting-control="${ids.pdf}" data-setting-value="true" title="${t("settings.pdfOriginal")}">${t("settings.pdfOriginal")}</button><button type="button" data-setting-control="${ids.pdf}" data-setting-value="false" title="${t("settings.musicxml")}">${t("settings.musicxml")}</button></div><p id="pdf-view-status" class="subtle">${t("main.message227")}</p><input id="${ids.pdf}" type="checkbox" hidden disabled></div>` +
     titleOrderFieldsHTML() +
     zoomFieldHTML() +
@@ -96,7 +96,7 @@ export function settingsLayoutHTML({ sound = true, navigation = true } = {}) {
     navigation || sound
       ? `<aside class="settings-sidebar">${navigation ? `<nav class="settings-nav" aria-label="${t("workspace.message561")}"></nav>` : ""}${sound ? soundFieldsHTML() : ""}</aside>`
       : "";
-  return `<div class="settings-layout">${sidebar}<div class="settings-detail"><h3 id="settings-detail-heading" hidden></h3></div></div>`;
+  return `<div class="settings-layout">${sidebar}<div class="settings-detail"></div></div>`;
 }
 export function settingsPanel(
   root: HTMLElement,
@@ -170,8 +170,6 @@ export function repeatBarHTML(ids: {
   adjust: string;
   markers: string;
   radiusAttribute: string;
-  summaryId: string;
-  stopId: string;
 }) {
   return `<section ${ids.repeat ? `id="${ids.repeat}"` : ""} class="repeat-controls" aria-label="${t("workspace.message549")}"><div class="repeat-actions">${playbackButton(ids.adjust, "repeat", t("icons.message067"))}${repeatControlsHTML(ids)}</div><div id="${ids.markers}" class="marker-slots" role="group" aria-label="${t("playback.message452")}"></div></section>`;
 }

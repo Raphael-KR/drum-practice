@@ -1,5 +1,6 @@
 /** Rebuild this source score with the shared XML-only direction fitter. */
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { version as osmdVersion } from "opensheetmusicdisplay/package.json";
 import { renderMusicXML } from "/src/modules/score/musicxml.ts";
 import { displayPage } from "/src/modules/score/score-pages.ts";
 import { fitDirectionOffsets } from "./common/direction-offset.mjs";
@@ -32,9 +33,10 @@ export async function run(
         window.redRebuild.progress = progress;
       },
     );
-    if (!engines.size || [...engines].some((v) => v !== "2.2.1-release"))
+    const expectedEngine = `${osmdVersion}-release`;
+    if (!engines.size || [...engines].some((v) => v !== expectedEngine))
       throw Error(
-        `Renderer version: expected=2.2.1-release actual=${[...engines]}`,
+        `Renderer version: expected=${expectedEngine} actual=${[...engines]}`,
       );
     const xml = new Blob([result.xml]);
     const rendered = await renderMusicXML(xml, () => {}, "P1");

@@ -16,12 +16,28 @@ available.add(".");
 const files = sourceFiles.filter((file) => file.endsWith(".md"));
 const missing = [];
 const documents = new Map();
+const retiredPaths = new Map(
+  JSON.parse(readFileSync("docs/records/retired-paths.json", "utf8")).map(
+    ({ from, to }) => [from, to],
+  ),
+);
+let retiredLinks = 0;
 for (const file of files) {
   try {
     documents.set(file, await markdownDocument(readFileSync(file, "utf8")));
   } catch (error) {
     missing.push(`${file}: Markdown parse failed: ${error.message}`);
   }
+}
+// Archive mappings preserve provenance; they are not filesystem or URL redirects.
+for (const [from, to] of retiredPaths) {
+  const [target, fragment] = to.split("#");
+  if (
+    available.has(from) ||
+    !available.has(target) ||
+    (fragment && !documents.get(target)?.anchors.has(fragment))
+  )
+    missing.push(`Invalid retired path record: ${from} -> ${to}`);
 }
 let localLinks = 0;
 let fragmentLinks = 0;
@@ -47,6 +63,14 @@ for (const file of files) {
     const relative =
       path.relative(process.cwd(), resolved).split(path.sep).join("/") || ".";
     localLinks++;
+    const historical =
+      file === "history.md" ||
+      file.startsWith("docs/records/") ||
+      (file.startsWith("docs/decisions/") && !file.endsWith("/README.md"));
+    if (historical && retiredPaths.has(relative)) {
+      retiredLinks++;
+      continue;
+    }
     if (!available.has(relative)) {
       missing.push(
         `${file}:${line}: target not in source snapshot: ${url} -> ${relative}`,
@@ -75,5 +99,5 @@ if (missing.length) {
   process.exitCode = 1;
 } else
   console.log(
-    `PASS: ${files.length} Markdown files, ${localLinks} local links, ${fragmentLinks} Markdown anchor links (external URLs/absolute paths/non-Markdown fragments not checked)`,
+    `PASS: ${files.length} Markdown files, ${localLinks} local links, ${fragmentLinks} Markdown anchor links; ${retiredLinks} historical links to retired addresses (external URLs/absolute paths/non-Markdown fragments not checked)`,
   );

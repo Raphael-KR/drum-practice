@@ -57,8 +57,9 @@ interface NativeNote {
   getModifiers(): NativeArticulation[];
 }
 
-/** OSMD 2.2.x reads harmonic/stopped but drops their standard position attrs.
+/** Compatibility for harmonic/stopped position attributes omitted in OSMD 2.2.x.
  * Adapt native glyphs before geometric skyline and native SVG drawing.
+ * Retain explicit XML positions until the native output is verified to preserve them.
  */
 export function installTechnicalPositions(
   osmd: OpenSheetMusicDisplay,

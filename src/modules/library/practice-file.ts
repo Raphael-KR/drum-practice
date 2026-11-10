@@ -37,7 +37,7 @@ export interface PracticeFileEntry {
 function invalid(): never {
   throw Error(t("practiceFile.invalid"));
 }
-export async function practiceAudioHash(audio: Blob): Promise<string> {
+async function practiceAudioHash(audio: Blob): Promise<string> {
   if (!audio.size || audio.size > MAX_AUDIO_FILE_BYTES) invalid();
   return audioFileHash(await audio.arrayBuffer());
 }

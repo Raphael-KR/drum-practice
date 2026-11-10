@@ -7,7 +7,6 @@ import {
 import type { RecordData } from "../../model/record";
 import type { ScoreVariant } from "../../model/record";
 
-export const SCORE_PACKAGE_EXTENSION = ".drumscore";
 const MAX_BYTES = 512 * 1024 * 1024;
 const MAX_ENTRY = 256 * 1024 * 1024;
 const MAX_ENTRIES = 1100;

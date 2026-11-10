@@ -1,0 +1,185 @@
+/* Pointer feedback remains distinct from selected/current-section lighting. */
+@media (hover: hover) {
+  .drawer-playback
+    .playback-dock
+    .progress-number:hover:has(input:not(:disabled)) {
+    background: #e8f0fc;
+    border-color: var(--accent);
+  }
+  .drawer-playback
+    .section-shortcuts
+    button[data-section-measure]:hover:not(:disabled) {
+    filter: brightness(1.08);
+    outline: 2px solid #6e91bd;
+    outline-offset: -3px;
+  }
+  .drawer-playback
+    .section-shortcuts
+    button.is-current-section:hover:not(:disabled) {
+    filter: brightness(0.96);
+  }
+}
+
+/* Shared mutually exclusive choices: header and settings use the same material. */
+.segmented-control {
+  --segment-radius: 24px;
+  --segment-accent: var(--accent, #4075cf);
+  display: inline-flex;
+  align-items: stretch;
+  min-width: 0;
+  border-radius: var(--segment-radius);
+  background: #d5deeb;
+  box-shadow:
+    0 2px 3px #22344d20,
+    0 1px 0 #ffffffc9;
+}
+.segmented-control > button {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  min-height: var(--playback-control-size, 48px);
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid #b7c3d2;
+  border-radius: 0;
+  background: linear-gradient(#fff, #f7f9fc 55%, #e5ebf3);
+  color: #5e6c81;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -2px 2px #52658115;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s,
+    color 0.15s;
+}
+.segmented-control > button + button {
+  margin-left: -1px;
+}
+.segmented-control > button:first-child {
+  border-radius: var(--segment-radius) 0 0 var(--segment-radius);
+}
+.segmented-control > button:last-child {
+  border-radius: 0 var(--segment-radius) var(--segment-radius) 0;
+}
+.segmented-control > button[aria-pressed="true"] {
+  z-index: 1;
+  color: var(--segment-selected-color, var(--segment-accent));
+  border-color: var(--segment-border, var(--segment-accent));
+  background: var(--segment-selected-surface, var(--selected-control-surface));
+  box-shadow:
+    inset 0 0 0 1px var(--segment-border, var(--segment-accent)),
+    inset 0 3px 2px #fff,
+    inset 0 -3px 4px var(--segment-selected-shadow, #315d9324);
+}
+@media (hover: hover) {
+  .segmented-control > button:hover:not(:disabled) {
+    color: var(--segment-hover-color, var(--segment-accent));
+    background: var(--segment-hover-surface, linear-gradient(#fff, #dfebfc));
+    border-color: var(--segment-border, var(--segment-accent));
+    z-index: 2;
+  }
+}
+.segmented-control > button:active:not(:disabled) {
+  box-shadow: inset 0 2px 5px var(--segment-active-shadow, #23436b44);
+}
+.segmented-control > button:focus-visible {
+  outline: 3px solid var(--segment-focus, #d88a40);
+  outline-offset: 2px;
+  z-index: 3;
+}
+.segmented-control > button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.settings-choice-buttons.segmented-control {
+  display: flex;
+  width: 100%;
+}
+
+/* Scope the shared Warm palette to the active eighth-note mode only. */
+.metronome-toggle[data-metronome-mode="eighth"],
+#metronome-choices > [data-metronome-mode="eighth"][aria-pressed="true"] {
+  --metronome-warm-surface: #f6c45b;
+  --metronome-warm-hover: #ffd77c;
+  --metronome-warm-ink: #5b330b;
+  --metronome-warm-border: #b87510;
+  --metronome-warm-focus: #6e420b;
+  --segment-selected-color: var(--metronome-warm-ink);
+  --segment-hover-color: var(--metronome-warm-ink);
+  --segment-border: var(--metronome-warm-border);
+  --segment-selected-surface: var(--metronome-warm-surface);
+  --segment-hover-surface: var(--metronome-warm-hover);
+  --segment-selected-shadow: #79460e24;
+  --segment-active-shadow: #79460e44;
+  --segment-focus: var(--metronome-warm-focus);
+}
+.metronome-toggle[data-metronome-mode="eighth"] {
+  background: var(--metronome-warm-surface);
+  color: var(--metronome-warm-ink);
+  border-color: var(--metronome-warm-border);
+}
+button.metronome-toggle[data-metronome-mode="eighth"]:hover:not(:disabled) {
+  background: var(--metronome-warm-hover);
+  border-color: var(--metronome-warm-border);
+}
+.metronome-toggle[data-metronome-mode="eighth"]:active:not(:disabled) {
+  box-shadow: inset 0 2px 5px #79460e44;
+}
+.metronome-toggle[data-metronome-mode="eighth"]:focus-visible {
+  outline: 3px solid var(--metronome-warm-focus);
+  outline-offset: 2px;
+}
+.settings-group > .segmented-control {
+  margin-top: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .segmented-control > button {
+    transition: none;
+  }
+}
+.settings-choice-row[hidden] {
+  display: none;
+}
+
+/* Saved practice ranges remain visible even when repeat playback is off. */
+.stage .measure.has-saved-loop:not(.is-marked) > .measure-state-layer,
+.stage:not(.is-playing)
+  .measure.has-saved-loop.active:not(.is-marked)
+  > .measure-state-layer {
+  background: var(--range-soft);
+}
+.stage .measure.has-saved-loop {
+  border-bottom: 3px solid var(--range-accent);
+}
+
+/* One orange palette for practice ranges, separate from red markers. */
+.loop-slots > button {
+  border-color: var(--range-accent);
+  color: var(--range-text);
+}
+.loop-slots > button.saved-range {
+  background: linear-gradient(#fff8ec, #ffe5bd);
+}
+.loop-slots > button:hover:not(:disabled) {
+  background: var(--range-soft);
+  border-color: var(--range-accent);
+  color: var(--range-text);
+}
+.loop-slots > button[aria-pressed="true"],
+.loop-slots > button[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--range-accent);
+  color: white;
+}
+.stage .measure.range-selecting > .measure-state-layer {
+  background: var(--range-soft) !important;
+}
+.loop-slots > button:not(.saved-range):not(.armed),
+.loop-slots > button:not(.saved-range):not(.armed):hover:not(:disabled) {
+  background: white;
+  border-color: var(--line);
+  color: var(--text);
+}

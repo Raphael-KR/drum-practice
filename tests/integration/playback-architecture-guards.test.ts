@@ -13,6 +13,13 @@ const root = resolve(".");
 mkdirSync(join(root, ".tmp"), { recursive: true });
 const fixture = mkdtempSync(join(root, ".tmp", "architecture-guards-"));
 cpSync(join(root, "src"), join(fixture, "src"), { recursive: true });
+mkdirSync(join(fixture, "tools/score-production/musicxml/common"), {
+  recursive: true,
+});
+cpSync(
+  join(root, "tools/score-production/musicxml/common/package.mjs"),
+  join(fixture, "tools/score-production/musicxml/common/package.mjs"),
+);
 mkdirSync(join(fixture, "docs/plans"), { recursive: true });
 cpSync(
   join(root, "docs/plans/PLAYBACK-SCREEN-INVENTORY.md"),

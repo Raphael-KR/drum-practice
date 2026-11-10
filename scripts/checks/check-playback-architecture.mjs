@@ -30,6 +30,11 @@ const owned = [
   "createPlaybackWakeLock",
 ];
 const retired = ["repeatPoint", "fillRepeatFields", "markMeasure"];
+const screenHelpers = [
+  "createPlaybackTrack",
+  "createPlaybackDisplay",
+  "createPlaybackNavigation",
+];
 function calls(file) {
   const s = fs.readFileSync(file, "utf8"),
     ast = ts.createSourceFile(file, s, ts.ScriptTarget.Latest, true),
@@ -56,7 +61,7 @@ for (const file of [
     1,
     `${file}: must mount exactly one common screen`,
   );
-  for (const name of [...owned, ...retired])
+  for (const name of [...owned, ...retired, ...screenHelpers])
     assert(
       !sites.some((c) => c.name === name),
       `${file}: playback ownership escaped into host: ${name}`,
@@ -79,25 +84,74 @@ for (const file of ["src/apps/player/player-app.ts"]) {
     1,
     `${file}: shared runtime mount`,
   );
-  for (const name of [...owned, ...retired])
+  for (const name of [...owned, ...retired, ...screenHelpers])
     assert(
       !sites.some((c) => c.name === name),
       `${file}: playback ownership escaped`,
     );
 }
-const core = calls("src/modules/playback/playback-screen.ts");
+const screenFile = "src/modules/playback/playback-screen.ts";
+const trackFile = "src/modules/playback/playback-track.ts";
+const displayFile = "src/modules/playback/playback-display.ts";
+const navigationFile = "src/modules/playback/playback-navigation.ts";
+// These helpers are mounted by the single screen owner, never by app hosts.
+const delegated = new Map(
+  [
+    "renderMeasure",
+    "measureWidth",
+    "measurePosition",
+    "scoreLayout",
+    "renderScoreRows",
+    "layoutScoreLyrics",
+  ].map((name) => [name, trackFile]),
+);
+for (const name of [
+  "attachPlaybackGestures",
+  "installPlaybackWheel",
+  "installScoreScroll",
+  "installPlaybackKeys",
+  "movePlaybackScrub",
+])
+  delegated.set(name, navigationFile);
+const ownerCalls = new Map(
+  [screenFile, trackFile, displayFile, navigationFile].map((file) => [
+    file,
+    calls(file),
+  ]),
+);
+const core = ownerCalls.get(screenFile);
+assert(core);
+for (const name of screenHelpers)
+  assert.equal(
+    core.filter((c) => c.name === name).length,
+    1,
+    `${screenFile}: must mount exactly one ${name}`,
+  );
 for (const name of retired)
   assert(
-    !core.some((c) => c.name === name),
+    ![...ownerCalls.values()].flat().some((c) => c.name === name),
     `Retired playback operation restored: ${name}`,
   );
-for (const name of owned)
+for (const name of owned) {
+  const owner = delegated.get(name) ?? screenFile;
+  const sites = ownerCalls.get(owner);
+  assert(sites);
   assert(
-    core.some((c) => c.name === name),
-    `Missing central owner call: ${name}`,
+    sites.some((c) => c.name === name),
+    `Missing common owner call: ${owner}: ${name}`,
   );
+  for (const [file, sites] of ownerCalls)
+    if (file !== owner)
+      assert(
+        !sites.some((c) => c.name === name),
+        `Playback operation escaped its owner: ${file}: ${name} (owner: ${owner})`,
+      );
+}
 for (const file of [
-  "src/modules/playback/playback-screen.ts",
+  screenFile,
+  trackFile,
+  displayFile,
+  navigationFile,
   "src/modules/playback/playback-forms.ts",
   "src/modules/playback/playback-settings.ts",
   "src/modules/playback/playback-settings-layout.ts",

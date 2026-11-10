@@ -47,7 +47,8 @@
 - `prepareCanonical(song, sourceXML, audioHash, editDocument?)`: 기존 정본 writer → 중복 표제 정리 → 선택적 곡 메타정보 부가 → 재읽기/마디 시간 비교. 반환은 `{ canonicalXML, restored }`.
 - `bindRenderedScore(song, rendered)`: 현재 앱 renderer의 결과를 기존 마디 ID에 연결. 시작/끝 시각은 유지.
 - `createVerifiedPackage(record)`: 기존 앱의 생성/읽기 API를 실행하고 모든 자산과 의미를 비교한 Blob 반환.
-- `sha`, `base64`, `saveEvidence`: 바이트 식별·전달 공통 처리. 파일 저장은 현재 로컬 승인 범위에서 별도 호출.
+- `sha`, `base64`: 앱의 `platform/browser/sha256.ts`·`platform/storage/binary-asset.ts`를 사용하며 각각 소문자 64자리 해시·Base64 문자열을 반환한다. 제작 도구에 별도 인코더를 두지 않는다.
+- `saveEvidence`: 기존 로컬 수신기로 결과를 전달한다. 파일 저장은 현재 로컬 승인 범위에서 별도 호출.
 
 곡별 패키지 어댑터가 이 공통 경로를 호출한다. 추가 가사 검수·스티킹 표시·청취 검사는 각 어댑터에 남는다. 곡별 초기 생성과 기존 정본의 갱신·가사 보정 경로는 각각의 목적을 유지한다. 기존 정본을 가져와 왕복 검사하는 것은 최신 렌더링·청취 검사와 별개다.
 
@@ -94,3 +95,9 @@ Mac에서 Apple SpeechTranscriber가 음원과 시간 정보를 읽는다. Pytho
 사용자 앵커는 manifest의 별도 `anchors` 배열로 제공한다. STT 출력과 합치거나 덮어쓰지 않는다. 매칭 못 한 앵커도 report의 unmatchedListeningAnchors에 남긴다.
 
 앵커 입력 예시는 [워크플로우](../../how-to/use-apple-local-tools.md#apple-local-workflow--청취-앵커-입력)를 따른다.
+
+`tools/apple-local/reconcile_alignment.py`의 `reconcile(units, runs, anchors)`는 호출자가 제공한 앵커로 추정 결과를 결합한다. 반면 이 파일의 CLI는 Real Paradis v2 당시 결과 재현용이다. 기존 `--directory` 입출력을 유지하고, 해당 곡의 확인 시각·글자·confirmed 값은 [곡별 앵커 프로필](../../../tools/apple-local/profiles/real-paradis-alignment-v2.json)에서 읽는다. 이 프로필은 새 곡의 기본값이 아니며 `review:local`의 manifest 앵커와 구분한다. 사용 범위는 [절차](../../how-to/use-apple-local-tools.md#apple-local-workflow--기존-정렬-결과-재현)를 따른다.
+
+## 제작 도구의 엔진 정보
+
+Loveholic 패키지의 새 진단에는 설치된 `opensheetmusicdisplay/package.json` 버전을 기록한다. 붉은 노을 재제작은 같은 패키지 버전의 `-release` 식별자를 실제 렌더 관측값과 대조하며, 기존 기하·정본 보존 검사를 유지한다. 과거 진단의 버전과 지원 한계의 최초 발견 시점은 소급 변경하지 않는다.

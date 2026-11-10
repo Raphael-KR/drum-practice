@@ -6,7 +6,7 @@ import {
   practiceLoopHTML,
   practiceMarkerHTML,
 } from "../../src/modules/playback/practice-management";
-import { markMeasure } from "../../src/modules/playback/marker-slots";
+import { toggleMeasureMarker } from "../../src/modules/playback/marker-slots";
 import type { Song, Loop } from "../../src/model/model";
 afterEach(() => {
   vi.restoreAllMocks();
@@ -16,35 +16,14 @@ function setup() {
   const song: Song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   song.loops = [];
   song.markers = [];
-  document.body.innerHTML = `<main>${practiceLoopHTML()}${practiceMarkerHTML()}<input id="loop-a"><input id="loop-ab"><input id="loop-b"><input id="loop-bb"></main>`;
+  document.body.innerHTML = `<main>${practiceLoopHTML()}${practiceMarkerHTML()}</main>`;
   const root = document.querySelector("main")!;
   const player = {
     current: () => song.measures[8].start,
     loop: undefined as Loop | undefined,
   };
-  const changed = vi.fn(),
-    fail = vi.fn();
   const playback = {
-    loopFromForm: (id?: string, name = "") => ({
-      id: id ?? "new",
-      name,
-      start: 10,
-      end: 20,
-    }),
-    clearPreset: vi.fn(),
-    stopLoop: vi.fn(),
-    updateLoopBeatBounds: vi.fn(),
     seek: vi.fn(),
-    useLoop: (loop?: Loop) => {
-      player.loop = loop;
-      management.render();
-    },
-    mark: () => {
-      markMeasure(song, player.current(), "marker", undefined);
-      management.render();
-      changed();
-    },
-    renderLists: () => management.render(),
   };
   const management = attachPracticeManagement({
     root,
@@ -53,22 +32,16 @@ function setup() {
       "<score-partwise><part><measure><direction><direction-type><rehearsal>전주</rehearsal></direction-type></direction></measure></part></score-partwise>",
     playback: () => playback,
     player: () => player,
-    changed,
-    fail,
+    fail: vi.fn(),
   });
   const click = (selector: string) =>
     root.querySelector<HTMLButtonElement>(selector)!.click();
-  const value = (id: string, v: string) =>
-    ((root.querySelector(`#${id}`) as HTMLInputElement).value = v);
   return {
     song,
     player,
-    changed,
-    fail,
     playback,
     management,
     click,
-    value,
     root,
   };
 }
@@ -80,7 +53,8 @@ it("renders independent automatic section shortcuts and seeks their starting mea
     "전주",
   );
   const before = c.root.querySelector("#section-shortcuts")!.innerHTML;
-  c.playback.mark();
+  toggleMeasureMarker(c.song, c.player.current(), "marker");
+  c.management.render();
   expect(c.root.querySelector("#section-shortcuts")!.innerHTML).toBe(before);
   c.click('[data-section-measure="0"]');
   expect(c.playback.seek).toHaveBeenCalledWith(c.song.measures[0].start, true);
@@ -99,7 +73,7 @@ it("marks only a bookmarked section destination and restores it on removal", () 
   c.management.render();
   const button = () => c.root.querySelector('[data-section-measure="0"]')!;
   expect(button().classList.contains("is-marked")).toBe(false);
-  markMeasure(c.song, c.song.measures[0].start, "section marker", undefined);
+  toggleMeasureMarker(c.song, c.song.measures[0].start, "section marker");
   c.management.render();
   expect(button().classList.contains("is-marked")).toBe(true);
   expect(c.root.querySelectorAll("button.is-marked")).toHaveLength(1);

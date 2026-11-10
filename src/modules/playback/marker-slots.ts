@@ -1,9 +1,9 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { locate, type Marker, type Song } from "../../model/model";
 
-export const MARKER_SLOTS = 5;
+const MARKER_SLOTS = 5;
 /** Array order is creation order; display sorting must never change eviction order. */
-export function recentMarkers(song: Song): Marker[] {
+function recentMarkers(song: Song): Marker[] {
   return song.markers.slice(-MARKER_SLOTS);
 }
 export function sortedMarkerSlots(song: Song): (Marker | undefined)[] {
@@ -27,31 +27,6 @@ export function pruneMarkerOverflow(song: Song): boolean {
   if (retained.length === song.markers.length) return false;
   song.markers = retained;
   return true;
-}
-export function markMeasure(
-  song: Song,
-  position: number,
-  id: string,
-  name?: string,
-) {
-  pruneMarkerOverflow(song);
-  const measure = locate(song, position).measure;
-  if (!measure) return;
-  const previous = song.markers.find(
-    (m) => locate(song, m.time).measure?.id === measure.id,
-  );
-  song.markers = song.markers
-    .filter((m) => locate(song, m.time).measure?.id !== measure.id)
-    .slice(-(MARKER_SLOTS - 1));
-  delete song.markerSlots;
-  song.markers.push({
-    id: previous?.id ?? id,
-    name:
-      name ||
-      previous?.name ||
-      i18nText("marker-slots.message378", { value1: measure.label }),
-    time: measure.start,
-  });
 }
 export function markedMeasureIndices(song: Song): Set<number> {
   return new Set(

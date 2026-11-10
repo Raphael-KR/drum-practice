@@ -27,7 +27,7 @@ export async function copyPosition(text: string) {
       await navigator.clipboard.writeText(text);
       return;
     } catch {
-      /* Local HTML may deny Clipboard API. */
+      /* Continue with the selection-based copy fallback if clipboard access fails. */
     }
   }
   const active = document.activeElement as HTMLElement | null;

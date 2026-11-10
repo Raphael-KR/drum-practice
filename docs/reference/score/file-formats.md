@@ -22,7 +22,6 @@
 createScorePackage(record: RecordData): Promise<Blob>
 readScorePackage(blob: Blob): Promise<RecordData>
 scoreStructureSignature(song: Song): string
-SCORE_PACKAGE_EXTENSION // ".drumscore"
 ```
 
 파일 MIME은 `application/vnd.drum-practice.score+zip`이다. 확장자는 발견용이며 읽기는 내부 버전과 자산을 검사한다. 기존 보관함의 `RecordData`를 직접 받을 수 있고 읽은 결과도 같은 타입이다. 저장·교체와 기록 보존 결정은 호스트의 책임이다. 이 모듈은 DB에 쓰지 않는다.

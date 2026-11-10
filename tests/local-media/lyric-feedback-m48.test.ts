@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { songBeforeLyricFeedback } from "./lyric-feedback-fixture";
 import { it, expect } from "vitest";
 import {
   applyListeningFeedbackM48,
@@ -6,17 +6,8 @@ import {
   feedbackBatchRevision,
 } from "../../src/content/lyric-feedback-m48";
 import { validateSong, type Song } from "../../src/model/model";
-function fixture() {
-  const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
-  const archive = s.lyricArchive?.find(
-    (a) => a.revision === feedbackBatchRevision + "-before",
-  );
-  if (archive) s.lyrics = structuredClone(archive.lyrics);
-  s.lyricShifts = s.lyricShifts?.filter((r) => r !== feedbackBatchRevision);
-  return s;
-}
 it("applies 13 changed starts, confirms through gat, preserves other starts and entire tail", () => {
-  const s = fixture(),
+  const s = songBeforeLyricFeedback(feedbackBatchRevision),
     before = structuredClone(s.lyrics),
     last = before.findIndex((l) => l.id === "v2-l246");
   expect(applyListeningFeedbackM48(s)).toBe(13);
@@ -54,7 +45,7 @@ it("preserves unexpected user edits and skips other songs or missing prerequisit
       s.lyrics.find((l) => l.id === "v2-l223")!.text = "custom";
     },
   ]) {
-    const s = fixture();
+    const s = songBeforeLyricFeedback(feedbackBatchRevision);
     edit(s);
     const before = structuredClone(s);
     expect(applyListeningFeedbackM48(s)).toBe(0);

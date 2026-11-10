@@ -233,39 +233,6 @@ export async function ensureAudioBeatTracking(
   validateSong(song);
   return { ...record, song };
 }
-/** Existing audio can be reanalyzed without changing its identity or practice state. */
-export async function reanalyzeAudioPractice(
-  record: RecordData,
-  progress?: (text: string) => void,
-  signal?: AbortSignal,
-): Promise<RecordData> {
-  const analyzed = await readAudioPractice(
-    new File([record.audio], record.song.audioName || "audio.mp3"),
-    progress,
-    { force: true, signal },
-  );
-  if (!analyzed.song.audioPractice?.beatTimes)
-    throw Error(t("audioPractice.trackingUnavailable"));
-  const song = {
-    ...structuredClone(record.song),
-    bpm: analyzed.song.bpm,
-    audioPractice: {
-      ...record.song.audioPractice!,
-      ...analyzed.song.audioPractice,
-      barOne:
-        record.song.audioPractice?.barOne?.source === "manual"
-          ? {
-              source: "manual" as const,
-              time: nearestAudioBeat(
-                analyzed.song.audioPractice.beatTimes,
-                record.song.audioPractice.barOne.time,
-              ),
-            }
-          : analyzed.song.audioPractice.barOne,
-    },
-  };
-  return { ...record, song: followAudioTempo(song) };
-}
 export function waveformPeaks(buffer: AudioBuffer): number[] {
   const samples = buffer.getChannelData(0),
     count = Math.min(4096, samples.length);
@@ -300,7 +267,7 @@ export function audioAnalysisSamples(buffer: AudioBuffer): Float32Array {
 export async function readAudioPractice(
   file: File,
   progress?: (text: string) => void,
-  options: { force?: boolean; signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal } = {},
 ): Promise<RecordData> {
   await checkAudioBeforeDecode(file);
   options.signal?.throwIfAborted();
@@ -310,7 +277,7 @@ export async function readAudioPractice(
     const hash = await audioFileHash(bytes).catch(() => undefined);
     const [buffer, cached, tags] = await Promise.all([
       context.decodeAudioData(bytes),
-      hash && !options.force ? loadAudioAnalysis(hash) : undefined,
+      hash ? loadAudioAnalysis(hash) : undefined,
       audioMetadata(file),
     ]);
     options.signal?.throwIfAborted();

@@ -19,9 +19,3 @@ export async function displayPage(page: Blob): Promise<Blob> {
   if (page.type === "image/svg+xml") return page;
   return new Blob([await page.arrayBuffer()], { type: page.type });
 }
-export const pageExtension = (page: Blob) =>
-  page.type === SVG_GZIP
-    ? "svg.gz"
-    : page.type === "image/svg+xml"
-      ? "svg"
-      : "png";

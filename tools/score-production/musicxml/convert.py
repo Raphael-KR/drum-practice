@@ -3,7 +3,6 @@
 import argparse, copy, hashlib, json, logging
 from fractions import Fraction
 from pathlib import Path
-import xml.etree.ElementTree as ET
 import pdfplumber
 
 logging.getLogger("pdfminer").setLevel(logging.ERROR)

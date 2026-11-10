@@ -8,11 +8,21 @@ it("retirement removes all analysis tables and leaves unrelated data intact", ()
       "0000_fluffy_hobgoblin.sql",
       "0001_whole_doctor_faustus.sql",
     ])
-      db.exec(readFileSync("hosting/drizzle/" + name, "utf8"));
+      db.exec(
+        readFileSync(
+          "docs/records/archive/server-analysis-migrations/" + name,
+          "utf8",
+        ),
+      );
     db.exec(
       "CREATE TABLE unrelated (value TEXT); INSERT INTO unrelated VALUES ('keep'); INSERT INTO audio_analysis VALUES ('hash',4,'{}'); INSERT INTO audio_analysis_pending VALUES ('hash',4,'{}',2,1); INSERT INTO audio_analysis_limits VALUES ('daily',1,1)",
     );
-    db.exec(readFileSync("hosting/drizzle/0002_regular_jetstream.sql", "utf8"));
+    db.exec(
+      readFileSync(
+        "docs/records/archive/server-analysis-migrations/0002_regular_jetstream.sql",
+        "utf8",
+      ),
+    );
     expect(
       db
         .prepare(

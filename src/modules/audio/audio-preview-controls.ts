@@ -1,4 +1,4 @@
-import { icon, svgFromPath } from "../../shared/ui/icon-svg";
+import { icon } from "../../shared/ui/icon-svg";
 import { iconButtonHTML, setIconButton } from "../../shared/ui/icon-button";
 import { t } from "../../shared/i18n/i18n";
 
@@ -22,7 +22,7 @@ export function bindAudioPreviewControls(
     <span data-current>00:00</span>
     <input data-seek type="range" min="0" max="${duration}" step="0.001" value="0" aria-label="${t("audioPractice.seek")}">
     <span data-duration>${clock(duration)}</span>
-    <div class="audio-preview-speed">${svgFromPath('<path d="m5 4 8 8-8 8m7-16 8 8-8 8"/>')}<select data-speed aria-label="${t("audioPractice.speed")}" title="${t("audioPractice.speed")}">${PREVIEW_RATES.map((rate) => `<option value="${rate}" ${rate === 1 ? "selected" : ""}>${rate}×</option>`).join("")}</select></div>`;
+    <div class="audio-preview-speed">${icon("speed")}<select data-speed aria-label="${t("audioPractice.speed")}" title="${t("audioPractice.speed")}">${PREVIEW_RATES.map((rate) => `<option value="${rate}" ${rate === 1 ? "selected" : ""}>${rate}×</option>`).join("")}</select></div>`;
   audio.controls = false;
   audio.hidden = true;
   audio.volume = 1;

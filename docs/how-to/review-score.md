@@ -39,7 +39,7 @@
 
 **완료 조건:** Song 전체와 canonicalXML, PDF/음원 원시 바이트, 마디/박자·가사·대체 악보 연결이 왕복 유지된다. 모든 마디와 주법을 실제 렌더에서 확인한다. glyph DOM 개수는 쉼표·꾸밈음 포함 여부를 명시한다. PDF 세로 영역은 자기 줄 내용 포함·이전 줄 혼입 방지, 가로 자르기는 승인된 표시 규칙과 원본 geometry에만 적용한다. 다른 곡의 crop/anchor를 복사하지 않는다.
 
-**실패 시 확인:** 패키지 계약 → SVG/매핑 정본 → 문제 해결 기록. XML 파싱 성공이나 warnings 없음은 주법 출력 성공이 아니다. Poppler/CairoSVG PNG와 실제 Safari SVG의 폰트/잘림 결과를 구별한다. HMR·병행 소스 변경이 있으면 조율해 입력·렌더러 상태를 고정하고 새 증거를 만든다.
+**실패 시 확인:** 패키지 계약 → SVG/매핑 정본 → 문제 해결 기록. [정본과 앱의 수정 책임](../reference/score/musicxml.md#musicxml-canonical--정본과-앱의-수정-책임)에 따라 원인을 먼저 구분하고, XML의 누락·규칙 위반을 앱 보정으로 가리지 않는다. XML 파싱 성공이나 warnings 없음은 주법 출력 성공이 아니다. Poppler/CairoSVG PNG와 실제 Safari SVG의 폰트/잘림 결과를 구별한다. HMR·병행 소스 변경이 있으면 조율해 입력·렌더러 상태를 고정하고 새 증거를 만든다.
 
 <a id="score-production-process--7-실제-앱-수록본과-저장-곡-검수"></a>
 

@@ -6,7 +6,8 @@ import { beforeAll, it, expect, vi } from "vitest";
 import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { Blob as NativeBlob, File as NativeFile } from "node:buffer";
-import { allRecords } from "../../src/platform/storage/storage";
+import { allRecords, saveRecord } from "../../src/platform/storage/storage";
+const audioClock = vi.hoisted(() => ({ position: 0 }));
 vi.mock("../../src/modules/score/pdf", () => ({
   renderPDF: async () => ({
     pages: [new Blob(["page"])],
@@ -18,7 +19,12 @@ vi.mock("../../src/modules/score/pdf", () => ({
 vi.mock("../../src/apps/editor/audio", () => ({
   Player: class {
     playing = false;
-    position = 0;
+    get position() {
+      return audioClock.position;
+    }
+    set position(value: number) {
+      audioClock.position = value;
+    }
     duration = 300;
     song!: Song;
     loop?: Loop;
@@ -60,6 +66,82 @@ const click = (id: string) => document.getElementById(id)!.click();
 const set = (id: string, v: string) => {
   (document.getElementById(id) as HTMLInputElement).value = v;
 };
+async function openEditorPane(name: "meta" | "lyrics") {
+  const settings = document.getElementById(
+    "settings-dialog",
+  ) as HTMLDialogElement;
+  if (!settings.open) click("open-settings-dialog");
+  click("open-score-settings");
+  const entry = document.getElementById("score-edit-entry")!;
+  expect(entry.closest("[hidden]")).toBeNull();
+  entry.click();
+  await vi.waitFor(() =>
+    expect(
+      (document.getElementById("editor-dialog") as HTMLDialogElement).open,
+    ).toBe(true),
+  );
+  const tab = document.querySelector<HTMLButtonElement>(
+    `#score-workspace-tabs [data-pane="${name}"]`,
+  )!;
+  tab.click();
+  expect(tab.getAttribute("aria-selected")).toBe("true");
+  expect(document.getElementById(`editor-${name}`)!.hidden).toBe(false);
+}
+function progressInput() {
+  return document.getElementById("progress-percent") as HTMLInputElement;
+}
+function dragProgress(type: string, x: number) {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.assign(event, {
+    pointerId: 1,
+    pointerType: "mouse",
+    isPrimary: true,
+    button: 0,
+    clientX: x,
+    clientY: 100,
+  });
+  progressInput().dispatchEvent(event);
+}
+function navigateToMeasure(measure: number) {
+  animationFrame(0);
+  const from = Number(progressInput().value);
+  dragProgress("pointerdown", 100);
+  // Cross the threshold even when resetting the current measure to its start.
+  if (measure === from) dragProgress("pointermove", 100 + (from > 1 ? -8 : 8));
+  dragProgress("pointermove", 100 + (measure - from) * 8);
+  dragProgress("pointerup", 100 + (measure - from) * 8);
+  animationFrame(0);
+}
+async function openSavedScore(id: string) {
+  click("library-button");
+  const button = await vi.waitFor(() => {
+    expect(document.getElementById("welcome")!.hidden).toBe(false);
+    const button = document.querySelector<HTMLButtonElement>(
+      `#editor-home-list [data-score-id="${id}"] [data-editor-open]`,
+    )!;
+    expect(button?.textContent).toBe("편집 열기");
+    expect(button.disabled).toBe(false);
+    return button;
+  });
+  button.click();
+  // Catalog activation reads and persists media before opening the editor.
+  // Wait for that completion under the full suite's worker/IO load.
+  await vi.waitFor(
+    () =>
+      expect(
+        (document.getElementById("editor-dialog") as HTMLDialogElement).open,
+      ).toBe(true),
+    { timeout: 5000 },
+  );
+  document
+    .querySelector<HTMLButtonElement>('[data-close="editor-dialog"]')!
+    .click();
+  await vi.waitFor(() =>
+    expect(
+      (document.getElementById("editor-dialog") as HTMLDialogElement).open,
+    ).toBe(false),
+  );
+}
 beforeAll(async () => {
   vi.stubGlobal("crypto", webcrypto);
   // jsdom lacks Blob.arrayBuffer; use the standard implementation for media reads.
@@ -98,13 +180,12 @@ beforeAll(async () => {
   vi.stubGlobal("confirm", () => true);
   vi.stubGlobal("fetch", async (url: string) => ({
     ok: true,
-    json: async () => JSON.parse(readFileSync("public/demo/song.json", "utf8")),
     blob: async () => new Blob([url]),
   }));
   await import("../../src/apps/editor/main");
 });
 it("shows the app name and score library action on the home screen", async () => {
-  for (const id of ["replace-score-button", "export-musicxml"])
+  for (const id of ["review-add-score"])
     expect((document.getElementById(id) as HTMLButtonElement).disabled).toBe(
       true,
     );
@@ -133,7 +214,6 @@ it("shows the app name and score library action on the home screen", async () =>
     ),
   );
   expect(document.getElementById("original-tempo")!.hidden).toBe(true);
-  expect(document.getElementById("demo-button")!.hidden).toBe(true);
   expect(document.getElementById("welcome-new")!.textContent).toContain(
     "새 악보 만들기",
   );
@@ -145,17 +225,24 @@ it("shows the app name and score library action on the home screen", async () =>
       "악보 불러오기",
     ),
   );
-  expect(document.querySelector("#welcome-library svg")!.innerHTML).toBe(
-    document.querySelector("#library-button svg")!.innerHTML,
-  );
-  click("welcome-library");
+  const libraryButton = document.getElementById("library-button")!;
+  expect(libraryButton.closest("[hidden]")).toBeNull();
+  expect(libraryButton.querySelector("svg")).not.toBeNull();
+  libraryButton.click();
   await vi.waitFor(() =>
     expect(document.getElementById("welcome")!.hidden).toBe(false),
   );
   expect(document.getElementById("library-dialog")).toBeNull();
 });
-it("loads demo, exposes fixed range slots and applies the selected BPM", async () => {
-  click("demo-button");
+it("opens the saved score through the catalog, exposes fixed range slots and applies the selected BPM", async () => {
+  // Keep the existing PDF fixture and media stubs; enter through the visible saved card.
+  await saveRecord({
+    song: JSON.parse(readFileSync("public/demo/song.json", "utf8")),
+    pdf: new Blob(["/demo/score.pdf"]),
+    audio: new Blob(["/demo/audio.mp3"]),
+    pages: [1, 2, 3].map((page) => new Blob([`/demo/page-${page}.png`])),
+  });
+  await openSavedScore("real-paradis");
   await vi.waitFor(() =>
     expect(document.querySelectorAll(".measure")).toHaveLength(110),
   );
@@ -173,12 +260,6 @@ it("loads demo, exposes fixed range slots and applies the selected BPM", async (
     expect(document.querySelectorAll("#loop-slots button")).toHaveLength(9),
   );
   expect(document.getElementById("loop-a")).toBeNull();
-  // Rendering the measures precedes persistence and clearing the busy flag.
-  await vi.waitFor(() =>
-    expect(document.getElementById("demo-button")!.textContent).toContain(
-      "바람과 언덕의 발라드",
-    ),
-  );
   set("rate", "89");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() =>
@@ -284,8 +365,8 @@ it("opens practice BPM from the heading and resets through the explicit original
   ) as HTMLButtonElement;
   expect(heading.tagName).toBe("BUTTON");
   expect(heading.disabled).toBe(false);
-  set("seek", "70");
-  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  navigateToMeasure(25);
+  const position = audioClock.position;
   set("rate", "80");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(
@@ -321,13 +402,12 @@ it("opens practice BPM from the heading and resets through the explicit original
   );
   (document.getElementById("tempo-dialog") as HTMLDialogElement).close();
   animationFrame(0);
-  expect((document.getElementById("seek") as HTMLInputElement).value).toBe(
-    "70",
-  );
+  expect(audioClock.position).toBe(position);
+  expect(progressInput().value).toBe("25");
   click("home");
 });
 it("keeps direct tool access and previews the actual measure while scrubbing", async () => {
-  for (const id of ["replace-score-button", "export-musicxml"])
+  for (const id of ["review-add-score"])
     expect((document.getElementById(id) as HTMLButtonElement).disabled).toBe(
       false,
     );
@@ -349,9 +429,6 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   expect(
     document.getElementById("progress-percent")!.closest(".dock-navigation"),
   ).not.toBeNull();
-  expect(
-    document.getElementById("seek")!.closest<HTMLElement>(".seekrow")!.hidden,
-  ).toBe(true);
   expect(document.querySelectorAll("#practice details")).toHaveLength(0);
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   set("goto", "0");
@@ -397,23 +474,41 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   set("view", "ribbon");
   document.getElementById("view")!.dispatchEvent(new Event("change"));
   expect(document.getElementById("zoom")!.closest("label")!.hidden).toBe(false);
-  const seek = document.getElementById("seek") as HTMLInputElement;
-  set("seek", "62");
-  seek.dispatchEvent(new Event("input"));
-  expect(document.getElementById("seek-position")!.textContent).toBe("25 마디");
-  expect(document.getElementById("seek-position")!.hidden).toBe(false);
-  expect(seek.getAttribute("aria-valuetext")).toBe("25 마디");
-  // Safari can deliver a final input after releasing the native range thumb.
-  seek.dispatchEvent(new Event("pointerdown"));
-  window.dispatchEvent(new Event("pointerup"));
-  seek.dispatchEvent(new Event("input"));
-  seek.dispatchEvent(new Event("change"));
-  expect(document.getElementById("seek-position")!.hidden).toBe(true);
+  navigateToMeasure(25);
+  const progress = progressInput();
+  expect(progress.getAttribute("aria-valuetext")).toMatch(/^25 \/ 110 · /);
+  const position = audioClock.position;
+  dragProgress("pointerdown", 100);
+  dragProgress("pointermove", 108);
+  animationFrame(0);
+  expect(progress.getAttribute("aria-valuenow")).toBe("26");
+  dragProgress("pointercancel", 108);
+  animationFrame(0);
+  expect(progress.value).toBe("25");
+  expect(audioClock.position).toBe(position);
+  click("play");
+  await vi.waitFor(() =>
+    expect(document.getElementById("play")!.getAttribute("aria-label")).toBe(
+      "일시정지",
+    ),
+  );
+  dragProgress("pointerdown", 100);
+  dragProgress("pointermove", 108);
+  expect(document.getElementById("play")!.getAttribute("aria-label")).toBe(
+    "재생",
+  );
+  dragProgress("pointerup", 108);
+  await vi.waitFor(() =>
+    expect(document.getElementById("play")!.getAttribute("aria-label")).toBe(
+      "일시정지",
+    ),
+  );
+  click("play");
   click("home");
   animationFrame(0);
-  expect(seek.getAttribute("aria-valuetext")).toBe("1 마디");
+  expect(progress.getAttribute("aria-valuetext")).toMatch(/^1 \/ 110 · /);
   const stoppedReadouts = new MutationObserver(() => {});
-  for (const id of ["elapsed", "editor-time", "seek"])
+  for (const id of ["editor-time", "progress-percent"])
     stoppedReadouts.observe(document.getElementById(id)!, {
       childList: true,
       attributes: true,
@@ -421,7 +516,14 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   for (let i = 0; i < 3; i++) animationFrame(0);
   expect(stoppedReadouts.takeRecords()).toHaveLength(0);
   stoppedReadouts.disconnect();
-  click("metadata-button");
+  await openEditorPane("meta");
+  const replaceScore = document.getElementById("file-xml")!;
+  expect(replaceScore.closest("[hidden]")).toBeNull();
+  click("file-xml");
+  expect(
+    (document.getElementById("replace-score-dialog") as HTMLDialogElement).open,
+  ).toBe(true);
+  click("replace-close");
   set("edit-artist", "Real Paradis");
   const before = (await allRecords()).find((r) => r.song.id === "real-paradis")!
     .song.measures[0].start;
@@ -465,11 +567,7 @@ it("groups screen, playback, score management and app info in settings", async (
     document.getElementById("auto-fullscreen")!.closest("#screen-dialog"),
   ).not.toBeNull();
   click("open-score-settings");
-  expect(
-    document
-      .getElementById("backup-dialog")!
-      .closest<HTMLElement>("[data-settings-panel]")!.hidden,
-  ).toBe(false);
+  expect(document.getElementById("score-settings")!.hidden).toBe(false);
   const libraryBackup = document.getElementById(
     "library-backup",
   ) as HTMLDetailsElement;
@@ -479,22 +577,24 @@ it("groups screen, playback, score management and app info in settings", async (
     expect(button.closest("#score-settings")).not.toBeNull();
     expect(button.closest("[hidden]")).toBeNull();
   }
-  // Exposing library backup must not expose obsolete per-score controls.
-  expect(document.getElementById("backup-dialog")!.hidden).toBe(true);
+  // The current library backup remains available; retired per-score controls are absent.
+  for (const id of [
+    "backup-dialog",
+    "restore",
+    "export",
+    "replace-score-button",
+    "export-musicxml",
+  ])
+    expect(document.getElementById(id)).toBeNull();
   libraryBackup.open = false;
   expect(document.getElementById("screen-dialog")!.hidden).toBe(false);
   click("open-score-settings");
-  expect(
-    document
-      .getElementById("edit-button")!
-      .closest<HTMLElement>("[data-settings-panel]")!.hidden,
-  ).toBe(false);
-  expect(
-    document.getElementById("lyrics-button")!.closest("#score-settings"),
-  ).not.toBeNull();
-  expect(
-    document.getElementById("metadata-button")!.closest("#score-settings"),
-  ).not.toBeNull();
+  const editEntry = document.getElementById(
+    "score-edit-entry",
+  ) as HTMLButtonElement;
+  expect(editEntry.closest("#score-settings")).not.toBeNull();
+  expect(editEntry.closest("[hidden]")).toBeNull();
+  expect(editEntry.disabled).toBe(false);
   click("open-info-settings");
   expect(
     document.getElementById("busy")!.closest("#info-settings"),
@@ -560,33 +660,28 @@ it("groups screen, playback, score management and app info in settings", async (
 });
 it("returns to earlier measures and stops at the first measure", () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
-  set("seek", String(song.measures[24].start + 0.5));
-  document.getElementById("seek")!.dispatchEvent(new Event("input"));
-  document.getElementById("seek")!.dispatchEvent(new Event("change"));
+  navigateToMeasure(25);
+  audioClock.position += 0.5;
   set("goto", "4");
   click("jump");
   animationFrame(0);
-  expect(
-    Number((document.getElementById("seek") as HTMLInputElement).value),
-  ).toBeCloseTo(song.measures[20].start);
-  set("seek", String(song.measures[4].start));
-  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  expect(audioClock.position).toBeCloseTo(song.measures[20].start);
+  expect(progressInput().value).toBe("21");
+  navigateToMeasure(5);
   set("goto", "10");
   click("jump");
   animationFrame(0);
-  expect(
-    Number((document.getElementById("seek") as HTMLInputElement).value),
-  ).toBeCloseTo(song.measures[0].start);
+  expect(audioClock.position).toBeCloseTo(song.measures[0].start);
+  expect(progressInput().value).toBe("1");
   click("home");
   set("goto", "1");
 });
 
 it("places the beat on the active measure in rows and on the fixed playhead in ribbon", () => {
-  const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   set("view", "rows");
   document.getElementById("view")!.dispatchEvent(new Event("change"));
-  set("seek", String(song.measures[24].start + 0.7));
-  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  navigateToMeasure(25);
+  audioClock.position += 0.7;
   animationFrame(0);
   expect(
     document.querySelector(".measure.active")!.getAttribute("data-index"),
@@ -610,9 +705,9 @@ it("fills played measures, advances within a measure and clears future shading a
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   set("view", "rows");
   document.getElementById("view")!.dispatchEvent(new Event("change"));
-  const seekTo = (time: number) => {
-    set("seek", String(time));
-    document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  navigateToMeasure(26);
+  const advanceAudio = (time: number) => {
+    audioClock.position = time;
     animationFrame(0);
   };
   const fill = (index: number) =>
@@ -622,20 +717,20 @@ it("fills played measures, advances within a measure and clears future shading a
       ).style.getPropertyValue("--played"),
     );
   const m = song.measures[25];
-  seekTo(m.start + (m.end - m.start) * 0.25);
+  advanceAudio(m.start + (m.end - m.start) * 0.25);
   expect(fill(24)).toBe(100);
   const first = fill(25);
   expect(first).toBeGreaterThan(0);
   expect(first).toBeLessThan(100);
   expect(fill(26)).toBe(0);
-  seekTo(m.start + (m.end - m.start) * 0.75);
+  advanceAudio(m.start + (m.end - m.start) * 0.75);
   expect(fill(25)).toBeGreaterThan(first);
-  seekTo(m.end - 0.0001);
+  advanceAudio(m.end - 0.0001);
   const beforeBoundary = fill(26);
-  seekTo(m.end);
+  advanceAudio(m.end);
   expect(fill(25)).toBe(100);
   expect(Math.abs(fill(26) - beforeBoundary)).toBeLessThan(0.1);
-  seekTo(song.measures[24].start);
+  navigateToMeasure(25);
   expect(fill(25)).toBe(0);
   expect(fill(26)).toBe(0);
   click("home");
@@ -742,17 +837,15 @@ it("offers tempo presets and previews single-BPM dragging until release", async 
   (document.getElementById("tempo-dialog") as HTMLDialogElement).close();
 });
 it("keeps centred repeat anchored when changing radius and uses inclusive end bars", () => {
-  const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
-  set("seek", String(song.measures[24].start + 0.2));
-  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  navigateToMeasure(25);
+  audioClock.position += 0.2;
   (
     document.querySelector('[data-loop-radius="2"]') as HTMLButtonElement
   ).click();
   expect(document.querySelector('[data-loop-radius="2"]')!.textContent).toBe(
     "23~27",
   );
-  set("seek", String(song.measures[25].start));
-  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  navigateToMeasure(26);
   (
     document.querySelector('[data-loop-radius="1"]') as HTMLButtonElement
   ).click();
@@ -798,9 +891,7 @@ it("selects a measure on single tap and starts range registration on paused doub
   await new Promise((ok) => setTimeout(ok, 300));
   animationFrame(0);
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
-  expect(
-    Number((document.getElementById("seek") as HTMLInputElement).value),
-  ).toBeCloseTo(song.measures[6].start);
+  expect(audioClock.position).toBeCloseTo(song.measures[6].start);
   expect(document.getElementById("play")!.getAttribute("aria-label")).toBe(
     "재생",
   );
@@ -810,9 +901,7 @@ it("selects a measure on single tap and starts range registration on paused doub
   tap();
   await new Promise((ok) => setTimeout(ok, 300));
   animationFrame(0);
-  expect(
-    Number((document.getElementById("seek") as HTMLInputElement).value),
-  ).toBeCloseTo(song.measures[6].start);
+  expect(audioClock.position).toBeCloseTo(song.measures[6].start);
   expect(document.getElementById("play")!.getAttribute("aria-label")).toBe(
     "재생",
   );
@@ -877,9 +966,7 @@ it("separates tap playback, percent drag, marker activation and cancelled gestur
   fire(percent, "pointerup", 180);
   animationFrame(0);
   expect(Number(percent.value)).toBe(initial + 10);
-  expect(
-    Number((document.getElementById("seek") as HTMLInputElement).value),
-  ).toBeCloseTo(
+  expect(audioClock.position).toBeCloseTo(
     JSON.parse(readFileSync("public/demo/song.json", "utf8")).measures[
       initial + 9
     ].start,
@@ -903,15 +990,14 @@ it("browses all paused rows vertically without seeking, then restores playback f
     value: 1000,
   });
   const view = document.getElementById("view") as HTMLSelectElement;
-  const seek = document.getElementById("seek") as HTMLInputElement;
+  const progress = progressInput();
   const oldView = view.value,
-    oldTime = seek.value;
+    oldMeasure = Number(progress.value);
   view.value = "rows";
   view.dispatchEvent(new Event("change"));
-  seek.value = "62";
-  seek.dispatchEvent(new Event("input"));
+  navigateToMeasure(25);
   animationFrame(0);
-  const before = seek.value;
+  const before = audioClock.position;
   const count = (await allRecords()).find((r) => r.song.id === "real-paradis")!
     .song.measures.length;
   expect(stage.classList.contains("paused-score-scroll")).toBe(true);
@@ -932,7 +1018,8 @@ it("browses all paused rows vertically without seeking, then restores playback f
   animationFrame(0);
   expect(wheel.defaultPrevented).toBe(false);
   expect(stage.scrollTop).toBe(400);
-  expect(seek.value).toBe(before);
+  expect(audioClock.position).toBe(before);
+  expect(progress.value).toBe("25");
   const rowsBefore = [...stage.querySelectorAll(".browse-strip")].map((row) =>
     [...row.querySelectorAll<HTMLElement>("[data-index]")].map(
       (el) => el.dataset.index,
@@ -948,7 +1035,8 @@ it("browses all paused rows vertically without seeking, then restores playback f
   stage.dispatchEvent(horizontal);
   animationFrame(0);
   expect(horizontal.defaultPrevented).toBe(true);
-  expect(seek.value).toBe(before);
+  expect(audioClock.position).toBe(before);
+  expect(progress.value).toBe("25");
   expect(
     [...stage.querySelectorAll(".browse-strip")].map((row) =>
       [...row.querySelectorAll<HTMLElement>("[data-index]")].map(
@@ -956,7 +1044,7 @@ it("browses all paused rows vertically without seeking, then restores playback f
       ),
     ),
   ).toEqual(rowsBefore);
-  const resumedFrom = seek.value;
+  const resumedFrom = audioClock.position;
   click("play");
   await vi.waitFor(() =>
     expect(document.getElementById("play")!.getAttribute("aria-label")).toBe(
@@ -967,7 +1055,7 @@ it("browses all paused rows vertically without seeking, then restores playback f
   expect(stage.classList.contains("paused-score-scroll")).toBe(false);
   expect(stage.scrollTop).toBe(0);
   expect(stage.querySelectorAll("[data-index]").length).toBeLessThanOrEqual(8);
-  expect(seek.value).toBe(resumedFrom);
+  expect(audioClock.position).toBe(resumedFrom);
   click("play");
   animationFrame(0);
   expect(
@@ -978,8 +1066,7 @@ it("browses all paused rows vertically without seeking, then restores playback f
     ).size,
   ).toBe(count);
   Reflect.deleteProperty(stage, "clientWidth");
-  seek.value = oldTime;
-  seek.dispatchEvent(new Event("input"));
+  navigateToMeasure(oldMeasure);
   view.value = oldView;
   view.dispatchEvent(new Event("change"));
   animationFrame(0);
@@ -1025,13 +1112,19 @@ it("prepares a distinct second song through the file form without code edits", a
     ).toBe(true),
   );
 });
-it("opens the last practiced score instead of the bundled song", async () => {
+it("reopens a newly imported score from its saved catalog card", async () => {
   await vi.waitFor(() =>
-    expect(document.getElementById("demo-button")!.textContent).toBe(
-      "독립 두 번째 곡 열기",
-    ),
+    expect(
+      (document.getElementById("editor-dialog") as HTMLDialogElement).open,
+    ).toBe(true),
   );
-  click("demo-button");
+  document
+    .querySelector<HTMLButtonElement>('[data-close="editor-dialog"]')!
+    .click();
+  const saved = (await allRecords()).find(
+    (record) => record.song.title === "독립 두 번째 곡",
+  )!;
+  await openSavedScore(saved.song.id);
   await vi.waitFor(() =>
     expect(document.getElementById("song-title")!.textContent).toBe(
       "독립 두 번째 곡",
@@ -1045,12 +1138,7 @@ it("edits lyric starts and duration in musical units without free-time controls"
       document.getElementById("busy")!.textContent!.split("\n")[0],
     ).toContain("저장"),
   );
-  click("lyrics-button");
-  await vi.waitFor(() =>
-    expect(
-      (document.getElementById("editor-dialog") as HTMLDialogElement).open,
-    ).toBe(true),
-  );
+  await openEditorPane("lyrics");
   vi.stubGlobal("prompt", () => "새로운");
   click("add-lyric");
   click("show-all");
@@ -1264,12 +1352,24 @@ it("remembers the settings category and returns from a child only when opened th
     "settings-dialog",
   ) as HTMLDialogElement;
   const child = document.getElementById("original-dialog") as HTMLDialogElement;
+  const expectCategory = (category: string, title: string) => {
+    expect(settings.dataset.settingsCurrent).toBe(category);
+    const button = settings.querySelector<HTMLButtonElement>(
+      `[data-settings-category="${category}"]`,
+    )!;
+    expect(button.getAttribute("aria-current")).toBe("location");
+    const panel = settings.querySelector<HTMLElement>(
+      `[data-settings-panel="${category}"]`,
+    )!;
+    expect(panel.hidden).toBe(false);
+    expect(panel.querySelector(".settings-section-heading")!.textContent).toBe(
+      title,
+    );
+  };
   openSettings("score");
   settings.close();
   openSettings();
-  expect(document.getElementById("settings-detail-heading")!.textContent).toBe(
-    "악보",
-  );
+  expectCategory("score", "악보");
   expect(localStorage.getItem("drum-practice.settings-category")).toBe("score");
   settings.scrollTop = 50;
   openSettingsChild(child);
@@ -1279,23 +1379,17 @@ it("remembers the settings category and returns from a child only when opened th
   child.dispatchEvent(new Event("close"));
   expect(settings.open).toBe(true);
   expect(settings.scrollTop).toBe(50);
-  expect(document.getElementById("settings-detail-heading")!.textContent).toBe(
-    "악보",
-  );
+  expectCategory("score", "악보");
   settings.close();
   openSettingsChild(child);
   child.close();
   child.dispatchEvent(new Event("close"));
   expect(settings.open).toBe(false);
   selectSettingsCategory("info");
-  expect(document.getElementById("settings-detail-heading")!.textContent).toBe(
-    "드럼 연습실",
-  );
+  expectCategory("info", "정보");
   localStorage.setItem("drum-practice.settings-category", "playback");
   openSettings();
-  expect(document.getElementById("settings-detail-heading")!.textContent).toBe(
-    "재생",
-  );
+  expectCategory("playback", "재생");
   expect(
     document.getElementById("playback-settings")!.textContent,
   ).not.toContain("모든 곡에 공통으로 적용하며");
@@ -1305,14 +1399,7 @@ it("remembers the settings category and returns from a child only when opened th
 it("groups view and format choices above the existing switches", async () => {
   const { selectSettingsCategory } =
     await import("../../src/apps/editor/workspace");
-  for (const category of ["screen", "playback", "score"] as const) {
-    selectSettingsCategory(category);
-    expect(document.getElementById("settings-detail-heading")!.hidden).toBe(
-      true,
-    );
-  }
-  selectSettingsCategory("info");
-  expect(document.getElementById("settings-detail-heading")!.hidden).toBe(true);
+  selectSettingsCategory("screen");
   const pdf = document.getElementById("pdf-view-row")!;
   expect(pdf.classList.contains("settings-choice-row")).toBe(true);
   expect([...pdf.querySelectorAll("button")].map((b) => b.textContent)).toEqual(
@@ -1345,8 +1432,7 @@ it("groups view and format choices above the existing switches", async () => {
 
 it("opens marker management and renders sorted fixed slots on the score", async () => {
   click("home");
-  set("seek", "25");
-  document.getElementById("seek")!.dispatchEvent(new Event("input"));
+  navigateToMeasure(1);
   document
     .querySelector<HTMLButtonElement>("#quick-markers .empty-marker-slot")!
     .click();

@@ -4,60 +4,6 @@ import { normalizeBundledDrumNotation } from "./drum-notation";
 import type { RecordData } from "../../model/record";
 import type { Region } from "../../model/model";
 import { songScores } from "./song-scores";
-/** Exact reviewed bar only. Respect explicit placements from later user edits. */
-export function correctMeasureFiveRests(text: string): {
-  text: string;
-  changed: boolean;
-} {
-  const d = new DOMParser().parseFromString(text, "application/xml");
-  if (d.querySelector("parsererror"))
-    throw Error(i18nText("score-rest-correction.message528"));
-  const m = d.querySelector('part[id="P1"] > measure[number="5"]');
-  if (!m) return { text, changed: false };
-  const notes = Array.from(m.children).filter((n) => n.tagName === "note");
-  const upper = notes.filter(
-    (n) => n.querySelector("voice")?.textContent === "1",
-  );
-  const lower = notes.filter(
-    (n) => n.querySelector("voice")?.textContent === "2",
-  );
-  const rests = notes.filter((n) => n.querySelector("rest"));
-  if (
-    upper.length !== 8 ||
-    lower.length !== 4 ||
-    rests.length !== 6 ||
-    upper.filter(
-      (n) =>
-        n.querySelector("rest") &&
-        n.querySelector("type")?.textContent === "eighth",
-    ).length !== 2 ||
-    !lower.every(
-      (n) =>
-        n.querySelector("rest") &&
-        n.querySelector("type")?.textContent === "quarter",
-    )
-  )
-    return { text, changed: false };
-  let changed = false;
-  for (const n of rests) {
-    const r = n.querySelector("rest")!;
-    if (r.children.length) continue;
-    const isUpper = n.querySelector("voice")!.textContent === "1";
-    for (const [tag, value] of [
-      ["display-step", isUpper ? "A" : "D"],
-      ["display-octave", isUpper ? "5" : "4"],
-    ]) {
-      const e = d.createElement(tag);
-      e.textContent = value;
-      r.append(e);
-    }
-    changed = true;
-  }
-  return {
-    text: changed ? new XMLSerializer().serializeToString(d) : text,
-    changed,
-  };
-}
 /** PDF-audited roles for this conversion: voice 1 mixes cymbal and drum events.
  * Shared full-bar silence remains central; voice 2 is exclusively the kick lane.
  */
@@ -202,10 +148,7 @@ export async function correctStoredRests(
 }
 
 /** Geometry belongs to the generated page; retain IDs referenced by song measures. */
-export function refreshedRegions(
-  previous: Region[],
-  generated: Region[],
-): Region[] {
+function refreshedRegions(previous: Region[], generated: Region[]): Region[] {
   if (
     previous.length !== generated.length ||
     previous.some((r, i) => r.id !== generated[i].id)
