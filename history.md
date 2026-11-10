@@ -8,6 +8,9 @@
 
 - 로컬 결과: `pnpm run verify` 통과(131파일·809테스트·두 앱 빌드). Safari MCP의 숨김 탭 대기로 ego-browser에서 두 앱의 SVG 가사/마디 번호·재열기와 player PDF 2쪽/URL 해제를 확인했다. 기존 큰 번들·SQLite 경고는 유지한다. PR/CI·발행 결과는 실행 기록에 이어 기록한다.
 
+- 발행: [PR #48](https://github.com/Raphael-KR/drum-practice/pull/48)·최신 head/main CI 통과, 제품 main `b7825a6`, 빌드 `61e52ba44f51`로 Sites 버전103 발행 성공(2026-11-11 05:40:10 KST). 48파일 세 위치 해시와 공개 52항목 확인. 결과 문서는 별도 PR로 반영하고 제품 버전·발행은 반복하지 않는다.
+- 정리: 0.11.0·0.11.1 배포 아카이브 두 개(107.04MiB)를 기존 해시와 사용 여부 대조 후 삭제했다. 최신 0.11.2·원본·검증/과거 기록·현재 빌드/런타임/서버는 보존했다. 상세 경로와 SHA는 [실행 기록](docs/records/archive/release-0.11.2.md#발행-후-정리)에 남겼다.
+
 ## 2026-11-11 — 전체 검사 중복·과잉 정리
 
 - 범위: package/pre 명령·정적 검사·Vitest 131파일·Python 7파일·곡별 제작 검사·CI·빌드/발행 검사를 목록화하고 중복 후보의 실제 책임을 대조했다. [제거·통합·축소 내역과 유지 근거](docs/records/code-maintenance.md#all-check-cleanup-20261111).
