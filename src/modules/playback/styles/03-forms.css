@@ -337,7 +337,6 @@ main {
   margin-bottom: 8px;
 }
 .score-reader-surface {
-  position: relative;
   background: #fff;
 }
 .score-reader-surface img {

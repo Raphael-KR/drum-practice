@@ -78,16 +78,18 @@ export function installScoreReader(options: Options) {
       const prepared: string[] = [];
       buttons.forEach((b) => (b.disabled = true));
       try {
-        const fullScore = svg
-          ? await prepareFullScore(
-              options.song,
-              options.canonicalXML,
-              score.song.scorePartId,
-            )
-          : { ...score.song, pages: score.pages };
+        const pages = svg
+          ? (
+              await prepareFullScore(
+                options.song,
+                options.canonicalXML,
+                score.song.scorePartId,
+              )
+            ).pages
+          : score.pages;
         if (disposed || generation !== current) return;
         const fragment = document.createDocumentFragment();
-        for (const [index, page] of fullScore.pages.entries()) {
+        for (const [index, page] of pages.entries()) {
           const decoded = await displayPage(page);
           if (disposed || generation !== current) return;
           const url = URL.createObjectURL(decoded);
@@ -104,7 +106,7 @@ export function installScoreReader(options: Options) {
             const caption = document.createElement("figcaption");
             caption.textContent = t("score-management.message505", {
               value1: index + 1,
-              value2: fullScore.pages.length,
+              value2: pages.length,
             });
             const image = document.createElement("img");
             image.src = url;

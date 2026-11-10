@@ -12,7 +12,7 @@ import { installWordsPositions, prepareWordsPositions } from "./words-position";
 
 import type { XMLScore } from "./musicxml-parse";
 import type { Song } from "../../model/model";
-import { installFullScoreLyrics } from "./full-score-lyrics";
+import { installFullScoreMeasureLyrics } from "./full-score-lyrics";
 import {
   fitFullScoreSystems,
   installFullScoreLayout,
@@ -84,7 +84,7 @@ export async function renderMusicXMLEngine(
   const wordsPositions = prepareWordsPositions(renderDocument);
   await osmd.load(renderDocument);
   if (fullScoreSong) {
-    installFullScoreLyrics(osmd, fullScoreSong);
+    installFullScoreMeasureLyrics(osmd, fullScoreSong);
     installFullScoreLayout(osmd, fullScoreSong);
   }
   // Translate canonical XML tenths into the engine title-spacing units.

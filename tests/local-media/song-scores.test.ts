@@ -15,8 +15,6 @@ import type { RecordData } from "../../src/model/record";
 import {
   packSong,
   unpackSong,
-  packScores,
-  unpackScores,
 } from "../../src/platform/storage/record-serialization";
 function fixture(): RecordData {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
@@ -61,18 +59,17 @@ it("preserves edits to active geometry and blocks incompatible measure structure
   pdf.song.measures[0].beats = 3;
   expect(() => useScore(pdf, songScores(pdf)[1])).toThrow("마디 구성");
 });
-it("round trips both formats in IndexedDB, HTML and backup encoding", async () => {
+it("round trips both formats in IndexedDB and whole-library backup encoding", async () => {
   const r = attach(fixture());
   await saveRecord(r);
   const saved = (await allRecords()).find((s) => s.song.id === r.song.id)!;
   expect(await saved.otherScores![0].source.text()).toBe("original PDF");
   expect(await saved.pdf.text()).toBe("XML");
-  const html = unpackSong(JSON.parse(JSON.stringify(await packSong(saved))));
-  expect(await html.otherScores![0].source.text()).toBe("original PDF");
-  expect(html.otherScores![0].regions).toEqual(r.otherScores![0].regions);
-  const backup = unpackScores(
-    JSON.parse(JSON.stringify(await packScores(saved.otherScores))),
+  const restored = unpackSong(
+    JSON.parse(JSON.stringify(await packSong(saved))),
   );
-  expect(await backup[0].pages[0].text()).toBe("image");
+  expect(await restored.otherScores![0].source.text()).toBe("original PDF");
+  expect(restored.otherScores![0].regions).toEqual(r.otherScores![0].regions);
+  expect(await restored.otherScores![0].pages[0].text()).toBe("image");
   await deleteRecord(r.song.id);
 });

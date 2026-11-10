@@ -6,7 +6,6 @@ import {
   formatNumber,
   type MessageKey,
 } from "../../src/shared/i18n/i18n";
-import { execFileSync } from "node:child_process";
 describe("Korean message catalog", () => {
   it("keeps replacement values literal and validates missing variables", () => {
     const key = Object.keys(ko).find((k) =>
@@ -18,13 +17,6 @@ describe("Korean message catalog", () => {
     );
     expect(t(key, values)).toContain("$& {untouched} <b>");
     expect(() => t(key)).toThrow("Missing translation value");
-  });
-  it("validates every message and interpolation call against source", () => {
-    expect(
-      execFileSync(process.execPath, ["scripts/checks/check-i18n.mjs"], {
-        encoding: "utf8",
-      }),
-    ).toContain('"unregisteredKoreanUI":0');
   });
   it("uses explicit locale and timezone without altering user content", () => {
     expect(formatNumber(1234.5)).toBe("1,234.5");

@@ -20,11 +20,6 @@ cpSync(
   join(root, "tools/score-production/musicxml/common/package.mjs"),
   join(fixture, "tools/score-production/musicxml/common/package.mjs"),
 );
-mkdirSync(join(fixture, "docs/plans"), { recursive: true });
-cpSync(
-  join(root, "docs/plans/PLAYBACK-SCREEN-INVENTORY.md"),
-  join(fixture, "docs/plans/PLAYBACK-SCREEN-INVENTORY.md"),
-);
 mkdirSync(join(fixture, "scripts/checks"), { recursive: true });
 cpSync(
   join(root, "scripts/checks/i18n-content-exceptions.json"),
@@ -54,17 +49,7 @@ it("resolves source imports and leaves external packages unresolved", () => {
   );
   expect(resolution.status, resolution.stderr).toBe(0);
 });
-it.each([
-  "check-playback-architecture.mjs",
-  "check-common-components.mjs",
-  "check-i18n.mjs",
-  "check-source-boundaries.mjs",
-])("accepts the current shared composition with %s", (script) => {
-  const result = run(script);
-  expect(result.status, `${script}\n${result.stdout}\n${result.stderr}`).toBe(
-    0,
-  );
-});
+// verify and verify:portable check the real source first; these cases test rejection.
 const cases = [
   [
     "src/apps/editor/main.ts",
@@ -105,8 +90,8 @@ const cases = [
   [
     "src/modules/playback/playback-screen.ts",
     '\nimport "../../apps/editor/workspace";',
-    "check-playback-architecture.mjs",
-    "host dependency",
+    "check-source-boundaries.mjs",
+    "app dependency",
   ],
   [
     "src/model/model.ts",

@@ -37,7 +37,7 @@ async function renderMusicXMLPass(
     fullScoreSong ? source : playbackNotationXML(source),
   );
   const parsed = parseMusicXML(xml, partId);
-  if (fullScoreSong) prepareFullScoreLyrics(parsed, xml, fullScoreSong);
+  if (fullScoreSong) prepareFullScoreLyrics(parsed, fullScoreSong);
   progress(i18nText("musicxml.message412"));
   const scoreFonts = await loadScoreTextFonts();
   const host = document.createElement("div");

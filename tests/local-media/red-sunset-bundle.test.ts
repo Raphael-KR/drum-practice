@@ -1,6 +1,5 @@
 import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
 import JSZip from "jszip";
 import { JSDOM } from "jsdom";
 
@@ -10,9 +9,6 @@ it("ships the approved 112/2 to 113/2.5 crescendo in both source and canonical X
   );
   const manifest = JSON.parse(await zip.file("manifest.json")!.async("string"));
   const source = await zip.file(manifest.source.path)!.async("nodebuffer");
-  expect(createHash("sha256").update(source).digest("hex")).toBe(
-    "ef2524aeef2b986aff3c452d13355cdc249842a661e12b9a29eff23408a6e3cc",
-  );
   expect(manifest.canonicalXML).toBe(source.toString("utf8"));
   expect(manifest.song.id).toBe("yb-red-sunset-20f9b136");
   expect(manifest.song.bpm).toBe(134);

@@ -36,7 +36,7 @@ import { type StaffPosition } from "../score/practice-staff-layout";
 import { isEmbeddedScoreTextFontStyle } from "../score/score-text-font";
 import { isPhoneLandscape } from "../../platform/browser/phone-layout";
 
-export interface PlaybackRuntimeOptions {
+interface PlaybackRuntimeOptions {
   root: HTMLElement;
   song: Song;
   canonicalXML?: string;

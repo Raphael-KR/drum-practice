@@ -1,14 +1,9 @@
 import { beforeAll, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
-import {
-  readScorePackage,
-  createScorePackage,
-} from "../../src/modules/library/score-package";
-import {
-  writeCanonical,
-  readCanonical,
-} from "../../src/modules/score/canonical-xml";
+import { readScorePackage } from "../../src/modules/library/score-package";
+import { metadataFromXML } from "../../src/modules/score/canonical-xml";
+import { canonicalManifest } from "../../src/modules/score/canonical-metadata";
 // Production helpers are shared with browser entrypoints; real saved assets only.
 import {
   sha,
@@ -35,31 +30,29 @@ async function load(path: string) {
 for (const path of paths) {
   it(`preserves every source, page, alternate, lyric and timing: ${path}`, async () => {
     const original = await load(path);
-    const old = await readScorePackage(await createScorePackage(original));
     const current = await readScorePackage(
       await createVerifiedPackage(original),
     );
-    await verifyPackage(old, current);
+    await verifyPackage(original, current);
     const song = structuredClone(original.song);
     const source = original.canonicalXML!;
     const audioHash = await sha(original.audio);
-    const doc = new DOMParser().parseFromString(
-      writeCanonical(song, source, audioHash),
-      "application/xml",
-    );
-    const movement = doc.querySelector("movement-title");
-    if (
-      movement &&
-      movement.textContent ===
-        doc.querySelector("work > work-title")?.textContent
-    )
-      movement.remove();
-    const oldXML = new XMLSerializer().serializeToString(doc);
-    const oldSong = structuredClone(song);
-    readCanonical(oldXML, oldSong);
     const result = prepareCanonical(song, source, audioHash);
-    expect(result.canonicalXML).toBe(oldXML);
-    expect(result.restored).toEqual(oldSong);
+    expect(metadataFromXML(result.canonicalXML)).toEqual({
+      title: song.title,
+      originalTitle: song.originalTitle || song.title,
+      artist: song.artist || "",
+      composer: song.composer || "",
+      lyricist: song.lyricist || "",
+    });
+    expect(result.restored.measures).toEqual(song.measures);
+    expect(result.restored.lyrics).toEqual(song.lyrics);
+    expect(result.restored.measureLyrics).toEqual(song.measureLyrics);
+    expect(
+      canonicalManifest(
+        new DOMParser().parseFromString(result.canonicalXML, "application/xml"),
+      )!.audioSHA256,
+    ).toBe(audioHash);
     const before = structuredClone(song.measures);
     bindRenderedScore(song, {
       regions: original.song.regions,

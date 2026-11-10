@@ -46,6 +46,8 @@
 
 사용자가 요청한 단계만 commit·push·PR·merge·발행·브랜치 정리한다. 과거 실행 기록을 현재 릴리스 절차로 대신하지 않는다. 전체 흐름은 [릴리스 스킬](../../../.agents/skills/release-drum-practice/SKILL.md)을 따른다.
 
+전체 릴리스의 기본 범위는 이 프로젝트의 모든 미커밋 변경과 잔여 브랜치의 고유 변경이다. Git 추적 제외 자료·비밀정보·명시적 제외는 포함하지 않는다. 검토·검증·커밋·PR 병합 후 로컬/GitHub main을 일치시키고 같은 제품 소스의 player를 발행하며, 고유 변경을 main에 보존한 뒤 main 외 로컬·원격 브랜치를 모두 정리한다. Sites 소스 SHA는 정본 Git SHA와 별개이므로 [최종 상태 기준](../../../.agents/skills/release-drum-practice/SKILL.md#release-final-state)에 따라 빌드 입력과 공개 파일로 일치를 확인한다. 미반영 변경이나 잔여 브랜치가 있으면 예외·미완료 범위를 보고한다.
+
 <a id="deployment-rules--자산과-검증"></a>
 
 ### 자산과 검증

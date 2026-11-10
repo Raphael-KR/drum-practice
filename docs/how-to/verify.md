@@ -16,7 +16,7 @@
 
 - `pnpm run test:portable`: 로컬 악보 없이 실행 가능한 unit 및 integration 검사. 기존 테스트의 메모리 저장소·DOM·mock을 재사용한다.
 - `pnpm run test:local-media`: 보존된 실제 악보·음원 자료를 사용하는 검사. 자료가 없으면 명시적으로 실패한다.
-- `pnpm run test:drum`: 두 범위를 모두 실행하는 전체 회귀. 릴리스 필수 범위를 축소하지 않는다.
+- `pnpm run test:drum`: 두 범위를 모두 실행하는 전체 회귀. 확정된 릴리스 필수 범위를 임의로 생략하지 않는다.
 - `pnpm run check:playback`: 재생 소유권, 공통 컴포넌트와 소스 경계 검사. `src/` 전체를 재귀 탐색한다.
 - `pnpm run build:apps`: 타입·i18n·재생/소스 경계 검사 후 두 앱을 빌드하고 player 번들의 제작 기능 유입을 검사한다.
 - `pnpm run test:local`: 기존 Apple 보조 도구의 Python 단위 검사. STT/AFM 실행이나 음원 전송은 포함하지 않는다.
@@ -29,17 +29,26 @@
 
 웹앱 개발 중에는 [변경 영향과 검사 선택](../reference/engineering/verification.md#verification-rules--변경-영향과-검사-선택)에 따라 필요한 정적 검사부터 실행한다. 아래 목록은 명령의 역할이며 모든 작업에서 전부 실행하는 순서가 아니다. 문서만 변경하면 `check:docs`와 diff·보존 확인을 우선하고, 공통 기능·저장 호환성 등 영향이 넓으면 관련 검사 범위를 확대한다. 화면 테스트는 릴리스 때 수행하며 릴리스의 전체 검사·빌드는 유지한다. 별도 사용자 요청과 [실행 범위·허가 경계](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)를 따른다.
 
+릴리스 검증 전 [검사 정리와 기준 변경](../reference/engineering/verification.md#verification-rules--검사-정리와-기준-변경)에 따라 영향받는 테스트·정적 검사·CI를 검토한다. 정당한 삭제·통합·축소는 관련 문서와 실행 경로에 함께 반영한 뒤 개정된 기준의 필수 검사를 수행한다. 검사 실패를 숨기는 생략과 구분해 정리 이유·유지 근거·검증 공백·실행 결과를 남긴다.
+
 - 최초 준비: `pnpm install --frozen-lockfile`. 루트와 hosting을 한 번에 설치하며 Git에 보관한 `config/shared-catalog.yaml` 사본과 공용 잠금 파일을 사용한다. 개인 중앙 경로는 필요하지 않다. 버전 갱신과 로컬 정본 대조는 [카탈로그 동기화 절차](develop.md#공유-의존성과-중앙-버전-갱신)를 따른다.
 - `pnpm run generate`: 라이선스·소스 빌드번호 생성. 모든 개발 진입점과 테스트·앱/도구 타입 검사의 pre 단계가 재사용한다.
 - `pnpm run check`: ESLint, 코드/설정 서식, 앱·도구·hosting 타입, i18n, 모듈 경계, 생성 UI 문서·상대 파일 링크·Markdown 문단 앵커 검사.
 - `pnpm run verify:portable`: 공통 검사와 portable 테스트. `.github/workflows/check.yml`도 같은 명령을 실행한다. CI는 원본 미디어를 업로드/생성하지 않으며 두 앱 빌드·local-media 회귀를 대체하지 않는다.
-- `pnpm run verify`: 공통 검사, 전체 회귀, 분리 빌드. 릴리스의 로컬 검증 명령이다.
+- `pnpm run verify`: 공통 검사, 전체 회귀, 두 앱 번들·player 경계 검사를 순서대로 실행하는 릴리스 로컬 명령이다. 같은 실행에서 통과한 정적 검사를 빌드 앞에서 반복하지 않는다.
+- `pnpm run bundle:apps`: editor/player 번들 생성과 player 번들의 제작 코드 유입 검사만 하는 내부 단계다. `verify`가 앞의 공통 검사·테스트를 마쳤거나 `build:apps`가 빌드 전 검사를 마친 뒤 재사용한다. [검증된 main의 발행 빌드](release.md#sites-publication--발행-순서)에서도 검사 입력·실행 환경의 동일성을 확인하면 기존 검사 결과를 재사용하고 `generate` 후 이 명령으로 새 번들을 만든다. 단독 성공을 전체 검증으로 보고하지 않는다.
 - `pnpm run build`는 `build:apps`와 동일하다. 구형 통합 dist 빌드는 사용하지 않는다. 빌드 중 문서는 수정하지 않고 `check:docs`로 생성 문서의 일치를 확인한다.
 - `pnpm run typecheck`: 앱(`tsconfig.json`), 브라우저 제작 도구(`tsconfig.tools.json`), hosting 빌드 설정(`hosting/tsconfig.json`)을 각각 검사한다. hosting의 설치된 Vite/Cloudflare 타입을 사용한다.
 - `pnpm run format:check`: Git 추적 파일과 아직 추가하지 않은 비제외 파일 중 JS/TS/JSON/CSS/HTML/YAML을 검사한다. Markdown·Python과 pnpm이 생성하는 `pnpm-lock.yaml`은 Prettier 대상이 아니다. 잠금 파일은 `pnpm install --frozen-lockfile`로 선언·카탈로그와의 일치를 검사한다. `.prettierrc.json`과 고정한 Prettier 버전을 사용한다.
 - Python·Swift 보조 도구를 정리할 때는 사용 가능한 Black·`swift-format`의 경로와 버전을 먼저 확인하고 변경 파일만 검사한다. 미사용 import는 다른 파일의 재수출 소비자까지 확인하고, 서식 변경은 구문·상수·실행문 보존을 대조한다. 이 검사는 도구 실행·음원 분석이나 모델 호출을 포함하지 않는다. [2026-11-10 후속 정리 기록](../records/code-maintenance.md#slop-followup-20261110)에 사용 환경과 검사 한계를 남겼다.
 - `pnpm run check:docs`: 생성 UI 문서, Markdown의 상대 파일 링크와 문단 앵커를 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 같은 문서의 `#앵커`, 중복 제목의 접미사와 명시적 HTML 앵커도 확인한다. 외부 URL·절대 로컬 경로·비 Markdown 파일의 fragment는 검사하지 않는다. 자세한 입력 형식과 제외 범위는 [문서 검사 계약](../reference/engineering/documentation.md#documentation-rules--문서-변경-검증)을 따른다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
 - 원격 CI 결과는 push 이후 별도로 확인한다. 로컬 통과를 원격 CI 실행 성공으로 기록하지 않는다.
+
+CI는 `pull_request`와 `main`의 `push`에서 실행한다. PR이 열린 작업 브랜치의 push와 PR 갱신에 같은 검사를 두 번 예약하지 않는다. PR 전 작업 브랜치의 push·태그 push는 자동 검사 대상이 아니며 필요한 로컬 검사는 `verify:portable`로 수행한다. PR의 병합 예정 코드와 병합된 main은 입력이 다르므로 두 검증은 유지한다.
+
+정상 소스의 i18n·재생 소유권·공통 컴포넌트·소스 경계 검사는 `check`가 한 번 담당한다. 테스트에서는 같은 스크립트의 정상 통과를 재실행하지 않고 위반을 탐지하는 회귀와 실제 UI·저장 동작을 확인한다. `test:portable`·`test:drum`만 실행한 결과는 공통 정적 검사까지 통과한 결과가 아니다.
+
+함수 중복 후보와 호출 목록은 상시 통과 조건이 아닌 수동 검토 자료다. 필요할 때 `node scripts/checks/check-common-components.mjs --audit` 또는 `node scripts/checks/check-playback-architecture.mjs --audit`를 실행한다. 전자는 `docs/experiments/common-components-audit.json`, 후자는 `docs/experiments/playback-call-sites.json`을 생성한다. 기본 검사는 이 보고서를 다시 쓰지 않는다. 공통 모듈 사용·재생 소유권·직접 저장소 의존 금지 검사는 그대로 실행한다.
 
 CI의 `actions/checkout@v7`·`actions/setup-node@v7`·`pnpm/action-setup@v6`는 액션 자체를 Node 24로 실행한다. 프로젝트 검사에 사용하는 Node는 별도로 `.nvmrc`의 22 LTS를 따르며, pnpm 버전·frozen 설치·잠금 파일 기반 캐시·검사 명령은 기존 설정을 유지한다. 액션 런타임의 Node 20 폐기 경고를 없애려고 앱의 Node 버전을 바꾸거나 경고 억제 환경변수를 넣지 않는다.
 
@@ -58,7 +67,7 @@ TypeScript 7의 네이티브 컴파일러는 기존 JavaScript compiler API를 �
 - 범위: 두 앱의 `src/`, `tests/`, `server/`, `scripts/`, JS 제작 도구, `hosting/`와 루트 설정 파일. 생성 파일·외부 의존성·미디어·배포 사본·실험 출력은 제외한다. HTML 내부 스크립트와 Python은 이 검사 대상이 아니다.
 - 환경: 앱은 browser, 서버·개발 도구는 Node.js, 테스트는 Node.js와 DOM이다. MusicXML 제작 도구는 `page.evaluate()` 콜백을 포함하므로 browser 전역도 허용한다.
 - Prettier: 마지막에 `eslint-config-prettier`를 적용해 서식 규칙 충돌을 막는다. ESLint 명령이 Prettier를 실행하는 것은 아니다.
-- 규칙: 미사용 변수, 명시적 `any`, 재할당 없는 `let`, 빈 블록 등을 권장 규칙 그대로 검사한다. 사용되지 않는 `eslint-disable`도 오류로 처리한다. 검사 설정 변경의 경계는 [검증 Rule](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)을 확인한다.
+- 규칙: 미사용 변수, 명시적 `any`, 재할당 없는 `let`, 빈 블록 등을 권장 규칙 그대로 검사한다. 사용되지 않는 `eslint-disable`도 오류로 처리한다. 검사 설정 변경은 [필수 경계](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)와 [기준 변경 절차](../reference/engineering/verification.md#verification-rules--검사-정리와-기준-변경)를 따른다.
 
 빌드 명령은 lint를 자동 실행하지 않는다. 필요한 전체 공통 검사에는 `pnpm run check`를 사용하고, 직접 lint가 필요한 경우 `pnpm run lint`를 실행한다.
 
@@ -96,6 +105,8 @@ player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons
 제작 담당은 원본 대조·패키지 생성/왕복·제작 검증과 한계를 인계하고, 개발 담당은 공통 카탈로그 연결과 실제 앱 저장·재열기·재생을 확인한다. 공통 제작·인계 절차는 [제작 프로세스](produce-score.md#score-production-process--악보-제작-프로세스)를 따른다.
 
 새 곡을 수록할 때는 기존 카탈로그·패키지·저장 경로를 사용하고, 전달받은 ID·메타정보·파일 해시를 확인한다. 목록 테스트의 기대값은 곡 식별자·분류·중복 여부를 기준으로 정한다. 저장된 같은 ID의 레코드가 우선하고 목록에 중복 표시되지 않는지도 확인한다. `tests/local-media/editor-catalog.test.ts`의 개인 목록 검사는 이미 이 기준을 사용하므로 곡 추가마다 고정 개수를 고치거나 같은 테스트를 새로 만들지 않는다.
+
+교정될 수 있는 패키지 전체·정본 XML의 특정 릴리스 해시를 회귀검사에 고정하지 않는다. 인계·릴리스에서는 승인된 입력 해시를 기록하고 main 빌드·발행 자산과 대조한다. 회귀검사는 source와 canonicalXML의 일치, 곡 식별·메타정보, 수정 대상의 음악적 의미, 저장 왕복을 확인한다. 변경하지 않기로 한 원본 음원이나 구형 호환 fixture를 식별하는 해시는 유지한다. [0.11.1 이후 검사 정리](../records/code-maintenance.md#release-check-cleanup-20261111)에 적용 범위와 남은 검증을 기록했다.
 
 <a id="testing--safari의-실제-재생-시작"></a>
 

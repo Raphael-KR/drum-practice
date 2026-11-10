@@ -133,7 +133,7 @@ it("imports exact vocal triplet rhythm without snapping it to a quarter-beat gri
   expect(c.lyrics[0].scorePosition).toEqual(s.lyrics[0].scorePosition);
   expect(() => vocalLyrics(s, { ...parsed, measures: [] })).toThrow("마디");
 });
-it("uses the independently timed lyric part as valid importable MusicXML", () => {
+it("keeps lyric-only canonical data importable when no drum source is supplied", () => {
   const s = song(),
     parsed = parseMusicXML(writeCanonical(s), "DrumPracticeLyrics");
   expect(parsed.measures).toHaveLength(s.measures.length);

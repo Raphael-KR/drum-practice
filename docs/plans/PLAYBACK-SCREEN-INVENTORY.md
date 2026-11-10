@@ -1,5 +1,7 @@
 # 공통 재생 화면 소유권
 
+상태: 화면 분리 설계 참고표. 2026-11-11부터 고정 ID 31개 존재 검사는 제거했으며 실제 호출·의존 경계는 공통 정적 검사가 확인한다. 기존 표와 참조 경로는 보존한다.
+
 - 목표: 악보제작기와 드럼연습실이 하나의 재생 화면·조작 구현을 사용한다.
 - 범위: main.ts와 player-app.ts → playback-runtime.ts, 공통 재생 UI 및 자산 처리.
 - 완료 조건: 두 호스트가 createPlaybackScreen을 각각 한 번 호출하고 아래 기능 소유권을 유지한다.
@@ -50,7 +52,8 @@
 
 ## 재발 방지
 
-- `scripts/checks/check-playback-architecture.mjs`: 각 호스트의 단일 mount, screen 내부 track/display/navigation의 단일 생성, 핵심 재생 연산의 담당 모듈, 목록 항목, 호스트 의존 금지를 검사한다.
+- `scripts/checks/check-playback-architecture.mjs`: 각 호스트의 단일 mount, screen 내부 track/display/navigation의 단일 생성, 핵심 재생 연산의 담당 모듈과 직접 저장소 의존 금지를 검사한다.
+- `scripts/checks/check-source-boundaries.mjs`: 공통 모듈의 앱 의존 금지와 app/model/shared 경계를 검사한다.
 - `scripts/checks/check-common-components.mjs`: 공통 폼·바이너리 인코더·아이콘 소유권을 검사한다.
 - `scripts/checks/check-app-boundaries.mjs`: 별도 editor/player 빌드에서 제작 코드 유입 여부를 검사한다.
 - `tests/local-media/playback-screen.test.ts`: web/player 연결로 재생·탐색·구간·설정 동작을 검사한다.

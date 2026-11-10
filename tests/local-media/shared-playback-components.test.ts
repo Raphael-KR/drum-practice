@@ -193,45 +193,6 @@ it("switches share accessible description, disabled and checked state", () => {
       .textContent,
   ).toBe("Description");
 });
-it("both entry points mount the single screen owner", () => {
-  for (const file of [
-    "apps/editor/main.ts",
-    "modules/playback/playback-runtime.ts",
-  ]) {
-    const source = readFileSync(`src/${file}`, "utf8");
-    expect(source).toContain("createPlaybackScreen({");
-    for (const call of [
-      "updateScoreFrame(",
-      "installScoreScroll(",
-      "buildScoreTrack(",
-      "attachPlaybackGestures(",
-      "repeatPreset(",
-      "updateRepeatControls(",
-      "renderMeasure(",
-      "installPlaybackKeys(",
-    ])
-      expect(source.includes(call), `${file} owns duplicate ${call}`).toBe(
-        false,
-      );
-  }
-});
-
-it("player switch visibility uses the shared component selector", () => {
-  const source = readFileSync(
-    "src/modules/playback/playback-runtime.ts",
-    "utf8",
-  );
-  expect(source).not.toContain('closest<HTMLElement>(".setting")');
-  document.body.innerHTML = settingsSwitch(
-    "highlight",
-    "Highlight",
-    "Description",
-  );
-  expect(
-    document.getElementById("highlight")!.closest(".settings-switch"),
-  ).not.toBeNull();
-});
-
 it("does not turn automatic end-of-track alignment into a seek", () => {
   const stage = document.createElement("div");
   const s = song();

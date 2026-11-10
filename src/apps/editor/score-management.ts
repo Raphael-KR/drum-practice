@@ -372,7 +372,6 @@ export function setupScoreManagement(
     i18nText("score-management.message503"),
   );
   const svgPages = document.createElement("div");
-  svgPages.className = "full-svg-pages";
   svgDialog.append(svgPages);
   let svgURLs: string[] = [];
   const releaseSVG = () => {

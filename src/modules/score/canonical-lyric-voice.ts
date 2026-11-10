@@ -1,5 +1,7 @@
 import type { Song } from "../../model/model";
 import {
+  CANONICAL_FIELD,
+  LEGACY_LYRIC_PART,
   LYRIC_DIVISIONS,
   canonicalManifest,
   type LyricVoiceIdentity,
@@ -73,12 +75,11 @@ export function removeLyricVoices(part: Element, voices: string[] = []) {
 
 /** Hidden timing voices must not add rhythmic anchors or spacing to the playback staff. */
 export function playbackNotationXML(xml: string): string {
-  if (!xml.includes(START) && !xml.includes("drum-practice:score:v2"))
-    return xml;
+  if (!xml.includes(START) && !xml.includes(CANONICAL_FIELD)) return xml;
   const doc = new DOMParser().parseFromString(xml, "application/xml");
   const data = canonicalManifest(doc);
   for (const part of kids(doc.documentElement, "part")) {
-    if (part.id !== "DrumPracticeLyrics")
+    if (part.id !== LEGACY_LYRIC_PART)
       removeLyricVoices(
         part,
         data?.version === 2 && data.partId === part.id
