@@ -28,4 +28,13 @@
 - 전체 검사: `verify-release.log`. 실제 6곡 출력: `native-output-final.json`과 `native-output-qa.mjs`. 화면: `editor-full-score.png`, `player-full-score-final.png`. 재생: `playback.json`. 패키지 보존: `assets-before.json`.
 - 기존 Vite 큰 청크 경고·Node SQLite experimental 경고는 유지한다. [보류 근거와 재검토 기준](runtime-loading-cost-20261109.md)을 따른다.
 - iOS/iPadOS 실기기·시뮬레이터·Safari 응답형 검수는 수행하지 않았다. 공개 파일 확인과 실제 로컬 UI 검증을 구분한다.
-- Git/CI·Sites 발행·공개 확인 결과는 해당 단계 완료 후 추가한다.
+- Sites 빌드 도구를 Node22에서 불러올 때 `punycode` 폐기 예정 경고도 발생했다. 도구 import에서 재현했으며 Worker 빌드·자산 일치·공개 확인은 통과했다. 런타임 오류로 취급하지 않으며 별도 의존성 유지보수 대상으로 남긴다. 근거: `sites-node-warning.log`.
+
+## Git·발행·공개 확인
+
+- 구현 `da0f670b037a8a712b4b23c21693a9877712e513`, 가사 전체 삭제 보완을 포함한 최종 head `67938d8992761b720bac03487e354a247172d42e`, [PR #46](https://github.com/Raphael-KR/drum-practice/pull/46). Codex 자체 검토이며 독립 검토와 구분한다. 최신 head의 [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42862291324)·push CI를 확인한 뒤 merge했다.
+- 제품 main `4914d9399746d451f988d9de28f889cfb0505356`의 [CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42862696049) 통과. 최종 PR head와 main의 Git tree가 같고 6개 수록 패키지 SHA가 검증 입력과 같아 로컬 회귀 결과를 재사용했다. main에서 두 앱을 다시 빌드하고 player만 준비했다. `main-inputs.json`, `main-ci.json`, `main-build.log`에 근거를 남긴다.
+- Sites 소스 `daf4ac3a134294316b716f8adfdf182101eec5bf`, 저장 버전102 (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_4da2a2e3a5088191a415990373fb8658`). 배포 `appgdep_6af3515a30b48191911756746c328ee3`: **succeeded**, **2026-11-11 02:16:29 KST** / `2026-11-10T17:16:29.051701+00:00`.
+- [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site/)의 기존 공개 범위를 유지했다. `dist/player`·Sites 사본·Worker 결과의 48개 파일 SHA를 대조했고, 공개 읽기 52항목(HTML/보안 헤더 3경로·46정적 파일/수록 6곡·폐기 API 3경로 404)을 통과했다. `parity.json`, `smoke.json`, `publication.json` 참조. 공개 사이트에서 실제 재생·저장 쓰기를 수행했다는 뜻은 아니다.
+- 아카이브 `local-archives/releases/drum-practice-0.11.1-sites.tar.gz` SHA256 `61322247bd1a9fb9aa2e9e9bcca11edf2247c89c8a0f2a60fdd0546f065d258b`. Sites tar content hash `sha256:8694ff1ddab1778c9b648e516e216ba3715bcc12a957d74082a3f6aa5fb48820`와 구분한다.
+- 검수용 접두사 `release-0.11.1-20261111:`의 임시 DB 3개만 정리하고 기존 사용자 DB 3개의 이름/버전 보존을 확인했다(`browser-cleanup.json`). 검수용 ego 작업 공간도 종료했다. 결과 문서는 별도 PR로 반영하며 제품 버전·발행을 반복하지 않는다.
