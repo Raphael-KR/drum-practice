@@ -4,6 +4,15 @@
 
 로컬 보존 상태: 2026-10-28 청소에서 `release-0.8.9.tar.gz`~`release-0.8.17.tar.gz`와 완료된 검증의 임시 설치·빌드 복사본을 삭제했다. 최신 `release-0.8.18.tar.gz`, 원본 패키지·현재 빌드·Sites checkout·검증 로그는 유지했다. 아래 과거 아카이브 경로·해시는 당시 발행 증거이며 현재 파일의 존재를 뜻하지 않는다. [정확한 정리 범위와 보존 확인](archive/project-cleanup-20261027.md)을 참고한다.
 
+<a id="release-0-11-0-20261110"></a>
+
+## 0.11.0 — SVG 전체 보기 가사·코드·문서 정리 · 2026-11-10 발행
+
+- 두 앱 0.10.8→0.11.0 minor. SVG 전체 보기의 공통 가사 표시·실제 마디 번호, Loveholic 교정 수록본, 누적 공통 코드/CSS/주석·문서 정리와 승인된 구형 지원 종료를 반영했다. 현재 전체 백업·`.drumscore`·브라우저 저장 계약은 유지한다. [범위·검증·한계](archive/release-0.11.0.md).
+- 구현 `0d621b0828c32e7d8eb46c7cd6201f3da9a984ce`·[PR #44](https://github.com/Raphael-KR/drum-practice/pull/44)·제품 main `7d88b32888ba89d49ddb13558e35cf19831d9e9d`·소스 빌드 `bb8b549b70f7`. 자체 검토·PR/main CI·전체 814테스트·정적 검사·두 앱 빌드 통과. Safari MCP에서 실제 재생·BPM·전체 SVG·폰/태블릿 폭 배치·PC 제작기 현재 진입점을 확인했다. 기기 프리셋·iOS/iPadOS 실기기·시뮬레이터 검증으로 확대하지 않는다.
+- Sites 소스 `574e9e095f81af3d330c4db3e3487975e3f746cc`, 버전101, 배포 `appgdep_6af2f9c6620481918e282384afffed9a`: **succeeded**, **2026-11-10 20:02:46 KST**. 기존 public Site에 player만 발행했다. 47파일 세 위치 해시·공개 읽기 51항목·루트/Sites audit 0건을 확인했다.
+- 아카이브 `local-archives/releases/drum-practice-0.11.0-sites.tar.gz` SHA256 `64bc060a97d9d6b74f1256727790c6ab6729d41b29de3c5702db24a85bc9ff86`. 근거는 `.tmp/release-0.11.0/`에 보존한다. 기존 번들/SQLite 경고는 유지하며 결과 문서만 별도 PR로 반영한다.
+
 <a id="release-0-10-8-20261109"></a>
 
 ## 0.10.8 — 문서·공통 재생 코드 정리 · 2026-11-09 발행

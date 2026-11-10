@@ -19,9 +19,15 @@
 - 로컬 `127.0.0.1:5173`의 Safari MCP 전용 탭에서 Loveholic을 목록에 불러오고 재열었다. 1줄·2줄 표시, 카운트오프, 2줄 실제 재생이 5마디를 지나 10마디까지 진행되고 일시정지되는 것을 확인했다. 실제 네이티브 AudioContext는 32kHz·running 상태였고 시간이 증가했다. 청취·전곡 안정성·문제가 보고된 iPhone의 재현 결과로 확대하지 않는다.
 - 전체 SVG의 가사와 1·3·7·11 등 줄 첫 마디 번호, 마디 시작점에 정렬된 첫 섹션을 캡처로 확인했다. 내부 `d-m…` 문자열은 표시되지 않았다. 109 BPM 프리셋 적용 후 원곡으로 복귀했다.
 - Safari 네이티브 Window 메뉴에서 MCP 창을 찾지 못해 응답형 디자인 모드 조작을 완료하지 못했다. Safari MCP 크기 조절을 사용하고 실제 `innerWidth/innerHeight`를 확인했다. 이 도구가 창 바깥 크기를 바꾸는 차이를 보정했으며 실제 폰 가로 852×393, 폰 세로 393×852, 태블릿 폭 768×946에서 확인했다. 마지막 높이는 데스크톱 화면 제한으로 1024가 아니며 iPad 기기 프리셋 검증으로 표시하지 않는다.
-- 폰 가로의 악보 전용 화면·설정/BPM 카드와 고정 음량, 폰 세로/태블릿 폭의 상단·하단 공통 조작판을 캡처로 확인했다. PC 제작기는 1280×800에서 현재 편집 진입점의 곡 정보·가사 탭, 악보 교체 및 새 곡/완성 패키지 입력 창을 확인했다. 실제 교체·새 곡 생성은 실행하지 않았고 해당 저장 경로는 전체 회귀 검사로 검증했다.
+- 폰 가로의 악보 전용 화면·설정/BPM 카드와 상단 음량바, 폰 세로/태블릿 폭의 상단·하단 공통 조작판을 캡처로 확인했다. PC 제작기는 1280×800에서 현재 편집 진입점의 곡 정보·가사 탭, 악보 교체 및 새 곡/완성 패키지 입력 창을 확인했다. 실제 교체·새 곡 생성은 실행하지 않았고 해당 저장 경로는 전체 회귀 검사로 검증했다.
 - 검수 후 변경 입력 없이 모달을 닫고 검사 전용 탭만 종료했다. 기존 Safari 창과 개발 서버는 유지했다. iOS/iPadOS 실기기·시뮬레이터는 릴리스 범위에서 제외했다.
 
 ## Git·발행 결과
 
-이 시점에는 로컬 검증까지 완료했다. 작업 브랜치의 PR/CI, main 병합·CI·빌드, Sites 발행 및 공개 파일 대조 결과는 실행 후 아래에 추가한다.
+- 구현 `0d621b0828c32e7d8eb46c7cd6201f3da9a984ce`를 푸시하고 [PR #44](https://github.com/Raphael-KR/drum-practice/pull/44)의 최종 diff를 자체 검토했다. 검토 SHA의 [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42803388287)가 통과한 뒤 ready 전환·merge했다. 필수 승인 우회는 하지 않았다.
+- 제품 main은 `7d88b32888ba89d49ddb13558e35cf19831d9e9d`이고 [main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/42803651637)도 통과했다. PR/main tree `bdfe77fd6dce607bdf2b7b56471982f5850eb1f2`와 수록 패키지 6개의 SHA256이 같아 전체 로컬 회귀 결과를 재사용하고 main에서 두 앱을 다시 빌드했다.
+- 소스 빌드는 `bb8b549b70f7`, main 빌드 시각은 `2026-11-10T11:00:15.419Z`이다. clean Sites 사본을 공식 helper로 연 뒤 main player로 준비·frozen install·빌드했다. 정본 `dist/player`·사본 `player-assets`·Worker 산출물의 47파일이 일치한다. 루트와 Sites 보안 감사 모두 취약점 0건이다.
+- Sites 소스 `574e9e095f81af3d330c4db3e3487975e3f746cc`, 저장 버전 **101** (`appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_c26f7e881f1481919fd96f82a73b9cfd`), 배포 `appgdep_6af2f9c6620481918e282384afffed9a`: **succeeded**, **2026-11-10 20:02:46 KST** / `2026-11-10T11:02:46.850833+00:00`. 기존 public Site·주소를 유지하고 player만 발행했다. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site/).
+- 공개 읽기 51항목을 `2026-11-10T11:03:32.729Z`에 통과했다. HTML 3경로의 현재 번들·보안 헤더, JS/CSS/Worker/글꼴/악보 등 정적 45파일 SHA256(수록 6곡 포함), 폐기 API 3경로의 404를 확인했다. 이 결과를 공개 실제 재생·청취·iOS 동작 검증으로 확대하지 않는다.
+- 아카이브 `local-archives/releases/drum-practice-0.11.0-sites.tar.gz` SHA256은 `64bc060a97d9d6b74f1256727790c6ab6729d41b29de3c5702db24a85bc9ff86`이다. Sites tar content hash `sha256:f1fe45f899cf8d6e67b2828c6377cbff86d1acfce68c18b81a4fb58c4d80d55b`와 구분한다.
+- 전체 검사·main/사본 빌드·CI JSON·입력 보존·47파일 대조·51항목 smoke·발행 결과·화면 캡처는 `.tmp/release-0.11.0/`에 보존한다. 기존 큰 청크/SQLite 경고와 GitHub Ubuntu 이미지 전환 예고는 비차단으로 남겼다. 결과 기록은 별도 문서 PR로 반영하며 앱 버전·발행을 반복하지 않는다.
