@@ -14,6 +14,7 @@ import {
   migrateLyricPositions,
   projectLyrics,
 } from "../../src/modules/lyrics/lyric-score";
+import { playbackNotationXML } from "../../src/modules/score/canonical-lyric-voice";
 import { parseMusicXML } from "../../src/modules/score/musicxml";
 const song = (): import("../../src/model/model").Song =>
   JSON.parse(readFileSync("public/demo/song.json", "utf8"));
@@ -48,20 +49,35 @@ it("keeps musical positions independent of audio alignment and handles mixed met
   readCanonical(writeCanonical(s), copy);
   expect(copy.measures).toEqual(s.measures);
 });
-it("preserves source notation and unknown extensions while replacing owned lyric part", () => {
+it("preserves source notation and unknown extensions while replacing owned lyric voices", () => {
   const s = song();
   s.originalTitle = "原題";
   s.title = "표시";
   s.composer = "작곡";
   s.lyricist = "작사";
+  const bars = s.measures
+    .map(
+      (m) =>
+        `<measure number="${m.label}"><attributes><divisions>9600</divisions></attributes><note><rest/><duration>${((m.beats * 4) / m.denominator) * 9600}</duration><voice>1</voice></note></measure>`,
+    )
+    .join("");
   const base =
-    '<score-partwise version="4.0"><identification><miscellaneous><miscellaneous-field name="foreign">keep me</miscellaneous-field></miscellaneous></identification><part-list><score-part id="P1"><part-name>Drums</part-name></score-part></part-list><part id="P1"><measure number="1"><note><rest/><duration>4</duration></note></measure></part></score-partwise>';
+    '<score-partwise version="4.0"><identification><miscellaneous><miscellaneous-field name="foreign">keep me</miscellaneous-field></miscellaneous></identification><part-list><score-part id="P1"><part-name>Drums</part-name></score-part></part-list><part id="P1">' +
+    bars +
+    "</part></score-partwise>";
   const out = writeCanonical(s, base),
     again = writeCanonical(s, out),
     d = new DOMParser().parseFromString(again, "application/xml");
-  expect(d.querySelectorAll("part#DrumPracticeLyrics")).toHaveLength(1);
-  expect(d.querySelector("part#P1")!.outerHTML).toContain(
-    "<duration>4</duration>",
+  expect(d.querySelectorAll("part")).toHaveLength(1);
+  expect(d.querySelectorAll("part#DrumPracticeLyrics")).toHaveLength(0);
+  expect(
+    new DOMParser()
+      .parseFromString(playbackNotationXML(again), "application/xml")
+      .querySelector("part#P1")!.outerHTML,
+  ).toBe(
+    new DOMParser()
+      .parseFromString(base, "application/xml")
+      .querySelector("part#P1")!.outerHTML,
   );
   expect(again).toContain("keep me");
   const c = structuredClone(s);

@@ -1,4 +1,4 @@
-# 시작전 손풀기 제작 기록
+# 시작 전 손 풀기 제작 기록
 
 문서 역할: **사실·연구 기록**. 원문 날짜·입력·환경·결과·실패·미확인은 각 절의 당시 상태다. 이번 통합에서 과거 검증을 재실행하지 않았으며, 기록의 “현재”는 원래 작성 시점이다. [기록 안내](../README.md)와 [현행 정본](../../RULES-INDEX.md)을 구분한다.
 
@@ -140,3 +140,30 @@ S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음
 ### 2026-10-13 이전16마디 자료 삭제
 
 사용자는 이전16마디 탐탐 무빙의 원본/백업을 전부 삭제하도록 지시했다. 위 초판 제작 시점의16마디 보존 설명은 종료됐다. 이 문서의96마디 시작전 손플기 및 SoCal 음원/검증 자료는 유지한다. 공유 XML 작성 함수는 xml_helpers.py로 옮겨16마디 생성기 삭제에 따른 의존을 제거했다. 현재 제작 기준/자료는 변함없다.
+
+
+## 같은 보표 가사 성부 v2 제작 정본 — 2026-11-10
+
+- 현행 제작 MusicXML: `data/production/shared-staff-lyrics-20261110/preplay-warmup/score.musicxml`. SHA256 `af65c59f6aa8f2b5e869bd1f91d284959515ddd0e8cb85dfdb53170999ec580f`. 이전 `data/production/preplay-warmup/final/preplay-warmup-final.musicxml`은 보존했다.
+- 공통 작성기로 P1의 독립 숨긴 가사 성부에 전환했다. 96마디·가사 0개·가사 구간 0개·성부 없음이며 드럼·가사 시각/음가·겹침/마디 연장·ID/확정 상태·마디 문구·음원 연결은 정적 대조에서 같다.
+- MusicXML 4.0 XSD·독립 XML/유리수 대조·전체 canonical Song 왕복·반복 직렬화 검사 PASS. 가사 없는 곡에는 빈 가사 성부를 만들지 않았다. 제목 의미는 그대로이며 공통 작성기의 movement-title 추가 여부를 별도 기록했다.
+- [일괄 전환·문제 해결·검증 범위](../archive/shared-staff-score-migration-20261110.md). 근거 `data/production/shared-staff-lyrics-20261110/preplay-warmup/verification.json`. 앱 수록·새 SVG·재생/청취·커밋·배포는 이번 제작 검증에 포함하지 않는다.
+
+
+## 표시 제목·원제 오타 정정 — 2026-11-11
+
+- 사용자 확정 제목은 **시작 전 손 풀기**다. 이전 요청의 ‘시작전 손플기’ 표기는 이 결정으로 대체한다. 과거 제작·검증 기록의 당시 제목은 보존한다.
+- 새 현행 정본: `data/production/preplay-warmup-title-20261111/score.musicxml`, SHA256 `c2dbe84f4ad515c01b9a989cc19563a1be3a91c1fdf1b4f9df391e3e886ff1a0`. 원제 work-title·표시 제목 필드·movement-title 세 곳을 모두 같은 제목으로 정정했다. 이전 정본 `data/production/shared-staff-lyrics-20261110/preplay-warmup/score.musicxml`은 보존했다.
+- 재생성 시 오타가 되살아나지 않도록 제작 fixture의 title과 프로필의 audioTitle도 정정했다. 기존 음원 파일/ID3를 재작성하지 않았다.
+- MusicXML4.0 XSD·96마디 시간표 대조 통과. 세 제목 문자열을 역치환하면 이전 정본과 바이트까지 일치하므로 음악·주법·마디·BPM·ID·가수 SoCal 드럼킷·음원 연결·v2 메타데이터는 동일하다. 근거 `data/production/preplay-warmup-title-20261111/verification.json`.
+- 앱 수록 패키지·카탈로그·캐시 갱신은 기존 웹앱 개발 담당에게 인계한다. 제작 측은 public/src/history.md·저장본·SVG·음원을 변경하지 않았으며 화면 검수·커밋·푸시·발행을 수행하지 않았다.
+
+기존 웹앱 개발 채팅으로 최종 제목·교정본·해시·정적 검증과 수록 반영 요청을 전송했고 도구 접수를 확인했다. 실제 본문 및 receipt는 `data/production/preplay-warmup-title-20261111/handoff/`에 보존했다. 앱 반영 완료와 구분한다.
+
+### 개발 담당의 수록 반영 — 2026-11-11
+
+- 교정 정본을 `public/scores/preplay-warmup.drumscore`의 source·canonicalXML에 바이트 그대로 반영하고, `Song.title`·`Song.originalTitle`과 두 앱의 공통 `src/content/bundled-scores.json` 제목을 **시작 전 손 풀기**로 맞췄다. 반영 후 패키지 SHA256은 `f230a35df14618607749b8a782234d6f8da68593b85d17b93a59f96c961c2d62`다.
+- 실제 패키지를 다시 읽어 MusicXML 4.0 XSD, 제목 세 필드, 96마디 시간표, ZIP CRC·자산 크기/참조를 정적으로 확인했다. 제목 두 필드 외 Song 전체·곡 ID·SoCal 드럼킷·BPM80·첫 박0.25초는 동일하며, 음원과 기존 SVG 6개를 포함한 7자산·나머지 5곡 패키지의 SHA256도 보존했다.
+- 기존 공통 `prepareBrowserScore`·`prepareFullScore` 경로는 정본 XML로 조판하고 캐시 키에 XML을 포함한다. 제목 변경으로 새 키를 사용하므로 이번 반영을 위한 앱 보정이나 캐시 정책 변경은 추가하지 않았다. 패키지 안의 과거 SVG는 재생성하지 않았으며 새 제목의 검증된 출력으로 간주하지 않는다.
+- 브라우저 저장소를 직접 변경하지 않았다. 드럼연습실 기본 연습곡의 기존 열기 경로는 패키지를 다시 내려받아 정본 변경을 비교한다. 실제 화면·재생·저장/재열기와 제작기의 기존 저장본 갱신은 이번 정적 검사 결과에 포함하지 않는다. 커밋·푸시·발행하지 않았다.
+- 변경 전 사본과 항목별 대조 결과: `.tmp/preplay-warmup-title-integration-20261111/{before,verification.json}`. 문서·링크·앵커·서식 및 빌드번호 갱신 결과는 같은 폴더의 `static-check.log`와 [변경 기록](../../../history.md)에 남긴다.

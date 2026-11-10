@@ -11,6 +11,9 @@ import { ribbonSpacing, type RibbonSpacing } from "./ribbon-engraving";
 import { RIBBON_TIMELINE_VERSION } from "./ribbon-timeline";
 import { compressSVG, displayPage } from "./score-pages";
 import { embedScoreTextFonts, loadScoreTextFonts } from "./score-text-font";
+import { prepareFullScoreLyrics } from "./full-score-lyrics";
+import { playbackNotationXML } from "./canonical-lyric-voice";
+import type { Song } from "../../model/model";
 
 // Preserve the existing public import paths for readers and callers.
 export { interpolateX } from "./musicxml-geometry";
@@ -27,11 +30,14 @@ async function renderMusicXMLPass(
   progress: (s: string) => void,
   partId?: string,
   timeline?: RibbonSpacing,
+  fullScoreSong?: Song,
 ) {
-  const parsed = parseMusicXML(
-    normalizeDrumScore(await readMusicXML(blob)),
-    partId,
+  const source = await readMusicXML(blob);
+  const xml = normalizeDrumScore(
+    fullScoreSong ? source : playbackNotationXML(source),
   );
+  const parsed = parseMusicXML(xml, partId);
+  if (fullScoreSong) prepareFullScoreLyrics(parsed, xml, fullScoreSong);
   progress(i18nText("musicxml.message412"));
   const scoreFonts = await loadScoreTextFonts();
   const host = document.createElement("div");
@@ -40,7 +46,7 @@ async function renderMusicXMLPass(
   document.body.append(host);
   try {
     const { osmd, renderDocument, positionedWords } =
-      await renderMusicXMLEngine(host, parsed, timeline);
+      await renderMusicXMLEngine(host, parsed, timeline, fullScoreSong);
     const svgs = finishMusicXMLGlyphs(
       host,
       osmd,
@@ -74,6 +80,54 @@ async function renderMusicXMLPass(
   } finally {
     host.remove();
   }
+}
+
+/** One continuous full-score pass; its layout never feeds playback engraving. */
+export async function renderFullScore(
+  xml: string,
+  song: Song,
+  partId?: string,
+) {
+  const { cachedScoreRender, scoreRenderKey, SCORE_RENDER_POLICY } =
+    await import("./score-render-cache");
+  const parsed = parseMusicXML(xml, partId);
+  if (parsed.measures.length !== song.measures.length)
+    throw Error(
+      `Full-score structure mismatch: XML=${parsed.measures.length}, song=${song.measures.length}, part=${parsed.partId}`,
+    );
+  const mismatch = parsed.measures.findIndex(
+    (m, i) =>
+      m.beats !== song.measures[i].beats ||
+      m.denominator !== song.measures[i].denominator,
+  );
+  if (mismatch >= 0) {
+    const xmlMeasure = parsed.measures[mismatch],
+      songMeasure = song.measures[mismatch];
+    throw Error(
+      `Full-score meter mismatch: measure=${songMeasure.label}, XML=${xmlMeasure.beats}/${xmlMeasure.denominator}, song=${songMeasure.beats}/${songMeasure.denominator}, part=${parsed.partId}`,
+    );
+  }
+  const key = await scoreRenderKey(
+    JSON.stringify([
+      xml,
+      song.measures.map((m) => m.id),
+      song.measureLyrics ?? [],
+      song.artist ?? "",
+      song.bpm,
+    ]),
+    parsed.partId,
+    `${SCORE_RENDER_POLICY}:full-score-continuous-v10-xml-system-width`,
+  );
+  const { value } = await cachedScoreRender(key, () =>
+    renderMusicXMLPass(
+      new Blob([xml], { type: "application/vnd.recordare.musicxml+xml" }),
+      () => {},
+      parsed.partId,
+      undefined,
+      song,
+    ),
+  );
+  return value;
 }
 
 /** Preserve print pages; the optional metadata contains native, time-spaced engraving. */

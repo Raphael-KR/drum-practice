@@ -149,3 +149,11 @@ python3 tools/score-production/musicxml/verify_ioi_suddenly.py --xml data/produc
 - 실제 Safari 저장 목록에는 구형 XML SHA256 `aa0714c8a9c4b0d4b54938f97b056009b4e23f6169631535a345056ce7612072`가 남아 있었다. 실제 저장본 전체를 `before/ioi-user-before.drumscore`로 백업(SHA256 `c83b173ca9c0b181371609e8230a7622934631fcd23b57cf66c609fde475cede`)한 뒤 최신 악보/기하만 교체했다. 갱신 직후 마커5개·반복0개·모든 설정(당시 rows/41.52769999999998초)·가사/시간표·대체 PDF 동일성을 재조회했다. 사용자 수정 draft/revisions는 당시 없었으며 임의 생성하지 않았다.
 - 실제 목록에서 다시 열어 ready 상태·93마디·A와 Closed H.H의 별도 표시를 확인했다. source/canonical 재조회는 최신v10과 일치했다. 캡처 `ioi-v10-reopened.png`. 검수 후 재생 위치가8.596198초로 바뀐 것을 재조회했으나 갱신 직후의 동일성 검사와 구분하며, 검수 중 별도 조작 여부를 확정할 수 없어 그 위치를 임의로 덮어쓰지 않았다. 마커·반복·위치 외 설정은 그대로다.
 - 실제 저장/갱신 근거는 `.tmp/playback-words-20261023/ui-update.json`·`ui-before.json`·`final-saved-readback.json`에 보존한다. 고정 패키지 해시 검사에 새 source/canonical 해시 대조도 추가했다. 전체126파일756검사·두 앱 빌드/경계 통과. 버전0.8.12 유지, 커밋·push·발행·공개 사이트·청취·iPad 검사 없음. 이 로컬 저장본 갱신은 다른 브라우저/기기의 자동 갱신 기능을 추가한 것이 아니다.
+
+
+## 같은 보표 가사 성부 v2 제작 정본 — 2026-11-10
+
+- 현행 제작 MusicXML: `data/production/shared-staff-lyrics-20261110/ioi-suddenly/score.musicxml`. SHA256 `4984e748a45468d91f1d5e2be0663a8ff758deb2871c3c6aaf0eea41af8dd8f4`. 이전 `data/production/section-direction-review-20261023/full-v10/ioi-suddenly/score.musicxml`은 보존했다.
+- 공통 작성기로 P1의 독립 숨긴 가사 성부에 전환했다. 93마디·가사 301개·가사 구간 301개·성부 2이며 드럼·가사 시각/음가·겹침/마디 연장·ID/확정 상태·마디 문구·음원 연결은 정적 대조에서 같다.
+- MusicXML 4.0 XSD·독립 XML/유리수 대조·전체 canonical Song 왕복·반복 직렬화 검사 PASS. 가사 없는 곡에는 빈 가사 성부를 만들지 않았다. 제목 의미는 그대로이며 공통 작성기의 movement-title 추가 여부를 별도 기록했다.
+- [일괄 전환·문제 해결·검증 범위](../archive/shared-staff-score-migration-20261110.md). 근거 `data/production/shared-staff-lyrics-20261110/ioi-suddenly/verification.json`. 앱 수록·새 SVG·재생/청취·커밋·배포는 이번 제작 검증에 포함하지 않는다.

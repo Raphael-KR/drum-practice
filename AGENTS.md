@@ -22,6 +22,12 @@
 
 악보 수정의 적용 기준은 [정본과 앱의 수정 책임](docs/reference/score/musicxml.md#musicxml-canonical--정본과-앱의-수정-책임), 조회·환경 확인 절차는 [작업 전 조회와 실행 환경](docs/how-to/develop.md#development--작업-전-조회와-실행-환경), 검사 선택은 [변경 영향과 검사 선택](docs/reference/engineering/verification.md#verification-rules--변경-영향과-검사-선택)을 따른다.
 
+### 악보와 웹앱의 담당 구분
+
+- 악보 원본·MusicXML 정본의 제작·교정·형식 전환은 기존 **악보제작자** 채팅(`hostId=local`, `threadId=01a0fd08-ba73-7482-b10e-40e637a1efc0`)에 맡긴다. 웹앱 개발 담당이 정본을 대신 교정하지 않는다.
+- 웹앱 개발 담당은 제작자가 전달한 정본과 검증 근거를 확인하고 앱 수록 패키지·카탈로그·두 앱의 공통 읽기/저장/표시 경로에 반영한다. 정본 문제는 제작자에게, 올바른 정본의 앱 해석·표시 문제는 공통 코드에 각각 반영한다.
+- 기존 담당과 연락 경로를 확인하고 현재 승인 범위로 업무를 전달한다. 담당자의 완료 보고만으로 앱 수록이나 검증이 끝났다고 표시하지 않는다.
+
 ## Apple 로컬 도구 활용 및 팀장 공유
 
 - 작업에 도움이 되는 하위 단계에서 Apple 로컬 STT와 AFM 3를 적극 검토한다. 실행·검증 계약은 docs/how-to/use-apple-local-tools.md, 최신 실험 한계는 관련 실험 문서와 history.md를 따른다.

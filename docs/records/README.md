@@ -25,6 +25,7 @@
 
 ### 릴리스와 의존성
 
+- [0.11.1 OSMD 전체 악보·가사 성부 릴리스](archive/release-0.11.1.md)
 - [0.11.0 SVG 전체 보기 가사·코드 정리 릴리스](archive/release-0.11.0.md)
 - [0.10.8 문서·공통 재생 코드 정리 릴리스](archive/release-0.10.8.md)
 - [0.10.7 섹션 줄 간격 확보 릴리스](archive/release-0.10.7.md)
@@ -51,6 +52,10 @@
 
 ### 재생·조판과 악보 수록
 
+- [현행 6곡의 같은 보표 가사 성부 전환과 앱 수록](archive/shared-staff-score-migration-20261110.md)
+- [OSMD 기본 가사 출력 전환 검토와 후속 구현·검증](archive/osmd-native-lyrics-review-20261110.md)
+- [갑자기: 같은 드럼 보표의 가사 성부 시험](archive/suddenly-lyric-voice-trial-20261110.md)
+
 - [폰 가로 설정 최적화 계획과 구현·검증 기록](archive/phone-landscape-settings-20261029.md)
 - [폰 가로 자동 악보 전용 모드 계획](archive/landscape-score-only-20261028.md)
 - [공통 Liquid Glass 효과 통일 계획](archive/liquid-glass-unification-20261028.md)
@@ -74,6 +79,7 @@
 
 ### 프로젝트 구조와 문서·파일 정리
 
+- [2026-11-10 릴리스 후 프로젝트 청소](archive/project-cleanup-20261110.md)
 - [2026-10-27~28 프로젝트 청소와 문서 정리](archive/project-cleanup-20261027.md)
 - [문서 재구성 계획과 실행 이력](archive/documentation-reorganization.md)
 - [프로젝트 품질과 의존성 점검 기록](archive/project-quality.md)

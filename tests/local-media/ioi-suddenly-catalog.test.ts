@@ -20,11 +20,11 @@ beforeAll(async () => {
   });
   const bytes = readFileSync("public/scores/ioi-suddenly.drumscore");
   expect(createHash("sha256").update(bytes).digest("hex")).toBe(
-    "d3a64dcf9512cf849801acc9535f7f748ba0cd29f247d36611d7d438738c3323",
+    "487e607cdef9a7e7c36c49416d7cd1c6b158d4429c94ce6363da8990d97997b5",
   );
   record = await readScorePackage(new Blob([bytes]));
   const expectedXML =
-    "8f3ad3a47aa4453dc19fb71a514761f0665d9a429327478712c352852de6eaaf";
+    "4984e748a45468d91f1d5e2be0663a8ff758deb2871c3c6aaf0eea41af8dd8f4";
   expect(createHash("sha256").update(record.canonicalXML!).digest("hex")).toBe(
     expectedXML,
   );

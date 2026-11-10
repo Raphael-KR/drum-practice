@@ -858,3 +858,11 @@ Safari `http://127.0.0.1:5173/player.html`의 실제 악보 업데이트 → 열
 - 정적 자료 검사: 로컬 MusicXML4.0 XSD, 두 파트(`P1`, `DrumPracticeLyrics`)의 시간표 동일성, ZIP CRC와9개 자산의 경로·크기·완전성, manifest의 허용된 두 필드 외 동일성을 확인했다. 시스템 Python에 `lxml`이 없어 기존 번들 Python의 `lxml 6.1.1`을 사용했으며 새 설치는 하지 않았다.
 - 근거: `.tmp/loveholic-sections-package-20261110/package-verification.json`, `baseline.json`, `apply-package.py`. 이번 요청은 정적 검사만이며 화면·재생·저장/재열기 테스트·번들 빌드·커밋·푸시·발행은 하지 않는다.
 - 공통 정적 검사 결과: Node22.22.2·pnpm12.18.0에서 lint·452파일 서식·앱/도구/hosting 타입·의존성·i18n·공통 모듈/구조·문서/링크/앵커·diff 검사를 통과했다. `generate`를 실행하지 않고 같은 타입 검사 명령을 사용했으며, 생성 자산을 포함한 `src/`229파일과 다른 수록 패키지5개·Git HEAD/브랜치/index가 변경 전과 같음을 확인했다. 로그는 같은 폴더의 `static-checks.log`와 `preservation-check.json`이다.
+
+
+## 같은 보표 가사 성부 v2 제작 정본 — 2026-11-10
+
+- 현행 제작 MusicXML: `data/production/shared-staff-lyrics-20261110/loveholic/score.musicxml`. SHA256 `785b487ad7723083f677d29dea9515ee915f82ce271866380f200ef8a427567c`. 이전 `data/production/loveholic-sections-20261109/score.musicxml`은 보존했다.
+- 공통 작성기로 P1의 독립 숨긴 가사 성부에 전환했다. 123마디·가사 269개·가사 구간 269개·성부 2이며 드럼·가사 시각/음가·겹침/마디 연장·ID/확정 상태·마디 문구·음원 연결은 정적 대조에서 같다.
+- MusicXML 4.0 XSD·독립 XML/유리수 대조·전체 canonical Song 왕복·반복 직렬화 검사 PASS. 가사 없는 곡에는 빈 가사 성부를 만들지 않았다. 제목 의미는 그대로이며 공통 작성기의 movement-title 추가 여부를 별도 기록했다.
+- [일괄 전환·문제 해결·검증 범위](../archive/shared-staff-score-migration-20261110.md). 근거 `data/production/shared-staff-lyrics-20261110/loveholic/verification.json`. 앱 수록·새 SVG·재생/청취·커밋·배포는 이번 제작 검증에 포함하지 않는다.

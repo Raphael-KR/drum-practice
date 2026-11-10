@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { it, expect } from "vitest";
 import { readFileSync } from "node:fs";
+import JSZip from "jszip";
 import { fixAllDrumRestPositions } from "../../src/modules/score/score-rest-correction";
 it("fixes every rest to one of three audited lanes without changing rhythm or notes", () => {
   const text = readFileSync(
@@ -52,4 +53,28 @@ it("removes full-bar rest height once while retaining heights in active multi-vo
   expect(d.querySelector('measure[number="1"] rest')?.children.length).toBe(0);
   expect(d.querySelector('measure[number="8"] rest')?.textContent).toBe("B4");
   expect(fixAllDrumRestPositions(result.text).changed).toBe(false);
+});
+
+it("preserves the bundled v2 lyric block and counts drum silence independently", async () => {
+  const zip = await JSZip.loadAsync(
+    readFileSync("public/scores/real-paradis.drumscore"),
+  );
+  const manifest = JSON.parse(await zip.file("manifest.json")!.async("string"));
+  const text: string = manifest.canonicalXML;
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  expect(
+    doc.querySelectorAll('part[id="P1"] note > lyric').length,
+  ).toBeGreaterThan(0);
+  expect(text).toContain("drum-practice:score:v2");
+
+  const result = fixAllDrumRestPositions(text);
+  expect(result.counts).toEqual({
+    cymbal: 15,
+    drum: 10,
+    kick: 237,
+    fullBar: 5,
+  });
+  expect(result.changed).toBe(false);
+  // Exact source equality also preserves lyric rests, backup and manifest metadata.
+  expect(result.text).toBe(text);
 });

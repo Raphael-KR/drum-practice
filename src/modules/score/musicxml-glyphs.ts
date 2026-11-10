@@ -35,7 +35,7 @@ export function finishMusicXMLGlyphs(
     svg.setAttribute("data-rest-layout", REST_LAYOUT_VERSION);
     svg.setAttribute("data-note-highlight", NOTE_HIGHLIGHT_VERSION);
   }
-  identifyScoreHeadings(svgs, parsed);
+  identifyScoreHeadings(svgs, renderDocument);
 
   return svgs;
 }
@@ -200,11 +200,14 @@ function centerWholeMeasureRests(
     }
 }
 
-function identifyScoreHeadings(svgs: SVGSVGElement[], parsed: XMLScore) {
+function identifyScoreHeadings(
+  svgs: SVGSVGElement[],
+  renderDocument: Document,
+) {
   // Retain titles in whole-score SVG, but identify them for practice-only removal.
   const headings = new Set(
     Array.from(
-      parsed.document.querySelectorAll(
+      renderDocument.querySelectorAll(
         "work-title, movement-title, credit-words",
       ),
     )

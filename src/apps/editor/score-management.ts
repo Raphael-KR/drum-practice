@@ -8,8 +8,9 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import { installUIStandard } from "../../shared/ui/ui-standard";
 import {
   fullScoreSurface,
-  observeFullScoreLyrics,
+  prepareFullScore,
 } from "../../modules/score/full-score-view";
+import { writeCanonical } from "../../modules/score/canonical-xml";
 import { displayPage } from "../../modules/score/score-pages";
 import { icon } from "../../shared/ui/icons";
 import { songScores } from "../../modules/score/song-scores";
@@ -374,10 +375,7 @@ export function setupScoreManagement(
   svgPages.className = "full-svg-pages";
   svgDialog.append(svgPages);
   let svgURLs: string[] = [];
-  let stopLyricLayout: (() => void) | undefined;
   const releaseSVG = () => {
-    stopLyricLayout?.();
-    stopLyricLayout = undefined;
     svgPages.replaceChildren();
     svgURLs.forEach(URL.revokeObjectURL);
     svgURLs = [];
@@ -392,29 +390,30 @@ export function setupScoreManagement(
     svgButton.disabled = true;
     releaseSVG();
     try {
-      for (const [i, page] of score.pages.entries()) {
+      // Include unsaved lyric edits in a snapshot; opening the viewer never saves the record.
+      const snapshot = structuredClone(record.song);
+      const source =
+        record.canonicalXML ??
+        (await (
+          await import("../../modules/score/musicxml-parse")
+        ).readMusicXML(score.source));
+      const canonical = writeCanonical(snapshot, source);
+      const fullScore = await prepareFullScore(
+        snapshot,
+        canonical,
+        score.partId,
+      );
+      for (const page of fullScore.pages) {
         const decoded = await displayPage(page);
         const url = URL.createObjectURL(decoded);
         svgURLs.push(url);
-        const figure = document.createElement("figure");
-        const caption = document.createElement("figcaption");
-        caption.textContent = i18nText("score-management.message505", {
-          value1: i + 1,
-          value2: score.pages.length,
-        });
         const surface = fullScoreSurface({
-          svg: await decoded.text(),
           url,
-          alt: i18nText("score-management.message506", { value1: i + 1 }),
-          page: i,
-          score,
-          song: record.song,
+          alt: i18nText("score-management.message503"),
         });
-        figure.append(caption, surface);
-        svgPages.append(figure);
+        svgPages.append(surface);
       }
       svgDialog.showModal();
-      stopLyricLayout = observeFullScoreLyrics(svgPages);
       svgDialog.scrollTop = 0;
     } catch (e) {
       releaseSVG();

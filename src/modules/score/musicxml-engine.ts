@@ -5,38 +5,56 @@ import { installPlaybackWedges } from "./playback-wedges";
 import { installPlaybackWords } from "./playback-words";
 import { installRehearsalLayout } from "./rehearsal-layout";
 import { installRibbonEngraving, type RibbonSpacing } from "./ribbon-engraving";
-import { SCORE_TEXT_FONT_FAMILY } from "./score-text-font";
+import { SCORE_TEXT_FONT_FAMILY, scoreTextHeight } from "./score-text-font";
 import { installTechnicalPositions } from "./technical-position";
 import { installWedgeEndpoints } from "./wedge-endpoints";
 import { installWordsPositions, prepareWordsPositions } from "./words-position";
 
 import type { XMLScore } from "./musicxml-parse";
+import type { Song } from "../../model/model";
+import { installFullScoreLyrics } from "./full-score-lyrics";
+import {
+  fitFullScoreSystems,
+  installFullScoreLayout,
+} from "./full-score-layout";
+import { prepareEngravingTitles } from "./engraving-titles";
 
 /** Configure and render one disposable engraving copy in the existing hook order. */
 export async function renderMusicXMLEngine(
   host: HTMLElement,
   parsed: XMLScore,
   timeline?: RibbonSpacing,
+  fullScoreSong?: Song,
 ) {
   const osmd = new OpenSheetMusicDisplay(host, {
     backend: "svg",
     autoResize: false,
-    pageFormat: "A4_P",
+    pageFormat: fullScoreSong ? "Endless" : "A4_P",
     drawTitle: true,
     drawComposer: false,
     drawLyricist: false,
     drawMetronomeMarks: false,
-    drawMeasureNumbers: false,
-    drawLyrics: false,
+    drawMeasureNumbers: !!fullScoreSong,
+    drawMeasureNumbersOnlyAtSystemStart: !!fullScoreSong,
+    drawLyrics: !!fullScoreSong,
     drawPartNames: false,
     drawPartAbbreviations: false,
   });
   // XML owns system boundaries; do not impose a fixed measure count.
   osmd.EngravingRules.DefaultFontFamily = SCORE_TEXT_FONT_FAMILY;
   osmd.EngravingRules.VexFlowTextFontFamily = SCORE_TEXT_FONT_FAMILY;
+  if (fullScoreSong) {
+    osmd.EngravingRules.UseXMLMeasureNumbers = true;
+    osmd.EngravingRules.LyricsHeight = scoreTextHeight(
+      osmd.EngravingRules.RehearsalMarkFontSize,
+    );
+    osmd.EngravingRules.HiddenVoicesKeepLayout = true;
+    osmd.EngravingRules.RenderLyricsOfHiddenVoices = true;
+  }
   osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 0;
   osmd.EngravingRules.NewSystemAtXMLNewSystemAttribute = true;
-  osmd.EngravingRules.NewPageAtXMLNewPageAttribute = true;
+  osmd.EngravingRules.NewPageAtXMLNewPageAttribute = !fullScoreSong;
+  osmd.EngravingRules.NewSystemAtXMLNewPageAttribute = !!fullScoreSong;
   // Keep rehearsal boxes above cymbal stems at their seven-space anchor.
   osmd.EngravingRules.RehearsalMarkYOffset = 25;
   osmd.EngravingRules.StemWidth = 0.1;
@@ -44,6 +62,8 @@ export async function renderMusicXMLEngine(
   osmd.EngravingRules.AutoGenerateMultipleRestMeasuresFromRestMeasures = false;
   osmd.EngravingRules.TupletNumberLimitConsecutiveRepetitions = false;
   const renderDocument = parsed.document.cloneNode(true) as Document;
+  const showSubtitle = prepareEngravingTitles(renderDocument);
+  osmd.EngravingRules.RenderSubtitle = showSubtitle;
   // Suppress textual BPM labels only in the engraving copy; keep tempo data.
   for (const words of renderDocument.querySelectorAll(
     "direction-type > words",
@@ -63,6 +83,10 @@ export async function renderMusicXMLEngine(
   const decorations = prepareDrumDecorations(renderDocument);
   const wordsPositions = prepareWordsPositions(renderDocument);
   await osmd.load(renderDocument);
+  if (fullScoreSong) {
+    installFullScoreLyrics(osmd, fullScoreSong);
+    installFullScoreLayout(osmd, fullScoreSong);
+  }
   // Translate canonical XML tenths into the engine title-spacing units.
   // Introduced for OSMD 2.1.2; this adapter remains part of the rendering
   // contract and must not supply missing values or rewrite the source XML.
@@ -97,6 +121,7 @@ export async function renderMusicXMLEngine(
   }
   installPlaybackWords(osmd, rehearsalBounds, positionedWords, !!timeline);
   osmd.render();
+  if (fullScoreSong) fitFullScoreSystems(osmd, host);
   applyDrumDecorations(host, osmd, decorations);
 
   return { osmd, renderDocument, positionedWords };

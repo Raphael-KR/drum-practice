@@ -14,31 +14,12 @@
   z-index: 1;
   background: var(--panel, #f5f7fc);
 }
-.full-svg-pages figure {
-  margin: 0 0 20px;
-}
-.full-svg-pages figcaption {
-  color: var(--muted);
-  font-size: 13px;
-  margin: 8px 0;
-}
-.full-svg-pages img {
-  display: block;
-  width: 100%;
-  height: auto;
-  background: white;
-}
 .score-source-tools {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.full-svg-pages .full-score-measure-label {
-  transform: translate(calc(-100% - 6px), -50%);
-  color: var(--muted);
-  font-size: 12px;
-}
 /* Keep scrolling notation out of the whole-score header's top inset. */
 #svg-full-dialog .dialoghead {
   box-shadow: 0 -24px 0 0 var(--panel, #f5f7fc);

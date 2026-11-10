@@ -4,6 +4,7 @@ import { normalizeBundledDrumNotation } from "./drum-notation";
 import type { RecordData } from "../../model/record";
 import type { Region } from "../../model/model";
 import { songScores } from "./song-scores";
+import { lyricVoiceNotes } from "./canonical-lyric-voice";
 /** PDF-audited roles for this conversion: voice 1 mixes cymbal and drum events.
  * Shared full-bar silence remains central; voice 2 is exclusively the kick lane.
  */
@@ -19,17 +20,19 @@ export function fixAllDrumRestPositions(text: string): {
   const counts = { cymbal: 0, drum: 0, kick: 0, fullBar: 0 };
   let changed = false;
   if (!part) return { text, changed, counts };
+  const lyricNotes = lyricVoiceNotes(part);
   const upperBars = new Set([5, 6, 36, 39, 40, 68, 72, 80, 91, 94, 96]);
   const middleBars = new Set([1, 2, 3, 4, 8, 107, 109, 110]);
   for (const m of Array.from(part.children).filter(
     (n) => n.tagName === "measure",
   )) {
-    const notes = Array.from(m.children).filter((n) => n.tagName === "note");
+    const notes = Array.from(m.children).filter(
+      (n) => n.tagName === "note" && !lyricNotes.has(n),
+    );
+    // Vocal timing notes/rests neither determine drum silence nor need drum placement.
     const silentMeasure = notes.every((n) => n.querySelector("rest"));
     let voiceOneRest = 0;
-    for (const n of Array.from(m.children).filter(
-      (n) => n.tagName === "note",
-    )) {
+    for (const n of notes) {
       const rest = n.querySelector("rest");
       if (!rest) continue;
       // Shared full-bar silence uses the renderer's default vertical/central placement.
@@ -58,10 +61,17 @@ export function fixAllDrumRestPositions(text: string): {
           throw Error(
             i18nText("score-rest-correction.message529", { number: number }),
           );
-      } else
+      } else {
+        console.error("Unknown drum rest voice", {
+          partId: part.id,
+          measure: m.getAttribute("number"),
+          voice: voice ?? null,
+          expectedVoices: ["1", "2"],
+        });
         throw Error(
           i18nText("score-rest-correction.message530", { number: number }),
         );
+      }
       counts[lane]++;
       const [step, octave] =
         lane === "cymbal"

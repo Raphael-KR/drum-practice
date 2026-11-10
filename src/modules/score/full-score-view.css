@@ -1,49 +1,8 @@
 .full-score-page {
-  position: relative;
   background: #fff;
-  color: #182436;
-  font-family: Pretendard, sans-serif;
 }
-.full-score-band {
-  position: relative;
-}
-.full-score-band-image {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-.full-score-page > img,
-.full-score-band-image > img {
+.full-score-page > img {
   display: block;
   width: 100%;
   max-width: none;
-}
-.full-score-band-image > img {
-  position: absolute;
-  left: 0;
-}
-.full-score-measure-label {
-  position: absolute;
-  transform: translate(-110%, -50%);
-  color: #64748b;
-  font-size: clamp(9px, 1vw, 14px);
-  font-weight: 600;
-  line-height: 1;
-  pointer-events: none;
-}
-.full-score-lyric-row {
-  position: relative;
-  min-height: 24px;
-  margin: 6px 0;
-  font-weight: 600;
-  line-height: 1.4;
-}
-.full-score-lyric-measure {
-  position: absolute;
-  top: 0;
-}
-.full-score-lyric-measure .syllable {
-  max-width: 95%;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }
