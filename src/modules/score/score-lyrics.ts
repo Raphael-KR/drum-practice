@@ -50,23 +50,53 @@ interface LyricsCalculator {
   ): GraphicalStaffEntry[];
 }
 
-/** Add untimed measure text below OSMD's native syllable lyrics. */
-export function installScoreMeasureLyrics(
+/** Lay out native syllables and optional measure text before SVG drawing. */
+export function installScoreLyrics(
   osmd: OpenSheetMusicDisplay,
   textByIndex: Map<number, string>,
+  timeline = false,
 ) {
   const measureLabels = new Map<StaffLine, GraphicalLabel[]>();
-  if (!textByIndex.size) return measureLabels;
+  if (!textByIndex.size && !timeline) return measureLabels;
   const calculator = osmd.GraphicSheet
     .GetCalculator as unknown as LyricsCalculator;
   const calculate =
     calculator.calculateSingleStaffLineLyricsPosition.bind(calculator);
   calculator.calculateSingleStaffLineLyricsPosition = (staff, verses) => {
+    const inkBottom = staff.SkyBottomLineCalculator.getBottomLineMax();
     const entries = calculate(staff, verses);
     if (staff.ParentStaff.idInMusicSheet !== 0) return entries;
+    if (timeline) {
+      // Time-spaced lyrics can fall between narrow stems in OSMD's X-range
+      // sampling. Reserve the measure's ink floor, retaining native verse gaps.
+      const labels = entries.flatMap((entry) =>
+        entry.LyricsEntries.map((lyric) => lyric.GraphicalLabel),
+      );
+      const top = Math.min(
+        ...labels.map((label) => {
+          const box = label.PositionAndShape;
+          return box.RelativePosition.y + box.BorderTop;
+        }),
+      );
+      const shift = Math.max(
+        0,
+        inkBottom + osmd.EngravingRules.LyricsYMarginToBottomLine - top,
+      );
+      for (const label of labels) {
+        const box = label.PositionAndShape;
+        box.RelativePosition.y += shift;
+        const x = box.Parent.RelativePosition.x + box.RelativePosition.x;
+        staff.SkyBottomLineCalculator.updateBottomLineWithLabel(
+          x + box.BorderMarginLeft,
+          x + box.BorderMarginRight,
+          box.RelativePosition.y + box.BorderMarginBottom,
+        );
+      }
+    }
     measureLabels.set(staff, measureTextLabels(osmd, staff, textByIndex));
     return entries;
   };
+  if (!textByIndex.size) return measureLabels;
   // render() creates a fresh backend after layout. Attach labels to that drawer
   // so its normal per-page coordinate transform and SVG text writer are reused.
   const renderer = osmd as unknown as { createOrRefreshRenderBackend(): void };

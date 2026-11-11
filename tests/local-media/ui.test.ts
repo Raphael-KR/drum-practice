@@ -997,7 +997,8 @@ it("browses all paused rows vertically without seeking, then restores playback f
   });
   stage.dispatchEvent(horizontal);
   animationFrame(0);
-  expect(horizontal.defaultPrevented).toBe(true);
+  // Paused rows keep wheel input passive; horizontal input must still not seek.
+  expect(horizontal.defaultPrevented).toBe(false);
   expect(audioClock.position).toBe(before);
   expect(progress.value).toBe("25");
   expect(

@@ -5,7 +5,7 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import { MUSICXML_TOP_SPACES } from "./practice-staff-layout";
 import { gridPosition, type RibbonSpacing } from "./ribbon-engraving";
 import type { installWordsPositions } from "./words-position";
-import type { installScoreMeasureLyrics } from "./score-lyrics";
+import type { installScoreLyrics } from "./score-lyrics";
 
 import type { XMLScore } from "./musicxml-parse";
 
@@ -29,7 +29,7 @@ export function measureMusicXMLSystems(
   osmd: OpenSheetMusicDisplay,
   svgs: SVGSVGElement[],
   positionedWords: ReturnType<typeof installWordsPositions>,
-  lyricLabels: ReturnType<typeof installScoreMeasureLyrics> = new Map(),
+  lyricLabels: ReturnType<typeof installScoreLyrics> = new Map(),
 ) {
   // Crop against actual system ink, not a fixed nine-space lower margin.
   const systemBounds = svgs.map(

@@ -12,7 +12,7 @@ import { installWordsPositions, prepareWordsPositions } from "./words-position";
 
 import type { XMLScore } from "./musicxml-parse";
 import type { Song } from "../../model/model";
-import { installScoreMeasureLyrics, SCORE_LYRIC_COLOR } from "./score-lyrics";
+import { installScoreLyrics, SCORE_LYRIC_COLOR } from "./score-lyrics";
 import {
   fitFullScoreSystems,
   installFullScoreLayout,
@@ -85,7 +85,7 @@ export async function renderMusicXMLEngine(
   const decorations = prepareDrumDecorations(renderDocument);
   const wordsPositions = prepareWordsPositions(renderDocument);
   await osmd.load(renderDocument);
-  const lyricLabels = installScoreMeasureLyrics(osmd, measureLyrics);
+  const lyricLabels = installScoreLyrics(osmd, measureLyrics, !!timeline);
   if (fullScoreSong) {
     installFullScoreLayout(osmd, fullScoreSong);
   }

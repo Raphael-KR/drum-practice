@@ -219,7 +219,9 @@ it("clears previous errors on retry, reports package/storage causes and stays si
   const status = () => document.querySelector("#library-status")!;
   expect(status().textContent).toContain("악보 파일 읽기·검증");
   expect(status().textContent).toContain("<invalid package>");
-  expect(status().children).toHaveLength(0);
+  const errorCopy = status().querySelector<HTMLButtonElement>(".error-copy")!;
+  expect(errorCopy.textContent).toBe(status().textContent);
+  expect(errorCopy.children).toHaveLength(0);
 
   vi.mocked(readScorePackage).mockResolvedValue({
     song: { id: "test" },

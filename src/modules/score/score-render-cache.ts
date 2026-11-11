@@ -2,7 +2,7 @@
 import type { Region } from "../../model/model";
 import { version as osmdVersion } from "opensheetmusicdisplay/package.json";
 import { sha256 } from "../../platform/browser/sha256";
-export const SCORE_RENDER_POLICY = `osmd-${osmdVersion}:drum-print-ribbon-v43-lyrics-13pt:svg1500:quarter-native:rows4`;
+export const SCORE_RENDER_POLICY = `osmd-${osmdVersion}:drum-print-ribbon-v44-lyrics-clearance:svg1500:quarter-native:rows4`;
 interface RenderedScore {
   pages: Blob[];
   regions: Region[];
