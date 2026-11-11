@@ -10,7 +10,7 @@
 - Git에는 소스·설정·문서·테스트를 기록한다. 원본 미디어, 로컬 예제 자료, 분석 자료, 실험 출력, 생성 HTML, node_modules, dist는 제외한다. Git 제외만을 이유로 파일을 삭제하지 않는다. 전체 릴리스 요청 시에는 [릴리스 스킬의 작업 파일 정리 기준](.agents/skills/release-drum-practice/SKILL.md#release-workfile-cleanup)을 충족한 산출물만 정리하며 원본·사용자 데이터·최신 릴리스·검증 기록은 보존한다.
 - 현재 GUI 검증은 같은 로컬 앱·자료 범위에서 이미 승인되어 있다. 외부 공개·배포·원격 push는 별도 요청 없이는 수행하지 않는다.
 - 전체 릴리스 요청은 [릴리스 스킬의 전체 변경 통합](.agents/skills/release-drum-practice/SKILL.md#release-git-scope)과 [최종 상태 확인](.agents/skills/release-drum-practice/SKILL.md#release-final-state)을 포함한다. 이 프로젝트의 모든 미커밋 변경·잔여 브랜치의 고유 변경을 검토·커밋·PR로 통합하고, 로컬/GitHub main·배포 내용을 맞춘 뒤 main 외 브랜치를 정리한다. Git 추적 제외 자료와 명시적 제외는 보존하며, 미반영 변경을 삭제해 정리 완료로 만들지 않는다.
-- 웹앱 개발 중에는 정적 검사만 수행하고 화면 테스트는 릴리스 때 진행한다. 사용자가 별도로 검사 범위를 지시하면 해당 요청을 따른다. 릴리스의 필수 검증은 생략하지 않으며 상세 기준은 docs/reference/engineering/verification.md를 따른다.
+- 웹앱 개발 중에는 정적 검사만 수행하고 화면 테스트는 릴리스 때 변경 영향에 맞춰 진행한다. 사용자가 별도로 검사 범위를 지시하면 해당 요청을 따른다. 릴리스는 공통 필수 검사와 변경 영향별 선택 검사를 적용한다. 선택·재사용·허가 기준은 [검증 Rule](docs/reference/engineering/verification.md), 항목별 목적·조건·명령·환경·부수 효과는 [검사 카탈로그](docs/reference/engineering/check-catalog.md)를 따른다.
 - 웹앱의 화면 확인·버튼 조작·기능 테스트는 Safari MCP를 우선 사용한다. Safari MCP가 지원하지 않는 기능은 처음부터 ego-browser를 사용한다. Safari MCP가 지원하는 기능에서 검증이 실패하면 실패 원인을 기록하고 ego-browser 사용을 검토한다. 비교만을 위해 같은 테스트를 두 브라우저에서 반복하지 않는다.
 - iPad 화면 검증은 Safari 응답형 디자인 모드를 우선한다. iOS·iPadOS 실기기·시뮬레이터 검증은 릴리스에 포함하지 않고, 사용자가 해당 검증을 명시적으로 지시한 경우에만 수행한다. 설정·기기 ID·검증 상태는 docs/how-to/verify-ipad.md를 따른다. Chromium 화면 크기 모사를 iPad Safari 검증으로 간주하지 않는다.
 

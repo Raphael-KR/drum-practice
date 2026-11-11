@@ -33,8 +33,8 @@ export interface ScoreReviewReport {
     expected: number;
     checked: number;
     unanchored: number;
-    maxErrorPx: number;
-    tolerancePx: number;
+    /** Stored anchor metadata only; printed PDF lyrics are not overlaid. */
+    scope: string;
   };
   /** False in DOM-only tests; those tests must not claim browser geometry verification. */
   layoutObserved: boolean;
@@ -54,7 +54,6 @@ export interface MountedScoreReview {
   report(): ScoreReviewReport;
   dispose(): void;
 }
-export const REVIEW_ANCHOR_TOLERANCE_PX: number;
 export function planScoreReview(
   record: RecordData,
   options?: ScoreReviewOptions,

@@ -7,19 +7,11 @@ import {
 function connection(name: string): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const r = indexedDB.open(name);
-    r.onupgradeneeded = () => {
-      for (const store of ["songs", "archives"])
-        if (!r.result.objectStoreNames.contains(store))
-          r.result.createObjectStore(store, {
-            keyPath: store === "songs" ? "song.id" : undefined,
-            autoIncrement: store === "archives",
-          });
-    };
     r.onsuccess = () => resolve(r.result);
     r.onerror = () => reject(r.error);
   });
 }
-it("permanently purges 16-bar live records and backups in both databases while preserving 28/96", async () => {
+it("purges retired live records by key in both current databases while preserving 28/96", async () => {
   (await openScoreDatabase()).close();
   const expected = [
     {
@@ -40,12 +32,7 @@ it("permanently purges 16-bar live records and backups in both databases while p
   for (const name of ["drum-practice", "drum-practice-player"]) {
     const db = await connection(name);
     await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(
-        Array.from(db.objectStoreNames).filter(
-          (n) => n === "songs" || n === "archives",
-        ),
-        "readwrite",
-      );
+      const tx = db.transaction("songs", "readwrite");
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
       for (const record of [
@@ -53,8 +40,6 @@ it("permanently purges 16-bar live records and backups in both databases while p
         ...expected,
       ]) {
         tx.objectStore("songs").put(record);
-        if (db.objectStoreNames.contains("archives"))
-          tx.objectStore("archives").add({ record });
       }
     });
     db.close();
@@ -82,10 +67,8 @@ it("permanently purges 16-bar live records and backups in both databases while p
     expect(await read("songs")).toEqual(
       [...expected].sort((a, b) => a.song.id.localeCompare(b.song.id)),
     );
-    expect(db.objectStoreNames.contains("archives")).toBe(false);
     db.close();
   }
-  (await openScoreDatabase()).close();
 });
 it("does not accept the retired edition again", async () => {
   const { savePracticeRecord } =

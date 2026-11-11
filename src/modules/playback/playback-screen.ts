@@ -44,7 +44,8 @@ import { createPlaybackDisplay } from "./playback-display";
 import { mountPlaybackDrawer } from "./playback-drawer";
 import type { SettingsCategory } from "./playback-forms";
 import { buildScoreTrack, updateScoreFrame } from "./playback-frame";
-import { copyPosition, playbackPosition } from "./playback-position";
+import { playbackPosition } from "./playback-position";
+import { copyText } from "../../shared/ui/clipboard";
 import {
   bindPlaybackPreferences,
   bindSoundAndViewSettings,
@@ -203,7 +204,6 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     ribbonAsset,
     widthOf,
     measureHTML,
-    layoutLyrics,
     rowCellWidth,
     renderRows,
   } = track;
@@ -223,6 +223,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const canRepeat = () => available() && repeatEnabled();
   function renderTrack() {
     framePending = true;
+    syncWheel();
     if (!h.ready()) return;
     refreshSources();
     gestures.cancel();
@@ -257,7 +258,6 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       // Crop sizing also writes row CSS variables. Apply the fitted row
       // geometry afterwards so the cached first frame matches later frames.
       if (s.settings.view === "rows") rowCellWidth();
-      layoutLyrics();
       if (!s.measures.length)
         ribbon.innerHTML = `<p>${t("main.message243")}</p>`;
     }
@@ -300,6 +300,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function onState() {
     framePending = true;
+    syncWheel();
     wakeLock.setPlaying(h.ready() && h.player().playing);
     if (!h.ready()) return;
     const p = h.player();
@@ -466,7 +467,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   );
   disposers.push(loopSlots.dispose);
 
-  navigation.bind();
+  const syncWheel = navigation.bind();
   function progress() {
     const p = h.player(),
       v = input(ids.progress),
@@ -594,7 +595,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   });
   if (root.querySelector(`#${ids.position}`))
     action(ids.position, async () => {
-      await copyPosition(playbackPosition(h.song(), h.player().current()).text);
+      await copyText(playbackPosition(h.song(), h.player().current()).text);
       copiedUntil = performance.now() + 1400;
       get(ids.position).textContent = t("main.message244");
     });

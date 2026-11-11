@@ -47,13 +47,7 @@ export function installScoreReader(options: Options) {
     b.title = label;
     const badge = document.createElement("span");
     badge.className = "score-reader-action-icon";
-    badge.innerHTML = icon(
-      id === "runtime-full-svg"
-        ? "library"
-        : id === "runtime-full-pdf"
-          ? "document"
-          : "text",
-    );
+    badge.innerHTML = icon(id === "runtime-full-svg" ? "library" : "document");
     const text = document.createElement("span");
     text.className = "score-reader-action-label";
     text.textContent = label;
@@ -126,33 +120,6 @@ export function installScoreReader(options: Options) {
         prepared.forEach((url) => URL.revokeObjectURL(url));
         if (!disposed) buttons.forEach((b) => (b.disabled = false));
       }
-    });
-  }
-  if (
-    options.song.lyricText ||
-    options.song.measureLyrics?.length ||
-    options.song.lyrics?.length
-  ) {
-    const label = t("score-management.message487");
-    button("runtime-full-lyrics", label, () => {
-      release();
-      title(label);
-      const lyrics = document.createElement("p");
-      lyrics.className = "score-reader-lyrics";
-      lyrics.textContent =
-        options.song.lyricText ||
-        (options.song.measureLyrics?.length
-          ? options.song.measures
-              .flatMap((m) =>
-                options.song
-                  .measureLyrics!.filter((l) => l.measureId === m.id)
-                  .map((l) => l.text),
-              )
-              .join("\n")
-          : options.song.lyrics.map((l) => l.text).join(" "));
-      body.append(lyrics);
-      dialog.showModal();
-      body.scrollTop = 0;
     });
   }
   return {

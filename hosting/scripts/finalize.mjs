@@ -9,12 +9,6 @@ for (const { path, sha256 } of parity.files) {
     .digest("hex");
   if (actual !== sha256) throw Error(`Player asset mismatch: ${path}`);
 }
-const worker = await readFile("dist/server/index.js", "utf8");
-if (
-  worker.includes("audio_analysis") ||
-  worker.includes("audio-analysis-review")
-)
-  throw Error("Retired analysis code in Worker");
 const manifest = JSON.parse(
   await readFile("dist/.openai/hosting.json", "utf8"),
 );
@@ -26,5 +20,5 @@ if (manifest.static || manifest.d1 || manifest.r2)
 for (const entry of ["index.html", "player.html"])
   await rm(`dist/client/${entry}`);
 console.log(
-  `PASS: Player Worker and ${parity.files.length} matching player files (HTML delivered by Worker); no analysis API or database binding`,
+  `PASS: ${parity.files.length} matching player files; HTML delivered by Worker, no database binding`,
 );

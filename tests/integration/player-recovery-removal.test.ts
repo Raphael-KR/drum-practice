@@ -46,7 +46,6 @@ it("upgrades both v2 databases, deletes all recovery copies and preserves live s
       expect(rows).toEqual([live]);
       db.close();
     }
-    (await openScoreDatabase()).close();
   } finally {
     vi.unstubAllGlobals();
   }

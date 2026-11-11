@@ -45,14 +45,14 @@
 
 ### 발행 순서
 
-사용자가 요청한 경우에만 commit, push, 공개 발행을 수행한다. 변경 범위와 기존 dirty 파일을 확인하고 이번 릴리스에 필요한 검사를 먼저 끝낸다.
+사용자가 요청한 경우에만 commit, push, 공개 발행을 수행한다. 변경 범위와 기존 dirty 파일을 확인하고 [검사 카탈로그](../reference/engineering/check-catalog.md)에서 공통 필수·변경 영향별 선택·단계별 검사를 정한다. 실행 조건·환경·부수 효과와 현재 허가, 기존 결과의 재사용 가능 여부를 대조해 이번 릴리스 기록에 선택/비대상 이유와 보류 항목을 적은 뒤 필요한 검사를 끝낸다. 문서만 변경한 후속 작업에는 문서 검사를 적용한다.
 
 전체 릴리스에서는 작성 세션·작업 주제와 관계없이 이 프로젝트의 [모든 미커밋 변경과 잔여 브랜치 변경](../../.agents/skills/release-drum-practice/SKILL.md#release-git-scope)을 검토·커밋·PR로 main에 통합한다. 발행과 결과 문서 반영 뒤에는 [최종 상태 기준](../../.agents/skills/release-drum-practice/SKILL.md#release-final-state)으로 로컬/GitHub main·공개 산출물 일치, 미커밋 변경 없음, main 외 로컬·원격 브랜치 정리를 확인한다. Git 추적 제외 자료·명시적 제외와 미완료 항목은 구분해 보고한다.
 
 전체 릴리스의 변경 검토·작업 브랜치·PR 검토·CI·main 병합·공개 확인·브랜치 정리는 [프로젝트 릴리스 스킬](../../.agents/skills/release-drum-practice/SKILL.md)을 따른다. [코드·문서 정리](../../.agents/skills/release-drum-practice/SKILL.md#release-code-cleanup)에서 변경 전후의 실제 사용처와 남은 코드를 검토한다. 영향받는 테스트·정적 검사·CI도 [검사 정리 절차](../../.agents/skills/release-drum-practice/SKILL.md#release-check-cleanup)에 따라 정리한 뒤, 최종 코드에 개정된 기준의 lint 등 필수 검사를 수행한다. [작업 파일 정리](../../.agents/skills/release-drum-practice/SKILL.md#release-workfile-cleanup)는 발행·공개 확인 후에 수행한다. 코드·문서·검사의 정리 결과, 보존·보류 이유, 남은 검증 공백과 검사 결과를 발행 기록에 함께 남긴다. 패키지 변경은 위 [커밋 전 준비](#커밋-전-패키지-준비)에서 끝낸다. 아래는 검증된 main 코드와 준비된 자산에 적용하는 빌드·Sites 발행 세부 절차다.
 
 1. `src/app-versions.json`과 [버전 정책](../reference/engineering/release.md#app-versions--앱-공통-버전)을 확인한다. 문서만 변경하면 버전을 올리지 않는다.
-2. 병합된 main의 CI를 확인하고, 앞서 통과한 로컬 검사의 코드·의존성·설정·패키지/회귀 입력·실행 환경이 같은지 대조한다. 같으면 정적 검사·테스트 결과를 근거와 함께 재사용한다. 변경이 있으면 영향받는 검사를 다시 수행하고 필요한 경우 전체 검사를 확대한다. 검증된 main의 생성 파일을 준비하고 두 앱을 새로 빌드한다. 아래는 검사 재사용이 확인된 경우의 빌드 명령이며, 단독 성공을 전체 검증으로 보고하지 않는다.
+2. 병합된 main의 CI를 확인하고, 앞서 통과한 로컬 검사를 [재사용 기준](../reference/engineering/verification.md#verification-rules--결과-재사용)에 따라 코드·의존성·설정·패키지/회귀 입력·실행 환경과 대조한다. 같으면 정적 검사·테스트 결과를 근거와 함께 재사용한다. 변경이 있으면 영향받는 검사를 다시 수행하고 필요한 경우 전체 검사를 확대한다. 검증된 main의 생성 파일을 준비하고 두 앱을 새로 빌드한다. 아래는 검사 재사용이 확인된 경우의 빌드 명령이며, 단독 성공을 전체 검증으로 보고하지 않는다.
 
    ```sh
    pnpm run generate
@@ -77,8 +77,8 @@
 
 5. `source-parity.json` 기준으로 `dist/player`, 사본의 `player-assets`, Worker의 `dist/client` 정적 파일을 대조한다. `index.html`은 준비 스크립트가 `player.html`에서 만드는 진입점이다.
 6. 같은 소스 열기 결과를 Sites helper에 전달해 준비된 소스를 커밋·push하고 해당 소스의 배포 아카이브를 만든다. 입력이 그대로인 성공한 검사·빌드는 `commands`에 다시 넣지 않으며, 남은 명령이 없으면 빈 목록을 사용한다. 현재 Sites 계약에 따라 반환된 소스 SHA와 아카이브로 기존 프로젝트에 버전을 저장·발행한다. 새 사이트를 만들거나 공개 범위를 확대하지 않는다. Git push만으로 Sites 발행이 완료되지는 않는다.
-7. 배포가 `succeeded`인지 확인한 뒤 공개 HTML·주요 JS/CSS·분석/변환 Worker와 `.drumscore` 다운로드, 폐기된 API의 404를 확인한다. 기존 값을 바꾸는 smoke 요청은 피하고, 쓰기 검증이 필요하면 별도 시험 해시와 처리 범위를 정한다.
-8. 구현 커밋, push, Sites 소스/버전/배포 ID, 빌드 식별자, HTTP/API 결과와 수행한 화면 검수의 환경·결과를 기록한다. 재사용한 검사 결과와 이번에 실행한 검사를 구분한다. iOS·iPadOS 실기기·시뮬레이터 검증은 릴리스 범위에서 제외하고, 사용자가 별도로 지시해 수행한 경우에만 해당 결과를 추가한다.
+7. 배포가 `succeeded`인지 확인한 뒤 공개 HTML·주요 JS/CSS·분석/변환 Worker와 `.drumscore` 다운로드, 폐기된 API의 404를 확인한다. 공개 읽기 확인에 로그인·저장/복원·실계정 QA를 포함하지 않는다. 쓰기 검증이 별도로 요청됐으면 현재 허가와 시험 대상·처리 범위를 먼저 확정한다.
+8. 구현 커밋, push, Sites 소스/버전/배포 ID, 빌드 식별자, HTTP/API 결과와 수행한 화면 검수의 환경·결과를 기록한다. 카탈로그에서 선택한 항목의 이번 실행·재사용 근거·비대상 이유·보류와 다음 확인을 구분한다. iOS·iPadOS 실기기·시뮬레이터 검증은 릴리스 범위에서 제외하고, 사용자가 별도로 지시해 수행한 경우에만 해당 결과를 추가한다.
 
 DB 관련 작업이 포함되면 [저장·마이그레이션 경계](../reference/engineering/security.md)를 확인한 뒤 별도 요청 범위를 대조한다.
 

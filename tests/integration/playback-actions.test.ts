@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { it, expect, vi } from "vitest";
+import { it, expect, vi, afterEach } from "vitest";
 import {
   beginPlaybackScrub,
   movePlaybackScrub,
@@ -15,6 +15,24 @@ import {
 } from "../../src/shared/ui/dialog-ui";
 import { renderScoreRows } from "../../src/modules/playback/playback-layout";
 import type { Song } from "../../src/model/model";
+afterEach(() => vi.restoreAllMocks());
+function mockRowGeometry(stage: HTMLElement) {
+  vi.spyOn(HTMLElement.prototype, "offsetTop", "get").mockImplementation(
+    function (this: HTMLElement) {
+      if (!this.classList.contains("browse-row")) return 0;
+      return 28 + Array.from(this.parentElement!.children).indexOf(this) * 200;
+    },
+  );
+  const bounds = HTMLElement.prototype.getBoundingClientRect;
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      if (this.dataset.index === undefined) return bounds.call(this);
+      const top =
+        28 + Math.floor(Number(this.dataset.index) / 4) * 200 - stage.scrollTop;
+      return { top, bottom: top + 172, height: 172 } as DOMRect;
+    },
+  );
+}
 const player = () => ({
   playing: true,
   duration: 100,
@@ -90,7 +108,7 @@ it("wheel normalizes line units and preserves paused rows native scrolling", () 
   document.body.innerHTML = '<div id="stage"></div>';
   const stage = document.querySelector<HTMLElement>("div")!;
   let view = "ribbon";
-  const dispose = installPlaybackWheel(stage, {
+  const { dispose, setPassive } = installPlaybackWheel(stage, {
     ready: () => true,
     playing: () => false,
     view: () => view,
@@ -103,6 +121,7 @@ it("wheel normalizes line units and preserves paused rows native scrolling", () 
   );
   expect(stage.scrollLeft).toBe(32);
   view = "rows";
+  setPassive(true);
   const event = new WheelEvent("wheel", { deltaY: 10, cancelable: true });
   stage.dispatchEvent(event);
   expect(event.defaultPrevented).toBe(false);
@@ -148,17 +167,20 @@ it("paused row frames preserve browsing and resize rebuilds all measures", () =>
     resume: false,
     measureHTML: (_: unknown, i: number, w: number) =>
       `<div data-index="${i}" style="width:${w}px"></div>`,
-    layoutLyrics: vi.fn(),
   };
   renderScoreRows(h, state, 0);
   expect(ribbon.querySelectorAll(".browse-row")).toHaveLength(3);
   stage.scrollTop = 400;
   renderScoreRows(h, state, 0);
   expect(stage.scrollTop).toBe(400);
-  expect(h.layoutLyrics).toHaveBeenCalledOnce();
+  expect(ribbon.querySelector<HTMLElement>("[data-index]")!.style.width).toBe(
+    "200px",
+  );
   Object.defineProperty(stage, "clientWidth", { value: 400 });
   renderScoreRows(h, state, 0);
-  expect(h.layoutLyrics).toHaveBeenCalledTimes(2);
+  expect(ribbon.querySelector<HTMLElement>("[data-index]")!.style.width).toBe(
+    "100px",
+  );
 });
 it.each([8, 9, 12, 123])(
   "keeps the last row below the preceding row for %i measures",
@@ -181,7 +203,6 @@ it.each([8, 9, 12, 123])(
       resume: false,
       cellWidth: 100,
       measureHTML: (_: unknown, i: number) => `<div data-index="${i}"></div>`,
-      layoutLyrics: vi.fn(),
     };
     renderScoreRows(h, state, length - 1);
     const first = (Math.ceil(length / 4) - 2) * 4;
@@ -219,6 +240,7 @@ it.each([
       renderedBrowseWidth: NaN,
       playbackRowOrigin: 0,
     };
+    mockRowGeometry(stage);
     const h = {
       stage,
       ribbon,
@@ -229,11 +251,6 @@ it.each([
       resume: false,
       cellWidth: 100,
       measureHTML: (_: unknown, i: number) => `<div data-index="${i}"></div>`,
-      layoutLyrics: () => {
-        [...ribbon.querySelectorAll(".browse-row")].forEach((row, i) =>
-          Object.defineProperty(row, "offsetTop", { value: 28 + i * 200 }),
-        );
-      },
     };
     renderScoreRows(h, state, index);
     h.playing = false;
@@ -264,6 +281,7 @@ it.each([false, true])(
       renderedBrowseWidth: NaN,
       playbackRowOrigin: 0,
     };
+    mockRowGeometry(stage);
     const h = {
       stage,
       ribbon,
@@ -279,11 +297,6 @@ it.each([false, true])(
       cellWidth: 100,
       measureHTML: (_: unknown, i: number) =>
         `<div class="measure" data-index="${i}"></div>`,
-      layoutLyrics: () => {
-        [...ribbon.querySelectorAll(".browse-row")].forEach((row, i) =>
-          Object.defineProperty(row, "offsetTop", { value: 28 + i * 200 }),
-        );
-      },
     };
     const render = vi.spyOn(h, "measureHTML");
     renderScoreRows(h, state, 0);
@@ -478,6 +491,7 @@ it("keeps the paused two-row viewport fixed when selection moves between its vis
     renderedBrowseWidth: NaN,
     playbackRowOrigin: 0,
   };
+  mockRowGeometry(stage);
   const h = {
     stage,
     ribbon,
@@ -486,22 +500,6 @@ it("keeps the paused two-row viewport fixed when selection moves between its vis
     scrubbing: false,
     resume: false,
     measureHTML: (_: unknown, i: number) => `<div data-index="${i}"></div>`,
-    layoutLyrics: () => {
-      [...ribbon.querySelectorAll<HTMLElement>(".browse-row")].forEach(
-        (row, i) =>
-          Object.defineProperty(row, "offsetTop", { value: 28 + i * 200 }),
-      );
-      [...ribbon.querySelectorAll<HTMLElement>("[data-index]")].forEach(
-        (el) =>
-          (el.getBoundingClientRect = () => {
-            const top =
-              28 +
-              Math.floor(Number(el.dataset.index) / 4) * 200 -
-              stage.scrollTop;
-            return { top, bottom: top + 172, height: 172 } as DOMRect;
-          }),
-      );
-    },
   };
   renderScoreRows(h, state, 1);
   expect(stage.scrollTop).toBe(0);

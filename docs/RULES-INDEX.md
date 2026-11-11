@@ -14,7 +14,7 @@
 | 개발·운영 | [버전과 공개 범위](reference/engineering/release.md) |
 | 개발·운영 | [기기 내부 처리와 보안](reference/engineering/security.md) |
 | 개발·운영 | [오픈소스 고지](reference/engineering/third-party-notices.md) |
-| 개발·운영 | [검증 범위와 증거](reference/engineering/verification.md) |
+| 개발·운영 | [검증 범위와 증거](reference/engineering/verification.md) · [검사 카탈로그](reference/engineering/check-catalog.md) |
 | 제품 | [음원 연습](reference/product/audio-practice.md) |
 | 제품 | [제작기 편집과 악보 검수 화면](reference/product/editor.md) |
 | 제품 | [재생 설정과 탐색](reference/product/playback.md) |

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { canonicalManifest } from "../../src/modules/score/canonical-metadata";
 import { it, expect, vi } from "vitest";
 import { webcrypto } from "node:crypto";
 import { Blob as NativeBlob } from "node:buffer";
@@ -14,10 +15,21 @@ import {
   migrateLyricPositions,
   projectLyrics,
 } from "../../src/modules/lyrics/lyric-score";
-import { playbackNotationXML } from "../../src/modules/score/canonical-lyric-voice";
+import { removeLyricVoices } from "../../src/modules/score/canonical-lyric-voice";
 import { parseMusicXML } from "../../src/modules/score/musicxml";
 const song = (): import("../../src/model/model").Song =>
   JSON.parse(readFileSync("public/demo/song.json", "utf8"));
+function withoutLyricVoices(xml: string) {
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  const data = canonicalManifest(doc)!;
+  const part = doc.querySelector('part[id="P1"]')!;
+  removeLyricVoices(
+    part,
+    data.lyrics.map((lyric) => lyric.voice),
+  );
+  return new XMLSerializer().serializeToString(doc);
+}
+
 it("migrates all lyric starts and restores from XML, disregarding poisoned cache values", () => {
   const s = song();
   migrateLyricPositions(s);
@@ -72,7 +84,7 @@ it("preserves source notation and unknown extensions while replacing owned lyric
   expect(d.querySelectorAll("part#DrumPracticeLyrics")).toHaveLength(0);
   expect(
     new DOMParser()
-      .parseFromString(playbackNotationXML(again), "application/xml")
+      .parseFromString(withoutLyricVoices(again), "application/xml")
       .querySelector("part#P1")!.outerHTML,
   ).toBe(
     new DOMParser()

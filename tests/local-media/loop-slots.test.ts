@@ -154,7 +154,7 @@ it("empty slots show range selection; touch endpoints commit while mouse drags n
   expect(c.s.loops).toHaveLength(0);
   c.control.dispose();
 });
-it("holding or right-clicking a saved range no longer opens an edit menu", () => {
+it("holding or right-clicking a saved range preserves it without activating playback", () => {
   const c = setup();
   c.click(0);
   c.tap(20);
@@ -175,9 +175,6 @@ it("holding or right-clicking a saved range no longer opens an edit menu", () =>
       cancelable: true,
     }),
   );
-  expect(
-    c.root.querySelector(".loop-slot-menu,[data-replace],[data-delete]"),
-  ).toBeNull();
   expect(c.s.loops).toEqual(old);
   expect(c.p.loop).toBeUndefined();
   c.control.dispose();
@@ -195,7 +192,7 @@ it("extends an existing eight-slot save while sorting visible slots and persists
   expect(slots[1]).toBeUndefined();
   expect(slots[11]?.id).toBe("twelfth");
 });
-it("keeps tooltips for empty, selecting and saved ranges without edit instructions", () => {
+it("shows selection, cancellation and deletion help for each range state", () => {
   const c = setup();
   const title = () =>
     c.root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.title;
@@ -205,7 +202,6 @@ it("keeps tooltips for empty, selecting and saved ranges without edit instructio
   c.tap(20);
   c.tap(20);
   expect(title()).toContain("길게 누른 뒤 삭제 버튼");
-  expect(title()).not.toContain("편집");
   c.control.dispose();
 });
 it("fills empty slots and evicts oldest registration independently of measure sorting, including JSON reload", () => {

@@ -138,7 +138,9 @@ progress {
   gap: 10px;
   min-width: 0;
   min-height: 44px;
+  padding: 9px 15px;
   border: 1px solid #bf5b37;
+  border-radius: 10px;
   background: #fff2e9;
   color: #853c23;
   text-align: left;
@@ -148,16 +150,28 @@ progress {
 .error-notice:hover {
   background: #ffe6d6;
 }
-.error-notice strong,
-.error-notice > span:last-child {
+.error-notice strong {
   flex: none;
 }
 #error-message {
+  min-width: 0;
+  flex: 1;
+}
+#error-message .error-copy {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 0;
-  flex: 1;
+}
+.error-notice > .icon-button {
+  flex: none;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
 }
 .statusline > .error-notice {
   flex: 1;

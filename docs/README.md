@@ -10,9 +10,9 @@
 | 요청된 드럼 음원 제작 | [음원 제작](how-to/render-drum-audio.md) | [드럼킷](reference/score/drum-kits.md), [공통 도구](reference/score/tools.md) |
 | 앱 개발 | [개발 절차](how-to/develop.md) | [구조](reference/engineering/architecture.md) → [UX](reference/product/ux.md) → [재생](reference/product/playback.md)·[음원](reference/product/audio-practice.md)·[제작기](reference/product/editor.md) |
 | 다른 프로젝트의 pnpm 전환 | [공통 저장소·중앙 YAML 연결](how-to/adopt-shared-pnpm-catalog.md) | [공유 의존성 결정](decisions/0028-shared-dependency-store-and-catalog.md) |
-| 코드·화면 검사 | [검사 절차](how-to/verify.md), [iPad](how-to/verify-ipad.md) | [검증 기준](reference/engineering/verification.md) |
+| 코드·화면 검사 | [검사 카탈로그](reference/engineering/check-catalog.md), [검사 절차](how-to/verify.md), [iPad](how-to/verify-ipad.md) | [검증 기준](reference/engineering/verification.md) |
 | Apple 로컬 분석 | [로컬 도구 사용](how-to/use-apple-local-tools.md) | [도구 계약](reference/score/tools.md) |
-| 승인된 릴리스 | [버전·발행 절차](how-to/release.md) | [릴리스](reference/engineering/release.md), [보안](reference/engineering/security.md), [고지](reference/engineering/third-party-notices.md) |
+| 승인된 릴리스 | [버전·발행 절차](how-to/release.md), [검사 카탈로그](reference/engineering/check-catalog.md) | [릴리스](reference/engineering/release.md), [보안](reference/engineering/security.md), [고지](reference/engineering/third-party-notices.md) |
 | 과거 근거 찾기 | [곡·주제별 기록](records/README.md), [ADR 목록](decisions/README.md) | [문서 관리](reference/engineering/documentation.md) |
 
 악보 제작은 첫 행의 네 정본을 기본으로 읽고, 드럼킷·도구·특수 검수는 해당 작업이 필요할 때 추가한다. 과거 후보·검증 수치는 현행 Rule이나 이번 실행의 성공을 대신하지 않는다.

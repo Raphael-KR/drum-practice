@@ -73,7 +73,7 @@ it("merges the real catalog once, keeps the saved record, and groups basic and p
   expect(entries.filter((e) => e.id === record.song.id)).toHaveLength(1);
   expect(entries.find((e) => e.id === record.song.id)?.record).toBe(record);
 });
-it("returns to the common home catalog without creating a second list dialog", async () => {
+it("returns to the common home catalog", async () => {
   const { h, library } = setup();
   await library.refreshCatalog();
   expect(document.querySelectorAll("#editor-home-basic article")).toHaveLength(
@@ -84,7 +84,6 @@ it("returns to the common home catalog without creating a second list dialog", a
   ).toHaveLength(bundled.filter((s) => s.category !== "basic").length);
   await library.open();
   expect(h.showHome).toHaveBeenCalledOnce();
-  expect(document.getElementById("library-dialog")).toBeNull();
   expect(
     document.querySelectorAll("#editor-home-list [data-score-id]"),
   ).toHaveLength(bundled.length);

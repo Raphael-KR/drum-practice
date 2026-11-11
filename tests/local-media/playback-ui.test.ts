@@ -81,7 +81,7 @@ for (const [surface, bindings] of [
     );
   });
 }
-it("renders safe lyrics and a correctly hidden marker from a single measure component", () => {
+it("renders only the source score and a correctly hidden marker from a single measure component", () => {
   const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
   s.markers = [];
   const m = s.measures[0],
@@ -92,18 +92,9 @@ it("renders safe lyrics and a correctly hidden marker from a single measure comp
     i: 0,
     width: 300,
     r,
-    ly: [
-      {
-        ...s.lyrics[0],
-        text: '<img src=x onerror="boom">',
-        time: m.start,
-        confirmed: true,
-      },
-    ],
     pageURL: "blob:score",
     pageRatio: 1.294,
     isSVG: false,
-    positionInMeasure: () => 150,
   };
   document.body.innerHTML = renderMeasure(props);
   expect(document.querySelector(".measure-marker")).toHaveProperty(
@@ -111,9 +102,7 @@ it("renders safe lyrics and a correctly hidden marker from a single measure comp
     true,
   );
   expect(document.querySelector("img")).toBeNull();
-  expect(document.querySelector(".syllable")!.textContent).toBe(
-    props.ly[0].text,
-  );
+  expect(document.querySelector(".lyrics, .syllable")).toBeNull();
   s.markers = [{ id: "test", name: "test", time: m.start }];
   document.body.innerHTML = renderMeasure(props);
   expect(document.querySelector(".measure-marker")).toHaveProperty(
@@ -157,13 +146,11 @@ it("projects native notes and their highlight to the same height with an extende
     i: 0,
     width: 300,
     r,
-    ly: [],
     layout,
     highlight,
     pageURL: "blob:score",
     pageRatio: 1,
     isSVG: true,
-    positionInMeasure: () => 0,
   });
   const image = document.querySelector(".score-engraving image")!;
   const overlay = document.querySelector(".note-highlight")!;
@@ -204,56 +191,4 @@ it("renders every player action icon without authoring definitions", () => {
     expect(svg).not.toContain("undefined");
     expect(svg).toMatch(/<(path|circle|rect)/);
   }
-});
-
-it("uses reviewed PDF lyric centers in both views, but falls back after a score edit or for SVG", () => {
-  const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
-  const m = s.measures[0],
-    r = {
-      ...s.regions.find((r) => r.id === m.regionId)!,
-      lyricAnchors: [{ lyricId: "underlay", quarterOffset: 0.5, x: 0.37 }],
-    };
-  const lyric = {
-    id: "underlay",
-    text: "loveholic",
-    time: m.start,
-    end: m.start + 0.1,
-    confirmed: false,
-    scorePosition: {
-      measureId: m.id,
-      quarterOffset: 0.5,
-      durationQuarters: 0.5,
-    },
-  };
-  const props = {
-    s,
-    m,
-    r,
-    i: 0,
-    width: 300,
-    ly: [lyric],
-    pageURL: "page.png",
-    pageRatio: 1,
-    isSVG: false,
-    positionInMeasure: () => 150,
-  };
-  for (const view of ["rows", "ribbon"] as const) {
-    s.settings.view = view;
-    document.body.innerHTML = renderMeasure(props);
-    const el = document.querySelector<HTMLElement>(".syllable")!;
-    expect(el.style.left).toBe("111px");
-    expect(el.dataset.pdfLyricAnchor).toBe("true");
-    expect(el.style.transform).not.toBe("none");
-  }
-  document.body.innerHTML = renderMeasure({ ...props, isSVG: true });
-  expect(document.querySelector<HTMLElement>(".syllable")!.style.left).toBe(
-    "50%",
-  );
-  expect(document.querySelector("[data-pdf-lyric-anchor]")).toBeNull();
-  lyric.scorePosition.quarterOffset = 1;
-  document.body.innerHTML = renderMeasure(props);
-  expect(document.querySelector<HTMLElement>(".syllable")!.style.left).toBe(
-    "50%",
-  );
-  expect(document.querySelector("[data-pdf-lyric-anchor]")).toBeNull();
 });

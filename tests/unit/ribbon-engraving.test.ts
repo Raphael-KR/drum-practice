@@ -5,6 +5,7 @@ import {
 } from "../../src/modules/score/ribbon-engraving";
 function entry(q: number, left = 0, right = 16) {
   return {
+    LyricsEntries: [],
     relInMeasureTimestamp: { RealValue: q / 4 },
     graphicalVoiceEntries: [
       {
@@ -68,6 +69,7 @@ it("moves shared native tick contexts once, preserves grace association and uses
     getVFStave: () => stave,
     staffEntries: [
       {
+        LyricsEntries: [],
         relInMeasureTimestamp: { RealValue: 0.375 },
         graphicalVoiceEntries: [
           voice,
@@ -162,6 +164,7 @@ it("re-spaces a short measure into a uniform row cell before engraving, without 
     formatVoices: () => {},
     staffEntries: [
       {
+        LyricsEntries: [],
         relInMeasureTimestamp: { RealValue: 0.5 },
         graphicalVoiceEntries: [
           { parentVoiceEntry: { IsGrace: false }, vfStaveNote: note },
@@ -199,6 +202,7 @@ it("engraves sparse and dense bars on identical fixed grid coordinates without s
   function bar(qs: number[]) {
     const xs = qs.map(() => 200);
     const entries = qs.map((q, i) => ({
+      LyricsEntries: [],
       relInMeasureTimestamp: { RealValue: q / 4 },
       graphicalVoiceEntries: [
         {

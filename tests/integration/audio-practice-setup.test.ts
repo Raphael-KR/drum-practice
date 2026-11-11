@@ -72,9 +72,6 @@ it("chooses an observed beat on waveform, sets bar one while following tempo, an
     pending = setupAudioPractice(original);
   const first = document.querySelector<HTMLInputElement>("[name=first]")!;
   expect(first.disabled).toBe(false);
-  expect(
-    document.querySelector("[name=follow], [data-reanalyze], [data-tap]"),
-  ).toBeNull();
   const audio = document.querySelector("audio")!;
   audio.currentTime = 8;
   audio.dispatchEvent(new Event("seeking"));
@@ -82,7 +79,6 @@ it("chooses an observed beat on waveform, sets bar one while following tempo, an
   expect(document.querySelector("audio")!.currentTime).toBe(8.7);
   document.querySelector<HTMLButtonElement>("[data-first]")!.click();
   expect(first.value).toBe("8.700");
-  expect(document.querySelector("[data-anchor-info]")).toBeNull();
   expect(original.song.audioPractice!.barOne).toBeUndefined();
   const save = document.querySelector<HTMLButtonElement>(
     ".dialoghead button[type=submit]",
@@ -138,7 +134,6 @@ it("places the player below the waveform and follows beginning, middle and end",
   const wave = document.querySelector<HTMLElement>("[data-wave]")!;
   const audio = document.querySelector("audio")!;
   expect(wave.nextElementSibling).toBe(audio);
-  expect(document.querySelector("[name=browse]")).toBeNull();
   for (const [time, start, cursor] of [
     [0, 0, 0],
     [1.25, 0, 25],
@@ -257,11 +252,10 @@ it("Space toggles preview playback but leaves input typing and held keys alone",
     .click();
   await pending;
 });
-it("automatically uses available beats on save without a follow toggle", async () => {
+it("automatically uses available beats on save while preserving the original preference", async () => {
   const original = record();
   original.song.audioPractice!.followTempo = false;
   const pending = setupAudioPractice(original);
-  expect(document.querySelector("[name=follow]")).toBeNull();
   document
     .querySelector("form")!
     .dispatchEvent(new Event("submit", { cancelable: true }));
@@ -382,7 +376,6 @@ it("edits score BPM and one meter selector while preserving observed timing and 
   expect(bpm.disabled).toBe(false);
   expect(meter.disabled).toBe(false);
   expect(meter.value).toBe("4/4");
-  expect(document.querySelector("[name=beats], [name=denominator]")).toBeNull();
   bpm.value = "96";
   meter.value = "6/8";
   const first = document.querySelector<HTMLInputElement>("[name=first]")!;

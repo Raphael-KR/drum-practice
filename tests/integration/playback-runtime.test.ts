@@ -78,7 +78,7 @@ afterEach(() => {
   vi.clearAllMocks();
   vi.unstubAllGlobals();
 });
-it("mounts either adapter, persists position/preferences and disposes once before remount", async () => {
+it("mounts the player runtime, persists position/preferences and disposes once before remount", async () => {
   vi.stubGlobal("URL", { revokeObjectURL: vi.fn() });
   const changed = vi.fn(),
     onLibrary = vi.fn(),
@@ -364,4 +364,106 @@ it("separates conversion progress from score errors and clears playback errors o
   player.onstate();
   expect(notice.textContent).toBe("");
   runtime.dispose();
+});
+
+it("reuses tempo and metronome inputs in one phone landscape settings card and restores them", async () => {
+  const { installPhoneLandscapeSettings } =
+    await import("../../src/modules/playback/playback-settings-layout");
+  const { root, ...rest } = options();
+  const runtime = await mountPlaybackRuntime({ root, ...rest });
+  const settings = document.getElementById(
+    "settings-dialog",
+  ) as HTMLDialogElement;
+  const tempoDialog = document.getElementById(
+    "tempo-dialog",
+  ) as HTMLDialogElement;
+  // jsdom has no dialog implementation; model only the open/closed state here.
+  for (const dialog of [settings, tempoDialog]) {
+    dialog.showModal = () => {
+      dialog.open = true;
+    };
+    dialog.close = () => {
+      dialog.open = false;
+    };
+  }
+  const tempo = tempoDialog.querySelector<HTMLElement>(".tool-body")!;
+  const input = tempo.querySelector<HTMLInputElement>("input")!;
+  const originalValue = input.value;
+  const metronome = root.querySelector<HTMLElement>(".settings-metronome-row")!;
+  const metronomeHome = metronome.parentElement;
+  const layout = installPhoneLandscapeSettings(
+    root,
+    state.host.settingsSelected,
+  );
+  const selectSettingsCategory = (category: string) =>
+    settings
+      .querySelector<HTMLButtonElement>(
+        `[data-settings-category="${category}"]`,
+      )!
+      .click();
+  const openSettings = () =>
+    root.querySelector<HTMLButtonElement>("#settings")!.click();
+  const closeSettings = () => settings.close();
+  const visible = (attribute: string) =>
+    [
+      ...settings.querySelectorAll<HTMLElement>(`[${attribute}]:not([hidden])`),
+    ].map((element) => element.getAttribute(attribute));
+  try {
+    openSettings();
+    selectSettingsCategory("score");
+    for (let i = 0; i < 3; i++) {
+      layout.sync(true);
+      expect(visible("data-settings-category")).toEqual([
+        "screen",
+        "playback",
+        "metronome",
+        "tempo",
+      ]);
+      expect(visible("data-settings-panel")).toEqual(["screen"]);
+      for (const category of ["playback", "metronome", "tempo"] as const) {
+        selectSettingsCategory(category);
+        expect(visible("data-settings-panel")).toEqual([category]);
+      }
+      expect(settings.querySelector("#tempo-settings input")).toBe(input);
+      expect(
+        settings.querySelector("#metronome-settings .settings-metronome-row"),
+      ).toBe(metronome);
+      expect(tempoDialog.open).toBe(false);
+      closeSettings();
+      openSettings();
+      expect(visible("data-settings-panel")).toEqual(["tempo"]);
+      layout.sync(false);
+      expect(tempo.parentElement).toBe(tempoDialog);
+      expect(metronome.parentElement).toBe(metronomeHome);
+      expect(input.value).toBe(originalValue);
+      expect(root.querySelectorAll(`#${input.id}`)).toHaveLength(1);
+      expect(root.querySelectorAll("#metronome-choices")).toHaveLength(1);
+      expect(visible("data-settings-category")).toEqual([
+        "screen",
+        "playback",
+        "score",
+        "info",
+      ]);
+      expect(visible("data-settings-panel")).toHaveLength(4);
+      expect(
+        document
+          .getElementById("open-screen-dialog")!
+          .getAttribute("aria-current"),
+      ).toBe("location");
+      // The first phone selection must not leave the scroll listener in phone mode.
+      settings
+        .querySelector(".settings-detail")!
+        .dispatchEvent(new Event("scroll"));
+      expect(visible("data-settings-category")).toEqual([
+        "screen",
+        "playback",
+        "score",
+        "info",
+      ]);
+    }
+  } finally {
+    layout.dispose();
+    closeSettings();
+    runtime.dispose();
+  }
 });

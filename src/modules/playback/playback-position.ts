@@ -20,30 +20,3 @@ export function playbackPosition(song: Song, time: number) {
   });
   return { label, text };
 }
-
-export async function copyPosition(text: string) {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return;
-    } catch {
-      /* Continue with the selection-based copy fallback if clipboard access fails. */
-    }
-  }
-  const active = document.activeElement as HTMLElement | null;
-  const field = document.createElement("textarea");
-  field.value = text;
-  field.readOnly = true;
-  field.style.cssText =
-    "position:fixed;left:0;top:0;opacity:0;pointer-events:none";
-  document.body.append(field);
-  try {
-    field.select();
-    field.setSelectionRange(0, text.length);
-    if (!document.execCommand("copy"))
-      throw Error(i18nText("playback-position.message434"));
-  } finally {
-    field.remove();
-    active?.focus({ preventScroll: true });
-  }
-}

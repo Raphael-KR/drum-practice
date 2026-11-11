@@ -42,6 +42,7 @@ import {
 } from "../../platform/browser/load-timing";
 import { installLandscapeKeyboardGuard } from "../../platform/browser/landscape-keyboard";
 import { renderKeepingTopHeader } from "../../shared/ui/top-edge-header";
+import { showCopyableError } from "../../shared/ui/error-notice";
 import "../../modules/help/help.css";
 import { installHelp } from "../../modules/help/help";
 import "../../shared/styles/controls.css";
@@ -97,13 +98,16 @@ function report(error: unknown) {
   if (target) {
     target.classList.add("is-error");
     target.setAttribute("role", "alert");
-    target.textContent = error instanceof Error ? error.message : String(error);
+    showCopyableError(
+      target,
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }
 function clearLibraryError() {
   const target = document.getElementById("library-status");
   if (target) {
-    target.textContent = "";
+    showCopyableError(target, "");
     target.classList.remove("is-error");
     target.setAttribute("role", "status");
   }

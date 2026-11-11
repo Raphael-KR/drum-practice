@@ -9,9 +9,20 @@ import {
   hasDrumNotation,
 } from "../../src/modules/score/canonical-xml";
 import { canonicalManifest } from "../../src/modules/score/canonical-metadata";
-import { playbackNotationXML } from "../../src/modules/score/canonical-lyric-voice";
+import { removeLyricVoices } from "../../src/modules/score/canonical-lyric-voice";
 import { parseMusicXML } from "../../src/modules/score/musicxml-parse";
-import { prepareFullScoreLyrics } from "../../src/modules/score/full-score-lyrics";
+import { prepareScoreLyrics } from "../../src/modules/score/score-lyrics";
+
+function withoutLyricVoices(xml: string) {
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  const data = canonicalManifest(doc)!;
+  const part = doc.querySelector('part[id="P1"]')!;
+  removeLyricVoices(
+    part,
+    data.lyrics.map((lyric) => lyric.voice),
+  );
+  return new XMLSerializer().serializeToString(doc);
+}
 
 let source: string;
 const legacySource = readFileSync(
@@ -58,8 +69,8 @@ it("갑자기: repeated saves neither duplicate lyrics nor delete drum notation"
   const once = writeCanonical(structuredClone(song), source);
   const twice = writeCanonical(structuredClone(song), once);
   expect(twice).toBe(once);
-  const playback = documentOf(playbackNotationXML(twice));
-  const originalDrums = documentOf(playbackNotationXML(source)).querySelector(
+  const playback = documentOf(withoutLyricVoices(twice));
+  const originalDrums = documentOf(withoutLyricVoices(source)).querySelector(
     'part[id="P1"]',
   )!;
   expect(playback.querySelector('part[id="P1"]')!.outerHTML).toBe(
@@ -67,12 +78,13 @@ it("갑자기: repeated saves neither duplicate lyrics nor delete drum notation"
   );
 });
 
-it("갑자기: legacy full-score preparation uses the shared voice writer in a copy", () => {
-  const parsed = parseMusicXML(legacySource, "P1");
-  prepareFullScoreLyrics(parsed, song);
-  const prepared = new XMLSerializer().serializeToString(parsed.document);
+it("갑자기: legacy SVG preparation uses the shared voice writer in a copy", () => {
+  const { xml: prepared } = prepareScoreLyrics(legacySource, "P1");
   const rendered = parseMusicXML(prepared, "P1");
-  expect(rendered.parts).toHaveLength(1);
+  expect(
+    rendered.document.querySelectorAll("score-partwise > part"),
+  ).toHaveLength(1);
+  expect(rendered.partId).toBe("P1");
   expect(rendered.lyrics).toHaveLength(song.lyrics.length);
   for (const [i, lyric] of rendered.lyrics.entries()) {
     const expected = song.lyrics[i].scorePosition!;

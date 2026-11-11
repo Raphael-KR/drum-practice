@@ -344,8 +344,3 @@ main {
   width: 100%;
   height: auto;
 }
-.score-reader-lyrics {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  line-height: 1.8;
-}

@@ -1,7 +1,5 @@
-import type { Song } from "../../model/model";
+import type { Lyric, Measure } from "../../model/model";
 import {
-  CANONICAL_FIELD,
-  LEGACY_LYRIC_PART,
   LYRIC_DIVISIONS,
   canonicalManifest,
   type LyricVoiceIdentity,
@@ -73,27 +71,13 @@ export function removeLyricVoices(part: Element, voices: string[] = []) {
     lyricVoiceBlock(measure, voices).forEach((node) => node.remove());
 }
 
-/** Hidden timing voices must not add rhythmic anchors or spacing to the playback staff. */
-export function playbackNotationXML(xml: string): string {
-  if (!xml.includes(START) && !xml.includes(CANONICAL_FIELD)) return xml;
-  const doc = new DOMParser().parseFromString(xml, "application/xml");
-  const data = canonicalManifest(doc);
-  for (const part of kids(doc.documentElement, "part")) {
-    if (part.id !== LEGACY_LYRIC_PART)
-      removeLyricVoices(
-        part,
-        data?.version === 2 && data.partId === part.id
-          ? data.lyrics.map((l) => l.voice)
-          : [],
-      );
-  }
-  return new XMLSerializer().serializeToString(doc);
-}
-
-/** Shared by canonical saving and the read-only upgrade of legacy full-score input. */
+/** Shared by canonical saving and the read-only upgrade of legacy engraving input. */
 export function writeLyricVoices(
   part: Element,
-  song: Song,
+  song: {
+    measures: Pick<Measure, "id" | "beats" | "denominator">[];
+    lyrics: Lyric[];
+  },
 ): LyricVoiceIdentity[] {
   removeLyricVoices(part);
   const measures = kids(part, "measure");

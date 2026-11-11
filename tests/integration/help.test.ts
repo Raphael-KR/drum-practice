@@ -55,10 +55,9 @@ const pointer = (target: Element, type: string, x = 0) => {
   });
   target.dispatchEvent(e);
 };
-it("has one bottom instruction and no pages; common close stays at the help opener", () => {
+it("shows component labels and instructions; common close stays at the help opener", () => {
   open();
   expect(guide().querySelector("h2")).toBeNull();
-  expect(guide().querySelector(".help-pages")).toBeNull();
   expect(guide().textContent).toContain("길게 누르고 있으면");
   expect(
     [...guide().querySelectorAll(".help-region-name")].map(

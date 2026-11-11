@@ -1,3 +1,4 @@
+import { readCanonicalLyrics } from "./canonical-lyric-read";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { sha256 } from "../../platform/browser/sha256";
 import {
@@ -265,81 +266,12 @@ export function readCanonical(text: string, s: Song): void {
   const bpm = Number(part.querySelector("sound[tempo]")?.getAttribute("tempo"));
   if (bpm > 0) s.bpm = bpm;
   s.firstBeat = s.measures[0]?.start ?? s.firstBeat;
-  const lyrics = new Map<string, Lyric>();
-  const activeVoice = new Map<string, Lyric>();
-  let divisions = data.version === 1 ? DIV : 1;
-  kids(part, "measure").forEach((m, i) => {
-    let cursor = 0;
-    for (const e of Array.from(m.children)) {
-      if (e.localName === "attributes") {
-        const div = child(e, "divisions");
-        if (div) divisions = Number(div.textContent);
-      }
-      const duration =
-        Number(child(e, "duration")?.textContent || 0) / divisions;
-      if (e.localName === "backup") {
-        cursor -= duration;
-        continue;
-      }
-      if (e.localName === "forward") {
-        cursor += duration;
-        continue;
-      }
-      if (e.localName !== "note") continue;
-      const voice = child(e, "voice")?.textContent || "",
-        lyric = child(e, "lyric"),
-        value =
-          lyric &&
-          kids(lyric, "text")
-            .map((t) => t.textContent)
-            .join("");
-      if (lyric && kids(lyric, "text").length) {
-        const meta =
-          data.version === 1
-            ? data.lyrics.find((l) => l.voice === voice)
-            : data.lyrics.find((l) => l.noteId === e.id);
-        if (!meta) {
-          if (data.version === 2) {
-            // Imported drum lyrics are not the managed lyric voice.
-            if (!child(e, "chord")) cursor += duration;
-            continue;
-          }
-          throw Error(i18nText("canonical-xml.message019"));
-        }
-        const restored: Lyric = {
-          id: meta.id,
-          text: value || "",
-          confirmed: meta.confirmed,
-          time: 0,
-          end: 0,
-          scorePosition: {
-            measureId: s.measures[i].id,
-            quarterOffset: cursor,
-            durationQuarters: duration,
-          },
-        };
-        lyrics.set(meta.id, restored);
-        activeVoice.set(voice, restored);
-      } else if (lyric && child(lyric, "extend")) {
-        const l = activeVoice.get(voice);
-        if (l) l.scorePosition!.durationQuarters += duration;
-      }
-      if (!child(e, "chord")) cursor += duration;
-    }
-  });
   validateMeasureLyrics(
     data.measureLyrics,
     new Set(s.measures.map((m) => m.id)),
   );
   s.measureLyrics = data.measureLyrics?.map((l) => ({ ...l }));
-  s.lyrics = data.lyrics.map((meta) => {
-    const lyric = lyrics.get(meta.id);
-    if (!lyric)
-      throw Error(
-        `Missing canonical lyric: id=${meta.id}, voice=${meta.voice}, version=${data.version}`,
-      );
-    return lyric;
-  });
+  s.lyrics = readCanonicalLyrics(d, data);
   projectLyrics(s);
 }
 export async function ensureCanonical(record: RecordData) {

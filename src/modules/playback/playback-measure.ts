@@ -5,20 +5,17 @@ import { markedMeasureIndices } from "./marker-slots";
 import type { HighlightPage } from "../score/note-highlight";
 import type { practiceStaffLayout } from "../score/practice-staff-layout";
 import { escapeHTML as esc } from "../../shared/ui/html";
-import { scoreLyricsHTML } from "../lyrics/score-lyrics";
 export interface MeasureView {
   s: Song;
   m: Measure;
   i: number;
   width: number;
   r: Region;
-  ly: Song["lyrics"];
   layout?: ReturnType<typeof practiceStaffLayout>;
   highlight?: HighlightPage;
   pageURL: string;
   pageRatio: number;
   isSVG: boolean;
-  positionInMeasure: (index: number, beat: number, width: number) => number;
 }
 export function renderMeasure({
   s,
@@ -26,13 +23,11 @@ export function renderMeasure({
   i,
   width,
   r,
-  ly,
   layout,
   highlight,
   pageURL,
   pageRatio,
   isSVG,
-  positionInMeasure,
 }: MeasureView) {
   const height =
     layout?.height ?? (width > 1 ? (width / r.w) * r.h * pageRatio : 165);
@@ -63,18 +58,6 @@ export function renderMeasure({
       : -r.y * scaledHeight;
     overlay = `<svg class="note-highlight" aria-hidden="true" data-highlight-measure="${i}" preserveAspectRatio="none" viewBox="${r.x * highlight.width} ${(highlight.originY ?? 0) + (-offsetY / scaledHeight) * highlight.height} ${r.w * highlight.width} ${(height / scaledHeight) * highlight.height}">${highlight.measures.get(i)}</svg>`;
   }
-  const lyrics = scoreLyricsHTML({
-    song: s,
-    measure: m,
-    region: r,
-    width,
-    lyrics: ly,
-    isSVG,
-    positionAtBeat:
-      s.settings.view === "ribbon"
-        ? (beat) => positionInMeasure(i, beat, width) / width
-        : undefined,
-  });
   return (
     '<div class="measure' +
     (markedMeasureIndices(s).has(i) ? " is-marked" : "") +
@@ -116,10 +99,6 @@ export function renderMeasure({
     '">' +
     engraving +
     String(overlay) +
-    '</div><div class="lyrics" style="top:' +
-    String(height + 6) +
-    'px">' +
-    lyrics +
     "</div></div>"
   );
 }

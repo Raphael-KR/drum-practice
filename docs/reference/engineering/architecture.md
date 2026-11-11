@@ -50,11 +50,11 @@ pnpm 사용자 공통 저장소의 파일을 공유하고 프로젝트에는 필
 
 제작기와 연습실은 서로 import하지 않는다. 앱은 공통 모듈을 조립하며, 재생 화면의 소유자는 `playback-screen.ts` 하나다. 분리한 BPM 모듈과 `playback-settings.ts`의 음량·보기·사용자 설정 바인딩은 같은 host와 이벤트 등록·해제 경로를 사용한다. 설정 모듈이 별도 화면 상태나 저장소를 만들지 않는다. 제작기의 마디 탐색도 공통 진행률 숫자와 악보 제스처를 사용한다. 제작기 전용 `afterFrame`은 편집창의 현재 시각(`editor-time`)만 갱신한다.
 
-`playback-track.ts`는 마디 위치·폭·가사 배치와 두 줄 보기의 배치 상태를, `playback-display.ts`는 제목·BPM·설정 표시 및 폰 가로 표시 모드 동기화를 맡는다. `playback-navigation.ts`는 제스처·휠·스크롤·숫자 드래그·키보드·문서 이벤트를 연결한다. 세 모듈은 `playback-screen.ts`가 화면당 한 번 생성한다. 선택·스크럽·반복 구간·재생 상태와 리스너 해제 목록은 화면 소유자에 남기고, 변경되는 상태는 getter/setter로 읽고 쓴다. navigation은 제스처 등록 → 화면의 반복 구간 연결 → 나머지 입력 등록 순서를 유지하며 해제 함수를 화면의 공통 목록에 추가한다. 배치 무효화·프레임 요청·종료 여부는 콜백으로 연결하고, host 앱은 이 내부 모듈을 따로 생성하지 않는다.
+`playback-track.ts`는 마디 위치·폭과 두 줄 보기의 배치 상태를, `playback-display.ts`는 제목·BPM·설정 표시 및 폰 가로 표시 모드 동기화를 맡는다. `playback-navigation.ts`는 제스처·휠·스크롤·숫자 드래그·키보드·문서 이벤트를 연결한다. 세 모듈은 `playback-screen.ts`가 화면당 한 번 생성한다. 선택·스크럽·반복 구간·재생 상태와 리스너 해제 목록은 화면 소유자에 남기고, 변경되는 상태는 getter/setter로 읽고 쓴다. navigation은 제스처 등록 → 화면의 반복 구간 연결 → 나머지 입력 등록 순서를 유지하며 해제 함수를 화면의 공통 목록에 추가한다. 배치 무효화·프레임 요청·종료 여부는 콜백으로 연결하고, host 앱은 이 내부 모듈을 따로 생성하지 않는다.
 
 MusicXML 조판의 공개 진입점은 `musicxml.ts`다. 입력 읽기/검증은 `musicxml-parse.ts`, 엔진 설정과 조판 훅은 `musicxml-engine.ts`, 공통 기호 표시 처리는 `musicxml-glyphs.ts`, SVG 경계·마디/박 좌표 추출은 `musicxml-geometry.ts`가 맡는다. 입력 → 엔진 → 기호 표시 → 경계 확정 → 글꼴 내장/압축 → 좌표 추출 순서를 유지한다. 다중 조판 pass·캐시·임시 host 해제는 진입점에 남기며, 기존 parse/read/type/interpolate export 경로를 유지한다. 출력 규칙은 [조판 정본](../score/rendering.md#browser-musicxml-rendering--구현-경계)을 따른다.
 
-SVG 전체 보기의 표준 음절 가사는 `musicxml-engine.ts`에서 켠 OSMD 기본 기능으로 출력한다. `full-score-lyrics.ts`는 구형 v1의 읽기용 변환과 시간 없는 마디 문구의 native 라벨을 담당한다. 이미 파싱한 문서의 manifest를 재사용하고, 마디 문구가 없으면 추가 배치·그리기 훅을 등록하지 않는다. `canonical-lyric-voice.ts`는 새 정본 작성과 구형 전체 보기의 읽기용 전환을 공유하며, 성부 소유권 판별은 `canonical-metadata.ts`의 v1/v2 계약을 사용한다.
+SVG 전체 보기·연주 1줄/2줄의 음절 가사는 `musicxml-engine.ts`의 OSMD 기본 출력으로 통일한다. `score/score-lyrics.ts`는 구형 v1의 읽기용 준비와 마디 문구의 native 라벨을 공유하고, 크기·색은 공통 조판 규칙을 사용한다. `canonical-lyric-read.ts`는 저장 복원과 구형 조판에서 같은 ID·음악적 위치를 읽고, `canonical-lyric-voice.ts`는 저장과 읽기용 사본의 성부 작성을 담당한다. 마디 경계는 native 가사 잉크까지 포함한다. 연주 HTML 가사·별도 충돌 배치·전용 CSS는 제거했으며 PDF는 원본 가사만 표시한다.
 
 `full-score-view.ts`는 두 앱의 지연 준비·연속 SVG 표시를 공유하고, `full-score-layout.ts`는 원본 줄 구성 위에 일정한 오선 간격과 제목 아래 기본 BPM·가수를 배치한다. 전체 보기의 간격은 연주용 pass로 전달하지 않으며 별도 정책 키로 공통 파생 캐시를 사용한다. 제작기의 미저장 가사 반영만 기존 정본 작성 함수를 사용하고 재생앱에는 제작 의존성을 추가하지 않는다. 배치·마디 문구·글꼴·배율 계약은 [전체 보기 규칙](../score/rendering.md#svg-score-rules--2-전체-페이지-생성)을 따른다.
 
@@ -99,7 +99,7 @@ DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·
 - 동작 아이콘의 도형은 `shared/ui/icon-svg.ts`, 버튼 조립은 `shared/ui/icon-button.ts`를 사용한다. `shared/ui/icons.ts`는 제작기 DOM에 아이콘을 연결하며 기존 `icon` export를 재수출한다. 기능 모듈에 SVG 경로·아이콘 버튼 마크업을 복사하지 않는다. 악보·파형 SVG와 동작 아이콘은 구분한다.
 - 음원 식별·분석 캐시·렌더 캐시·정본 검증의 SHA-256은 `platform/browser/sha256.ts`를 사용한다. 입력 바이트 준비·캐시 키 직렬화·Blob별 Promise 캐시·저장/오류 처리는 호출 경계에 유지한다. 공통 결과는 기존과 같은 소문자 16진수 64자리이며 저장 형식이나 캐시 정책을 바꾸지 않는다.
 - 브라우저에서 실행하는 제작 도구 `tools/score-production/musicxml/common/package.mjs`도 위 해시와 `platform/storage/binary-asset.ts`의 Base64 인코더를 재사용한다. 기존 `sha`·`base64` API와 문자열 반환 형식은 유지한다. Node 전용 파일 해시 처리는 실행 환경이 달라 이 경로에 합치지 않는다.
-- 고정 표시 속성은 소유 컴포넌트 CSS에 둔다. 가사의 긴 문구 스타일은 `lyrics/score-lyrics.css`, 파형 마디의 기본 높이는 두 앱이 읽는 공통 재생 CSS에 둔다. 실행 중 계산하는 위치·폭·비율·SVG 좌표는 기존 동적 스타일을 유지한다. 브라우저별 range 의사 요소나 서로 다른 반응형 조건을 단순 중복으로 합치지 않는다.
+- 고정 표시 속성은 소유 컴포넌트 CSS에 둔다. 파형 마디의 기본 높이는 두 앱이 읽는 공통 재생 CSS에 둔다. 실행 중 계산하는 위치·폭·비율·SVG 좌표는 기존 동적 스타일을 유지한다. 브라우저별 range 의사 요소나 서로 다른 반응형 조건을 단순 중복으로 합치지 않는다.
 - 파일·함수의 크기는 책임 혼재를 찾는 신호로 사용한다. 상태 수명·이벤트 등록/해제·비동기 저장 순서를 먼저 확인하며, 줄 수만 맞추는 전달 모듈이나 전역 상태를 만들지 않는다. 옮긴 코드의 주석은 실제 소유 위치와 적용 이유를 설명하고 빈 구획·과거 위치 설명을 남기지 않는다.
 - 미사용 API는 앱 진입점·동적 호출·저장 읽기 계약을 함께 확인한다. 폐기된 UI만 지원하던 함수는 제거하고, 기존 검사의 유효한 저장·경계 검증은 현재 API로 옮긴다. 현재 기능의 시험 정리용 API까지 테스트에서만 호출한다는 이유로 삭제하지 않는다. [2026-11-10 정리 기록](../../records/code-maintenance.md#usage-compatibility-cleanup-20261110)에 제거한 경로와 보존한 호환성 계약을 구분했다.
 

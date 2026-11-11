@@ -5,6 +5,7 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import { MUSICXML_TOP_SPACES } from "./practice-staff-layout";
 import { gridPosition, type RibbonSpacing } from "./ribbon-engraving";
 import type { installWordsPositions } from "./words-position";
+import type { installScoreLyrics } from "./score-lyrics";
 
 import type { XMLScore } from "./musicxml-parse";
 
@@ -28,6 +29,7 @@ export function measureMusicXMLSystems(
   osmd: OpenSheetMusicDisplay,
   svgs: SVGSVGElement[],
   positionedWords: ReturnType<typeof installWordsPositions>,
+  lyricLabels: ReturnType<typeof installScoreLyrics> = new Map(),
 ) {
   // Crop against actual system ink, not a fixed nine-space lower margin.
   const systemBounds = svgs.map(
@@ -56,8 +58,8 @@ export function measureMusicXMLSystems(
         bottom: Math.max(previous?.bottom ?? -Infinity, box.y + box.height),
       });
     }
-  // Native wedges live outside .vf-measure. Include their ink in playback
-  // crop bounds, otherwise an above-staff crescendo is cut at the beam top.
+  // Native expressions and lyrics live outside .vf-measure. Include only
+  // this staff's ink so crops neither cut lyrics nor reveal adjacent systems.
   for (const row of osmd.GraphicSheet.MeasureList)
     for (const g of row) {
       if (!g) continue;
@@ -67,24 +69,32 @@ export function measureMusicXMLSystems(
       );
       const bounds = systemBounds[page.PageNumber - 1].get(key);
       if (!bounds) continue;
+      const include = (node: Node | undefined) => {
+        const box = (node as SVGGraphicsElement)?.getBBox?.();
+        if (!box) return;
+        bounds.top = Math.min(bounds.top, box.y - 1);
+        bounds.bottom = Math.max(bounds.bottom, box.y + box.height + 1);
+      };
+      for (const entry of g.staffEntries)
+        for (const lyric of entry.LyricsEntries)
+          include(lyric.GraphicalLabel.SVGNode);
+      const staff = g.ParentStaffLine;
+      for (const label of [
+        ...staff.LyricsDashes,
+        ...(lyricLabels.get(staff) ?? []),
+      ])
+        include(label.SVGNode);
+      for (const line of staff.LyricLines) include(line.SVGElement);
       for (const expression of g.ParentStaffLine.AbstractExpressions) {
         if (expression.Label && positionedWords.has(expression.Label)) {
-          const node = expression.Label.SVGNode as SVGGraphicsElement;
-          const box = node?.getBBox?.();
-          if (box) {
-            bounds.top = Math.min(bounds.top, box.y - 1);
-            bounds.bottom = Math.max(bounds.bottom, box.y + box.height + 1);
-          }
+          include(expression.Label.SVGNode);
         }
         const wedge = expression as unknown as {
           Lines?: { SVGElement?: SVGGraphicsElement }[];
           lines?: { SVGElement?: SVGGraphicsElement }[];
         };
         for (const line of wedge.Lines ?? wedge.lines ?? []) {
-          const box = line.SVGElement?.getBBox?.();
-          if (!box) continue;
-          bounds.top = Math.min(bounds.top, box.y - 1);
-          bounds.bottom = Math.max(bounds.bottom, box.y + box.height + 1);
+          include(line.SVGElement);
         }
       }
     }

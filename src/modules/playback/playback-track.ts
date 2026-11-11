@@ -4,12 +4,10 @@ import {
   type Song,
 } from "../../model/model";
 import { audioMeasureHTML } from "../audio/audio-practice-view";
-import { lyricsForMeasure } from "../lyrics/score-lyrics";
 import { gridPhase } from "../score/ribbon-timeline";
 import { displayRegion } from "../score/score-view";
 import { selectPlaybackEngraving } from "./playback-assets";
 import {
-  layoutScoreLyrics,
   measurePosition,
   measureWidth,
   renderScoreRows,
@@ -124,7 +122,6 @@ export function createPlaybackTrack(
       i,
       width,
       r,
-      ly: lyricsForMeasure(s, m),
       layout: staff
         ? scoreLayout(s, r, width, stage.clientWidth, staff)
         : undefined,
@@ -132,14 +129,7 @@ export function createPlaybackTrack(
       pageURL: timeline?.url ?? a.urls[r.page],
       pageRatio: timeline?.ratio ?? a.ratios[r.page] ?? 1.294,
       isSVG,
-      positionInMeasure: (index, beat, cellWidth) =>
-        timeline && !s.settings.uniformSpacing
-          ? cellWidth * xAtBeat(r, s.measures[index], beat)
-          : position(index, beat, cellWidth),
     });
-  }
-  function layoutLyrics() {
-    layoutScoreLyrics(stage, ribbon, h.song().settings.view);
   }
 
   function rowCellWidth() {
@@ -171,10 +161,14 @@ export function createPlaybackTrack(
     // Size rows from the full available width; surrounding UI must not shrink notation.
     const width = base;
     const selectedHeight =
-      s.settings.uniformSpacing && s.scoreFormat === "musicxml"
+      s.scoreFormat === "musicxml"
         ? Math.max(
             ...s.measures.map((_, i) => {
-              const asset = ribbonAsset(i);
+              const asset = selectPlaybackEngraving(
+                assets.ribbon?.get(i),
+                s.settings.uniformSpacing,
+                "rows",
+              );
               return asset
                 ? scoreLayout(
                     s,
@@ -187,7 +181,8 @@ export function createPlaybackTrack(
             }),
           )
         : naturalHeight;
-    const fittedHeight = Math.max(naturalHeight, selectedHeight) + 30;
+    const fittedHeight =
+      Math.max(naturalHeight, selectedHeight) + (s.audioPractice ? 30 : 0);
     stage.style.setProperty(
       "--two-row-stage-height",
       `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`,
@@ -208,7 +203,6 @@ export function createPlaybackTrack(
         scrubbing: controls.scrubbing(),
         resume: controls.resuming(),
         measureHTML,
-        layoutLyrics,
         cellWidth: rowCellWidth(),
       },
       rows,
@@ -222,7 +216,6 @@ export function createPlaybackTrack(
     ribbonAsset,
     widthOf,
     measureHTML,
-    layoutLyrics,
     rowCellWidth,
     renderRows,
     invalidate() {

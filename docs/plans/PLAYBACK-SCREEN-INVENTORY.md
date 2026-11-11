@@ -19,7 +19,7 @@
 | ID | 소유자 / 환경 연결 |
 |---|---|
 | P01 | playback-screen의 renderTrack → playback-track의 widthOf/position |
-| P02 | playback-track의 measureHTML/layoutLyrics + playback-measure |
+| P02 | playback-track의 measureHTML + playback-measure |
 | P03 | playback-track의 renderRows 및 rows 배치 상태; 무효화는 playback-screen |
 | P04 | frame/onState/progress |
 | P05 | playback-screen의 scrub/native 상태; playback-navigation의 제스처·휠·스크롤 연결 |

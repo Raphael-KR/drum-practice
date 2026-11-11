@@ -9,6 +9,7 @@ import {
   requestDialogCancel,
 } from "../../shared/ui/dialog-ui";
 import { setIconButton } from "../../shared/ui/icon-button";
+import { showCopyableError } from "../../shared/ui/error-notice";
 import { icon } from "../../shared/ui/icon-svg";
 import {
   retimeAudio,
@@ -80,6 +81,9 @@ export function setupAudioPractice(
       </div>
       <p class="audio-error" role="alert"></p>`;
     d.append(form);
+    const errorText = form.querySelector<HTMLElement>(".audio-error")!;
+    const showError = (error: unknown) =>
+      showCopyableError(errorText, String(error));
     const field = (name: string) =>
       form.elements.namedItem(name) as HTMLInputElement;
     const persistedFields = ["first", "title", "artist", "bpm", "meter"];
@@ -113,19 +117,17 @@ export function setupAudioPractice(
       audio.currentTime = counts[0] ?? s.firstBeat;
     };
     audio.onerror = () => {
-      form.querySelector(".audio-error")!.textContent = t(
-        "audioPractice.decodeError",
-        { detail: audio.error?.message || String(audio.error?.code || "") },
+      showError(
+        t("audioPractice.decodeError", {
+          detail: audio.error?.message || String(audio.error?.code || ""),
+        }),
       );
     };
     let result: RecordData | undefined;
     const candidate = record;
     let anchorChanged = false;
     const followsTempo = !!a.beatTimes?.length;
-    const errorText = form.querySelector(".audio-error")!;
-    const controls = bindAudioPreviewControls(audio, a.duration, (error) => {
-      errorText.textContent = String(error);
-    });
+    const controls = bindAudioPreviewControls(audio, a.duration, showError);
     const previewSong = () => {
       const bpm = Number(field("bpm").value);
       const [beats, denominator] = field("meter").value.split("/").map(Number);
@@ -151,9 +153,7 @@ export function setupAudioPractice(
       field("click"),
       d,
       previewSong,
-      (error) => {
-        errorText.textContent = String(error);
-      },
+      showError,
     );
     d.addEventListener(
       "keydown",
@@ -168,7 +168,11 @@ export function setupAudioPractice(
           return;
         const target = event.target as HTMLElement;
         if (target.closest("dialog") !== d) return;
-        if (target.closest('input, textarea, select, [contenteditable="true"]'))
+        if (
+          target.closest(
+            'input, textarea, select, [contenteditable="true"], .error-copy',
+          )
+        )
           return;
         event.preventDefault();
         event.stopPropagation();
@@ -177,10 +181,7 @@ export function setupAudioPractice(
           return;
         }
         if (event.repeat) return;
-        if (audio.paused)
-          void audio.play().catch((error) => {
-            errorText.textContent = String(error);
-          });
+        if (audio.paused) void audio.play().catch(showError);
         else audio.pause();
       },
       { capture: true },
@@ -210,7 +211,7 @@ export function setupAudioPractice(
         waveform.render();
         metronome.refresh();
       } catch (error) {
-        errorText.textContent = String(error);
+        showError(error);
       }
     };
     form.onsubmit = (e) => {
@@ -222,7 +223,7 @@ export function setupAudioPractice(
         result = { ...record, song };
         d.close();
       } catch (error) {
-        form.querySelector(".audio-error")!.textContent = String(error);
+        showError(error);
       }
     };
     d.addEventListener(

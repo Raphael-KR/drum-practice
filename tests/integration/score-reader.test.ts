@@ -77,16 +77,12 @@ it("opens shared full-score SVG without HTML numbers and frees image URLs on clo
   expect(fail).not.toHaveBeenCalled();
   reader.dispose();
 });
-it("shows full lyrics as safe text and removes controls when runtime disposes", async () => {
-  const { root, reader } = setup();
-  root.querySelector<HTMLButtonElement>("#runtime-full-lyrics")!.click();
-  await vi.waitFor(() =>
-    expect(root.querySelector<HTMLDialogElement>("dialog")!.open).toBe(true),
-  );
-  expect(root.querySelector(".score-reader-lyrics")!.textContent).toBe(
-    "<script>lyrics</script>",
-  );
-  expect(root.querySelector("script")).toBeNull();
+it("omits the full-lyrics action and removes controls when runtime disposes", () => {
+  const { root, reader, song } = setup();
+  expect(
+    root.querySelector("#runtime-full-lyrics, .score-reader-lyrics"),
+  ).toBeNull();
+  expect(song.lyricText).toBe("<script>lyrics</script>");
   reader.dispose();
   expect(root.querySelector("dialog")).toBeNull();
   expect(root.querySelector("button")).toBeNull();

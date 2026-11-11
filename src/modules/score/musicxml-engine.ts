@@ -12,7 +12,7 @@ import { installWordsPositions, prepareWordsPositions } from "./words-position";
 
 import type { XMLScore } from "./musicxml-parse";
 import type { Song } from "../../model/model";
-import { installFullScoreMeasureLyrics } from "./full-score-lyrics";
+import { installScoreLyrics, SCORE_LYRIC_COLOR } from "./score-lyrics";
 import {
   fitFullScoreSystems,
   installFullScoreLayout,
@@ -25,6 +25,7 @@ export async function renderMusicXMLEngine(
   parsed: XMLScore,
   timeline?: RibbonSpacing,
   fullScoreSong?: Song,
+  measureLyrics = new Map<number, string>(),
 ) {
   const osmd = new OpenSheetMusicDisplay(host, {
     backend: "svg",
@@ -36,20 +37,21 @@ export async function renderMusicXMLEngine(
     drawMetronomeMarks: false,
     drawMeasureNumbers: !!fullScoreSong,
     drawMeasureNumbersOnlyAtSystemStart: !!fullScoreSong,
-    drawLyrics: !!fullScoreSong,
+    drawLyrics: true,
     drawPartNames: false,
     drawPartAbbreviations: false,
   });
   // XML owns system boundaries; do not impose a fixed measure count.
   osmd.EngravingRules.DefaultFontFamily = SCORE_TEXT_FONT_FAMILY;
   osmd.EngravingRules.VexFlowTextFontFamily = SCORE_TEXT_FONT_FAMILY;
+  osmd.EngravingRules.LyricsHeight = scoreTextHeight(
+    osmd.EngravingRules.RehearsalMarkFontSize + 3,
+  );
+  osmd.EngravingRules.DefaultColorLyrics = SCORE_LYRIC_COLOR;
+  osmd.EngravingRules.HiddenVoicesKeepLayout = true;
+  osmd.EngravingRules.RenderLyricsOfHiddenVoices = true;
   if (fullScoreSong) {
     osmd.EngravingRules.UseXMLMeasureNumbers = true;
-    osmd.EngravingRules.LyricsHeight = scoreTextHeight(
-      osmd.EngravingRules.RehearsalMarkFontSize,
-    );
-    osmd.EngravingRules.HiddenVoicesKeepLayout = true;
-    osmd.EngravingRules.RenderLyricsOfHiddenVoices = true;
   }
   osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 0;
   osmd.EngravingRules.NewSystemAtXMLNewSystemAttribute = true;
@@ -83,8 +85,8 @@ export async function renderMusicXMLEngine(
   const decorations = prepareDrumDecorations(renderDocument);
   const wordsPositions = prepareWordsPositions(renderDocument);
   await osmd.load(renderDocument);
+  const lyricLabels = installScoreLyrics(osmd, measureLyrics, !!timeline);
   if (fullScoreSong) {
-    installFullScoreMeasureLyrics(osmd, fullScoreSong);
     installFullScoreLayout(osmd, fullScoreSong);
   }
   // Translate canonical XML tenths into the engine title-spacing units.
@@ -124,5 +126,5 @@ export async function renderMusicXMLEngine(
   if (fullScoreSong) fitFullScoreSystems(osmd, host);
   applyDrumDecorations(host, osmd, decorations);
 
-  return { osmd, renderDocument, positionedWords };
+  return { osmd, renderDocument, positionedWords, lyricLabels };
 }

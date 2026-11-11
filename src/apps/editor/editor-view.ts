@@ -4,6 +4,8 @@ import {
 } from "../../modules/playback/practice-management";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { dialogHeader } from "../../shared/ui/dialog-ui";
+import { iconButtonHTML } from "../../shared/ui/icon-button";
+import { icon } from "../../shared/ui/icon-svg";
 
 import { scoreStageHTML } from "../../modules/playback/playback-ui";
 
@@ -153,8 +155,14 @@ export function editorHTML() {
     i18nText("main.message205") +
     '</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>\n<dialog id="original-dialog">' +
     dialogHeader(i18nText("main.message206"), "", "original-dialog", "") +
-    '<div id="page-original"></div></dialog><button id="error-notice" class="error-notice" hidden type="button"><strong>' +
+    '<div id="page-original"></div></dialog><div id="error-notice" class="error-notice" hidden><strong>' +
     i18nText("main.message207") +
-    '</strong><span id="error-message" role="alert"></span><span aria-hidden="true">×</span></button>'
+    '</strong><span id="error-message" role="alert"></span>' +
+    iconButtonHTML(
+      "error-notice-close",
+      icon("close"),
+      i18nText("editor-session.message042"),
+    ) +
+    "</div>"
   );
 }

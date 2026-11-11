@@ -3,6 +3,7 @@ import {
   type PracticeFileControlsOptions,
 } from "../library/practice-file-controls";
 import { renderKeepingTopHeader } from "../../shared/ui/top-edge-header";
+import { showCopyableError } from "../../shared/ui/error-notice";
 import { appInfoContent } from "../../shared/ui/app-info";
 import type { RibbonAsset } from "./playback-assets";
 import appVersions from "../../app-versions.json";
@@ -160,7 +161,7 @@ export async function mountPlaybackRuntime(options: PlaybackRuntimeOptions) {
   const status = (message: string, source = "playback") => {
     if (disposed || (!message && noticeSource !== source)) return;
     noticeSource = message ? source : "";
-    $("status").textContent = message;
+    showCopyableError($("status"), message);
     alignNotice();
   };
   // The notice can scroll long errors without selecting or starting a measure.

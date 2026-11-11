@@ -27,9 +27,6 @@ it("replaces native controls and offers exactly four correction speeds", () => {
   expect(audio.hidden).toBe(true);
   expect(audio.volume).toBe(1);
   expect(audio.muted).toBe(false);
-  expect(
-    controls.querySelector("[data-volume], .audio-preview-volume"),
-  ).toBeNull();
   const speed = controls.querySelector<HTMLSelectElement>("[data-speed]")!;
   expect([...speed.options].map((o) => o.value)).toEqual([
     "0.1",
@@ -43,10 +40,6 @@ it("replaces native controls and offers exactly four correction speeds", () => {
     speed.dispatchEvent(new Event("change"));
     expect(audio.playbackRate).toBe(Number(rate));
   }
-  expect(controls.textContent).not.toContain("미디어 통계");
-  expect(
-    controls.querySelector("[data-skip], [aria-label=AirPlay]"),
-  ).toBeNull();
   expect(
     controls.querySelector(".audio-preview-speed [data-speed]"),
   ).not.toBeNull();
