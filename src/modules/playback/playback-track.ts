@@ -37,6 +37,7 @@ export function createPlaybackTrack(
     playbackRowOrigin: 0,
   };
   let fittedRowWidth: number | undefined;
+  let fittedStageWidth: number | undefined;
 
   function position(index: number, beat: number, width: number) {
     const s = h.song(),
@@ -133,16 +134,27 @@ export function createPlaybackTrack(
   }
 
   function rowCellWidth() {
-    if (
-      fittedRowWidth !== undefined &&
-      fittedRowWidth === stage.clientWidth / 4
-    )
+    if (fittedRowWidth !== undefined && fittedStageWidth === stage.clientWidth)
       return fittedRowWidth;
     const song = h.song();
     const s: Song = { ...song, settings: { ...song.settings, view: "rows" } };
-    const base = stage.clientWidth / 4;
-    if (!stage.clientHeight) return base;
     const assets = h.assets();
+    // Reserve the same one-space overhang at the outer viewport edges. The
+    // four equal bar widths and their internal grid coordinates stay intact.
+    const inkRatio =
+      s.scoreFormat === "musicxml" && s.settings.uniformSpacing
+        ? Math.max(
+            0,
+            ...Array.from(assets.ribbon?.values() ?? [], (asset) =>
+              asset.grid
+                ? (asset.grid.staff.gap * asset.grid.ratio) /
+                  asset.grid.region.w
+                : 0,
+            ),
+          )
+        : 0;
+    const base = stage.clientWidth / (4 + 2 * inkRatio);
+    if (!stage.clientHeight) return base;
     const naturalHeight = Math.max(
       s.audioPractice ? 100 : 1,
       ...s.regions.map((region) => {
@@ -187,10 +199,11 @@ export function createPlaybackTrack(
       "--two-row-stage-height",
       `${Math.ceil(fittedHeight * 2 + 56 + 2)}px`,
     );
-    stage.style.setProperty("--fitted-row-width", `${stage.clientWidth}px`);
+    stage.style.setProperty("--fitted-row-width", `${width * 4}px`);
     stage.style.setProperty("--row-content-height", `${fittedHeight}px`);
     stage.style.setProperty("--browse-row-pitch", `${fittedHeight + 28}px`);
     fittedRowWidth = width;
+    fittedStageWidth = stage.clientWidth;
     return width;
   }
   function renderRows(index: number) {

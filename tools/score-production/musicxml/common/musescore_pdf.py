@@ -168,7 +168,8 @@ def extract_measure(page, system, left, right, number, profile):
             )
             for rect in beams
             if rect["x0"] - 0.4 <= stem["x0"] <= rect["x1"] + 0.4
-            and -spacing * 0.3 < rect["top"] - stem["top"] < 2 * spacing
+            # Four beams can reach 2.25 staff spaces below the stem tip.
+            and -spacing * 0.3 < rect["top"] - stem["top"] < 3 * spacing
         ]
         flags = [
             profile["flags"][flag["text"]]
@@ -180,6 +181,13 @@ def extract_measure(page, system, left, right, number, profile):
         if len(flags) > 1 or (hits and flags):
             issues.append(f'Ambiguous flag/beam at {stem["x0"]:.3f}')
         level = len(hits) or (flags[0] if flags else 0)
+        note_type = {0: "quarter", 1: "eighth", 2: "16th", 3: "32nd", 4: "64th"}.get(
+            level
+        )
+        if note_type is None:
+            issues.append(
+                f'Unsupported beam/flag count: measure={number}, x={stem["x0"]:.3f}, actual={level}, supported=0..4'
+            )
         events.append(
             dict(
                 x=stem["x0"],
@@ -189,7 +197,7 @@ def extract_measure(page, system, left, right, number, profile):
                 heads=[head],
                 beams=hits,
                 flag=bool(flags),
-                type={0: "quarter", 1: "eighth", 2: "16th", 3: "32nd"}.get(level),
+                type=note_type,
             )
         )
     events.sort(key=lambda event: event["x"])

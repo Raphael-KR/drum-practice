@@ -5,6 +5,10 @@ import {
   nearestQuarterBeat,
   synchronizeLyricGrid,
   setLyricGrid,
+  lyricGridPoint,
+  lyricGridStep,
+  lyricGridTicks,
+  lyricGridTickForMeasure,
 } from "../../src/modules/lyrics/lyric-grid";
 import type { Song } from "../../src/model/model";
 const fixture = () =>
@@ -83,4 +87,59 @@ it("assigns a shared boundary once despite floating-point bar overlap", () => {
   expect(lyricMeasureId(s, { ...l, grid: { measureId: "a", tick: 16 } })).toBe(
     "b",
   );
+});
+
+it.each([
+  { beats: 4, denominator: 4, step: 0.25, count: 64, last: 15.75 },
+  { beats: 6, denominator: 8, step: 0.5, count: 48, last: 23.5 },
+])("offers exact 64th-note positions in $beats/$denominator", (meter) => {
+  const s = fixture();
+  const m = Object.assign(s.measures[0], {
+    beats: meter.beats,
+    denominator: meter.denominator,
+  });
+  const ticks = lyricGridTicks(m, 0);
+  expect(lyricGridStep(m)).toBe(meter.step);
+  expect(ticks).toHaveLength(meter.count);
+  expect(ticks[1]).toBe(meter.step);
+  expect(ticks.at(-1)).toBe(meter.last);
+
+  const l = s.lyrics[0];
+  l.scorePosition = {
+    measureId: m.id,
+    quarterOffset: 0,
+    durationQuarters: 1 / 16,
+  };
+  setLyricGrid(s, l, { measureId: m.id, tick: meter.step });
+  expect(l.scorePosition).toEqual({
+    measureId: m.id,
+    quarterOffset: 1 / 16,
+    durationQuarters: 1 / 16,
+  });
+});
+
+it("uses exact score positions over stale grid/time and retains triplet options", () => {
+  const s = fixture();
+  const l = s.lyrics[0];
+  l.grid = { measureId: "b", tick: 0 };
+  l.scorePosition = {
+    measureId: "a",
+    quarterOffset: 1 / 3,
+    durationQuarters: 2 / 3,
+  };
+  expect(lyricGridPoint(s, l)).toEqual({ measureId: "a", tick: 4 / 3 });
+  expect(lyricGridTicks(s.measures[0], 4 / 3)).toContain(4 / 3);
+  setLyricGrid(s, l, { measureId: "a", tick: 8 / 3 });
+  expect(l.scorePosition).toEqual({
+    measureId: "a",
+    quarterOffset: 2 / 3,
+    durationQuarters: 2 / 3,
+  });
+});
+
+it("keeps in-range final and fractional ticks when changing measures", () => {
+  const m = fixture().measures[0];
+  expect(lyricGridTickForMeasure(m, 15.75)).toBe(15.75);
+  expect(lyricGridTickForMeasure(m, 4 / 3)).toBe(4 / 3);
+  expect(lyricGridTickForMeasure(m, 20)).toBe(15.75);
 });

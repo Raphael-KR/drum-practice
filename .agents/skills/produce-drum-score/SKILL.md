@@ -9,6 +9,8 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 
 ## 시작과 정본
 
+- [오선 부착 표기의 64분음표 공통 기본 단위](../../../docs/reference/score/production.md#score-production-rules--오선-부착-표기의-공통-기본단위)를 가장 먼저 읽고 모든 표기의 음악적 위치·음가와 허용된 표시 이동에 적용한다. 작성·교정·저장·모든 조판에 적용하며 가사 또는 균등 보기만의 규칙으로 축소하지 않는다. 실행 전 [구현 상태](../../../docs/records/archive/staff-grid64-rule-20261112.md#implementation-status)를 확인해 문서 기준과 도구 지원을 구분한다.
+
 - 곡명만 주어지면 [접수 Rule의 원본 폴더](../../../docs/reference/score/production.md#score-production-rules--접수와-출력)에서 일치하는 PDF·음원을 먼저 찾는다. 한글 파일명은 NFC/NFD 정규화를 고려하고, 사용자가 별도 경로를 지정하면 그 경로를 우선한다. 원본은 읽기만 하며 프로젝트의 Git 제외 제작 폴더에 사본과 해시를 보존한다. 후보가 여러 개이거나 자료가 없을 때만 필요한 확인을 요청한다.
 - 실제 프로젝트 루트에서 작업한다. [전역 지침](/Users/raphael/AGENTS.md), [프로젝트 지침](../../../AGENTS.md), cwd·Git 상태·HEAD를 먼저 확인하고 기존 변경과 로컬 자료를 보존한다.
 - 매 제작 시작 전에 [전체 제작 프로세스](../../../docs/how-to/produce-score.md#score-production-process--악보-제작-프로세스)와 [변환 정책](../../../docs/reference/score/production.md#musicxml-conversion-policy--pdf--musicxml-변환-정책)을 읽는다. 매핑은 [MusicXML·OSMD 매핑](../../../docs/reference/score/notation.md#score-musicxml-osmd-mapping--악보의-musicxml--osmd-매핑-규칙), 표시는 [SVG 규칙](../../../docs/reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙), 저장·가사는 [canonical 계약](../../../docs/reference/score/musicxml.md#musicxml-canonical--musicxml-정본-계약), 패키지는 [완성 파일 계약](../../../docs/reference/score/file-formats.md#score-package--완성-악보-파일-계약--drumscore-v1)을 따른다. 이 스킬은 이 정본들의 대체 매핑을 만들지 않는다.
@@ -58,6 +60,8 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 5. **범위에 맞는 다음 단계.** PDF가 없는 제작에 PDF 유형 검사나 인쇄 가사 대조를 강제하지 않는다. 가사가 있으면 현재 정본의 표준 MusicXML 가사·음악적 위치 계약을 적용한다. 자료와 이전 시도는 프로젝트 안 Git 제외 실험 폴더에 보존하고, 영상 근거와 새 결과를 구별한다.
 
 ## 교정·검증·인계
+
+- [가사 시작점 계약](../../../docs/reference/score/musicxml.md#musicxml-canonical--서로-다른-음절의-시작점)을 읽고 [전수검사·교정 절차](../../../docs/how-to/correct-lyrics.md#lyric-onset-audit)에 따라 `audit_lyric_onsets.py`를 실행한다. 검사 목록·곡별 판독/교정 근거·재읽기 결과를 함께 인계하며 스킬에서 별도 수치 규칙을 만들지 않는다.
 
 - 마디별 시작·음가·동시음·악기·주법·손과 독립 fixture, MusicXML XSD 및 재읽기를 검사한다. 드럼 파트만으로 전곡 길이를 집계한다. 별도 가사 파트의 마디를 더하지 않는다.
 - 요청된 음원은 악보 이벤트·첫 박·카운트오프 OFF/ON·배속을 검사한다. 수치 scheduling, 디코딩, 실제 청취를 각각 기록한다. 합성 결과는 가능하면 동일 입력 재생성도 확인한다.

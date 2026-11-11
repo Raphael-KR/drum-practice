@@ -462,3 +462,21 @@ SoCal EXS에는 키50 zone이 없고 고음 탐 zone은 키48이다. 위 연결�
 - 공통 작성기로 P1의 독립 숨긴 가사 성부에 전환했다. 28마디·가사 0개·가사 구간 0개·성부 없음이며 드럼·가사 시각/음가·겹침/마디 연장·ID/확정 상태·마디 문구·음원 연결은 정적 대조에서 같다.
 - MusicXML 4.0 XSD·독립 XML/유리수 대조·전체 canonical Song 왕복·반복 직렬화 검사 PASS. 가사 없는 곡에는 빈 가사 성부를 만들지 않았다. 제목 의미는 그대로이며 공통 작성기의 movement-title 추가 여부를 별도 기록했다.
 - [일괄 전환·문제 해결·검증 범위](../archive/shared-staff-score-migration-20261110.md). 근거 `data/production/shared-staff-lyrics-20261110/tom-moving/verification.json`. 앱 수록·새 SVG·재생/청취·커밋·배포는 이번 제작 검증에 포함하지 않는다.
+
+
+## 가사 시작점 전수검사 — 2026-11-11
+
+- 현행 입력 `data/production/shared-staff-lyrics-20261110/tom-moving/score.musicxml` (`8beb89826461eb7fd65bff16244e74c4cd01b9478f1656c487650fa876842839`)의 28마디·0음절을 검사했다. 동일 시작 0쌍 → 0쌍. 시작 교정 0개·필요 음가 교정 0개.
+- 기존 정본과 바이트가 같은 검사 사본: `data/production/lyric-onsets-20261111/tom-moving/score.musicxml`, SHA256 `8beb89826461eb7fd65bff16244e74c4cd01b9478f1656c487650fa876842839`. 원본·기존 결과를 보존했다.
+- [전수검사·교정 판단·한계](../archive/lyric-onsets-20261111.md). XSD·유리수 시작/전체 음가·드럼/기타 XML·메타정보·공통 Song 왕복·반복 저장 통과. 실제 출력/청취·앱 수록 완료와 구분한다.
+
+
+<a id="tom-moving-canonical-corrections-20261112"></a>
+
+## 2026-11-12 — 전수 감사 후속 교정
+
+섹션7곳·Pretendard 명시 글꼴을 보완했다. 승인된 작곡 표제와 타격별 R/L288개, 28마디 음악·Portland 음원을 보존했다.
+
+- 최신 제작 경로: `data/production/canonical-corrections-20261112/tom-moving/`. 정본은 `score.musicxml`, 전체 보기는 `full-score.svg`, 패키지는 `tom-moving.drumscore`다. 로컬 수록본 `public/scores/tom-moving.drumscore`와 5173 응답이 인계본과 같은 해시임을 확인했다.
+- 이전 정본과 원본 미디어는 보존했다. 공통 XSD·정확한 음악 시간축·가사/메타정보·패키지 전체 자산 왕복 검사에서 승인된 변경 이외의 음악·음원 연결을 유지했다.
+- 원본 판독·최소 offset·같은 줄·글꼴·실제 화면의 검수 범위, 남은 미확정과 개발자 인계/수록 상태는 [후속 교정 기록](../archive/canonical-corrections-20261112.md)을 따른다. 정본 생성·화면·수록·청취·배포를 같은 상태로 표시하지 않는다.

@@ -365,15 +365,22 @@ def write_xml(bars, path):
             }.get(n),
         ):
             if text:
+                # The source places these instructions at beat 2. Keep the
+                # musical cursor separate from later display-only fitting.
+                applied = 96 if n in (105, 134) else 0
+                if applied:
+                    add(add(m, "forward"), "duration", applied)
                 d = add(m, "direction", placement="above")
                 add(add(d, "direction-type"), "words", text, font_size=10)
+                if applied:
+                    add(add(m, "backup"), "duration", applied)
         # Source wedges span the noted systems; use music offsets, not pixels.
         for typ, off in {
-            48: [("crescendo", 0)],
-            49: [("stop", 4)],
-            96: [("crescendo", 0)],
-            97: [("stop", 4)],
-            110: [("crescendo", 0.5)],
+            48: [("crescendo", 1)],
+            49: [("stop", 3)],
+            96: [("crescendo", 1)],
+            97: [("stop", 3)],
+            110: [("crescendo", 1)],
             111: [("stop", 4)],
             112: [("crescendo", 1)],
             113: [("stop", 1.5)],
@@ -409,6 +416,7 @@ def write_xml(bars, path):
                         0.5: "eighth",
                         0.25: "16th",
                         0.125: "32nd",
+                        0.0625: "64th",
                     }[e["duration"]]
                 )
                 add(note, "type", typ)

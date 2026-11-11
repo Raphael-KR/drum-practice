@@ -1,7 +1,8 @@
 import type { EditorForm } from "../../model/edit-history";
 import type { Song } from "../../model/model";
 import {
-  nearestQuarterBeat,
+  lyricGridPoint,
+  lyricGridTickForMeasure,
   setLyricGrid,
 } from "../../modules/lyrics/lyric-grid";
 import { lyricDurationBeats } from "../../modules/lyrics/lyric-score";
@@ -84,10 +85,7 @@ export function createEditorForm(h: FormHost) {
     const lyrics = song().lyrics.flatMap((l) => {
       const f = (key: string) => current.fields[`lyric:${l.id}:${key}`];
       if (f("text") === undefined) return [];
-      const point = l.grid || {
-        measureId: nearestQuarterBeat(song(), l.time).measure.id,
-        tick: nearestQuarterBeat(song(), l.time).tick,
-      };
+      const point = lyricGridPoint(song(), l);
       const values = {
         id: l.id,
         text: f("text"),
@@ -151,15 +149,22 @@ export function createEditorForm(h: FormHost) {
       }
       for (const v of lyrics) {
         const l = s.lyrics.find((l) => l.id === v.id)!;
+        const point = lyricGridPoint(s, l);
+        const durationChanged = v.duration !== lyricDurationBeats(s, l);
         l.text = v.text;
         l.confirmed = v.confirmed;
         const m = s.measures.find((m) => m.id === v.measureId);
         if (!m) throw Error(i18nText("main.message368"));
-        setLyricGrid(s, l, {
-          measureId: m.id,
-          tick: Math.min(m.beats * 4 - 1, v.tick),
-        });
-        l.scorePosition!.durationQuarters = (v.duration * 4) / m.denominator;
+        if (m.id !== point.measureId || v.tick !== point.tick)
+          setLyricGrid(s, l, {
+            measureId: m.id,
+            tick:
+              m.id === point.measureId
+                ? v.tick
+                : lyricGridTickForMeasure(m, v.tick),
+          });
+        if (durationChanged)
+          l.scorePosition!.durationQuarters = (v.duration * 4) / m.denominator;
       }
     });
     renderLyricEditor(false);

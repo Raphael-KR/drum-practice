@@ -1,11 +1,17 @@
 /** Read-only SVG measurements and MusicXML display-only offset fitting. */
-import { renderMusicXML } from "/src/modules/score/musicxml.ts";
+import {
+  renderMusicXML,
+  renderPrintedScore,
+} from "/src/modules/score/musicxml.ts";
 import { displayPage } from "/src/modules/score/score-pages.ts";
 import { SCORE_RENDER_POLICY } from "/src/modules/score/score-render-cache.ts";
 import { SCORE_TEXT_FONT_FAMILY } from "/src/modules/score/score-text-font.ts";
 
 const STEP = 1 / 16;
 const EPS = 1e-5;
+// Native stave path coordinates serialize to hundredths; rect bounds retain
+// their unrounded values. This tolerance applies only to that alignment check.
+const STAFF_PATH_ROUNDING = 0.005 + EPS;
 const fail = (label, actual) => {
   throw Error(`${label}: actual=${JSON.stringify(actual)}`);
 };
@@ -99,12 +105,19 @@ function inputs(xml) {
           "direction-type > rehearsal",
         )) {
           rehearsal.setAttribute("default-x", "0");
+          rehearsal.setAttribute("relative-x", "0");
           rehearsal.setAttribute("halign", "left");
           rehearsal.setAttribute("justify", "left");
           sections.push({ measure: index + 1, text: rehearsal.textContent });
         }
         const words = child.querySelector("direction-type > words");
-        if (!words || /^\s*BPM\s*[:=]?\s*\d/i.test(words.textContent)) continue;
+        if (
+          !words ||
+          /^\s*BPM\s*[:=]?\s*\d/i.test(words.textContent) ||
+          /^[RL]$/.test(words.textContent.trim())
+        )
+          // Tempo and sticking use dedicated mappings, not free instruction placement.
+          continue;
         if (
           child.querySelector("sound,listening") ||
           words.hasAttribute("default-x")
@@ -116,6 +129,9 @@ function inputs(xml) {
         if (!Number.isFinite(divisions) || divisions <= 0)
           fail("Invalid divisions", { measure: index + 1, divisions });
         const previousOffset = child.querySelector("offset");
+        const priorDisplayOffsetQuarter = previousOffset
+          ? Number(previousOffset.textContent) / divisions
+          : 0;
         if (previousOffset?.getAttribute("sound") === "yes")
           fail("Review performance offset before fitting display", {
             measure: index + 1,
@@ -130,6 +146,7 @@ function inputs(xml) {
           appliedQuarter: cursor,
           divisions,
           meter,
+          priorDisplayOffsetQuarter,
           element: child,
           words,
           baseRelativeY: Number(words.getAttribute("relative-y") || 0),
@@ -141,6 +158,25 @@ function inputs(xml) {
     meters.push(meter);
   });
   return { document, directions, sections, meters };
+}
+
+/** Inspect an existing full/printed render without fitting or rewriting its XML. */
+export async function inspectDirectionLayout(xml, rendered) {
+  const expected = inputs(xml);
+  for (const direction of expected.directions)
+    direction.steps = direction.priorDisplayOffsetQuarter / STEP;
+  const layout = await measure(rendered, expected);
+  const failures = layout.directions.filter(
+    (d) => d.collisions.length || !d.withinSystem || !d.withinPage,
+  );
+  return {
+    status: failures.length ? "FAIL" : "PASS",
+    sections: layout.sections,
+    directions: layout.directions,
+    failures,
+    scope:
+      "Actual rendered section borders, instruction ink and notation; no refit",
+  };
 }
 
 function setHeight(direction, tenths) {
@@ -225,16 +261,28 @@ async function measure(rendered, expected) {
       // Inserting embedded @font-face starts a new load after the previous ready.
       svg.getBBox();
       await document.fonts.ready;
-      const measures = [...svg.querySelectorAll(".vf-measure")];
+      // OSMD's suffix x marks a courtesy-instruction fragment, not a score bar.
+      const isScoreMeasure = (g) => !/^osmd-m\d+x-\d+$/.test(g.id);
+      const measures = [...svg.querySelectorAll(".vf-measure")].filter(
+        isScoreMeasure,
+      );
+      const measureIndex = (g) => {
+        const note = g.querySelector("[data-note-measure]");
+        if (note) return Number(note.getAttribute("data-note-measure"));
+        const nativeId = /^osmd-m(\d+)-\d+$/.exec(g.id);
+        if (nativeId) return Number(nativeId[1]);
+        if (/^\d+$/.test(g.id)) return Number(g.id) - 1;
+        fail("Measure index missing", {
+          id: g.id,
+          class: g.getAttribute("class"),
+        });
+      };
       const findMeasure = (n) =>
-        measures.find(
-          (g) =>
-            g.querySelector(`[data-note-measure="${n - 1}"]`) ||
-            g.id === String(n),
-        );
+        measures.find((g) => measureIndex(g) === n - 1);
       const staff = (g) => {
         const lines = [];
-        for (const p of g.children) {
+        const stave = g.querySelector(":scope > .vf-stave") || g;
+        for (const p of stave.children) {
           const d = p.getAttribute("d") || "";
           if (!/^M[\d. -]+L[\d. -]+$/.test(d)) continue;
           const v = d.match(/-?\d+(?:\.\d+)?/g).map(Number);
@@ -278,9 +326,9 @@ async function measure(rendered, expected) {
       for (const s of expected.sections) {
         const g = findMeasure(s.measure);
         if (!g) continue;
-        const text = [...g.children].find(
-          (e) => e.tagName === "text" && e.textContent === s.text,
-        );
+        const text = [
+          ...g.querySelectorAll(".vf-stavesection > text, :scope > text"),
+        ].find((e) => e.textContent === s.text);
         if (!text) fail("Section text missing", s);
         let frame = text.previousElementSibling;
         if (frame?.tagName === "path" && !frame.getAttribute("d"))
@@ -300,12 +348,13 @@ async function measure(rendered, expected) {
           labelBounds.y + labelBounds.h <= bounds.y + bounds.h + EPS;
         if (!labelInsideFrame)
           fail("Section text outside frame", { ...s, bounds, labelBounds });
-        if (Math.abs(error) > EPS)
+        if (Math.abs(error) > STAFF_PATH_ROUNDING)
           fail("Section not at staff start", {
             ...s,
             bounds,
             staff: line,
             error,
+            maximumSerializationError: STAFF_PATH_ROUNDING,
           });
         sections.push({
           ...s,
@@ -322,7 +371,9 @@ async function measure(rendered, expected) {
         const g = findMeasure(d.measure);
         if (!g) continue;
         const line = staff(g),
-          system = g.closest(".staffline");
+          system = g.closest(".osmd-staffline, .staffline");
+        if (!system)
+          fail("Staff system missing", { measure: d.measure, id: g.id });
         const candidates = [...system.querySelectorAll("g.vf-text > text")]
           .filter((t) => t.textContent === d.text && !used.has(t))
           .sort(
@@ -334,14 +385,11 @@ async function measure(rendered, expected) {
         // Preserve the native text overhang at the original applied beat.
         // The section frame has a staff-edge anchor; words do not share it.
         if (!d.nativeLeft && d.nativeLeft !== 0) d.nativeLeft = bounds.x;
-        const systemMeasures = [...system.querySelectorAll(".vf-measure")];
+        const systemMeasures = [
+          ...system.querySelectorAll(".vf-measure"),
+        ].filter(isScoreMeasure);
         const systemStaves = systemMeasures.map(staff);
-        const systemIndices = systemMeasures.map((m) => {
-          const note = m.querySelector("[data-note-measure]");
-          return note
-            ? Number(note.getAttribute("data-note-measure"))
-            : Number(m.id) - 1;
-        });
+        const systemIndices = systemMeasures.map(measureIndex);
         const systemLast = Math.max(...systemIndices);
         const remainingQuarters =
           expected.meters
@@ -438,27 +486,38 @@ async function measure(rendered, expected) {
     notes,
     regions: rendered.regions,
     parsed: rendered.parsed,
+    packagePages: rendered.pages,
   };
 }
 
 /** Sequential 0,1/16,... trials. Source direction cursor remains the applied beat. */
 export async function fitDirectionOffsets(xml, progress = () => {}) {
   const expected = inputs(xml),
-    trials = [];
-  const render = async (label) => {
+    trials = [],
+    renderTimes = [];
+  const render = async (label, includePractice = false) => {
     progress({
       label,
       offsets: expected.directions.map((d) => d.steps * STEP),
       trials: trials.length,
     });
-    const rendered = await renderMusicXML(
+    const started = performance.now();
+    const rendered = await (
+      includePractice ? renderMusicXML : renderPrintedScore
+    )(
       new Blob([serialize(expected.document)], {
         type: "application/vnd.recordare.musicxml+xml",
       }),
       () => {},
       "P1",
     );
-    return measure(rendered, expected);
+    const measured = await measure(rendered, expected);
+    renderTimes.push({
+      label,
+      includePractice,
+      milliseconds: performance.now() - started,
+    });
+    return measured;
   };
   let final;
   for (let round = 0; round <= 512; round++) {
@@ -591,7 +650,7 @@ export async function fitDirectionOffsets(xml, progress = () => {}) {
     setOffset(input, selectedSteps[index]);
   }
   // Reopen the saved XML through the public renderer; no SVG position edits.
-  const reopened = await render("final reopen");
+  const reopened = await render("final reopen", true);
   if (
     reopened.directions.some(
       (d) => d.collisions.length || !d.withinSystem || !d.withinPage,
@@ -645,6 +704,7 @@ export async function fitDirectionOffsets(xml, progress = () => {}) {
   return {
     xml: value,
     pages: reopened.pages,
+    packagePages: reopened.packagePages,
     regions: reopened.regions,
     report: {
       status: "PASS",
@@ -667,6 +727,7 @@ export async function fitDirectionOffsets(xml, progress = () => {}) {
       previousStep: previous,
       minimumProof,
       trials,
+      renderTimes,
       wordCollisions,
       warnings: reopened.parsed.warnings,
       noteReopen: "unchanged",

@@ -121,6 +121,7 @@ export function practiceStaffLayout(
   const sourceMiddle = (staff.top + 2 * staff.gap) * pageHeight;
   return {
     height: gap * frameHeight,
+    gap,
     staffMiddle,
     size: `${pageWidth}px ${pageHeight}px`,
     // Align the third staff line, independently of each system's ink margins.

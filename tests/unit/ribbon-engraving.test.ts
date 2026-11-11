@@ -235,7 +235,7 @@ it("engraves sparse and dense bars on identical fixed grid coordinates without s
     };
   }
   const sparse = bar([0, 1, 2, 3]),
-    dense = bar(Array.from({ length: 32 }, (_, i) => i / 8));
+    dense = bar(Array.from({ length: 64 }, (_, i) => i / 16));
   const calc = { calculateMeasureXLayout: () => 0 };
   installRibbonEngraving(
     { GraphicSheet: { GetCalculator: calc } } as unknown as Parameters<
@@ -256,11 +256,12 @@ it("engraves sparse and dense bars on identical fixed grid coordinates without s
   }
   expect(sparse.xs).toEqual([
     dense.xs[0],
-    dense.xs[8],
     dense.xs[16],
-    dense.xs[24],
+    dense.xs[32],
+    dense.xs[48],
   ]);
-  expect(dense.xs[0] + 6).toBeCloseTo(5);
-  expect(dense.xs[31] + 6).toBeCloseTo(315);
-  expect(320 + dense.xs[0] - dense.xs[31]).toBeCloseTo(10);
+  // A 4/4 bar has 64 cells; note heads sit at the centers of 5 px cells.
+  expect(dense.xs[0] + 6).toBeCloseTo(2.5);
+  expect(dense.xs[63] + 6).toBeCloseTo(317.5);
+  expect(320 + dense.xs[0] - dense.xs[63]).toBeCloseTo(5);
 });

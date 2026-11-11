@@ -1,4 +1,5 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
+import { NOTATION_STEPS_PER_QUARTER } from "../../model/notation-grid";
 import {
   beatTime,
   measureBeatAt,
@@ -9,8 +10,42 @@ import {
 } from "../../model/model";
 export interface GridPoint {
   measureId: string;
+  /** Retain the stored quarter-beat unit; do not reinterpret old integer ticks. */
   tick: number;
 }
+/** One 64th in the existing tick unit, including meters whose beat is not a quarter. */
+export function lyricGridStep(measure: Pick<Measure, "denominator">) {
+  return measure.denominator / NOTATION_STEPS_PER_QUARTER;
+}
+/** Clamp only when moving beyond a shorter bar; preserve finer values inside it. */
+export function lyricGridTickForMeasure(measure: Measure, tick: number) {
+  const end = measure.beats * 4;
+  return tick > end ? end - lyricGridStep(measure) : tick;
+}
+/** Read musical position first; playback seconds and legacy grid are projections. */
+export function lyricGridPoint(song: Song, lyric: Lyric): GridPoint {
+  const position = lyric.scorePosition;
+  const measure = song.measures.find((m) => m.id === position?.measureId);
+  if (position && measure)
+    return {
+      measureId: measure.id,
+      tick: position.quarterOffset * measure.denominator,
+    };
+  if (lyric.grid) return { ...lyric.grid };
+  const nearest = nearestQuarterBeat(song, lyric.time);
+  return { measureId: nearest.measure.id, tick: nearest.tick };
+}
+/** Add the exact source value to the choices when it is a tuplet or a bar boundary. */
+export function lyricGridTicks(measure: Measure, current: number) {
+  const step = lyricGridStep(measure);
+  const ticks = Array.from(
+    { length: Math.ceil((measure.beats * 4) / step) },
+    (_, i) => i * step,
+  );
+  if (!ticks.includes(current)) ticks.push(current);
+  return ticks.sort((a, b) => a - b);
+}
+/** Kept for quick position copying and legacy time-only migration, not score precision. */
 export function nearestQuarterBeat(song: Song, time: number) {
   if (!Number.isFinite(time) || !song.measures.length)
     throw Error(i18nText("lyric-grid.message087"));
@@ -38,7 +73,9 @@ export function gridLabel(measure: Measure, tick: number) {
   return i18nText("lyric-grid.message089", {
     value1: measure.label,
     value2: Math.floor(tick / 4) + 1,
-    value3: ["", " + ¼", " + ½", " + ¾"][tick % 4],
+    value3: Number.isInteger(tick)
+      ? ["", " + ¼", " + ½", " + ¾"][tick % 4]
+      : " + " + String((tick % 4) / 4),
   });
 }
 export function setLyricGrid(song: Song, lyric: Lyric, point: GridPoint) {
@@ -46,11 +83,14 @@ export function setLyricGrid(song: Song, lyric: Lyric, point: GridPoint) {
   if (
     !m ||
     !Number.isFinite(point.tick) ||
-    (!lyric.scorePosition && !Number.isInteger(point.tick)) ||
+    (!lyric.scorePosition &&
+      !Number.isInteger(point.tick / lyricGridStep(m))) ||
     point.tick < 0 ||
     point.tick > m.beats * 4
   )
-    throw Error(i18nText("lyric-grid.message090"));
+    throw Error(
+      `${i18nText("lyric-grid.message090")} measure=${point.measureId}, tick=${point.tick}, range=0..${m ? m.beats * 4 : "missing"}`,
+    );
   lyric.originalTime ??= lyric.time;
   const nextTime = beatTime(m, point.tick / 4),
     delta = nextTime - lyric.time;
