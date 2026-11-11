@@ -1,5 +1,9 @@
 import {
-  nearestQuarterBeat,
+  gridLabel,
+  lyricGridPoint,
+  lyricGridStep,
+  lyricGridTickForMeasure,
+  lyricGridTicks,
   setLyricGrid,
 } from "../../modules/lyrics/lyric-grid";
 import {
@@ -33,8 +37,7 @@ export function createLyricEditor(h: LyricEditorHost) {
     renderLyricEditor(lyricNear, true);
   });
   function lyricGridEditor(l: Song["lyrics"][number]) {
-    const p = nearestQuarterBeat(song(), l.time),
-      point = l.grid || { measureId: p.measure.id, tick: p.tick };
+    const point = lyricGridPoint(song(), l);
     const m = song().measures.find((m) => m.id === point.measureId)!;
     const measures = song()
       .measures.map(
@@ -48,31 +51,27 @@ export function createLyricEditor(h: LyricEditorHost) {
           "</option>",
       )
       .join("");
-    const exact = Number.isInteger(point.tick)
-      ? ""
-      : '<option selected value="' +
-        String(point.tick) +
-        '">' +
-        i18nText("main.message317", {
-          value2: (point.tick / 4 + 1).toFixed(4),
-        }) +
-        "</option>";
-    const ticks =
-      exact +
-      Array.from(
-        { length: m.beats * 4 },
-        (_, tick) =>
+    const ticks = lyricGridTicks(m, point.tick)
+      .map(
+        (tick) =>
           '<option value="' +
           String(tick) +
           '" ' +
           String(tick === point.tick ? "selected" : "") +
           ">" +
-          i18nText("main.message318", {
-            value3: Math.floor(tick / 4) + 1,
-            value4: ["", " + ¼", " + ½", " + ¾"][tick % 4],
-          }) +
+          (tick === m.beats * 4
+            ? gridLabel(m, tick)
+            : Number.isInteger(tick / lyricGridStep(m))
+              ? i18nText("main.message318", {
+                  value3: tick / 4 + 1,
+                  value4: "",
+                })
+              : i18nText("main.message317", {
+                  value2: tick / 4 + 1,
+                })) +
           "</option>",
-      ).join("");
+      )
+      .join("");
     return (
       '<div class="lyric-grid-controls"><select data-field="grid-measure" aria-label="' +
       i18nText("main.message319") +
@@ -84,6 +83,15 @@ export function createLyricEditor(h: LyricEditorHost) {
       String(ticks) +
       "</select></div>"
     );
+  }
+  function durationStep(l: Song["lyrics"][number]) {
+    const point = lyricGridPoint(song(), l);
+    const measure = song().measures.find((m) => m.id === point.measureId)!;
+    const step = lyricGridStep(measure) / 4;
+    // Native arrows use the base unit; existing tuplets stay valid numeric input.
+    return Number.isInteger(lyricDurationBeats(song(), l) / step)
+      ? step
+      : "any";
   }
   function renderLyricEditor(near: boolean, keepPage = false) {
     if (!keepPage) lyricPage = 0;
@@ -119,7 +127,9 @@ export function createLyricEditor(h: LyricEditorHost) {
           i18nText("main.message279") +
           '"></td><td>' +
           String(lyricGridEditor(l)) +
-          '</td><td><input data-field="duration-beats" type="number" min="0.0001" step="0.25" value="' +
+          '</td><td><input data-field="duration-beats" type="number" min="0" step="' +
+          String(durationStep(l)) +
+          '" value="' +
           String(lyricDurationBeats(song(), l)) +
           '" aria-label="' +
           i18nText("main.message322") +
@@ -149,19 +159,16 @@ export function createLyricEditor(h: LyricEditorHost) {
         const l = s.lyrics.find((l) => l.id === id)!;
         if (field === "text") l.text = input.value;
         if (field === "grid-measure" || field === "grid-tick") {
-          const point = l.grid || {
-            measureId: nearestQuarterBeat(s, l.time).measure.id,
-            tick: nearestQuarterBeat(s, l.time).tick,
-          };
+          const point = lyricGridPoint(s, l);
           const measureId =
             field === "grid-measure" ? input.value : point.measureId;
           const measure = s.measures.find((m) => m.id === measureId)!;
           setLyricGrid(s, l, {
             measureId,
-            tick: Math.min(
-              measure.beats * 4 - 1,
-              field === "grid-tick" ? Number(input.value) : point.tick,
-            ),
+            tick:
+              field === "grid-tick"
+                ? Number(input.value)
+                : lyricGridTickForMeasure(measure, point.tick),
           });
         }
         if (field === "duration-beats") {

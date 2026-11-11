@@ -246,7 +246,7 @@ overrides:
 packageExtensionsChecksum: sha256-j8J21zjOrluitEca5lkOd9l4CQ0m5W/7+GRrKTiB1uQ=
 
 patchedDependencies:
-  opensheetmusicdisplay@2.3.0: 6bc793bda7294b679ab12a96a0aec70f3da610f81620edc775a37a327b2ebdab
+  opensheetmusicdisplay@2.3.0: 964f4840e646ba72af37fa621dff4d3984f0871dc16a0eed14b2793376491792
 
 importers:
 
@@ -263,7 +263,7 @@ importers:
         version: 1.0.3
       opensheetmusicdisplay:
         specifier: 'catalog:'
-        version: 2.3.0(patch_hash=6bc793bda7294b679ab12a96a0aec70f3da610f81620edc775a37a327b2ebdab)
+        version: 2.3.0(patch_hash=964f4840e646ba72af37fa621dff4d3984f0871dc16a0eed14b2793376491792)
       pdfjs-dist:
         specifier: 'catalog:'
         version: 6.5.438
@@ -3208,7 +3208,7 @@ snapshots:
 
   obug@3.0.0: {}
 
-  opensheetmusicdisplay@2.3.0(patch_hash=6bc793bda7294b679ab12a96a0aec70f3da610f81620edc775a37a327b2ebdab):
+  opensheetmusicdisplay@2.3.0(patch_hash=964f4840e646ba72af37fa621dff4d3984f0871dc16a0eed14b2793376491792):
     dependencies:
       '@types/vexflow': 1.2.42
       jszip: 3.10.2

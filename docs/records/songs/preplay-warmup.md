@@ -167,3 +167,21 @@ S=C5/GM38, H=E5/GM50, M=D5/GM47, F=A4/GM43. SoCal 내부 하이 탐 key48은 음
 - 기존 공통 `prepareBrowserScore`·`prepareFullScore` 경로는 정본 XML로 조판하고 캐시 키에 XML을 포함한다. 제목 변경으로 새 키를 사용하므로 이번 반영을 위한 앱 보정이나 캐시 정책 변경은 추가하지 않았다. 패키지 안의 과거 SVG는 재생성하지 않았으며 새 제목의 검증된 출력으로 간주하지 않는다.
 - 브라우저 저장소를 직접 변경하지 않았다. 드럼연습실 기본 연습곡의 기존 열기 경로는 패키지를 다시 내려받아 정본 변경을 비교한다. 실제 화면·재생·저장/재열기와 제작기의 기존 저장본 갱신은 이번 정적 검사 결과에 포함하지 않는다. 커밋·푸시·발행하지 않았다.
 - 변경 전 사본과 항목별 대조 결과: `.tmp/preplay-warmup-title-integration-20261111/{before,verification.json}`. 문서·링크·앵커·서식 및 빌드번호 갱신 결과는 같은 폴더의 `static-check.log`와 [변경 기록](../../../history.md)에 남긴다.
+
+
+## 가사 시작점 전수검사 — 2026-11-11
+
+- 현행 입력 `data/production/preplay-warmup-title-20261111/score.musicxml` (`c2dbe84f4ad515c01b9a989cc19563a1be3a91c1fdf1b4f9df391e3e886ff1a0`)의 96마디·0음절을 검사했다. 동일 시작 0쌍 → 0쌍. 시작 교정 0개·필요 음가 교정 0개.
+- 기존 정본과 바이트가 같은 검사 사본: `data/production/lyric-onsets-20261111/preplay-warmup/score.musicxml`, SHA256 `c2dbe84f4ad515c01b9a989cc19563a1be3a91c1fdf1b4f9df391e3e886ff1a0`. 원본·기존 결과를 보존했다.
+- [전수검사·교정 판단·한계](../archive/lyric-onsets-20261111.md). XSD·유리수 시작/전체 음가·드럼/기타 XML·메타정보·공통 Song 왕복·반복 저장 통과. 실제 출력/청취·앱 수록 완료와 구분한다.
+
+
+<a id="preplay-warmup-canonical-corrections-20261112"></a>
+
+## 2026-11-12 — 전수 감사 후속 교정
+
+섹션6곳·Pretendard 명시 글꼴을 보완했다. 승인된 작곡 표제와 타격별 R/L880개, 96마디 음악·SoCal 음원을 보존했다.
+
+- 최신 제작 경로: `data/production/canonical-corrections-20261112/preplay-warmup/`. 정본은 `score.musicxml`, 전체 보기는 `full-score.svg`, 패키지는 `preplay-warmup.drumscore`다. 로컬 수록본 `public/scores/preplay-warmup.drumscore`와 5173 응답이 인계본과 같은 해시임을 확인했다.
+- 이전 정본과 원본 미디어는 보존했다. 공통 XSD·정확한 음악 시간축·가사/메타정보·패키지 전체 자산 왕복 검사에서 승인된 변경 이외의 음악·음원 연결을 유지했다.
+- 원본 판독·최소 offset·같은 줄·글꼴·실제 화면의 검수 범위, 남은 미확정과 개발자 인계/수록 상태는 [후속 교정 기록](../archive/canonical-corrections-20261112.md)을 따른다. 정본 생성·화면·수록·청취·배포를 같은 상태로 표시하지 않는다.

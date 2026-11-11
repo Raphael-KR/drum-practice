@@ -31,6 +31,9 @@ export function renderMeasure({
 }: MeasureView) {
   const height =
     layout?.height ?? (width > 1 ? (width / r.w) * r.h * pageRatio : 165);
+  // A 64th-grid half-cell can be narrower than a notehead. Keep the musical
+  // viewport fixed and allow one staff space of ink across its side edges.
+  const bleed = isSVG && s.settings.uniformSpacing ? (layout?.gap ?? 0) : 0;
   // Two-row alignment keeps a shared height; mask ink outside this source system.
   let trim = "";
   if (layout) {
@@ -38,7 +41,7 @@ export function renderMeasure({
     const offset = parseFloat(layout.position.split(" ")[1]);
     const top = Math.max(0, r.y * pageHeight + offset);
     const bottom = Math.max(0, height - ((r.y + r.h) * pageHeight + offset));
-    trim = `clip-path:inset(${top}px 0 ${bottom}px 0);`;
+    trim = `clip-path:inset(${top}px ${-bleed}px ${bottom}px ${-bleed}px);`;
   }
   // CSS background images can round large SVG pages and their offsets
   // independently. A shared SVG viewport keeps the third staff line aligned.
@@ -79,7 +82,9 @@ export function renderMeasure({
     String(m.beats) +
     "/" +
     String(m.denominator) +
-    '</small></span><div class="crop"' +
+    '</small></span><div class="crop' +
+    (bleed ? " has-ink-overhang" : "") +
+    '"' +
     (layout ? ` data-staff-middle="${layout.staffMiddle}"` : "") +
     ' style="' +
     String(trim) +

@@ -15,5 +15,24 @@
   "tupletNotes": 9,
   "tupletEdges": 6,
   "accents": 1,
-  "basis": "Independently read printed rhythms; measure 135 retains twelve printed eighths as six quarters. See RED-SUNSET-PRODUCTION.md."
+  "wedges": [
+    { "measure": 48, "type": "crescendo", "quarterOffset": 1 },
+    { "measure": 49, "type": "stop", "quarterOffset": 3 },
+    { "measure": 96, "type": "crescendo", "quarterOffset": 1 },
+    { "measure": 97, "type": "stop", "quarterOffset": 3 },
+    { "measure": 110, "type": "crescendo", "quarterOffset": 1 },
+    { "measure": 111, "type": "stop", "quarterOffset": 4 },
+    { "measure": 112, "type": "crescendo", "quarterOffset": 1 },
+    { "measure": 113, "type": "stop", "quarterOffset": 1.5 }
+  ],
+  "wordApplications": [
+    { "measure": 105, "text": "H.H OPEN (o) →", "quarterOffset": 1 },
+    {
+      "measure": 134,
+      "text": "손발 안맞춰도 좋으니 맘껏 후려주세요!",
+      "quarterOffset": 1
+    }
+  ],
+  "directionBasis": "Independent PDF line/note-coordinate review: docs/records/archive/canonical-rule-audit-20261112.md sections 1-2; source PDF SHA256 20f9b136b03a8a547f952f1543aa57983777f702f0e09168d1cb8fb6043c9112. Beats are counted from 1, quarterOffset from 0. The approved 112-113 span is retained.",
+  "basis": "Independently read printed rhythms; measure 135 retains twelve printed eighths as six quarters. See docs/records/songs/red-sunset.md."
 }

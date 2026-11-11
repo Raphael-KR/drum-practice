@@ -4,9 +4,50 @@ import argparse
 import base64
 import gzip
 import json
+import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from .artifacts import profile
+
+
+def read_render_gzip(output, artifact_id):
+    """Read one received SVG page, checking chunk order and gzip integrity."""
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", artifact_id):
+        raise ValueError(
+            f"Unsafe artifactId: expected=[a-z0-9][a-z0-9-]{{0,63}}, actual={artifact_id!r}"
+        )
+    folder = Path(output) / artifact_id / "osmd-render"
+    page = folder / "page-1.svg"
+    if page.is_file():
+        return gzip.compress(page.read_bytes(), mtime=0)
+    info = json.loads((folder / "render.json").read_text())
+    parts = info["encodedPageParts"]
+    if not parts or len(set(parts)) != len(parts):
+        raise ValueError(
+            f"Page chunks: expected=nonempty unique list, actual={parts!r}"
+        )
+    encoded = []
+    for index, part in enumerate(parts):
+        if part != f"{artifact_id}-part-{index + 1}":
+            raise ValueError(
+                f"Page chunk identity/order: expected={artifact_id}-part-{index + 1}, actual={part!r}"
+            )
+        chunk = json.loads(
+            (Path(output) / part / "osmd-render/render.json").read_text()
+        )
+        if chunk["index"] != index or chunk["total"] != len(parts):
+            raise ValueError(
+                f"Page chunk index/count: expected=({index}, {len(parts)}), actual=({chunk['index']}, {chunk['total']})"
+            )
+        encoded.append(chunk["encodedPageChunk"])
+    value = "".join(encoded)
+    if len(value) != info["base64Length"]:
+        raise ValueError(
+            f"Page chunk total length: expected={info['base64Length']}, actual={len(value)}"
+        )
+    packed = base64.b64decode(value, validate=True)
+    gzip.decompress(packed)  # gzip CRC and complete-stream verification
+    return packed
 
 
 def write_artifacts(output, route, payload, stem):
@@ -41,7 +82,7 @@ def write_artifacts(output, route, payload, stem):
         )
 
 
-def serve(output, port, song, routes=None):
+def serve(output, port, song, routes=None, per_score=False):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     config = profile(song)
@@ -67,10 +108,22 @@ def serve(output, port, song, routes=None):
                 if not 0 < size <= 40_000_000:
                     self.send_error(413)
                     return
+                payload = json.loads(self.rfile.read(size))
+                target = output
+                if per_score:
+                    identity = payload.pop("artifactId", "")
+                    if not isinstance(identity, str) or not re.fullmatch(
+                        r"[a-z0-9][a-z0-9-]{0,63}", identity
+                    ):
+                        raise ValueError(
+                            f"Per-score artifactId: expected=[a-z0-9][a-z0-9-]{{0,63}}, actual={identity!r}"
+                        )
+                    target = output / identity
+                    target.mkdir(exist_ok=True)
                 write_artifacts(
-                    output,
+                    target,
                     self.path,
-                    json.loads(self.rfile.read(size)),
+                    payload,
                     config["packageStem"],
                 )
             except FileExistsError as error:
@@ -99,9 +152,20 @@ def cli(song):
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--port", type=int, default=profile(song)["evidencePort"])
     parser.add_argument(
+        "--per-score",
+        action="store_true",
+        help="Save each render payload under its safe artifactId; keep the request limit",
+    )
+    parser.add_argument(
         "--render-only",
         action="store_true",
         help="Save SVG evidence without creating an audio package",
     )
     args = parser.parse_args()
-    serve(args.out, args.port, song, routes=("/render",) if args.render_only else None)
+    serve(
+        args.out,
+        args.port,
+        song,
+        routes=("/render",) if args.render_only else None,
+        per_score=args.per_score,
+    )

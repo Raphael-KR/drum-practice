@@ -34,6 +34,48 @@ export async function saveEvidence(endpoint, data, port) {
       `Evidence receiver: endpoint=${endpoint}, port=${port}, status=${response.status}`,
     );
 }
+
+/** Transport one existing gzip page without exceeding the receiver's request limit. */
+export async function saveRenderPage(encoded, artifactId, metadata, port) {
+  const chunkLength = 16_000_000;
+  if (encoded.length <= chunkLength)
+    return saveEvidence(
+      "render",
+      { ...metadata, artifactId, pages: [encoded] },
+      port,
+    );
+  const parts = [];
+  const total = Math.ceil(encoded.length / chunkLength);
+  for (let index = 0; index < total; index++) {
+    const id = `${artifactId}-part-${index + 1}`;
+    await saveEvidence(
+      "render",
+      {
+        artifactId: id,
+        pages: [],
+        encodedPageChunk: encoded.slice(
+          index * chunkLength,
+          (index + 1) * chunkLength,
+        ),
+        index,
+        total,
+      },
+      port,
+    );
+    parts.push(id);
+  }
+  return saveEvidence(
+    "render",
+    {
+      ...metadata,
+      artifactId,
+      pages: [],
+      encodedPageParts: parts,
+      base64Length: encoded.length,
+    },
+    port,
+  );
+}
 function equal(actual, expected, field) {
   const a = JSON.stringify(actual),
     e = JSON.stringify(expected);

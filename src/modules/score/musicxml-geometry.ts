@@ -3,7 +3,8 @@ import type { VexFlowMeasure } from "opensheetmusicdisplay/build/dist/src/Musica
 import { type Region } from "../../model/model";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { MUSICXML_TOP_SPACES } from "./practice-staff-layout";
-import { gridPosition, type RibbonSpacing } from "./ribbon-engraving";
+import type { RibbonSpacing } from "./ribbon-engraving";
+import { gridPhase } from "./ribbon-timeline";
 import type { installWordsPositions } from "./words-position";
 import type { installScoreLyrics } from "./score-lyrics";
 
@@ -190,13 +191,10 @@ export function extractMusicXMLRegions(
       timeline?.fixedGrid
         ? Math.min(
             1,
-            (gridPosition(
+            gridPhase(
               (b * 4) / meta.denominator,
               (meta.beats * 4) / meta.denominator,
-              timeline.rowWidth!,
-            ) +
-              6) /
-              timeline.rowWidth!,
+            ),
           )
         : interpolateX(points, b),
     );

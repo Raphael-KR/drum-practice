@@ -231,11 +231,6 @@ body.has-song:has(.drawer-playback) {
 .drawer-playback #status:empty {
   display: none;
 }
-.drawer-playback #practice.two-rows .ribbon {
-  width: var(--fitted-row-width, 100%);
-  left: 50%;
-  translate: -50% 0;
-}
 @media (orientation: portrait) and (min-width: 650px) {
   .drawer-playback .playback-dock .transport {
     grid-template-columns: minmax(0, 1fr) auto;

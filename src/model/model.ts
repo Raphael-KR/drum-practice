@@ -36,6 +36,7 @@ export interface Lyric {
     durationQuarters: number;
   };
   originalTime?: number;
+  /** Legacy unit: one tick is a quarter of a meter beat. Fractional ticks are valid. */
   grid?: { measureId: string; tick: number };
   freeTiming?: boolean;
 }

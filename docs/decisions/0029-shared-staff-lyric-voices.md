@@ -36,3 +36,5 @@ date: 2026-11-10
 
 - 현행 [저장 계약](../reference/score/musicxml.md#musicxml-canonical--저장-계약), [전체 보기 가사](../reference/score/rendering.md#svg-score-rules--전체-보기-가사).
 - MusicXML의 [voice](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/voice/)는 한 파트 안의 독립된 시간 흐름을 구분한다. [note](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/note/)의 `print-object`, `print-lyric`, `dynamics`를 사용하며 비표준 음악 요소를 만들지 않는다.
+
+후속 [ADR-0030](0030-distinct-lyric-onsets.md)은 새 제작 정본의 서로 다른 음절에 같은 시작을 허용하지 않는다. 이 ADR의 독립 성부·길이 중첩 표현과 구형 동시 시작의 읽기/보존은 유지한다.

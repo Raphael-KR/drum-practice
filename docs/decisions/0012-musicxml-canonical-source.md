@@ -11,8 +11,8 @@ date: 2026-11-10
 
 ## Considered Options
 
-* Song 또는 렌더러 재출력을 저장의 원천으로 사용한다.
-* canonicalXML 원문을 보존하고 화면/재생 모델을 복원한다.
+- Song 또는 렌더러 재출력을 저장의 원천으로 사용한다.
+- canonicalXML 원문을 보존하고 화면/재생 모델을 복원한다.
 
 ## Decision Outcome
 
@@ -30,8 +30,11 @@ RecordData.canonicalXML을 정본으로 유지한다. 렌더러로 XML을 재생
 
 ## More Information
 
-독립 HTML 폐기 근거는 [프로젝트 지침](../../AGENTS.md)과 [개발 기록](../../history.md#2026-10-13-독립-html-저장-기능-폐기)에 있다. 당시 단일 HTML 문구를 현행 계약에서 제외한 이유다.
+### 제작자가 펼친 연주본과 앱 반복 해석 — 2026-11-12
 
+[전수 감사 후속 교정](../plans/canonical-corrections-20261112.md)에서 갑자기 원본 79마디와 제작자가 반복을 펼친 93마디 연주본을 구분했다. 앱의 자동 반복 전개 미지원은 제작 단계의 확인된 반복 전개를 금지하거나 기존 마디를 축소하라는 뜻이 아니다. 원본 전사본과 원본/연주 마디의 1:n 대응을 보존하고 XML에 저장된 순서를 앱의 재생 순서로 명시했다.
+
+독립 HTML 폐기 근거는 [프로젝트 지침](../../AGENTS.md)과 [개발 기록](../../history.md#2026-10-13-독립-html-저장-기능-폐기)에 있다. 당시 단일 HTML 문구를 현행 계약에서 제외한 이유다.
 
 ### MusicXML 입력 매핑·정본 계약에서 옮긴 근거 — 2026-10-23 이관
 
@@ -73,7 +76,6 @@ MusicXML 원문은 렌더러로 재생성하지 않고 직접 보존·수정한�
 
 - localhost QA 곡에서 보컬 가져오기, 마디/박 변경 후 저장, XML 재읽기 확인. iPad mini(A17 Pro) iOS27 Safari에서 HTML의 가사 편집 화면 확인: `docs/experiments/canonical/ipad-lyrics.png`.
 
-
 ### Rule 재점검 원문 — MUSICXML-CANONICAL.md / 6
 
 출처: [docs/architecture/MUSICXML-CANONICAL.md](../reference/score/musicxml.md#musicxml-canonical--musicxml-정본-계약). 2026-10-23 재점검에서 분리한 변경 전 문구다. 당시 문맥·후보·검증 한계의 보존이며 새 승인이나 새 실행 결과가 아니다. 현행 계약은 출처 Rule을 따른다.
@@ -89,7 +91,6 @@ MusicXML 원문은 렌더러로 재생성하지 않고 직접 보존·수정한�
 > - XML 음원 해시가 있으면 열 때 실제 음원과 대조한다. 렌더러를 통과해 정본을 다시 만들지 않으므로 앱 전용 확장 필드가 사라지지 않는다.
 > - MusicXML에 실제 드럼 악보가 있으면 마디 수/박자표를 바꾸는 편집은 원본 악보에서 수행하도록 막는다. 영역과 음원 연결은 앱에서 수정 가능하다. PDF만 있는 곡에서는 PDF를 유지하며 가사 XML부터 생성한다. 이 XML을 드럼 음표까지 채보된 악보라고 표시하지 않는다.
 
-
 ### Rule 재점검 원문 — MUSICXML-CANONICAL.md / 7
 
 출처: [docs/architecture/MUSICXML-CANONICAL.md](../reference/score/musicxml.md#musicxml-canonical--musicxml-정본-계약). 2026-10-23 재점검에서 분리한 변경 전 문구다. 당시 문맥·후보·검증 한계의 보존이며 새 승인이나 새 실행 결과가 아니다. 현행 계약은 출처 Rule을 따른다.
@@ -97,7 +98,6 @@ MusicXML 원문은 렌더러로 재생성하지 않고 직접 보존·수정한�
 > - IndexedDB, ZIP의 `canonical.musicxml`(미디어 제외 백업에도 포함)이 정본을 보존한다. 파일·안내 → MusicXML 저장에서 직접 내보낸다. 다시 가져오면 가사·메타정보·연결점을 읽는다.
 > - 독립 HTML 저장·내보내기는 폐기된 기능이다. 관련 과거 문구·검증은 [ADR-0012](0012-musicxml-canonical-source.md)에 보존하며 재도입하지 않는다.
 > - 기존 PDF만 있는 곡은 원본 PDF를 유지하고 가사 XML부터 보존한다. 채보하지 않은 드럼 음표를 만들거나 가사 XML을 전체 드럼 채보라고 표시하지 않는다.
-
 
 ### Rule 재점검 원문 — MUSICXML-CANONICAL.md / 8
 

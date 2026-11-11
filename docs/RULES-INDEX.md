@@ -23,7 +23,7 @@
 | 악보 | [악보 패키지와 음원 연습 파일](reference/score/file-formats.md) |
 | 악보 | [MusicXML 입력과 정본 계약](reference/score/musicxml.md) |
 | 악보 | [드럼 악기와 주법 표기](reference/score/notation.md) |
-| 악보 | [악보 제작 기준](reference/score/production.md) |
+| 악보 | [악보 제작 기준](reference/score/production.md) — **[오선 부착 표기의 64분음표 공통 기본 단위](reference/score/production.md#score-production-rules--오선-부착-표기의-공통-기본단위)** |
 | 악보 | [악보 조판과 표시](reference/score/rendering.md) |
 | 악보 | [공통 제작 도구와 로컬 분석 계약](reference/score/tools.md) |
 

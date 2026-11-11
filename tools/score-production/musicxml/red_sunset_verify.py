@@ -10,6 +10,65 @@ from common.artifacts import PROFILES
 REVIEW = json.loads((PROFILES / "red-sunset-review.json").read_text())
 
 
+def verify_directions(doc):
+    """Compare musical application times to independently reviewed PDF points."""
+    wedges, words = [], []
+    divisions = None
+    for measure in doc.findall("part[@id='P1']/measure"):
+        number = int(measure.get("number"))
+        cursor = F(0)
+        for node in measure:
+            if node.tag == "attributes" and node.find("divisions") is not None:
+                divisions = F(node.findtext("divisions"))
+            elif node.tag in ("forward", "backup"):
+                cursor += (
+                    F(node.findtext("duration"))
+                    / divisions
+                    * (1 if node.tag == "forward" else -1)
+                )
+            elif (
+                node.tag == "note"
+                and node.find("chord") is None
+                and node.find("grace") is None
+            ):
+                cursor += F(node.findtext("duration", "0")) / divisions
+            elif node.tag == "direction":
+                offset = node.find("offset")
+                applied = cursor
+                if offset is not None and offset.get("sound") != "no":
+                    applied += F(offset.text) / divisions
+                for wedge in node.findall("direction-type/wedge"):
+                    wedges.append(
+                        dict(
+                            measure=number,
+                            type=wedge.get("type"),
+                            quarterOffset=float(applied),
+                        )
+                    )
+                for word in node.findall("direction-type/words"):
+                    words.append(
+                        dict(
+                            measure=number, text=word.text, quarterOffset=float(applied)
+                        )
+                    )
+    if wedges != REVIEW["wedges"]:
+        raise ValueError(
+            f'Source wedge positions: expected={REVIEW["wedges"]}, actual={wedges}'
+        )
+    selected_words = [
+        row
+        for row in words
+        if row["measure"] in {x["measure"] for x in REVIEW["wordApplications"]}
+    ]
+    if selected_words != REVIEW["wordApplications"]:
+        raise ValueError(
+            f'Source instruction positions: expected={REVIEW["wordApplications"]}, actual={selected_words}'
+        )
+    return dict(
+        wedges=wedges, wordApplications=selected_words, basis=REVIEW["directionBasis"]
+    )
+
+
 def run(path, bars, schema):
     doc = validate_schema(path, schema)
     read_timeline(doc)
@@ -39,6 +98,7 @@ def run(path, bars, schema):
                     "eighth": F(1, 2),
                     "16th": F(1, 4),
                     "32nd": F(1, 8),
+                    "64th": F(1, 16),
                 }[n.findtext("type")]
                 tm = n.find("time-modification")
                 if tm is not None:
@@ -96,6 +156,7 @@ def run(path, bars, schema):
         raise ValueError("Tuplet ratio/edges")
     if len(doc.findall(".//accent")) != REVIEW["accents"]:
         raise ValueError("Source accent")
+    directions = verify_directions(doc)
     return dict(
         file=str(path),
         sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -108,6 +169,7 @@ def run(path, bars, schema):
         graceNotes=1,
         tuplets=9,
         sourceEditorialMeasure135=6,
+        sourceDirections=directions,
         limits=[
             "This is structural validation, not listening verification.",
             "Source XML retains three tuplet groups; actual SVG numeral coverage is checked separately.",

@@ -18,6 +18,23 @@
 
 **실패 시 확인:** [곡별 제작 기록 목록](../records/README.md#곡별-제작-기록)에서 인쇄 위치·문자 추출 등 같은 문제의 판독/교정 근거를 찾는다. 인쇄 위치를 가창 시간 측정으로 해석하거나 PDF의 가로 간격을 그대로 음가로 바꾸지 않는다.
 
+<a id="lyric-onset-audit"></a>
+
+### 현행 정본의 가사 시작점 검사와 교정
+
+1. 곡별 기록의 최신 제작 경로·파일 해시·수록 XML을 대조한다. 수록 외 제작 중 정본도 목록에 포함하고, 원본/구판/실험/복사 별칭의 포함·제외 근거를 남긴다.
+2. [시작점 계약](../reference/score/musicxml.md#musicxml-canonical--서로-다른-음절의-시작점)에 따라 아래 공통 CLI로 실제 XML을 검사한다. 실행 전 [구현 상태](../records/archive/staff-grid64-rule-20261112.md#implementation-status)와 결과 JSON의 기준 단위를 확인한다. 곡·마디·ID·유리수 시작값과 음가 이탈을 확인하고 독립된 곡은 계속한다.
+
+   ```sh
+   python3 tools/score-production/musicxml/audit_lyric_onsets.py /absolute/current-score.musicxml --out /absolute/audit.json
+   ```
+
+   현재 `grid64`는 시작·길이를 사분음표의 1/16로 판정한다. 과거 `grid32` 보고서는 당시 결과로 보존한다. 이탈은 원본의 연음·세부 리듬인지 확인하고 근거를 남긴다. 그리드 판정만으로 정본을 옮기거나 반올림하지 않는다.
+
+3. 원본·구절 순서·과거 판독/교정 기록을 대조하고 곡별 교정표에 ID·이전/새 위치·필요한 길이·판단 근거를 기록한다. 검사기는 위치를 자동 결정하지 않는다. 이미 중복 없는 음절의 위치를 함께 재양자화하지 않는다.
+4. 원본을 보존한 새 경로에서 기존 공통 정본 writer/reader로 적용·재읽기한다. XSD·시작점 재검사·ID/문구/순서·길이/마디 연장·드럼 시간축·음원/메타정보와 반복 저장을 대조한다. 같은 시작점과 길이 중첩을 별도로 보고한다.
+5. 곡별 최종 경로·SHA·잔여 중복·검사 범위와 실제 출력/청취 미검증을 구분해 기존 앱 담당에게 인계한다. app/public/DB에 임의 적용하지 않는다.
+
 <a id="score-production-process--보컬-musicxml-입력"></a>
 
 ### 보컬 MusicXML 입력

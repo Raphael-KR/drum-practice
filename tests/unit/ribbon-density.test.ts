@@ -85,19 +85,19 @@ it("moves uniformly across bar boundaries including different meters and empty b
   }
 });
 
-it("aligns 32nd grid positions independently of other notes in a bar", async () => {
+it("aligns 64th grid positions independently of other notes in a bar", async () => {
   const { gridPosition } =
     await import("../../src/modules/score/ribbon-engraving");
-  const positions = Array.from({ length: 32 }, (_, i) =>
-    gridPosition(i / 8, 4, 320),
+  const positions = Array.from({ length: 64 }, (_, i) =>
+    gridPosition(i / 16, 4, 320),
   );
-  for (let i = 1; i < 32; i++)
+  for (let i = 1; i < 64; i++)
     expect(positions[i] - positions[i - 1]).toBeCloseTo(
       positions[1] - positions[0],
     );
-  expect(gridPosition(1, 4, 320)).toBe(positions[8]);
-  expect(gridPosition(2, 4, 320)).toBe(positions[16]);
-  expect(gridPosition(0.25, 4, 320)).toBe(positions[2]);
+  expect(gridPosition(1, 4, 320)).toBe(positions[16]);
+  expect(gridPosition(2, 4, 320)).toBe(positions[32]);
+  expect(gridPosition(0.25, 4, 320)).toBe(positions[4]);
 });
 it("selects native widths for ribbon and rows while preserving grid selection", async () => {
   const { selectPlaybackEngraving } =
@@ -114,14 +114,14 @@ it("selects native widths for ribbon and rows while preserving grid selection", 
   expect(selectPlaybackEngraving(undefined, false, "ribbon")).toBeUndefined();
 });
 
-it("places barlines midway between adjacent 32nd centres without fixed padding", async () => {
+it("places barlines midway between adjacent 64th centres without fixed padding", async () => {
   const { gridPhase } = await import("../../src/modules/score/ribbon-timeline");
   for (const width of [320, 480, 900]) {
-    const step = width / 32;
+    const step = width / 64;
     expect(width * gridPhase(0, 4)).toBeCloseTo(step / 2);
-    expect(width * gridPhase(31 / 8, 4)).toBeCloseTo(width - step / 2);
+    expect(width * gridPhase(63 / 16, 4)).toBeCloseTo(width - step / 2);
     expect(
-      width + width * gridPhase(0, 4) - width * gridPhase(31 / 8, 4),
+      width + width * gridPhase(0, 4) - width * gridPhase(63 / 16, 4),
     ).toBeCloseTo(step);
     for (let q = 0; q < 4; q += 1 / 64) {
       expect(width * (gridPhase(q + 1 / 64, 4) - gridPhase(q, 4))).toBeCloseTo(

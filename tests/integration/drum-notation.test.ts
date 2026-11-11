@@ -86,4 +86,7 @@ it("places sticking over the actual beamed stem even when no stem SVG is inside 
   const text = host.querySelector("[data-sticking]")!;
   expect(text.getAttribute("x")).toBe("32");
   expect(text.getAttribute("y")).toBe("51");
+  expect(text.getAttribute("font-family")).toBe("Pretendard");
+  expect(text.getAttribute("font-size")).toBe("16");
+  expect(text.getAttribute("text-anchor")).toBe("middle");
 });

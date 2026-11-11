@@ -8,20 +8,20 @@
 
 [첫 박·카운트오프 기준](../reference/score/production.md#musicxml-conversion-policy--첫-박과-카운트오프)과 [재생 카운트 계약](../reference/product/playback.md#playback-actions--버튼-이동-카운트오프)을 확인한다. 곡명, PDF/음원 해시, firstBeat, BPM/해당 구간 박 길이, 앱 버전/빌드, 브라우저·기기, 시작 위치, 배속, 카운트 설정, 관측 방법과 결과를 각 행에 기록한다. 수치만 검사했다면 ‘청취 미검증’이라고 적는다.
 
-| 확인 | 시작 위치·조건 | 완료 판단 |
-|---|---|---|
-| OFF | 곡 처음과 중간 마디, 기본 배속 | 음원·악보·메트로놈의 박이 일치 |
-| ON | 음원0초·첫 마디 시작점·중간 마디에서 각각 | 네 번의 사분음표 준비 카운트 다음 박에 실제 첫 박 연결 |
-| 느린/빠른 배속 | 같은 시작점에서 OFF/ON 비교 | 마지막 카운트→첫 박이 해당 배속의 사분음표 한 박 |
-| 앞부분 | 실제 곡의 첫 박 이전 구간, 긴 앞부분 회귀 사례 | 앞부분 보존, 준비 카운트와 첫 박 정렬; 실제 입력에 없는 긴 앞부분은 코드 회귀 검사로 구분 |
-| 반복 | 같은 반복 경계에서 여러 회차 | 박 중복·누락 없이 이어짐 |
+| 확인           | 시작 위치·조건                                 | 완료 판단                                                                                 |
+| -------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| OFF            | 곡 처음과 중간 마디, 기본 배속                 | 음원·악보·메트로놈의 박이 일치                                                            |
+| ON             | 음원0초·첫 마디 시작점·중간 마디에서 각각      | 네 번의 사분음표 준비 카운트 다음 박에 실제 첫 박 연결                                    |
+| 느린/빠른 배속 | 같은 시작점에서 OFF/ON 비교                    | 마지막 카운트→첫 박이 해당 배속의 사분음표 한 박                                          |
+| 앞부분         | 실제 곡의 첫 박 이전 구간, 긴 앞부분 회귀 사례 | 앞부분 보존, 준비 카운트와 첫 박 정렬; 실제 입력에 없는 긴 앞부분은 코드 회귀 검사로 구분 |
+| 반복           | 같은 반복 경계에서 여러 회차                   | 박 중복·누락 없이 이어짐                                                                  |
 
-| 관측 | 조사 책임과 처리 |
-|---|---|
-| OFF에서도 어긋남 | 제작 측 첫 박·BPM·마디별 연결을 검토하고 실제 음원/악보와 재대조 |
-| OFF 정상, ON만 어긋남 | 앱 카운트오프 예약 문제로 전달. 정상인 곡 시간표는 이동하지 않음 |
-| 수치 검사 정상, 청취 미실시 | 수치 통과만 기록. 기기 청취 완료로 표현하지 않음 |
-| 시뮬레이터/Chromium만 확인 | 그 환경의 결과로 기록. 실물 iPad Safari·오디오 결과로 대체하지 않음 |
+| 관측                        | 조사 책임과 처리                                                    |
+| --------------------------- | ------------------------------------------------------------------- |
+| OFF에서도 어긋남            | 제작 측 첫 박·BPM·마디별 연결을 검토하고 실제 음원/악보와 재대조    |
+| OFF 정상, ON만 어긋남       | 앱 카운트오프 예약 문제로 전달. 정상인 곡 시간표는 이동하지 않음    |
+| 수치 검사 정상, 청취 미실시 | 수치 통과만 기록. 기기 청취 완료로 표현하지 않음                    |
+| 시뮬레이터/Chromium만 확인  | 그 환경의 결과로 기록. 실물 iPad Safari·오디오 결과로 대체하지 않음 |
 
 <a id="score-production-process--6-svg-조판재생-캐시완성-패키지"></a>
 
@@ -34,6 +34,8 @@
 **수행 방법·도구:** [SVG 정본](../reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙)과 [브라우저 조판](../reference/score/rendering.md#browser-musicxml-rendering--브라우저-공통-musicxml-조판-계약)을 읽고 공통 `src/modules/score/musicxml.ts::renderMusicXML`을 사용한다. 전체 인쇄 SVG와 연습 화면의 배치를 구분한다. 캐시는 현재 렌더러/표시 정책/원문에 맞게 생성하며, `src/modules/score/browser-score.ts::prepareBrowserScore`의 실제 열기 결과도 검수한다. 기존 동봉 SVG만으로 최신 화면의 모양을 보증하지 않는다. 원문을 렌더러 출력으로 재생성하지 않는다.
 
 `src/modules/score/canonical-xml.ts`의 정본 쓰기·읽기와 `src/modules/library/score-package.ts`의 `createScorePackage → readScorePackage`로 완성 `.drumscore`를 생성·재읽기한다. 곡별 helper는 입력·원본 해시·경로·포트를 검토한 뒤 사용한다. loopback 근거 수신기는 새로운 출력 폴더에서 실행하고 작업 후 그 프로세스만 종료한다. ZIP 감사는 확장자 추정 대신 manifest의 실제 자산 경로를 읽는다.
+
+offset 후보는 공통 `renderPrintedScore`로 탐색하고 최종 XML만 전체 보기로 재생성한다. 큰 SVG 저장에는 [공통 패키지 API](../reference/score/tools.md#common-tools--공통-패키지-api)의 페이지 분할 전송·복구를 사용한다. 저장 실패 시 이미 통과한 XML·탐색 근거를 보존하고 누락 출력부터 복구한다. 입력이나 조판 코드가 바뀌지 않았다면 완료한 offset 탐색을 반복하지 않는다.
 
 **산출물:** 최종 MusicXML·전체 SVG/재생 캐시·원본 PDF 페이지·`.drumscore`, 패키지 manifest와 해시·CRC·왕복 보존 보고서, 실제 출력 캡처.
 
@@ -61,17 +63,17 @@
 
 ### 완료 판정과 필수 근거
 
-| 판정 항목 | 남길 근거 | 아직 없을 때의 상태 |
-|---|---|---|
-| 자료 보존·유형 선택 | provenance, 원본/초벌/이전 결과, 대표 시험·방식 선택 | 접수/방식 평가 중 |
-| 전사·가사 의미 | 원본 fixture, 마디/음가/주법·문자 대조, XSD·XML왕복, 추정 목록 | 후보·교정 중 |
-| 음원 연결 | 첫 박/BPM·시간표·위상/드리프트 근거·해시 | 분석 추정 또는 연결 미완료 |
-| 조판·패키지 | 실제 출력·주법/좌표, 패키지 CRC/원본 바이트/왕복 | 생성 완료와 화면 미검증을 분리 |
-| 실제 앱 수록 | 가져오기/저장/재열기, 패키지/저장 레코드 대조, 상태 보존 | 수록 검증 미완료 |
-| 재생·청취 | 기기별 OFF/ON·배속·반복 검수표, 수치와 청취 별도 | 청취 미검증 또는 앱 결함 인계 |
-| 인계 | 곡별 제작 문서·history·재현 명령/환경·남은 일, 기존 개발자에게 실제 전달한 본문·접수/처리 상태 | 인계 미완료 또는 전송 실패/수신 상태 미확인 |
+| 판정 항목           | 남길 근거                                                                                      | 아직 없을 때의 상태                         |
+| ------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| 자료 보존·유형 선택 | provenance, 원본/초벌/이전 결과, 대표 시험·방식 선택                                           | 접수/방식 평가 중                           |
+| 전사·가사 의미      | 원본 fixture, 마디/음가/주법·문자 대조, XSD·XML왕복, 추정 목록                                 | 후보·교정 중                                |
+| 음원 연결           | 첫 박/BPM·시간표·위상/드리프트 근거·해시                                                       | 분석 추정 또는 연결 미완료                  |
+| 조판·패키지         | 실제 출력·주법/좌표, 패키지 CRC/원본 바이트/왕복                                               | 생성 완료와 화면 미검증을 분리              |
+| 실제 앱 수록        | 가져오기/저장/재열기, 패키지/저장 레코드 대조, 상태 보존                                       | 수록 검증 미완료                            |
+| 재생·청취           | 기기별 OFF/ON·배속·반복 검수표, 수치와 청취 별도                                               | 청취 미검증 또는 앱 결함 인계               |
+| 인계                | 곡별 제작 문서·history·재현 명령/환경·남은 일, 기존 개발자에게 실제 전달한 본문·접수/처리 상태 | 인계 미완료 또는 전송 실패/수신 상태 미확인 |
 
-검증된 단계만 완료라고 쓴다. 앱 결함 때문에 청취 검증이 남으면 ‘전사·패키지 생성 완료 / 실제 재생 검증 대기’처럼 구분한다.  전체 외부 이중 전사·실물 연주 정확도까지 확인했다고 주장하지 않는다.
+검증된 단계만 완료라고 쓴다. 앱 결함 때문에 청취 검증이 남으면 ‘전사·패키지 생성 완료 / 실제 재생 검증 대기’처럼 구분한다. 전체 외부 이중 전사·실물 연주 정확도까지 확인했다고 주장하지 않는다.
 
 <a id="score-production-process--첫-박카운트오프-상세-점검"></a>
 
@@ -91,14 +93,23 @@
 코드/프로필 수정과 서식 정리를 마친 뒤 현재 로컬 5173 제작기에서 실제 패키지를 읽는다. 새 앱·독립 HTML을 만들지 않는다. 다음은 보존된 I.O.I 패키지의 적용 예다.
 
 ```javascript
-const { readScorePackage } = await import('/src/modules/library/score-package.ts');
-const { mountScoreReview } = await import('/tools/score-production/musicxml/common/review.mjs');
-const response = await fetch('/data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly.drumscore');
-if (!response.ok) throw new Error(`Package read failed: status=${response.status}`);
+const { readScorePackage } =
+  await import("/src/modules/library/score-package.ts");
+const { mountScoreReview } =
+  await import("/tools/score-production/musicxml/common/review.mjs");
+const response = await fetch(
+  "/data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly.drumscore",
+);
+if (!response.ok)
+  throw new Error(`Package read failed: status=${response.status}`);
 const record = await readScorePackage(await response.blob());
 window.scoreReview = await mountScoreReview(record, {
   alternateIndex: 0,
-  measureGroups: [[21, 22, 23, 24], [29, 30, 31, 32], [71, 72, 73, 74]],
+  measureGroups: [
+    [21, 22, 23, 24],
+    [29, 30, 31, 32],
+    [71, 72, 73, 74],
+  ],
   requirePDFAnchors: true,
 });
 window.scoreReview.report();

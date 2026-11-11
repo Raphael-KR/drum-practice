@@ -3,6 +3,7 @@ import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { applyDrumLegend } from "./drum-legend";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import halfOpenGlyph from "./vendor/pict-half-open.json";
+import { SCORE_TEXT_FONT_FAMILY } from "./score-text-font";
 import {
   technicalPositions,
   type TechnicalPosition,
@@ -187,7 +188,7 @@ export function applyDrumDecorations(
                 String(Math.min(stemTop, sb?.y ?? b.y, b.y) - 9),
               );
               t.setAttribute("text-anchor", "middle");
-              t.setAttribute("font-family", "serif");
+              t.setAttribute("font-family", SCORE_TEXT_FONT_FAMILY);
               t.setAttribute("font-size", "16");
               t.setAttribute("fill", rule.color);
               t.setAttribute("data-sticking", rule.sticking);

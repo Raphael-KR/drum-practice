@@ -80,6 +80,9 @@ export function writeLyricVoices(
   },
 ): LyricVoiceIdentity[] {
   removeLyricVoices(part);
+  const lyricFontFamily = part.ownerDocument
+    .querySelector("score-partwise > defaults > lyric-font")
+    ?.getAttribute("font-family");
   const measures = kids(part, "measure");
   if (measures.length !== song.measures.length)
     throw Error(
@@ -225,7 +228,12 @@ export function writeLyricVoices(
         const lyric = add(n, "lyric", undefined, { name: "pronunciation" });
         if (begins) {
           add(lyric, "syllabic", "single");
-          add(lyric, "text", row.lyric.text);
+          add(
+            lyric,
+            "text",
+            row.lyric.text,
+            lyricFontFamily ? { "font-family": lyricFontFamily } : {},
+          );
         } else add(lyric, "extend", undefined, { type: "continue" });
         cursor = end;
       }

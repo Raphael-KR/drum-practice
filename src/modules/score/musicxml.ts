@@ -139,14 +139,24 @@ export async function renderFullScore(
   return value;
 }
 
-/** Preserve print pages; the optional metadata contains native, time-spaced engraving. */
-async function engraveMusicXML(
+/** Print-only production measurements omit playback views and persistent caching. */
+export async function renderPrintedScore(
+  blob: Blob,
+  progress: (s: string) => void,
+  partId?: string,
+) {
+  const text = await readMusicXML(blob);
+  const parsed = parseMusicXML(text, partId);
+  return prepareMusicXMLRenderer(text, progress, parsed.partId)();
+}
+
+function prepareMusicXMLRenderer(
   source: string,
   progress: (s: string) => void,
   partId: string,
 ) {
   const lyrics = prepareScoreLyrics(source, partId);
-  const render = (timeline?: RibbonSpacing) =>
+  return (timeline?: RibbonSpacing) =>
     renderMusicXMLPass(
       lyrics.xml,
       progress,
@@ -155,6 +165,15 @@ async function engraveMusicXML(
       undefined,
       lyrics.texts,
     );
+}
+
+/** Preserve print pages; the optional metadata contains native, time-spaced engraving. */
+async function engraveMusicXML(
+  source: string,
+  progress: (s: string) => void,
+  partId: string,
+) {
+  const render = prepareMusicXMLRenderer(source, progress, partId);
   const printed = await render();
   const ribbon = await render({
     ...printed.spacing,

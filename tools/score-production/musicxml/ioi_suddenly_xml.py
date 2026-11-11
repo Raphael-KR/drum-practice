@@ -10,8 +10,12 @@ from collections import Counter
 from pathlib import Path
 from lxml import etree as E
 from xml_helpers import add
-from common.artifacts import sha, require_equal
+from common.artifacts import PROFILES, sha, require_equal
 from common.musicxml import validate_schema, read_timeline
+
+SOURCE_WORDS = json.loads((PROFILES / "ioi-suddenly-source.json").read_text())[
+    "word_positions"
+]
 
 ORDER = (
     list(range(1, 29))
@@ -50,6 +54,7 @@ TYPES = {
     0.5: "eighth",
     0.25: "16th",
     0.125: "32nd",
+    0.0625: "64th",
 }
 DOUBLE_BARS = {4, 12, 20, 30, 38, 46, 55, 63, 71}
 
@@ -160,7 +165,9 @@ def write_score(bars, order, path, digest, printed=False):
         changed = (
             previous is None
             or previous["system"] != b["system"]
-            or number != previous["number"] + 1
+            # A second ending can skip a source bar within the same printed row.
+            # Backward repeat jumps still begin a new row.
+            or number <= previous["number"]
         )
         if changed:
             attrs = (
@@ -194,11 +201,12 @@ def write_score(bars, order, path, digest, printed=False):
                 "rehearsal",
                 SECTIONS[number],
             )
-        if number == 5:
+        for word in (w for w in SOURCE_WORDS if w["source_measure"] == number):
             add(
                 add(add(measure, "direction", placement="above"), "direction-type"),
                 "words",
-                "Closed H.H →",
+                word["text"],
+                default_y=word["default_y"],
             )
         if number in (1, 4):
             direction = add(measure, "direction", placement="below")

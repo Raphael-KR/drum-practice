@@ -47,6 +47,9 @@
   height: 100%;
   pointer-events: none;
 }
+.crop.has-ink-overhang > svg {
+  overflow: visible;
+}
 .playhead {
   position: absolute;
   left: 33.333%;
@@ -75,7 +78,9 @@
 .two-rows .ribbon {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  width: 100%;
+  width: var(--fitted-row-width, 100%);
+  left: 50%;
+  translate: -50% 0;
   transform: none !important;
   will-change: auto;
 }

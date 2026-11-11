@@ -227,7 +227,7 @@ export function installMeasureEndWedges(osmd: OpenSheetMusicDisplay) {
   };
 }
 
-/** A 32nd occupies one eighth of a quarter; tuplets retain fractional grid positions. */
+/** A 64th occupies one sixteenth of a quarter; tuplets retain fractional positions. */
 export function gridPosition(quarter: number, duration: number, width: number) {
   return width * gridPhase(quarter, duration) - RIBBON_HEAD_ANCHOR;
 }

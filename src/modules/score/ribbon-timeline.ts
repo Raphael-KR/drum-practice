@@ -1,11 +1,15 @@
 import type { Region } from "../../model/model";
+import { NOTATION_STEPS_PER_QUARTER } from "../../model/notation-grid";
 import type { StaffPosition } from "./practice-staff-layout";
 export const RIBBON_TIMELINE_VERSION = 1;
 /** Normal drum notehead centre, in the unscaled OSMD SVG coordinate system. */
 export const RIBBON_HEAD_ANCHOR = 6;
-/** Notehead centre on a padding-free 32nd grid; may cross 1 at a bar transition. */
+/** Notehead centre on a padding-free 64th grid; may cross 1 at a bar transition. */
 export function gridPhase(quarter: number, duration: number) {
-  return (quarter * 8 + 0.5) / (duration * 8);
+  return (
+    (quarter * NOTATION_STEPS_PER_QUARTER + 0.5) /
+    (duration * NOTATION_STEPS_PER_QUARTER)
+  );
 }
 export interface RibbonTimeline {
   version: number;

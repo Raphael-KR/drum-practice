@@ -11,8 +11,8 @@ date: 2026-10-23
 
 ## Considered Options
 
-* 표제와 지시를 합치거나 SVG 좌표표로 후처리한다.
-* rehearsal과 words를 분리하고 XML 위치 속성·공통 조판을 사용한다.
+- 표제와 지시를 합치거나 SVG 좌표표로 후처리한다.
+- rehearsal과 words를 분리하고 XML 위치 속성·공통 조판을 사용한다.
 
 ## Decision Outcome
 
@@ -27,6 +27,10 @@ v2 음표 순차 이동/8 SVG 여백과 v8/v10 여백0·같은 마디 탐색은 
 현재 기준은 [SVG 규칙](../reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙)을 따른다. 아래 검증·버전·수치는 당시 기록이며 이번 문서 이관에서 시험을 재실행한 결과가 아니다.
 
 ## More Information
+
+### 적용 범위 명확화 — 2026-11-12
+
+[전수 감사 후속 교정](../plans/canonical-corrections-20261112.md)에서 PDF 전사와 승인된 직접 작곡을 구분했다. 기존 연습곡의 13개 구간명은 작곡·편곡 명세에 있으므로 임의 분석 표제와 같게 취급하지 않는다. 현행 Rule의 원본 표제 제한은 유지하면서 그 기준 자료를 명시했다. 원본의 적용 박 오류와 표시 offset의 단위 적합도 별도로 판정한다.
 
 아래는 분리 전 혼합 문서에서 옮긴 원문이다. 원문의 날짜·버전 순서와 위 Decision Outcome을 함께 읽는다. 과거의 ‘현재’, ‘미구현’, 초안 수치와 PASS는 당시 범위에만 적용한다.
 
@@ -109,9 +113,10 @@ v2 음표 순차 이동/8 SVG 여백과 v8/v10 여백0·같은 마디 탐색은 
 - [비교할 기존 SVG 목록](../records/archive/rendering-experiments.md#section-direction-layout-review--섹션-표제연주-지시의-svg-공동-검토)은 겹침을 보였던 과거판·당시 합쳐진 판·추가 의미 검토 후보의 이력이다. 이후 분리한 v10과 기존 수록 패키지 반영 상태는 구분하며, 새 제작·교정에는 위 최종 7원칙을 적용한다.
 
 ### 섹션 편집 반영 (2026-10-04)
+
 악보제작기의 섹션 편집은 정본 MusicXML의 rehearsal 방향 지시를 변경한다. 적용·되돌리기 후 기존 렌더 경로로 SVG와 마디 영역을 재생성하며 PDF 원본은 유지한다. 섹션 바로가기는 같은 정본 표기를 읽는다.
 
-* [최종 붉은 노을 전곡 재제작·개발 접수](../records/songs/red-sunset.md#red-sunset-rebuild-20261023--붉은-노을--최신-제작-원칙-전곡-재제작)
+- [최종 붉은 노을 전곡 재제작·개발 접수](../records/songs/red-sunset.md#red-sunset-rebuild-20261023--붉은-노을--최신-제작-원칙-전곡-재제작)
 
 ### MusicXML 입력 매핑·정본 계약에서 옮긴 근거 — 2026-10-23 이관
 
