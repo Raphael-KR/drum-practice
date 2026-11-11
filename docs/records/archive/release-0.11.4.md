@@ -48,4 +48,17 @@
 
 ## 원격 통합·발행
 
-아직 미실행. PR/main CI, main 새 빌드·Sites·공개 확인·작업 파일/브랜치 정리 후 결과를 추가한다.
+- 구현 head `8eebb8495e509a96473498a7f5e67d5aa9831c41`, [PR #50](https://github.com/Raphael-KR/drum-practice/pull/50), 제품 main `6e71bbf76350ea79443d8dde8a8b90919904a757`. 자체 diff 검토·미해결 review 0건·[PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/43025537864)·[main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/43025844127) 성공 후 병합/발행했다. 독립 검토로 표현하지 않는다.
+- PR head와 main의 tracked tree가 같고, 시작 시 752파일 입력 해시에서 변경된 8파일 외에는 동일했다. 수록 6개 패키지 해시도 모두 유지했다(`input-comparison.json`). 영향 검사와 정적 검사 결과를 재사용하고 main에서 `generate`, `bundle:apps`를 새로 실행했다. 소스 빌드 `de781bc6b608`.
+- Sites 기존 소스 열기 → 반환 checkout의 별도 변경 없음 확인 → main player 사본 준비 → frozen 설치 → Sites 빌드 → 48파일 원본/사본/배포 산출물 해시 대조 → source push → 버전 저장/발행 순서로 진행했다. source helper에 완료한 검사는 다시 넣지 않았다.
+- Sites 소스 `a36bc44cbde094fefea7ddfe55c27327688bf1e3`, 저장 버전104, 버전 ID `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_2b17439fdd58819197ae4082e4979a26`, 배포 ID `appgdep_6af4691fb64c8191b4d7791505b20c14`. **succeeded, 2026-11-11 22:10:07 KST**. [기존 공개 주소](https://drum-practice-studio.dgkma.chatgpt.site)의 public 범위를 유지했다.
+- 공개 읽기18항목 통과: HTML3경로의 새 번들·보안 헤더, player JS/CSS·MusicXML renderer·분석/스트레치 Worker·악보6개 SHA256 일치, editor와 폐기 API3개404. `public-smoke.mjs/json` 보존. 공개 실제 재생·로그인·저장 QA를 수행한 것으로 확대하지 않는다.
+- 아카이브 `local-archives/releases/drum-practice-0.11.4-sites.tar.gz`: 56,115,422bytes, gzip SHA256 `c307273e17feccf54646e4b0144c12932aae1b8806870348a4222c83660510a2`. Sites tar content hash `d2a5de6c9a641a8809d1a53ba54fdebffdd5cb8dc903834feb8bcaab7f936e84`와 구분한다. helper의 최초 출력 경로에서 저장 성공 후 보존 폴더로 이동했으며 바이트는 같다.
+
+## 발행 후 정리와 한계
+
+- 기존 기록과 SHA256이 일치한 `local-archives/releases/drum-practice-0.11.2-sites.tar.gz` 56,114,473bytes와 `.tmp/release-0.10.2/sites-0.10.2.tar.gz` 56,130,118bytes를 삭제했다. 총112,244,591bytes(약107.05MiB) 확보. `cleanup.json`에 삭제 전 해시와 최신 보존본 해시를 남겼다.
+- `.tmp/release-0.8.8-sites.tar.gz`는 과거 발행 기록의 gzip 해시와 달라 보존했다. retained-checkouts·원본·검증 캡처/로그·현재 node_modules·실행 중인5173·최신 dist·Sites 소스는 보존했다. 근거가 불명확한 파일이나 활성 캐시를 임의로 지우지 않았다.
+- Safari 시험 창은 시작 시 저장곡이 없었다. 이번에 추가한 갑자기·Real Paradis 두 사본만 앱의 삭제 경로로 제거해 저장곡0을 재확인하고 시험 탭을 닫았다. 실제 사용자 DB·원본 패키지는 변경하지 않았다. main 전환 도중 Vite HMR이 일시 실패했으며 재접속으로 복구됐고 배포 번들과는 별개다.
+- 추가 관찰: Real Paradis14마디의 **균등 모드**에서는 짧은 인접 가사 일부가 붙어 보인다(`player-real-paradis-fixed.png`). 일반2줄에서는 분리돼 보인다(`player-real-paradis-normal-fixed.png`). 이번 공통 하단 여백 수정은 수직 충돌을 해결하며 고정 박 격자·13pt·음악 시각을 바꾸지 않는다. 균등 모드의 수평 밀도 개선은 후속 검토로 남긴다.
+- 결과 문서만 후속 PR로 반영한다. 제품 입력이 같으므로 앱 버전·빌드번호·발행은 반복하지 않는다. PR 병합 후 로컬/원격 main 일치·clean·main 외 브랜치 삭제를 최종 확인한다. 최종 SHA·CI·확인 결과는 `final-state.json`과 최종 보고에 기록한다.
