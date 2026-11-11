@@ -11,8 +11,7 @@ import { ribbonSpacing, type RibbonSpacing } from "./ribbon-engraving";
 import { RIBBON_TIMELINE_VERSION } from "./ribbon-timeline";
 import { compressSVG, displayPage } from "./score-pages";
 import { embedScoreTextFonts, loadScoreTextFonts } from "./score-text-font";
-import { prepareFullScoreLyrics } from "./full-score-lyrics";
-import { playbackNotationXML } from "./canonical-lyric-voice";
+import { prepareScoreLyrics } from "./score-lyrics";
 import type { Song } from "../../model/model";
 
 // Preserve the existing public import paths for readers and callers.
@@ -26,18 +25,15 @@ export {
 
 /** One pass owns its temporary host through font embedding, compression and geometry extraction. */
 async function renderMusicXMLPass(
-  blob: Blob,
+  source: string,
   progress: (s: string) => void,
   partId?: string,
   timeline?: RibbonSpacing,
   fullScoreSong?: Song,
+  measureLyrics = new Map<number, string>(),
 ) {
-  const source = await readMusicXML(blob);
-  const xml = normalizeDrumScore(
-    fullScoreSong ? source : playbackNotationXML(source),
-  );
+  const xml = normalizeDrumScore(source);
   const parsed = parseMusicXML(xml, partId);
-  if (fullScoreSong) prepareFullScoreLyrics(parsed, fullScoreSong);
   progress(i18nText("musicxml.message412"));
   const scoreFonts = await loadScoreTextFonts();
   const host = document.createElement("div");
@@ -45,8 +41,14 @@ async function renderMusicXMLPass(
     "position:fixed;left:-20000px;top:0;width:1500px;pointer-events:none;";
   document.body.append(host);
   try {
-    const { osmd, renderDocument, positionedWords } =
-      await renderMusicXMLEngine(host, parsed, timeline, fullScoreSong);
+    const { osmd, renderDocument, positionedWords, lyricLabels } =
+      await renderMusicXMLEngine(
+        host,
+        parsed,
+        timeline,
+        fullScoreSong,
+        measureLyrics,
+      );
     const svgs = finishMusicXMLGlyphs(
       host,
       osmd,
@@ -54,7 +56,12 @@ async function renderMusicXMLPass(
       parsed,
       timeline,
     );
-    const systemBounds = measureMusicXMLSystems(osmd, svgs, positionedWords);
+    const systemBounds = measureMusicXMLSystems(
+      osmd,
+      svgs,
+      positionedWords,
+      lyricLabels,
+    );
     const pages = await Promise.all(
       svgs.map((svg) => {
         const copy = svg.cloneNode(true) as SVGSVGElement;
@@ -118,26 +125,38 @@ export async function renderFullScore(
     parsed.partId,
     `${SCORE_RENDER_POLICY}:full-score-continuous-v10-xml-system-width`,
   );
-  const { value } = await cachedScoreRender(key, () =>
-    renderMusicXMLPass(
-      new Blob([xml], { type: "application/vnd.recordare.musicxml+xml" }),
+  const { value } = await cachedScoreRender(key, () => {
+    const lyrics = prepareScoreLyrics(xml, parsed.partId, song);
+    return renderMusicXMLPass(
+      lyrics.xml,
       () => {},
       parsed.partId,
       undefined,
       song,
-    ),
-  );
+      lyrics.texts,
+    );
+  });
   return value;
 }
 
 /** Preserve print pages; the optional metadata contains native, time-spaced engraving. */
 async function engraveMusicXML(
-  blob: Blob,
+  source: string,
   progress: (s: string) => void,
-  partId?: string,
+  partId: string,
 ) {
-  const printed = await renderMusicXMLPass(blob, progress, partId);
-  const ribbon = await renderMusicXMLPass(blob, progress, partId, {
+  const lyrics = prepareScoreLyrics(source, partId);
+  const render = (timeline?: RibbonSpacing) =>
+    renderMusicXMLPass(
+      lyrics.xml,
+      progress,
+      partId,
+      timeline,
+      undefined,
+      lyrics.texts,
+    );
+  const printed = await render();
+  const ribbon = await render({
     ...printed.spacing,
     // The ribbon widens the native stave for longer meters, never the glyphs.
     // A four-quarter bar retains the same native width as a two-row cell.
@@ -149,11 +168,11 @@ async function engraveMusicXML(
   const uniformQuarters = Math.max(...durations);
   // Rows reserve glyph clearance and distribute remaining space by time.
   // Do not reuse the ribbon global shortest-duration spacing for row glyph size.
-  const rows = await renderMusicXMLPass(blob, progress, partId, {
+  const rows = await render({
     ...printed.spacing,
     uniformQuarters,
   });
-  const grid = await renderMusicXMLPass(blob, progress, partId, {
+  const grid = await render({
     ...printed.spacing,
     uniformQuarters,
     fixedGrid: true,
@@ -224,11 +243,7 @@ export async function renderMusicXML(
   const key = await scoreRenderKey(text, parsed.partId);
   const start = performance.now();
   const { value, hit } = await cachedScoreRender(key, () =>
-    engraveMusicXML(
-      new Blob([text], { type: "application/vnd.recordare.musicxml+xml" }),
-      progress,
-      parsed.partId,
-    ),
+    engraveMusicXML(text, progress, parsed.partId),
   );
   performance.measure(hit ? "score-render:cache-hit" : "score-render:cold", {
     start,

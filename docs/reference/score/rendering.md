@@ -36,8 +36,8 @@
 | 가수·드럼킷 | 전체 보기 제목 아래 오른쪽에 `노래 - <Song.artist>` 표시. 기본 BPM과 같은 높이·크기·굵기. 빈 값은 표시하지 않음 |
 | 마디 번호 | 전체 보기는 정본 XML 번호를 OSMD SVG로 각 줄 첫 마디에 표시(1번·섹션 있는 줄 포함). 연습 화면은 기존 별도 표시 유지 |
 | 파트 이름·약칭 | 표시하지 않음 |
-| 가사 | SVG 전체 보기는 OSMD 기본 출력. 연습용 조판은 OSMD 출력을 끄고 기존 HTML 가사 표시 유지. XML 데이터는 양쪽 모두 보존 |
-| 배경·색 | 검정 계열 악보·흰 배경. 원본 지정 색은 승인된 보정 외에 변경하지 않음 |
+| 가사 | 전체 보기·연주 1줄·2줄·균등 보기 모두 OSMD SVG 출력. 공통 13pt·파란색. PDF는 원본에 인쇄된 가사만 표시 |
+| 배경·색 | 검정 계열 악보·흰 배경. SVG 가사는 아래 공통 파란색 규칙 적용. 나머지 원본 지정 색은 승인된 보정 외에 변경하지 않음 |
 | 파일 | 전체 보기는 연속 SVG, 연습용은 기존 페이지 SVG. xmlns·viewBox 유지. PNG를 정본 캐시로 저장하지 않음 |
 
 - 전체 보기에는 재생선·선택 배경·마커 버튼·발광 효과를 넣지 않는다. 기본 BPM·가수는 공통 조판기의 OSMD `GraphicalLabel`로 출력한다. 부제목과 같은 `SheetSubtitleHeight`(현재 기본 2단위, 20 SVG px)·`FontStyles.Bold`와 공통 Pretendard를 사용하며, 글꼴 크기를 별도로 하드코딩하거나 HTML로 표시하지 않는다. 두 라벨은 악보와 함께 확대·축소한다. 악보 안의 메트로놈·중복 BPM 지시문 숨김과 작사·작곡 숨김은 유지하고 tempo 데이터는 보존한다.
@@ -62,7 +62,7 @@
 - 표시제목과 원제가 같으면 표시제목만 제목으로 출력한다. 서로 다르면 표시제목을 제목으로, 원제를 부제로 출력한다. 표시제목이 없으면 원제만 제목으로 출력한다. 빈 부제는 만들지 않는다.
 - 동일 여부는 각 문자열의 앞뒤 공백을 제거하고 Unicode NFC로 정규화한 뒤 비교한다. 정규화는 비교에만 사용하며 저장된 MusicXML과 `Song`의 제목을 변경하지 않는다.
 - 두 앱의 공통 `renderMusicXMLEngine`이 XML을 복제한 직후 `prepareEngravingTitles`를 적용한다. OSMD가 제목으로 읽는 `work-title`과 부제로 읽는 `movement-title`에 출력할 원래 문자열을 배치하고, 부제가 필요한 경우에만 `RenderSubtitle`을 켠다. OSMD가 부제에 덧붙이는 `work-number`와 제목·부제를 덮어쓰는 `credit-type=title/subtitle`도 이 사본에서만 제외한다. 정본·메타정보를 다시 저장하거나 곡별 예외·완성 SVG 후처리로 중복을 지우지 않는다. 기존 연습용 제목 식별은 이 조판 사본의 문자열을 사용한다.
-- 공통 `SCORE_RENDER_POLICY`의 `v41-title-policy`가 전체 보기·연습용 캐시 키에 포함된다. 이전 정책의 파생 SVG는 재사용하지 않으며 원본·연습 정보 저장 형식은 유지한다.
+- 제목 출력 정책은 전체 보기·연습용 키가 공유하는 `SCORE_RENDER_POLICY`에 포함된다. 이전 정책의 파생 SVG는 재사용하지 않으며 원본·연습 정보 저장 형식은 유지한다. 현재 정책은 아래 [SVG 가사 배치](#svg-score-rules--전체-보기-가사)를 따른다.
 
 #### 연속 보기의 일정한 오선 간격
 
@@ -74,16 +74,17 @@
 
 <a id="svg-score-rules--전체-보기-가사"></a>
 
-#### 전체 보기의 가사 배치
+#### SVG 가사 배치
 
-- 드럼연습실과 PC 악보제작기는 공통 `prepareFullScore` → `renderFullScore` → `full-score-view` 경로를 사용한다. 표준 음절 가사는 OSMD의 `drawLyrics`로 SVG 안에 출력한다. 별도의 HTML 음절 행·크기 관찰자·충돌 재배치는 사용하지 않는다.
-- v2 정본은 드럼 파트·같은 보표의 독립 가사 성부를 그대로 전달한다. 가사 음표·쉼표는 숨기고 `HiddenVoicesKeepLayout`·`RenderLyricsOfHiddenVoices`로 가사만 출력한다. 보표·크레센도·가사 간격은 OSMD 기본 배치를 사용하며 SVG에서 별도 가사 보표를 지우거나 가사를 이동하지 않는다.
-- v1의 독립 가사 파트는 승인된 [정본 전환](musicxml.md#musicxml-canonical--저장-계약)에 따라 읽기용 사본에만 같은 성부로 구성한다. 선택 파트를 파싱한 문서에 남아 있는 공통 manifest로 v1을 판별하며 원문을 다시 파싱하지 않는다. `canonical-lyric-voice.ts`를 저장 경로와 공유하고 독립 onset·duration·마디 연장·겹침을 유지한다. 가까운 드럼 음표로 스냅하지 않는다. 현재 파일·DB에는 쓰지 않는다.
-- 시간 정보가 없는 `Song.measureLyrics`는 가짜 음표나 박 위치를 만들지 않고 해당 마디 중앙의 OSMD `GraphicalLabel`로 출력한다. `installFullScoreMeasureLyrics`는 마디 문구가 있을 때만 배치·그리기 훅을 등록하며, OSMD 기본 음절 가사는 이 훅과 독립적으로 출력한다. 실제 마디 폭 안에서 줄바꿈하고 native 하단 경계에 높이를 반영한다. 같은 줄에 음절 가사가 있으면 그 아래에 배치한다. OSMD의 줄 끝 예고 기호용 `IsExtraGraphicalMeasure`는 원본 마디가 없는 보조 항목이므로 마디 문구 대상에서 제외한다. `lyricText`만으로 음절 시각·마디 귀속을 만들지 않는다.
-- 음절·마디 문구 모두 Pretendard와 공통 `scoreTextHeight` 환산을 사용한다. `LyricsHeight = RehearsalMarkFontSize × (96/72) ÷ 10`으로 섹션·지시문과 같은 크기를 지정한다. 기본 10pt는 13⅓ SVG px이며 가사·악보는 한 SVG 이미지 안에서 함께 확대·축소된다. 글꼴 로딩·SVG 내장도 공통 모듈을 재사용한다.
-- 가사 유무와 무관하게 전체 보기를 열 때 전용 연속 조판을 한 번 수행하고 공통 파생 캐시에 저장한다. 키는 원문·파트·마디 ID·마디 문구·가수·기본 BPM과 위 마디 번호 절의 전체 보기 전용 정책을 포함한다. 이전 정책의 캐시와 구분하며 동일 요청은 합친다. 창 크기·스크롤·재생 프레임마다 재조판하지 않는다.
-- 전체 보기의 가사 간격은 연습용 인쇄·1줄·2줄·균등 조판에 전달하지 않는다. 연습용 조판 사본에서는 앱 소유 가사 리듬 블록을 제외해 새 음표 기준점·간격이 추가되지 않게 하고 기존 HTML 가사를 유지한다. 전체 보기에서는 XML의 줄 시작 의미를 유지하고 OSMD가 계산한 가사 높이를 해당 줄의 하단 경계에 포함한다. 제작기의 미저장 가사 편집은 기존 정본 작성 함수를 읽기용 사본에 적용해 표시하며 원본 레코드를 저장하지 않는다. 재생앱에는 정본 작성 모듈을 포함하지 않는다.
-- 전체 보기 자체는 원본 파일·수록 패키지·연습 정보를 변경하지 않으며 연주 화면의 HTML 가사 경로를 유지한다. 승인된 정본·패키지 전환은 [MusicXML 계약](musicxml.md#musicxml-canonical--저장-계약)과 [실행 계획](../../plans/shared-staff-lyrics-20261110.md)을 따른다. PDF 전체 보기에 가사를 중복 합성하지 않는다. 독립 가사 위치·연장·마디 문구·이전 쪽 경계의 줄 구성·재열기는 전체 보기의 검수 항목이다. 가사 전환 결과는 [전환 기록](../../records/archive/osmd-native-lyrics-review-20261110.md), 이번 연속 보기의 검수 범위는 위 계획을 따른다.
+- 두 앱의 전체 보기·연주 1줄·2줄·균등 보기는 `musicxml-engine.ts`의 OSMD `drawLyrics`를 공통으로 사용한다. 연주 화면에는 HTML 음절 행·마디 가사·충돌 재배치·전용 CSS를 두지 않는다. PDF는 원본 인쇄 가사를 표시하며 가사를 덧붙이지 않는다.
+- v2 정본의 독립 가사 성부를 드럼과 같은 보표에 그대로 전달한다. 음표·쉼표는 숨기고 `HiddenVoicesKeepLayout`·`RenderLyricsOfHiddenVoices`로 가사만 출력한다. 가까운 드럼 음표로 스냅하거나 가사 성부를 연주용 사본에서 제거하지 않는다. 가사·크레센도·보표 간격은 OSMD 기본 배치를 따른다.
+- v1의 독립 가사 파트는 공통 `prepareScoreLyrics`에서 조판 pass 전에 한 번 읽어 사본에서만 같은 보표 성부로 전환한다. 저장 복원의 `canonical-lyric-read.ts`와 작성의 `canonical-lyric-voice.ts`를 재사용해 ID·독립 onset/duration·마디 연장·겹침을 유지한다. 파일·DB·패키지와 원래 XML은 변경하지 않는다.
+- 시간 없는 마디 문구는 XML manifest의 `measureLyrics`를 마디 순서로 연결해 `installScoreMeasureLyrics`의 OSMD `GraphicalLabel`로 출력한다. 전체 보기의 미저장 편집은 전달된 Song의 같은 마디 문구를 사용한다. 음절·가짜 음표·박 위치를 만들지 않고 마디 중앙에 배치하며, 마디 폭에서 줄바꿈하고 native 하단 경계에 높이를 반영한다. 음절 가사가 있으면 그 아래에 놓고 원본 마디가 없는 `IsExtraGraphicalMeasure`는 제외한다. 문구가 없으면 추가 배치·그리기 훅을 등록하지 않는다.
+- 음절·마디 문구 모두 공통 Pretendard와 `scoreTextHeight` 환산을 사용한다. `LyricsHeight = (RehearsalMarkFontSize + 3) × (96/72) ÷ 10`으로 섹션·지시문보다 3pt 크게 한다. 현재 13pt는 17⅓ SVG px이며, 색은 `DefaultColorLyrics = #3f74d4`다. 마디 문구도 같은 크기·색을 쓴다. 악보·가사는 같은 SVG 안에서 함께 확대·축소하며 별도 HTML 배율은 없다.
+- 연주용 마디 경계에는 OSMD 음절·연장선·하이픈·마디 문구의 실제 SVG 잉크를 포함한다. 제3선 정렬·동일 배율·원래 음가를 유지하면서 가사 아래까지 프레임을 확장한다. 숨은 가사 음표는 음표 강조와 드럼 온쉼표의 중앙 배치 대상에서 제외한다. 일반 시간축 조판의 최소 간격에는 가사 폭을 포함하고 균등 보기의 박 격자는 유지한다.
+- 전체 보기의 연속 줄 배치와 연주용 페이지·시간축 배치는 계속 분리한다. 전체 보기 캐시 키는 원문·파트·마디 ID·마디 문구·가수·기본 BPM과 전용 정책을 포함한다. 공통 렌더 정책은 `drum-print-ribbon-v43-lyrics-13pt`로 구분하여 이전 글꼴 크기의 전체 보기·연주 SVG 캐시를 재사용하지 않는다. 스크롤·재생 프레임마다 재조판하지 않는다.
+- 드럼연습실의 설정 > 악보에는 전체 PDF·SVG 보기만 제공하며 ‘전체 가사 보기’는 제거한다. 이 메뉴는 `Song.lyricText`, 없으면 마디 문구나 음절 가사를 모아 표시했다. 원문은 MusicXML의 `drum-practice:lyric-text`, 마디 문구는 manifest, 음절은 note/lyric에 저장·복원되므로 별도 중복 원본으로 간주해 삭제하지 않는다. 제작기의 가사 편집·텍스트 읽기/내보내기와 저장 호환성은 유지한다.
+- 실제 출력 검수에서는 전체·1줄·2줄의 가사 색/배율·경계 잘림·독립 리듬·마디 연장·겹침·마디 문구와 PDF 중복 표시 여부를 확인한다. 정적 검사를 실제 출력 검증으로 대신하지 않는다. 과거 전환 근거는 [전환 기록](../../records/archive/osmd-native-lyrics-review-20261110.md), 정본 계약은 [MusicXML 저장 규칙](musicxml.md#musicxml-canonical--저장-계약)을 따른다.
 
 <a id="svg-score-rules--3-타악기-음자리표와-세로줄"></a>
 
@@ -158,8 +159,8 @@
 
 - 섹션·연주 지시·가사·제목 등 악보의 모든 텍스트는 Pretendard로 통일한다. 음악 기호 전용 글리프는 유지한다. 일반 앱 UI 글꼴 변경으로 확대하지 않는다.
 - 연주 지시문의 출력 글자 크기는 섹션 표기의 크기와 같다. 인쇄·한 줄·두 줄·균등 연습 경로 모두 같은 native 크기를 사용한다. VexFlow 섹션의pt와 OSMD 라벨의SVG px를96/72로 환산해 맞추며 섹션만 굵게, 연주 지시는 원래 굵기를 유지한다. 원본 XML 글자 속성은 보존한다.
-- SVG 전체 보기의 음절 가사·마디 문구도 지시문과 같은 `scoreTextHeight` 환산을 사용한다. 연주 화면의 HTML 가사 크기 정책은 별도로 유지한다.
-- 로컬 Regular/Bold WOFF2를 측정 전에 로딩한다. DefaultFontFamily·VexFlowTextFontFamily·native rehearsal 측정/출력·OSMD 가사·HTML 가사에 같은 글꼴을 사용한다.
+- 전체 보기·연주 보기의 음절 가사·마디 문구도 공통 `scoreTextHeight` 환산을 사용하며 섹션·지시문보다 3pt 크게 표시한다.
+- 로컬 Regular/Bold WOFF2를 측정 전에 로딩한다. DefaultFontFamily·VexFlowTextFontFamily·native rehearsal 측정/출력·OSMD 가사에 같은 글꼴을 사용한다.
 - XML word-font·lyric-font·텍스트 font-family에 글꼴 이름을 기록한다. 독립 SVG에는 사용한 원본 WOFF2와 OFL 고지를 포함한다. XML 글꼴명만으로 바이너리가 내장됐다고 판단하지 않는다.
 - 독립 SVG의 테두리 안 글자 포함과 ko/en/언어 미지정 환경의 동일 폭을 확인한다. 글꼴 변경 시 최소 표시 offset도 재계산한다.
 
@@ -216,7 +217,7 @@
 - 연습용 trim은 같은 시스템의 실제 음표·쉼표·표제 경계에 상하5 SVG단위를 확보한다. 원래 시스템 밖 잉크는 clip-path로 가린다. 제목은 전체 SVG에 두고 연습 복제본에서만 제거한다.
 - MusicXML 시스템 경계는 OSMD의 실제 마디 SVG 그룹(`getSVGGElement`) 전체 잉크와 native 오선 좌표(`getVFStave().getYForLine(0)`)로 구한다. `.vf-measure` 바로 아래 path만 찾거나 SVG path 문자열로 줄을 식별하지 않는다. 중첩 `.vf-stave`에서도 섹션·하이햇 주법·음표의 실제 위아래 경계를 포함한다.
 - 1줄·2줄·균등 보기와 두 앱의 공통 마디 표시는 위의 실제 시스템 경계로 상하 clip을 적용한다. 별도 8 CSS px 상단 확장은 사용하지 않는다. 다음 줄 음표가 가사 영역에 유입되지 않게 자기 시스템의 하단 잉크+5 SVG단위까지만 표시하며 악보 배율·박/가사 시각·PDF 표시·원본 XML을 유지한다. 경계 계산을 바꾸면 렌더 캐시 정책을 올려 이전의 고정 fallback 경계를 재사용하지 않는다.
-- words 실제 경계와 마디 바깥 native wedge도 포함한다. 음표·빔 잘림이나 옆줄 기호 유입은 좌표·변환을 고쳐 해결하며 리듬을 바꾸지 않는다.
+- words 실제 경계와 마디 바깥 native wedge·음절/마디 가사·하이픈·연장선도 포함한다. 음표·빔 잘림이나 옆줄 기호 유입은 좌표·변환을 고쳐 해결하며 리듬을 바꾸지 않는다.
 - beatXs는 실제 timestamp를 박자 분모로 변환하고 인접 좌표를 보간한다. 연음을 정수 박으로 반올림하지 않는다. 페이지와 대응 마디 영역을 함께 갱신한다.
 - wedge의 명시된 마디 내부 stop은 native `Timestamp + EndOffsetFraction`에 있는 음표 머리 오른쪽 앵커를 사용한다. 음표 사이의 분수 박은 실제 인접 앵커 사이를 보간한다. 직전 음가·다음 음표와 섞은 native 여백 계산으로 종료 박을 당기지 않는다.
 - 인쇄·한 줄·두 줄·균등 조판은 같은 wedge 앵커를 사용한다. native 선·경계·skyline을 SVG 그리기 전에 갱신하며 원본 XML·음악 시각은 유지한다. 마디 끝 stop의 기존 경계 처리·soft accent·verbal dynamic은 유지한다.
@@ -233,8 +234,8 @@
 - native SVG와 nativePageRatio로 두 축에 동일 배율을 적용한다. 한 줄은 사분음표 수에 비례하는 폭의 timeline, 두 줄은 고정 폭의 row 그림을 사용한다. 두 경로는 같은 native 간격 계산과 글리프 크기를 공유하며4/4의 기준 폭이 같다. 변박 마디의 폭만 늘려 조판하고 오선·음표를 확대하거나 비균등 변형하지 않는다. 별도 grid 선택은 아래 계약을 따른다.
 - 마디의 세로 정렬은 오선 제3선(`top + 2 × gap`)을 공통 기준으로 한다. crop 잉크 경계나 이미지 사각형의 중심으로 정렬하지 않는다. MusicXML은 같은 SVG viewport 안에서 원본 페이지 이미지를 배치해 큰 CSS 배경 이미지의 크기/오프셋이 따로 반올림되는 오차를 피한다. 같은 페이지 URL을 재사용하며 마디마다 전체 SVG 원문을 복제하거나 별도 SVG 파일을 저장하지 않는다. PDF의 기존 배경 표시와 음표 빛나기 overlay를 유지한다.
 - 두 줄용 조판은 native 마디 너비≥320과 필요한 머리/주법/장식음 최소 간격을 확보하고 남는 폭을 음가에 배분한다. 전곡의 같은 크기를 유지하되 밀집 곡의 최소 가독성을 무조건 보증하지 않는다.
-- MusicXML 프레임은 맨 위 선 기준으로 위8간격·아래8간격, 총16간격을 최소로 하고, 지시문 등 실제 연습 crop이 넘으면 전곡에 공유하는 프레임을 확장한다. 최상단 기호 위5 SVG단위의 여유를 포함하며, 섹션의 위치 기준인 위7간격과 표시 여백인 최소8간격을 구분한다. native 오선 간격과 가로/세로 동일 배율은 유지한다. PDF는 기존 위7/아래8간격을 최소로 하는 실제 내용의 공통 확장 프레임을 유지한다. 가사는 crop 아래6px·줄별30px 영역을 사용한다.
-- 두 줄 높이는 화면 내부 폭/4와 전곡 최대 crop 높이에서 고정한다. 상단28px·줄 사이28px·가사 각30px·외곽선2px를 확보하고 하단 추가28px는 예약하지 않는다. 남은 세로 공간 때문에 마디 폭을 줄이지 않는다.
+- MusicXML 프레임은 맨 위 선 기준으로 위8간격·아래8간격, 총16간격을 최소로 하고, 지시문 등 실제 연습 crop이 넘으면 전곡에 공유하는 프레임을 확장한다. 최상단 기호 위5 SVG단위의 여유를 포함하며, 섹션의 위치 기준인 위7간격과 표시 여백인 최소8간격을 구분한다. native 오선 간격과 가로/세로 동일 배율은 유지한다. PDF는 기존 위7/아래8간격을 최소로 하는 실제 내용의 공통 확장 프레임을 유지한다. SVG 가사는 crop 안에 포함하며 별도 HTML 가사 영역은 예약하지 않는다.
+- 두 줄 높이는 화면 내부 폭/4와 전곡 최대 crop 높이에서 고정한다. 상단28px·줄 사이28px·외곽선2px를 확보하고 하단 추가28px는 예약하지 않는다. 남은 세로 공간 때문에 마디 폭을 줄이지 않는다.
 - 두 줄의 마디 번호는 예약된28px 위쪽 영역에 둔다. 번호의 배경이 마디 안의 연주 지시문을 가리지 않게 한다.
 - 한 줄/두 줄의 외부 악보 영역 높이·재생바·조작판 시작 위치를 통일한다. 경계 간격0px, 두 줄 제목 아래 외부 여백0·재생바 간격2px다. 작은 창은 외부 세로 접근을 허용하며 조작판 안에 스크롤을 만들지 않는다.
 - 일반 화면의 한 줄은 마디 번호·악보·가사를 세로 중앙에 둔다. 프레임 위24px·진행선 위40px 연장·상태표시 위53px를 확보하고 확장 영역으로 중앙 정렬한다. 폰용 가로 악보 전용 모드는 아래 §9의 제3선 중앙 정렬을 따른다. 좁은 마디나 온쉼표 때문에 오선 크기를 줄이지 않는다.
@@ -313,7 +314,7 @@
 | 조판 진입·pass·캐시 연결 | src/modules/score/musicxml.ts |
 | XML 읽기·엔진·기호·좌표 | src/modules/score/musicxml-parse.ts·musicxml-engine.ts·musicxml-glyphs.ts·musicxml-geometry.ts |
 | 표시제목·원제의 조판용 출력 | src/modules/score/engraving-titles.ts |
-| 전체 보기 가사·마디 문구·배율 | src/modules/score/full-score-lyrics.ts·full-score-view.ts·score-text-font.ts |
+| SVG 가사·마디 문구·배율 | src/modules/score/score-lyrics.ts·musicxml-engine.ts·score-text-font.ts |
 | 전체 보기 연속 배치·일정한 오선 간격·기본 BPM/가수 | src/modules/score/full-score-layout.ts |
 | 섹션·words·O+ native 위치 | rehearsal-layout.ts·words-position.ts·technical-position.ts |
 | 범례·쉼표·압축 | drum-notation.ts·whole-rest-layout.ts·score-rest-correction.ts·score-pages.ts |

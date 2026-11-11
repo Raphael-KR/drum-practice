@@ -1,3 +1,4 @@
+import type { GraphicalStaffEntry } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalStaffEntry";
 import type { VexFlowMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure";
 import type { VexFlowVoiceEntry } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowVoiceEntry";
 import type { MusicSheetCalculator } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/MusicSheetCalculator";
@@ -22,24 +23,12 @@ export function ribbonSpacing(osmd: OpenSheetMusicDisplay): RibbonSpacing {
     const g = row[0];
     const entries: { q: number; left: number; right: number }[] = [];
     for (const e of g.staffEntries) {
-      let left = 0,
-        right = 12;
-      for (const v of e.graphicalVoiceEntries) {
-        if (v.parentVoiceEntry.IsGrace) continue;
-        const metrics = (v as VexFlowVoiceEntry).vfStaveNote
-          ?.getTickContext()
-          ?.getMetrics();
-        left = Math.max(left, metrics?.extraLeftPx || 0);
-        right = Math.max(
-          right,
-          (metrics?.notePx || 12) + (metrics?.extraRightPx || 0),
-        );
-      }
-      entries.push({ q: e.relInMeasureTimestamp.RealValue * 4, left, right });
+      const bounds = entrySpacing(e);
+      entries.push(bounds);
       // Only an ornament on the first beat needs a leading margin.
       // Interior ornaments are already covered by their preceding interval.
       if (Math.abs(e.relInMeasureTimestamp.RealValue) < 1e-7)
-        offset = Math.max(offset, left + 4);
+        offset = Math.max(offset, bounds.left + 4);
     }
     entries.push({
       q: g.parentSourceMeasure.Duration.RealValue * 4,
@@ -92,26 +81,7 @@ export function installRibbonEngraving(
             ? spacing.rowWidth
             : quarters * spacing.quarter;
         const rowEntries = spacing.rowWidth
-          ? measure.staffEntries.map((e) => {
-              let left = 0,
-                right = 12;
-              for (const v of e.graphicalVoiceEntries) {
-                if (v.parentVoiceEntry.IsGrace) continue;
-                const metrics = (v as VexFlowVoiceEntry).vfStaveNote
-                  ?.getTickContext()
-                  ?.getMetrics();
-                left = Math.max(left, metrics?.extraLeftPx || 0);
-                right = Math.max(
-                  right,
-                  (metrics?.notePx || 12) + (metrics?.extraRightPx || 0),
-                );
-              }
-              return {
-                q: e.relInMeasureTimestamp.RealValue * 4,
-                left,
-                right,
-              };
-            })
+          ? measure.staffEntries.map(entrySpacing)
           : [];
         const points = spacing.rowWidth
           ? spacing.fixedGrid
@@ -160,6 +130,29 @@ interface RowEntry {
   left: number;
   right: number;
 }
+/** Include native lyric width along with drum ink before allocating timed space. */
+function entrySpacing(entry: GraphicalStaffEntry): RowEntry {
+  let left = 0,
+    right = 12;
+  for (const voice of entry.graphicalVoiceEntries) {
+    if (voice.parentVoiceEntry.IsGrace) continue;
+    const metrics = (voice as VexFlowVoiceEntry).vfStaveNote
+      ?.getTickContext()
+      ?.getMetrics();
+    left = Math.max(left, metrics?.extraLeftPx || 0);
+    right = Math.max(
+      right,
+      (metrics?.notePx || 12) + (metrics?.extraRightPx || 0),
+    );
+  }
+  for (const lyric of entry.LyricsEntries) {
+    const box = lyric.GraphicalLabel.PositionAndShape;
+    left = Math.max(left, -box.BorderMarginLeft * 10);
+    right = Math.max(right, box.BorderMarginRight * 10);
+  }
+  return { q: entry.relInMeasureTimestamp.RealValue * 4, left, right };
+}
+
 function rowMinimum(entries: RowEntry[]) {
   return entries
     .slice(1)

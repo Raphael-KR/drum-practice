@@ -1,0 +1,38 @@
+button.error-copy,
+button.error-copy:hover:not(:disabled) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  white-space: inherit;
+  overflow-wrap: inherit;
+}
+
+.clipboard-notice {
+  position: fixed;
+  z-index: 10000;
+  inset: auto 12px max(24px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #243247;
+  color: #fff;
+  box-shadow: 0 4px 18px #0003;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}

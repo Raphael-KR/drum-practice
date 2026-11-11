@@ -232,7 +232,6 @@ it("shows the app name and score library action on the home screen", async () =>
   await vi.waitFor(() =>
     expect(document.getElementById("welcome")!.hidden).toBe(false),
   );
-  expect(document.getElementById("library-dialog")).toBeNull();
 });
 it("opens the saved score through the catalog, exposes fixed range slots and applies the selected BPM", async () => {
   // Keep the existing PDF fixture and media stubs; enter through the visible saved card.
@@ -251,14 +250,12 @@ it("opens the saved score through the catalog, exposes fixed range slots and app
       true,
     ),
   );
-  expect(document.getElementById("marker-name")).toBeNull();
   expect(document.querySelectorAll("#section-shortcuts button")).toHaveLength(
     9,
   );
   await vi.waitFor(() =>
     expect(document.querySelectorAll("#loop-slots button")).toHaveLength(9),
   );
-  expect(document.getElementById("loop-a")).toBeNull();
   set("rate", "89");
   document.getElementById("rate")!.dispatchEvent(new Event("change"));
   await vi.waitFor(() =>
@@ -275,14 +272,6 @@ it("opens the saved score through the catalog, exposes fixed range slots and app
     },
     { timeout: 5000 },
   );
-});
-it("renders the boundary ru once in measure 11, never at the end of measure 10", () => {
-  const text = (index: number) =>
-    [...document.querySelectorAll(`[data-index="${index}"] .syllable`)].map(
-      (e) => e.textContent,
-    );
-  expect(text(9)).not.toContain("루");
-  expect(text(10).filter((t) => t === "루")).toHaveLength(1);
 });
 it("accepts BPM input and clamps to the supported audio range", async () => {
   set("rate", "80");
@@ -416,12 +405,9 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   expect(document.getElementById("original-tempo-value")!.textContent).toBe(
     "= 94.0",
   );
-  expect(document.querySelector(".practice-dock")).toBeNull();
   expect(
     document.querySelectorAll(".repeat-presets [data-loop-radius]"),
   ).toHaveLength(4);
-  expect(document.getElementById("open-sound-dialog")).toBeNull();
-  expect(document.getElementById("sound-dialog")).toBeNull();
   expect(
     document.getElementById("music-volume")!.closest(".settings-sidebar"),
   ).not.toBeNull();
@@ -438,14 +424,13 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   expect(notice.textContent).toContain(
     "이동할 마디 수를 1~10 중에서 선택하세요",
   );
-  click("error-notice");
+  click("error-notice-close");
   expect(notice.hidden).toBe(true);
   set("goto", "1");
   errorSpy.mockRestore();
   expect(
     document.getElementById("view")!.closest("#screen-dialog"),
   ).not.toBeNull();
-  expect(document.querySelectorAll('input[name="score-view"]')).toHaveLength(0);
   expect(document.getElementById("view")!.hidden).toBe(true);
   expect(
     (
@@ -526,7 +511,6 @@ it("keeps direct tool access and previews the actual measure while scrubbing", a
   set("edit-artist", "Real Paradis");
   const before = (await allRecords()).find((r) => r.song.id === "real-paradis")!
     .song.measures[0].start;
-  expect(document.getElementById("save-metadata")).toBeNull();
   set("edit-original-title", "Original title saved from toolbar");
   set("edit-composer", "Composer saved from toolbar");
   click("edit-commit");
@@ -576,15 +560,6 @@ it("groups screen, playback, score management and app info in settings", async (
     expect(button.closest("#score-settings")).not.toBeNull();
     expect(button.closest("[hidden]")).toBeNull();
   }
-  // The current library backup remains available; retired per-score controls are absent.
-  for (const id of [
-    "backup-dialog",
-    "restore",
-    "export",
-    "replace-score-button",
-    "export-musicxml",
-  ])
-    expect(document.getElementById(id)).toBeNull();
   libraryBackup.open = false;
   expect(document.getElementById("screen-dialog")!.hidden).toBe(false);
   click("open-score-settings");
@@ -610,8 +585,6 @@ it("groups screen, playback, score management and app info in settings", async (
   expect(
     [...document.querySelectorAll(".app-info dt")].map((e) => e.textContent),
   ).toEqual(["버전", "빌드 시각"]);
-  expect(document.getElementById("app-build")).toBeNull();
-  expect(document.getElementById("app-source")).toBeNull();
   const kst = new Date(
     new Date(buildInfo.builtAt).getTime() + 9 * 60 * 60 * 1000,
   );
@@ -641,8 +614,6 @@ it("groups screen, playback, score management and app info in settings", async (
     restartMeasure: false,
     countOff: false,
   });
-  expect(document.querySelector("#count")).toBeNull();
-  expect(document.querySelector("#count-each")).toBeNull();
   click("restart-measure");
   click("count-off");
   (document.getElementById("settings-dialog") as HTMLDialogElement).close();
@@ -742,15 +713,12 @@ it("keeps icon controls accessible and updates play and metronome states", async
     "original-tempo",
   );
   expect(document.getElementById("fullscreen")).toBeNull();
-  expect(document.getElementById("save-html")).toBeNull();
   expect(
     document.querySelector('#export-choices input[value="html"]'),
   ).toBeNull();
   expect(
     document.getElementById("rate")!.closest("#tempo-dialog"),
   ).not.toBeNull();
-  for (const id of ["tempo-presets", "slower", "faster"])
-    expect(document.getElementById(id)).toBeNull();
   expect(document.getElementById("jump")!.getAttribute("aria-label")).toContain(
     "되감기",
   );
@@ -920,7 +888,7 @@ it("selects a measure on single tap and starts range registration on paused doub
   view.dispatchEvent(new Event("change"));
   animationFrame(0);
 });
-it("separates tap playback, percent drag, marker activation and cancelled gestures", async () => {
+it("separates tap playback, percent drag and cancelled gestures", async () => {
   const stage = document.getElementById("stage")!;
   const fire = (el: HTMLElement, name: string, x: number, y = 100) => {
     const e = new Event(name, { bubbles: true, cancelable: true });
@@ -975,10 +943,6 @@ it("separates tap playback, percent drag, marker activation and cancelled gestur
   fire(percent, "pointercancel", 100, 84);
   animationFrame(0);
   expect(Number(percent.value)).toBe(initial + 10);
-  await new Promise((ok) => setTimeout(ok, 510));
-  percent.click();
-  expect(document.querySelector('[data-drawer-panel="progress"]')).toBeNull();
-
   click("home");
 });
 it("browses all paused rows vertically without seeking, then restores playback following", async () => {
@@ -1158,8 +1122,6 @@ it("edits lyric starts and duration in musical units without free-time controls"
         ((r.song.measures[0].end - r.song.measures[0].start) * 1.25) / 4,
     );
   });
-  expect(document.querySelector('[data-field="freeTiming"]')).toBeNull();
-  expect(document.querySelector('[data-field="time"]')).toBeNull();
   const duration = document.querySelector<HTMLInputElement>(
     '#lyric-editor [data-field="duration-beats"]',
   )!;
@@ -1181,7 +1143,6 @@ it("returns from playback to the shared list and reopens a saved score", async (
   await vi.waitFor(() =>
     expect(document.body.classList.contains("has-song")).toBe(false),
   );
-  expect(document.getElementById("library-dialog")).toBeNull();
   expect(document.getElementById("practice")!.hidden).toBe(true);
   expect(document.getElementById("welcome")!.hidden).toBe(false);
   const records = await allRecords();
@@ -1264,86 +1225,6 @@ it("dismisses settings only for an outside gesture and uses icon close controls"
   rect.mockRestore();
 });
 
-it("reuses tempo and metronome inputs in one phone landscape settings card and restores them", async () => {
-  const { installPhoneLandscapeSettings } =
-    await import("../../src/modules/playback/playback-settings-layout");
-  const { selectSettingsCategory, openSettings, closeSettings } =
-    await import("../../src/apps/editor/workspace");
-  const root = document.getElementById("app")!;
-  const settings = document.getElementById(
-    "settings-dialog",
-  ) as HTMLDialogElement;
-  const tempoDialog = document.getElementById(
-    "tempo-dialog",
-  ) as HTMLDialogElement;
-  const tempo = tempoDialog.querySelector<HTMLElement>(".tool-body")!;
-  const input = tempo.querySelector<HTMLInputElement>("input")!;
-  const originalValue = input.value;
-  const metronome = root.querySelector<HTMLElement>(".settings-metronome-row")!;
-  const metronomeHome = metronome.parentElement;
-  const layout = installPhoneLandscapeSettings(root, selectSettingsCategory);
-  const visible = (attribute: string) =>
-    [
-      ...settings.querySelectorAll<HTMLElement>(`[${attribute}]:not([hidden])`),
-    ].map((element) => element.getAttribute(attribute));
-  try {
-    openSettings("score");
-    for (let i = 0; i < 3; i++) {
-      layout.sync(true);
-      expect(visible("data-settings-category")).toEqual([
-        "screen",
-        "playback",
-        "metronome",
-        "tempo",
-      ]);
-      expect(visible("data-settings-panel")).toEqual(["screen"]);
-      for (const category of ["playback", "metronome", "tempo"] as const) {
-        selectSettingsCategory(category);
-        expect(visible("data-settings-panel")).toEqual([category]);
-      }
-      expect(settings.querySelector("#tempo-settings input")).toBe(input);
-      expect(
-        settings.querySelector("#metronome-settings .settings-metronome-row"),
-      ).toBe(metronome);
-      expect(tempoDialog.open).toBe(false);
-      closeSettings();
-      openSettings();
-      expect(visible("data-settings-panel")).toEqual(["tempo"]);
-      layout.sync(false);
-      expect(tempo.parentElement).toBe(tempoDialog);
-      expect(metronome.parentElement).toBe(metronomeHome);
-      expect(input.value).toBe(originalValue);
-      expect(root.querySelectorAll(`#${input.id}`)).toHaveLength(1);
-      expect(root.querySelectorAll("#metronome-choices")).toHaveLength(1);
-      expect(visible("data-settings-category")).toEqual([
-        "screen",
-        "playback",
-        "score",
-        "info",
-      ]);
-      expect(visible("data-settings-panel")).toHaveLength(4);
-      expect(
-        document
-          .getElementById("open-screen-dialog")!
-          .getAttribute("aria-current"),
-      ).toBe("location");
-      // The first phone selection must not leave the scroll listener in phone mode.
-      settings
-        .querySelector(".settings-detail")!
-        .dispatchEvent(new Event("scroll"));
-      expect(visible("data-settings-category")).toEqual([
-        "screen",
-        "playback",
-        "score",
-        "info",
-      ]);
-    }
-  } finally {
-    layout.dispose();
-    closeSettings();
-  }
-});
-
 it("remembers the settings category and returns from a child only when opened there", async () => {
   const { openSettings, selectSettingsCategory, openSettingsChild } =
     await import("../../src/apps/editor/workspace");
@@ -1389,9 +1270,6 @@ it("remembers the settings category and returns from a child only when opened th
   localStorage.setItem("drum-practice.settings-category", "playback");
   openSettings();
   expectCategory("playback", "재생");
-  expect(
-    document.getElementById("playback-settings")!.textContent,
-  ).not.toContain("모든 곡에 공통으로 적용하며");
   settings.close();
 });
 

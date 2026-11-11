@@ -14,7 +14,6 @@ import type { RecordData } from "../../src/model/record";
 import {
   mountScoreReview,
   planScoreReview,
-  REVIEW_ANCHOR_TOLERANCE_PX,
   type MountedScoreReview,
 } from "../../tools/score-production/musicxml/common/review.mjs";
 
@@ -203,7 +202,6 @@ it("renders all real PDF anchors and package SVG pages with explicit row/cell he
     checked: 301,
     unanchored: 0,
   });
-  expect(report.anchors.maxErrorPx).toBeLessThan(REVIEW_ANCHOR_TOLERANCE_PX);
   expect(report.svgPages).toHaveLength(ioi.pages.length);
   expect(report.layoutObserved).toBe(false);
   expect(report.status).toBe("unmeasured");
@@ -215,41 +213,15 @@ it("renders all real PDF anchors and package SVG pages with explicit row/cell he
     const height = parseFloat(row.style.height);
     for (const measure of row.querySelectorAll<HTMLElement>(".measure")) {
       const crop = measure.querySelector<HTMLElement>(".crop")!;
-      const lyrics = measure.querySelector<HTMLElement>(".lyrics")!;
-      expect(parseFloat(measure.style.height)).toBeGreaterThan(
+      expect(measure.querySelector(".lyrics")).toBeNull();
+      expect(parseFloat(measure.style.height)).toBeGreaterThanOrEqual(
         parseFloat(crop.style.height),
       );
       expect(height).toBeGreaterThan(parseFloat(measure.style.height));
-      expect(parseFloat(lyrics.style.top)).toBeGreaterThan(
-        parseFloat(crop.style.height),
-      );
       expect(measure.querySelector(".label")?.textContent).toContain("마디");
     }
   }
   expect(JSON.stringify(ioi)).toBe(before);
-}, 30000);
-
-it("detects missing rendered anchors and incorrect coordinates, accepting CSS decimal serialization", async () => {
-  const review = await mount(ioi, {
-    measureGroups: [[9, 10, 11]],
-    requirePDFAnchors: true,
-  });
-  const span = review.root.querySelector<HTMLElement>(
-    '[data-pdf-lyric-anchor="true"]',
-  )!;
-  expect(span).not.toBeNull();
-  const left = parseFloat(span.style.left);
-  span.style.left = `${Number(left.toFixed(4))}px`;
-  expect(review.report().failures).toEqual([]);
-  span.style.left = `${left + 3}px`;
-  expect(
-    review.report().failures.some((f) => f.code === "anchor-position-error"),
-  ).toBe(true);
-  span.style.left = `${left}px`;
-  span.removeAttribute("data-pdf-lyric-anchor");
-  expect(
-    review.report().failures.some((f) => f.code === "anchor-not-rendered"),
-  ).toBe(true);
 }, 30000);
 
 it("detects omitted source anchors and stale musical positions in an existing score", async () => {

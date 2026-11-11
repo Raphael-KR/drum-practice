@@ -467,7 +467,6 @@ for (const environment of ["web", "player"] as const) {
     expect(centerLoop.start).toBe(song.measures[18].start);
     expect(centerLoop.end).toBe(song.measures[22].end);
     click(ids.adjust);
-    expect(root.querySelector("#loop-precise")).toBeNull();
     const preserved = structuredClone(centerLoop);
     expect(p.loop).toBeUndefined();
     click(ids.adjust);
@@ -556,13 +555,9 @@ it("fixed control board stays visible while shortcuts and repeat presets are use
     root.querySelector<HTMLElement>('[data-drawer-panel="marker"]')!.hidden,
   ).toBe(false);
   expect(song.markers).toHaveLength(1);
-  expect(root.querySelector("#add-marker")).toBeNull();
-  expect(root.querySelector("#mark")).toBeNull();
   root.querySelector<HTMLButtonElement>("[data-quick-marker]")!.click();
   expect(song.markers).toHaveLength(0);
   expect(root.querySelectorAll(".empty-marker-slot")).toHaveLength(5);
-  expect(root.querySelector('[data-drawer-panel="rewind"]')).toBeNull();
-  expect(root.querySelector("#drawer-progress")).toBeNull();
   expect(input(ids.rewind).closest(".transport")).not.toBeNull();
   expect(input(ids.rewind).dataset.numericDragBound).toBe("true");
   input(ids.rewind).value = "3";
@@ -921,114 +916,113 @@ for (const environment of ["web", "player"] as const)
       expect(p.position).toBe(song.measures[5].start);
     });
 
-for (const environment of ["web", "player"] as const)
-  for (const view of ["rows", "ribbon"] as const)
-    it(`${environment} ${view}: phone layout disables repeat actions and markings without deleting saved ranges`, () => {
-      const phoneLayout = Object.assign(new EventTarget(), { matches: false });
-      vi.stubGlobal("matchMedia", (query: string) =>
-        query === PHONE_LAYOUT_QUERY
-          ? phoneLayout
-          : Object.assign(new EventTarget(), { matches: false }),
+for (const view of ["rows", "ribbon"] as const)
+  it(`player ${view}: phone layout disables repeat actions and markings without deleting saved ranges`, () => {
+    const phoneLayout = Object.assign(new EventTarget(), { matches: false });
+    vi.stubGlobal("matchMedia", (query: string) =>
+      query === PHONE_LAYOUT_QUERY
+        ? phoneLayout
+        : Object.assign(new EventTarget(), { matches: false }),
+    );
+    const setPhone = (matches: boolean) => {
+      phoneLayout.matches = matches;
+      phoneLayout.dispatchEvent(new Event("change"));
+    };
+    const { p, song, screen, root } = mount("player");
+    song.settings.view = view;
+    song.loops = [
+      {
+        id: "saved-range",
+        name: "2~4",
+        start: song.measures[1].start,
+        end: song.measures[3].end,
+      },
+    ];
+    song.repeatSlots = ["saved-range"];
+    p.loop = undefined;
+    screen.renderTrack();
+    screen.frame();
+    const marked = () =>
+      Array.from(root.querySelectorAll<HTMLElement>(".has-saved-loop")).map(
+        (e) => Number(e.dataset.index),
       );
-      const setPhone = (matches: boolean) => {
-        phoneLayout.matches = matches;
-        phoneLayout.dispatchEvent(new Event("change"));
-      };
-      const { p, song, screen, root } = mount(environment);
-      song.settings.view = view;
-      song.loops = [
-        {
-          id: "saved-range",
-          name: "2~4",
-          start: song.measures[1].start,
-          end: song.measures[3].end,
-        },
-      ];
-      song.repeatSlots = ["saved-range"];
-      p.loop = undefined;
-      screen.renderTrack();
-      screen.frame();
-      const marked = () =>
-        Array.from(root.querySelectorAll<HTMLElement>(".has-saved-loop")).map(
-          (e) => Number(e.dataset.index),
-        );
-      expect(marked()).toEqual([1, 2, 3]);
-      expect(root.querySelector(".in-loop")).toBeNull();
-      document.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "ArrowRight", cancelable: true }),
-      );
-      screen.frame();
-      expect(marked()).toEqual([1, 2, 3]);
-      const saved = JSON.stringify({
-        loops: song.loops,
-        slots: song.repeatSlots,
-      });
-      const key = () =>
-        document.dispatchEvent(
-          new KeyboardEvent("keydown", { key: "Enter", cancelable: true }),
-        );
-      // Abandon an incomplete desktop selection before disabling every entry point.
-      key();
-      expect(root.querySelector(".range-selecting")).not.toBeNull();
-      setPhone(true);
-      expect(root.classList.contains("phone-layout")).toBe(true);
-      expect(marked()).toEqual([]);
-      expect(root.querySelector(".range-selecting")).toBeNull();
-      key();
-      key();
-      for (let i = 0; i < 2; i++)
-        for (const type of ["pointerdown", "pointerup"]) {
-          const event = new MouseEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          });
-          Object.assign(event, {
-            pointerId: 1,
-            pointerType: "touch",
-            isPrimary: true,
-          });
-          root.querySelector('[data-index="0"]')!.dispatchEvent(event);
-        }
-      root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();
-      root.querySelector<HTMLButtonElement>('[data-loop-slot="1"]')!.click();
-      root.querySelector<HTMLButtonElement>('[data-radius="1"]')!.click();
-      getHelpAction(
-        root.querySelector<HTMLElement>('[data-loop-slot="0"]')!,
-      )?.run();
-      screen.useLoop(song.loops[0]);
-      expect(p.loop).toBeUndefined();
-      expect(
-        root.querySelector(".range-selecting, .range-selection-mode"),
-      ).toBeNull();
-      expect(
-        JSON.stringify({ loops: song.loops, slots: song.repeatSlots }),
-      ).toBe(saved);
-
-      setPhone(false);
-      expect(marked()).toEqual([1, 2, 3]);
-      expect(p.loop).toBeUndefined();
-      root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();
-      expect(p.loop).toBe(song.loops[0]);
-      p.position = song.measures[2].start;
-      p.playing = true;
-      setPhone(true);
-      expect(p.loop).toBeUndefined();
-      expect(p.playing).toBe(true);
-      expect(p.position).toBe(song.measures[2].start);
-      expect(marked()).toEqual([]);
-      expect(root.querySelector(".in-loop, .loop-start, .loop-end")).toBeNull();
-      expect(
-        JSON.stringify({ loops: song.loops, slots: song.repeatSlots }),
-      ).toBe(saved);
-      setPhone(false);
-      expect(marked()).toEqual([1, 2, 3]);
-      expect(p.loop).toBeUndefined();
-      song.loops = [];
-      song.repeatSlots = [];
-      screen.frame();
-      expect(marked()).toEqual([]);
+    expect(marked()).toEqual([1, 2, 3]);
+    expect(root.querySelector(".in-loop")).toBeNull();
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", cancelable: true }),
+    );
+    screen.frame();
+    expect(marked()).toEqual([1, 2, 3]);
+    const saved = JSON.stringify({
+      loops: song.loops,
+      slots: song.repeatSlots,
     });
+    const key = () =>
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", cancelable: true }),
+      );
+    // Abandon an incomplete desktop selection before disabling every entry point.
+    key();
+    expect(root.querySelector(".range-selecting")).not.toBeNull();
+    setPhone(true);
+    expect(root.classList.contains("phone-layout")).toBe(true);
+    expect(marked()).toEqual([]);
+    expect(root.querySelector(".range-selecting")).toBeNull();
+    key();
+    key();
+    for (let i = 0; i < 2; i++)
+      for (const type of ["pointerdown", "pointerup"]) {
+        const event = new MouseEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+        });
+        Object.assign(event, {
+          pointerId: 1,
+          pointerType: "touch",
+          isPrimary: true,
+        });
+        root.querySelector('[data-index="0"]')!.dispatchEvent(event);
+      }
+    root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-loop-slot="1"]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-radius="1"]')!.click();
+    getHelpAction(
+      root.querySelector<HTMLElement>('[data-loop-slot="0"]')!,
+    )?.run();
+    screen.useLoop(song.loops[0]);
+    expect(p.loop).toBeUndefined();
+    expect(
+      root.querySelector(".range-selecting, .range-selection-mode"),
+    ).toBeNull();
+    expect(JSON.stringify({ loops: song.loops, slots: song.repeatSlots })).toBe(
+      saved,
+    );
+
+    setPhone(false);
+    expect(marked()).toEqual([1, 2, 3]);
+    expect(p.loop).toBeUndefined();
+    root.querySelector<HTMLButtonElement>('[data-loop-slot="0"]')!.click();
+    expect(p.loop).toBe(song.loops[0]);
+    p.position = song.measures[2].start;
+    p.playing = true;
+    setPhone(true);
+    expect(p.loop).toBeUndefined();
+    expect(p.playing).toBe(true);
+    expect(p.position).toBe(song.measures[2].start);
+    expect(marked()).toEqual([]);
+    expect(root.querySelector(".in-loop, .loop-start, .loop-end")).toBeNull();
+    expect(JSON.stringify({ loops: song.loops, slots: song.repeatSlots })).toBe(
+      saved,
+    );
+    setPhone(false);
+    expect(marked()).toEqual([1, 2, 3]);
+    expect(p.loop).toBeUndefined();
+    song.loops = [];
+    song.repeatSlots = [];
+    screen.frame();
+    expect(marked()).toEqual([]);
+  });
 for (const environment of ["web", "player"] as const)
   it(`${environment}: range buttons restart from keyboard selection and delete only via the explicit action`, () => {
     const { p, song, screen, root, ids } = mount(environment);

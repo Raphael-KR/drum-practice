@@ -23,6 +23,7 @@ export function annotateNoteHighlights(
       const beat = entry.relInMeasureTimestamp.RealValue * denominators[index];
       for (const voice of entry.graphicalVoiceEntries)
         for (const note of voice.notes as VexFlowGraphicalNote[]) {
+          if (note.sourceNote.PrintObject === false) continue;
           const stemX = note.vfnote?.[0]?.getStemX?.();
           if (Number.isFinite(stemX))
             notePoints.set(note.sourceNote, { beat, x: stemX });

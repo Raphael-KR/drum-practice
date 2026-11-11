@@ -1,5 +1,4 @@
 @import "../../score/score-text-font.css";
-@import "../../lyrics/score-lyrics.css";
 @import "../../score/full-score-view.css";
 
 /* Canonical playback presentation. Both hosts load this after their adapters. */
@@ -47,13 +46,6 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-}
-.measure .lyrics {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 226px;
-  font-weight: 600;
 }
 .playhead {
   position: absolute;
@@ -115,11 +107,6 @@
   }
 }
 @media (max-width: 850px) {
-  .measure .lyrics {
-    top: 193px;
-  }
-}
-@media (max-width: 850px) {
   .transport {
     gap: 10px;
   }
@@ -150,10 +137,6 @@
 .measure .label {
   color: var(--muted);
   top: -25px;
-}
-.measure .lyrics {
-  color: var(--accent);
-  height: 32px;
 }
 .playhead {
   bottom: 10px;

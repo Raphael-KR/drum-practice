@@ -9,7 +9,7 @@
 
 ## 로컬 실행
 
-기준 개발 환경은 `.nvmrc`의 **Node.js 22 LTS(22.22.2 이상)**입니다. 지원 범위는 `package.json`의 `engines`를 따릅니다. 앱의 음원 분석정보는 브라우저 IndexedDB에 저장합니다. `node:sqlite`는 과거 서버 테이블 제거를 확인하는 회귀 검사에만 사용합니다.
+기준 개발 환경은 `.nvmrc`의 **Node.js 22 LTS(22.22.2 이상)**입니다. 지원 범위는 `package.json`의 `engines`를 따릅니다. 앱의 음원 분석정보는 브라우저 IndexedDB에 저장합니다.
 
 ```sh
 cd /Users/raphael/Playground/drum-practice

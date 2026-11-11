@@ -279,12 +279,6 @@ it("keeps basic exercises in their own section before and after import without r
     bundled.filter((s) => "category" in s && s.category === "basic").length,
   );
   expect(basicList().textContent).toContain("Saved basic");
-  expect(
-    basicList().querySelector('button[aria-label="이전 악보 복원"]'),
-  ).toBeNull();
-  expect(
-    basicList().querySelector('button[aria-label="악보 업데이트"]'),
-  ).toBeNull();
   expect(basicList().querySelector("[data-open]")).not.toBeNull();
   expect(personalList().textContent).toContain("My own score");
   expect(personalList().textContent).not.toContain("Saved basic");
@@ -333,9 +327,6 @@ it("hides retired 16-bar records without affecting unrelated same-title scores",
 
   vi.mocked(listPracticeRecords).mockResolvedValue([]);
   await showLibrary();
-  expect(
-    document.querySelector("#basic-practice-records")!.textContent,
-  ).not.toContain("삭제한 악보 복원");
   expect(
     document.querySelector("#personal-practice-records")!.textContent,
   ).not.toContain(basic.title);
@@ -477,7 +468,7 @@ it("changes the shared title preference from library settings without rebuilding
   saveTitleOrder("title-first");
 });
 
-it("opens a basic exercise from the current supplied package without an update control", async () => {
+it("opens a basic exercise from the current supplied package", async () => {
   const { showLibrary } = await import("../../src/apps/player/player-app");
   const old = {
     song: { id: "tom-moving-video-v2", title: "Old" },
@@ -509,9 +500,6 @@ it("opens a basic exercise from the current supplied package without an update c
     } as unknown as MountedRuntime;
   });
   await showLibrary();
-  expect(
-    document.querySelector('button[aria-label="악보 업데이트"]'),
-  ).toBeNull();
   document
     .querySelector<HTMLButtonElement>(
       `[data-score-id="${old.song.id}"] [data-open]`,

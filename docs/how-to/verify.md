@@ -6,53 +6,47 @@
 
 ## 개발 검사와 로컬 자산 준비
 
-문서 역할: **실행 절차**. 요구·허가 경계·판정 기준은 [검증 Rule](../reference/engineering/verification.md#verification-rules--검증-범위와-증거), 당시 도입·검증 결과는 [ADR-0027](../decisions/0027-verification-scope-and-device-evidence.md)에 둔다.
+문서 역할: **실행 절차**. 요구·허가 경계·판정 기준은 [검증 Rule](../reference/engineering/verification.md#verification-rules--검증-범위와-증거), 항목별 목적·실행 조건·명령·환경·부수 효과·재사용 입력은 [검사 카탈로그](../reference/engineering/check-catalog.md), 당시 도입·검증 결과는 [ADR-0027](../decisions/0027-verification-scope-and-device-evidence.md)에 둔다.
 
 <a id="testing--실행-범위"></a>
 
 ### 실행 범위
 
-모든 명령은 프로젝트 루트에서 실행한다. [작업 전 환경 확인](develop.md#development--작업-전-조회와-실행-환경)을 거쳐 `.nvmrc`의 Node.js 22 LTS(22.22.2 이상)와 지정된 pnpm·설치 의존성을 재사용한다. 최초 준비나 의존성 변경으로 설치가 필요할 때 `pnpm install --frozen-lockfile`을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
+모든 명령은 프로젝트 루트에서 실행한다. [작업 전 환경 확인](develop.md#development--작업-전-조회와-실행-환경)을 거쳐 `.nvmrc`의 기본 Node.js 22 LTS(22.22.2 이상) 또는 `package.json`의 `engines`를 만족하는 검증된 기존 환경과 지정 pnpm·설치 의존성을 재사용한다. 실제 환경은 결과에 기록한다. 최초 준비나 의존성 변경으로 설치가 필요할 때 `pnpm install --frozen-lockfile`을 사용한다. Vitest는 이 저장소의 `tests/{unit,integration,local-media}`만 검사한다. 별도 checkout·배포 사본·기타 프로젝트는 포함하지 않는다.
 
-- `pnpm run test:portable`: 로컬 악보 없이 실행 가능한 unit 및 integration 검사. 기존 테스트의 메모리 저장소·DOM·mock을 재사용한다.
-- `pnpm run test:local-media`: 보존된 실제 악보·음원 자료를 사용하는 검사. 자료가 없으면 명시적으로 실패한다.
-- `pnpm run test:drum`: 두 범위를 모두 실행하는 전체 회귀. 확정된 릴리스 필수 범위를 임의로 생략하지 않는다.
-- `pnpm run check:playback`: 재생 소유권, 공통 컴포넌트와 소스 경계 검사. `src/` 전체를 재귀 탐색한다.
-- `pnpm run build:apps`: 타입·i18n·재생/소스 경계 검사 후 두 앱을 빌드하고 player 번들의 제작 기능 유입을 검사한다.
-- `pnpm run test:local`: 기존 Apple 보조 도구의 Python 단위 검사. STT/AFM 실행이나 음원 전송은 포함하지 않는다.
+`test:portable`은 로컬 악보 없이 unit/integration을, `test:local-media`는 보존된 실제 자료의 회귀를, `test:drum`은 둘을 모두 검사한다. 모두 `pnpm run`으로 실행하며, 실제 자료가 없으면 명시적으로 실패한다. 테스트·Python 보조 도구·브라우저 검사는 카탈로그의 조건과 현재 허가를 확인한 뒤 선택한다.
 
-`pretest`, `pretest:drum`, `pretest:portable`, `pretest:local-media`가 라이선스와 빌드번호를 생성한다. `pnpm exec vitest`를 직접 사용할 때는 먼저 `pnpm run pretest`를 실행한다. 타입만 검사할 때도 새 checkout에서는 생성 파일이 필요하다.
+`pretest`, `pretest:drum`, `pretest:portable`, `pretest:local-media`가 라이선스와 빌드번호를 생성한다. `pnpm exec vitest`를 직접 사용할 때는 생성 파일이 현재 입력에 맞는지 확인하고, 준비되지 않았다면 `pnpm run pretest`를 실행한다. 앱/테스트 타입 검사는 `pretypecheck:app`이 생성 파일을 준비한다. 도구·hosting 타입 검사는 이 생성 파일에 의존하지 않는다.
 
 <a id="testing--공통-검사와-ci"></a>
 
 ### 공통 검사와 CI
 
-웹앱 개발 중에는 [변경 영향과 검사 선택](../reference/engineering/verification.md#verification-rules--변경-영향과-검사-선택)에 따라 필요한 정적 검사부터 실행한다. 아래 목록은 명령의 역할이며 모든 작업에서 전부 실행하는 순서가 아니다. 문서만 변경하면 `check:docs`와 diff·보존 확인을 우선하고, 공통 기능·저장 호환성 등 영향이 넓으면 관련 검사 범위를 확대한다. 화면 테스트는 릴리스 때 수행하며 릴리스의 전체 검사·빌드는 유지한다. 별도 사용자 요청과 [실행 범위·허가 경계](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)를 따른다.
+웹앱 개발 중에는 [변경 영향과 검사 선택](../reference/engineering/verification.md#verification-rules--변경-영향과-검사-선택)에 따라 필요한 정적 검사부터 실행한다. 코드 릴리스에는 공통 필수 자동검증을 적용하고, 화면·기능·성능·악보/제작 도구 검사는 [카탈로그의 실행 조건](../reference/engineering/check-catalog.md#변경-영향별-선택-검사)에 맞춰 추가한다. 문서만 바뀌면 문서·링크·앵커·diff와 보존 확인으로 한정한다. 별도 사용자 요청과 [실행 범위·허가 경계](../reference/engineering/verification.md#verification-rules--범위와-필수-경계)를 따른다.
+
+실행 전에 기존 작업·릴리스 기록에 대상과 `실행/결과 재사용/비대상/보류`, 이유·환경·부수 효과를 적는다. 같은 입력의 통과 결과는 [재사용 기준](../reference/engineering/verification.md#verification-rules--결과-재사용)에 따라 연결한다. 결과를 재사용하려고 별도 환경이나 시험 자료를 만들지 않으며, 입력 동일성을 확인할 수 없으면 해당 검사를 다시 수행한다. 현재 요청이 정적 검사만 허용하면 동적 검증은 보류로 남긴다.
 
 릴리스 검증 전 [검사 정리와 기준 변경](../reference/engineering/verification.md#verification-rules--검사-정리와-기준-변경)에 따라 영향받는 테스트·정적 검사·CI를 검토한다. 정당한 삭제·통합·축소는 관련 문서와 실행 경로에 함께 반영한 뒤 개정된 기준의 필수 검사를 수행한다. 검사 실패를 숨기는 생략과 구분해 정리 이유·유지 근거·검증 공백·실행 결과를 남긴다.
 
-- 최초 준비: `pnpm install --frozen-lockfile`. 루트와 hosting을 한 번에 설치하며 Git에 보관한 `config/shared-catalog.yaml` 사본과 공용 잠금 파일을 사용한다. 개인 중앙 경로는 필요하지 않다. 버전 갱신과 로컬 정본 대조는 [카탈로그 동기화 절차](develop.md#공유-의존성과-중앙-버전-갱신)를 따른다.
-- `pnpm run generate`: 라이선스·소스 빌드번호 생성. 모든 개발 진입점과 테스트·앱/도구 타입 검사의 pre 단계가 재사용한다.
-- `pnpm run check`: ESLint, 코드/설정 서식, 앱·도구·hosting 타입, i18n, 모듈 경계, 생성 UI 문서·상대 파일 링크·Markdown 문단 앵커 검사.
-- `pnpm run verify:portable`: 공통 검사와 portable 테스트. `.github/workflows/check.yml`도 같은 명령을 실행한다. CI는 원본 미디어를 업로드/생성하지 않으며 두 앱 빌드·local-media 회귀를 대체하지 않는다.
-- `pnpm run verify`: 공통 검사, 전체 회귀, 두 앱 번들·player 경계 검사를 순서대로 실행하는 릴리스 로컬 명령이다. 같은 실행에서 통과한 정적 검사를 빌드 앞에서 반복하지 않는다.
-- `pnpm run bundle:apps`: editor/player 번들 생성과 player 번들의 제작 코드 유입 검사만 하는 내부 단계다. `verify`가 앞의 공통 검사·테스트를 마쳤거나 `build:apps`가 빌드 전 검사를 마친 뒤 재사용한다. [검증된 main의 발행 빌드](release.md#sites-publication--발행-순서)에서도 검사 입력·실행 환경의 동일성을 확인하면 기존 검사 결과를 재사용하고 `generate` 후 이 명령으로 새 번들을 만든다. 단독 성공을 전체 검증으로 보고하지 않는다.
-- `pnpm run build`는 `build:apps`와 동일하다. 구형 통합 dist 빌드는 사용하지 않는다. 빌드 중 문서는 수정하지 않고 `check:docs`로 생성 문서의 일치를 확인한다.
-- `pnpm run typecheck`: 앱(`tsconfig.json`), 브라우저 제작 도구(`tsconfig.tools.json`), hosting 빌드 설정(`hosting/tsconfig.json`)을 각각 검사한다. hosting의 설치된 Vite/Cloudflare 타입을 사용한다.
-- `pnpm run format:check`: Git 추적 파일과 아직 추가하지 않은 비제외 파일 중 JS/TS/JSON/CSS/HTML/YAML을 검사한다. Markdown·Python과 pnpm이 생성하는 `pnpm-lock.yaml`은 Prettier 대상이 아니다. 잠금 파일은 `pnpm install --frozen-lockfile`로 선언·카탈로그와의 일치를 검사한다. `.prettierrc.json`과 고정한 Prettier 버전을 사용한다.
-- Python·Swift 보조 도구를 정리할 때는 사용 가능한 Black·`swift-format`의 경로와 버전을 먼저 확인하고 변경 파일만 검사한다. 미사용 import는 다른 파일의 재수출 소비자까지 확인하고, 서식 변경은 구문·상수·실행문 보존을 대조한다. 이 검사는 도구 실행·음원 분석이나 모델 호출을 포함하지 않는다. [2026-11-10 후속 정리 기록](../records/code-maintenance.md#slop-followup-20261110)에 사용 환경과 검사 한계를 남겼다.
-- `pnpm run check:docs`: 생성 UI 문서, Markdown의 상대 파일 링크와 문단 앵커를 검사한다. 실제 존재와 Git 추적/비제외 신규 파일 포함 여부를 함께 검사해 로컬/CI에서 같은 기준을 사용한다. 같은 문서의 `#앵커`, 중복 제목의 접미사와 명시적 HTML 앵커도 확인한다. 외부 URL·절대 로컬 경로·비 Markdown 파일의 fragment는 검사하지 않는다. 자세한 입력 형식과 제외 범위는 [문서 검사 계약](../reference/engineering/documentation.md#documentation-rules--문서-변경-검증)을 따른다. Git 제외·삭제된 실험 증거는 클릭 링크 대신 보존 경로와 로컬/삭제 상태로 기록한다.
-- 원격 CI 결과는 push 이후 별도로 확인한다. 로컬 통과를 원격 CI 실행 성공으로 기록하지 않는다.
+| 상황 | 실행 묶음 | 적용 기준 |
+| --- | --- | --- |
+| 문서·지침 변경 | `pnpm run check:docs`, `git diff --check` | 스킬 수정 시 해당 정적 검증 추가. 생성·테스트·빌드 없음 |
+| 코드의 전체 정적 검사가 필요한 개발 | `pnpm run check` | lint·서식·앱/도구/hosting 타입·공유 JSZip·i18n·재생/공통 UI/소스 경계·문서 검사. 앱 타입의 생성 pre 단계 포함 |
+| 코드 릴리스의 공통 자동검증 | `pnpm run verify` | `check` → `test:drum` → `bundle:apps`. 전체 Vitest와 두 앱 번들·player 경계 포함 |
+| PR/main CI | `pnpm run verify:portable` | `check`와 unit/integration. local-media·두 앱 빌드의 대체 결과가 아님 |
+| 앞선 검사가 유효한 main 발행 빌드 | `pnpm run generate` 후 `pnpm run bundle:apps` | [입력 대조·발행 순서](release.md#sites-publication--발행-순서)를 따른다. 단독 빌드 성공을 전체 검증으로 보고하지 않음 |
+
+최초 준비 또는 의존성 변경 때의 frozen 설치, 생성 준비, 개별 명령과 보고서 쓰기는 [카탈로그](../reference/engineering/check-catalog.md)를 따른다. `verify` 성공 뒤 같은 후보에 `check`·`test:drum`·`build:apps`를 연속 실행하지 않는다. 독립 `build`/`build:apps`는 사전 검사를 포함하므로 전체 검증 뒤의 추가 단계로 사용하지 않는다. 카탈로그와 실제 package/pre 명령이 달라지면 실행 전에 확인하고 관련 문서를 갱신한다.
 
 CI는 `pull_request`와 `main`의 `push`에서 실행한다. PR이 열린 작업 브랜치의 push와 PR 갱신에 같은 검사를 두 번 예약하지 않는다. PR 전 작업 브랜치의 push·태그 push는 자동 검사 대상이 아니며 필요한 로컬 검사는 `verify:portable`로 수행한다. PR의 병합 예정 코드와 병합된 main은 입력이 다르므로 두 검증은 유지한다.
 
 정상 소스의 i18n·재생 소유권·공통 컴포넌트·소스 경계 검사는 `check`가 한 번 담당한다. 테스트에서는 같은 스크립트의 정상 통과를 재실행하지 않고 위반을 탐지하는 회귀와 실제 UI·저장 동작을 확인한다. `test:portable`·`test:drum`만 실행한 결과는 공통 정적 검사까지 통과한 결과가 아니다.
 
-함수 중복 후보와 호출 목록은 상시 통과 조건이 아닌 수동 검토 자료다. 필요할 때 `node scripts/checks/check-common-components.mjs --audit` 또는 `node scripts/checks/check-playback-architecture.mjs --audit`를 실행한다. 전자는 `docs/experiments/common-components-audit.json`, 후자는 `docs/experiments/playback-call-sites.json`을 생성한다. 기본 검사는 이 보고서를 다시 쓰지 않는다. 공통 모듈 사용·재생 소유권·직접 저장소 의존 금지 검사는 그대로 실행한다.
+함수 중복 후보·호출 목록의 수동 감사는 [카탈로그](../reference/engineering/check-catalog.md#변경-영향별-선택-검사)의 조건에 해당할 때만 실행한다. 생성된 후보 수를 제품 통과 조건으로 사용하지 않는다.
 
 CI의 `actions/checkout@v7`·`actions/setup-node@v7`·`pnpm/action-setup@v6`는 액션 자체를 Node 24로 실행한다. 프로젝트 검사에 사용하는 Node는 별도로 `.nvmrc`의 22 LTS를 따르며, pnpm 버전·frozen 설치·잠금 파일 기반 캐시·검사 명령은 기존 설정을 유지한다. 액션 런타임의 Node 20 폐기 경고를 없애려고 앱의 Node 버전을 바꾸거나 경고 억제 환경변수를 넣지 않는다.
 
-Vite의 500kB 청크 경고와 테스트의 Node SQLite 실험 API 경고는 현재 유지한다. 당장 수정하지 않는 이유와 재검토·개선 기준은 [유지하는 번들·SQLite 경고](../reference/engineering/verification.md#verification-rules--유지하는-번들sqlite-경고)를 따른다. 실제 검사 실패와 이 두 안내 경고를 구분하며, 경고 출력을 숨기거나 기존 검사를 축소하지 않는다.
+Vite의 500kB 청크 경고는 현재 유지한다. 당장 수정하지 않는 이유와 재검토·개선 기준은 [번들 경고 기준](../reference/engineering/verification.md#verification-rules--유지하는-번들sqlite-경고)을 따른다. 실제 검사 실패와 안내 경고를 구분하며 경고 출력을 숨기지 않는다. 과거 폐기 SQL의 실행·지원 경로가 종료되어 [SQLite 회귀검사도 종료](../reference/engineering/verification.md#verification-rules--과거-폐기-sql-검사-종료)했다. 현재 브라우저 저장·백업·복원과 Worker 보안 검사는 유지한다.
 
 <a id="testing--eslint"></a>
 

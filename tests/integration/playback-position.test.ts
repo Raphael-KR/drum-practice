@@ -1,9 +1,7 @@
 // @vitest-environment jsdom
 import { it, expect, vi } from "vitest";
-import {
-  playbackPosition,
-  copyPosition,
-} from "../../src/modules/playback/playback-position";
+import { playbackPosition } from "../../src/modules/playback/playback-position";
+import { copyText } from "../../src/shared/ui/clipboard";
 import type { Song } from "../../src/model/model";
 const song = {
   title: "테스트",
@@ -30,7 +28,7 @@ it("writes the supplied snapshot to Clipboard API", async () => {
     configurable: true,
     value: { writeText },
   });
-  await copyPosition("15마디");
+  await copyText("15마디");
   expect(writeText).toHaveBeenCalledWith("15마디");
 });
 it("falls back when clipboard access is denied and cleans up on failure", async () => {
@@ -43,10 +41,10 @@ it("falls back when clipboard access is denied and cleans up on failure", async 
     configurable: true,
     value: exec,
   });
-  await copyPosition("위치");
+  await copyText("위치");
   expect(exec).toHaveBeenCalledWith("copy");
   expect(document.querySelector("textarea")).toBeNull();
   exec.mockReturnValue(false);
-  await expect(copyPosition("위치")).rejects.toThrow("복사하지 못했습니다");
+  await expect(copyText("위치")).rejects.toThrow("복사하지 못했습니다");
   expect(document.querySelector("textarea")).toBeNull();
 });

@@ -12,11 +12,11 @@ import {
 import { renderMeasure } from "/src/modules/playback/playback-measure.ts";
 import {
   scoreLayout,
-  layoutScoreLyrics,
   measureWidth,
 } from "/src/modules/playback/playback-layout.ts";
 import { displayRegion } from "/src/modules/score/score-view.ts";
-import { xAtBeat } from "/src/model/model.ts";
+import { prepareBrowserScore } from "/src/modules/score/browser-score.ts";
+import { displayPage } from "/src/modules/score/score-pages.ts";
 
 const path =
   "/@fs/Users/raphael/Playground/drum-practice/data/production/loveholic/final/Loveholic.drumscore";
@@ -24,8 +24,10 @@ const positions = (s) =>
   s.lyrics.map((l) => ({ id: l.id, text: l.text, ...l.scorePosition }));
 
 export async function review(format = "svg", packagePath = path) {
-  const record = await readScorePackage(
-    new Blob([await (await fetch(packagePath)).arrayBuffer()]),
+  const record = await prepareBrowserScore(
+    await readScorePackage(
+      new Blob([await (await fetch(packagePath)).arrayBuffer()]),
+    ),
   );
   const restored = structuredClone(record.song);
   restored.lyrics = [];
@@ -110,7 +112,6 @@ export async function review(format = "svg", packagePath = path) {
         quarterWidths.push(width / ((m.beats * 4) / m.denominator));
         gaps.push(staff.gap * parseFloat(layout.size.split(" ")[1]));
       }
-      const ly = s.lyrics.filter((l) => l.scorePosition.measureId === m.id);
       strip.insertAdjacentHTML(
         "beforeend",
         renderMeasure({
@@ -119,45 +120,41 @@ export async function review(format = "svg", packagePath = path) {
           i,
           width,
           r,
-          ly,
           layout,
           pageURL: entry?.url ?? assets.urls[r.page],
           pageRatio: entry?.ratio ?? assets.pageRatios[r.page],
           isSVG: format !== "pdf",
-          positionInMeasure: (index, b, w) =>
-            entry ? w * (b / m.beats + entry.phase) : w * xAtBeat(r, m, b),
         }),
       );
       const el = strip.lastElementChild,
         h = parseFloat(el.querySelector(".crop").style.height);
-      el.style.cssText += ";position:relative;height:" + (h + 50) + "px";
-      rowHeight = Math.max(rowHeight, h + 50);
+      el.style.cssText += ";position:relative;height:" + h + "px";
+      rowHeight = Math.max(rowHeight, h);
     }
     row.style.height = rowHeight + "px";
     panel.append(row);
   }
   document.body.append(panel);
-  layoutScoreLyrics(panel, panel, isRibbon ? "ribbon" : "rows");
-  const labels = [...panel.querySelectorAll(".syllable")];
-  if (labels.length !== 269 || panel.querySelector(".measure-lyric"))
-    throw Error("Wrong lyric representation");
-  const collisions = [];
-  for (const row of panel.querySelectorAll(".browse-row")) {
-    const ns = [...row.querySelectorAll(".syllable")];
-    for (let i = 1; i < ns.length; i++)
-      if (
-        ns[i - 1].getBoundingClientRect().right >
-        ns[i].getBoundingClientRect().left + 0.1
-      )
-        collisions.push(ns[i].textContent);
+  if (panel.querySelector(".lyrics, .syllable, .measure-lyric"))
+    throw Error("Unexpected HTML lyrics");
+  let labels = 0;
+  if (format !== "pdf") {
+    for (const page of record.pages) {
+      const doc = new DOMParser().parseFromString(
+        await (await displayPage(page)).text(),
+        "image/svg+xml",
+      );
+      labels += doc.querySelectorAll(".osmd-lyrics").length;
+    }
+    if (labels !== restored.lyrics.length)
+      throw Error("Missing native SVG lyrics");
   }
-  if (collisions.length) throw Error("Visible lyric collision");
   window.loveholicStandardReview = {
-    status: "PASS",
+    status: "pending-visual-review",
     format,
-    labels: labels.length,
+    labels,
     centralLabels: 0,
-    collisionCount: 0,
+    collisionCount: null,
     rows: panel.querySelectorAll(".browse-row").length,
     ribbonMeasures: assets.ribbon?.size ?? 0,
     quarterWidthSpread: quarterWidths.length
@@ -171,7 +168,7 @@ export async function review(format = "svg", packagePath = path) {
     vocalTimingVerified: false,
     storageWrites: 0,
     scope:
-      "Saved package read, common preparePlaybackAssets/renderMeasure/layoutScoreLyrics; QA DOM, not persisted import",
+      "Current prepareBrowserScore/preparePlaybackAssets/renderMeasure; native SVG lyrics, no HTML overlay. Visual collision review pending; no persisted import",
     fixtures: [
       7, 8, 9, 10, 39, 40, 48, 79, 99, 107, 109, 113, 116, 117, 118,
     ].map((number) => ({

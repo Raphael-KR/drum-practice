@@ -8,20 +8,39 @@ import {
 import type { StaffLine } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/StaffLine";
 import type { GraphicalStaffEntry } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalStaffEntry";
 import type { Song } from "../../model/model";
-import type { XMLScore } from "./musicxml-parse";
+import { parseMusicXML } from "./musicxml-parse";
+import { readCanonicalLyrics } from "./canonical-lyric-read";
 import { canonicalManifest } from "./canonical-metadata";
 import { writeLyricVoices } from "./canonical-lyric-voice";
-import { SCORE_TEXT_FONT_FAMILY, scoreTextHeight } from "./score-text-font";
+import { SCORE_TEXT_FONT_FAMILY } from "./score-text-font";
 
-/** Upgrade legacy storage in a read-only copy with the same voice writer used by saving. */
-export function prepareFullScoreLyrics(parsed: XMLScore, song: Song) {
-  // Selecting the drum part preserves the document-level canonical manifest.
+/** Shared SVG lyric colour; embedded images cannot inherit the host CSS accent. */
+export const SCORE_LYRIC_COLOR = "#3f74d4";
+
+/** Read once before engraving passes; legacy voices are upgraded only in this copy. */
+export function prepareScoreLyrics(
+  source: string,
+  partId: string,
+  song?: Pick<Song, "measures" | "measureLyrics">,
+) {
+  const parsed = parseMusicXML(source, partId, true);
   const data = canonicalManifest(parsed.document);
-  if (data?.version !== 1) return;
-  const part = parsed.document.querySelector("score-partwise > part")!;
-  // v1's separate lyric part superseded the imported drum-note lyrics.
+  const model = song ?? data;
+  const texts = new Map(
+    (model?.measureLyrics ?? []).map((lyric) => [
+      model!.measures.findIndex((measure) => measure.id === lyric.measureId),
+      lyric.text,
+    ]),
+  );
+  if (data?.version !== 1) return { xml: source, texts };
+  const part = Array.from(
+    parsed.document.querySelectorAll("score-partwise > part"),
+  ).find((part) => part.id === partId)!;
+  // v1's independent part superseded any imported drum-note lyrics.
+  const lyrics = readCanonicalLyrics(parsed.document, data);
   part.querySelectorAll("note > lyric").forEach((lyric) => lyric.remove());
-  writeLyricVoices(part, song);
+  writeLyricVoices(part, { measures: data.measures, lyrics });
+  return { xml: new XMLSerializer().serializeToString(parsed.document), texts };
 }
 
 interface LyricsCalculator {
@@ -32,20 +51,14 @@ interface LyricsCalculator {
 }
 
 /** Add untimed measure text below OSMD's native syllable lyrics. */
-export function installFullScoreMeasureLyrics(
+export function installScoreMeasureLyrics(
   osmd: OpenSheetMusicDisplay,
-  song: Song,
+  textByIndex: Map<number, string>,
 ) {
-  if (!song.measureLyrics?.length) return;
-  const textByIndex = new Map(
-    song.measureLyrics.map((lyric) => [
-      song.measures.findIndex((m) => m.id === lyric.measureId),
-      lyric.text,
-    ]),
-  );
+  const measureLabels = new Map<StaffLine, GraphicalLabel[]>();
+  if (!textByIndex.size) return measureLabels;
   const calculator = osmd.GraphicSheet
     .GetCalculator as unknown as LyricsCalculator;
-  const measureLabels = new Map<StaffLine, GraphicalLabel[]>();
   const calculate =
     calculator.calculateSingleStaffLineLyricsPosition.bind(calculator);
   calculator.calculateSingleStaffLineLyricsPosition = (staff, verses) => {
@@ -71,6 +84,7 @@ export function installFullScoreMeasureLyrics(
         label.SVGNode = drawer.drawLabel(label, GraphicalLayers.Notes);
     };
   };
+  return measureLabels;
 }
 
 /** Untimed measure text is a native label, not an invented note or sung syllable. */
@@ -87,12 +101,13 @@ function measureTextLabels(
     if (!text) return [];
     const label = new GraphicalLabel(
       new Label(text),
-      scoreTextHeight(rules.RehearsalMarkFontSize),
+      rules.LyricsHeight,
       TextAlignmentEnum.CenterBottom,
       rules,
       staff.PositionAndShape,
     );
     label.Label.fontFamily = SCORE_TEXT_FONT_FAMILY;
+    label.Label.colorDefault = rules.DefaultColorLyrics;
     label.SVGClass = "osmd-measure-lyrics";
     const width = Math.max(1, measure.PositionAndShape.Size.width - 1);
     wrapLabel(label, width);

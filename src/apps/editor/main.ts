@@ -53,6 +53,7 @@ import { saveRecord } from "../../platform/storage/storage";
 import { formatTime, t as i18nText } from "../../shared/i18n/i18n";
 import "../../shared/styles/controls.css";
 import { arrangeIcons } from "../../shared/ui/icons";
+import { showCopyableError } from "../../shared/ui/error-notice";
 import { Player } from "./audio";
 import { $, val } from "./editor-dom";
 import { createEditorForm, editorFields } from "./editor-form";
@@ -227,9 +228,14 @@ function updateSongHeading() {
 function tell(s: string) {
   status(s);
 }
-$("error-notice").onclick = () => {
+$("error-notice-close").onclick = () => {
   $("error-notice").hidden = true;
 };
+$("error-notice").onclick = (event) => {
+  if (!(event.target as Element).closest("button"))
+    $("error-message").querySelector("button")?.click();
+};
+$("error-notice").onkeydown = (event) => event.stopPropagation();
 for (const dialog of document.querySelectorAll("dialog")) {
   dialog.addEventListener("close", () => {
     const notice = $("error-notice");
@@ -265,12 +271,7 @@ function error(e: unknown) {
       ? document.querySelector("main")!
       : document.querySelector(".statusline")!);
   host.append(notice);
-  $("error-message").textContent = message;
-  notice.setAttribute(
-    "aria-label",
-    i18nText("main.message213", { message: message }),
-  );
-  notice.title = i18nText("main.message214", { message: message });
+  showCopyableError($("error-message"), message);
   notice.hidden = false;
 }
 function action(id: string, f: () => unknown) {

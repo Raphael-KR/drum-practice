@@ -95,6 +95,7 @@ function applyHollowNoteheads(osmd: OpenSheetMusicDisplay) {
           for (const note of voice.notes) {
             const head = note.sourceNote.Notehead;
             if (
+              note.sourceNote.PrintObject === false ||
               !head ||
               head.Shape !== 2 ||
               head.Filled !== false ||
@@ -132,13 +133,21 @@ function centerWholeMeasureRests(
   // Move only full-bar silence glyphs; keep staff entries and playback anchors intact.
   for (const row of osmd.GraphicSheet.MeasureList)
     for (const g of row) {
-      if (!g?.hasOnlyRests || g.staffEntries.length !== 1) continue;
+      if (!g) continue;
+      const notes = g.staffEntries.flatMap((entry) =>
+        entry.graphicalVoiceEntries.flatMap((voice) =>
+          voice.notes.filter((note) => note.sourceNote.PrintObject !== false),
+        ),
+      );
+      // Hidden lyric rhythm must not turn an otherwise silent drum bar into notes.
       if (
-        timeline &&
-        !g.staffEntries.every((e) =>
-          e.graphicalVoiceEntries.every((v) =>
-            v.notes.every((n) => n.sourceNote.isRest()),
-          ),
+        !notes.length ||
+        !notes.every(
+          (note) =>
+            note.sourceNote.isRest() &&
+            (note.sourceNote.IsWholeMeasureRest ||
+              note.sourceNote.Length.RealValue ===
+                g.parentSourceMeasure.Duration.RealValue),
         )
       )
         continue;
@@ -154,49 +163,48 @@ function centerWholeMeasureRests(
           page.PositionAndShape.AbsolutePosition.x +
           box.BorderRight) *
         10;
-      for (const voice of g.staffEntries[0].graphicalVoiceEntries)
-        for (const note of voice.notes) {
-          if (
-            !note.sourceNote.isRest() ||
-            (!timeline && !note.sourceNote.Pitch) ||
-            !(
-              note.sourceNote.IsWholeMeasureRest ||
-              note.sourceNote.Length.RealValue ===
-                note.sourceNote.SourceMeasure.ActiveTimeSignature.RealValue
-            )
+      for (const note of notes) {
+        if (
+          !note.sourceNote.isRest() ||
+          (!timeline && !note.sourceNote.Pitch) ||
+          !(
+            note.sourceNote.IsWholeMeasureRest ||
+            note.sourceNote.Length.RealValue ===
+              note.sourceNote.SourceMeasure.ActiveTimeSignature.RealValue
           )
-            continue;
-          const glyph = (
-            note as unknown as { getSVGGElement(): SVGGElement }
-          ).getSVGGElement();
-          if (!glyph) continue;
-          const bounds = glyph.getBBox();
-          const nativeLeft = timeline
-            ? (g as unknown as { getVFStave(): { getX(): number } })
-                .getVFStave()
-                .getX()
-            : left;
-          // Full-bar rests represent the whole measure, not its first grid tick.
-          // VexFlow's rest offset can put them left of the cropped grid region.
-          const dx = timeline
-            ? restCenterShift(
-                nativeLeft,
-                nativeLeft +
-                  (timeline.uniformQuarters && timeline.rowWidth
-                    ? timeline.rowWidth
-                    : g.parentSourceMeasure.Duration.RealValue *
-                      4 *
-                      timeline.quarter),
-                bounds.x,
-                bounds.width,
-              )
-            : restCenterShift(left, right, bounds.x, bounds.width);
-          glyph.setAttribute(
-            "transform",
-            `translate(${dx} 0) ${glyph.getAttribute("transform") || ""}`,
-          );
-          glyph.setAttribute("data-full-measure-rest", "centered");
-        }
+        )
+          continue;
+        const glyph = (
+          note as unknown as { getSVGGElement(): SVGGElement }
+        ).getSVGGElement();
+        if (!glyph) continue;
+        const bounds = glyph.getBBox();
+        const nativeLeft = timeline
+          ? (g as unknown as { getVFStave(): { getX(): number } })
+              .getVFStave()
+              .getX()
+          : left;
+        // Full-bar rests represent the whole measure, not its first grid tick.
+        // VexFlow's rest offset can put them left of the cropped grid region.
+        const dx = timeline
+          ? restCenterShift(
+              nativeLeft,
+              nativeLeft +
+                (timeline.uniformQuarters && timeline.rowWidth
+                  ? timeline.rowWidth
+                  : g.parentSourceMeasure.Duration.RealValue *
+                    4 *
+                    timeline.quarter),
+              bounds.x,
+              bounds.width,
+            )
+          : restCenterShift(left, right, bounds.x, bounds.width);
+        glyph.setAttribute(
+          "transform",
+          `translate(${dx} 0) ${glyph.getAttribute("transform") || ""}`,
+        );
+        glyph.setAttribute("data-full-measure-rest", "centered");
+      }
     }
 }
 

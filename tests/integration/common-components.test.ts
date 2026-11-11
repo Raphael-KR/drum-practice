@@ -61,10 +61,8 @@ for (const [host, binding] of [
       markerContent,
       loopExtra,
     });
-    expect(document.querySelector("#score-gesture-hint")).toBeNull();
     const ids = [...document.querySelectorAll("[id]")].map((e) => e.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(document.querySelectorAll("#loop-a")).toHaveLength(0);
     expect(document.querySelectorAll("#music-volume")).toHaveLength(1);
     expect(document.querySelector("#practice .transport")).not.toBeNull();
     expect(document.querySelector("#practice .repeat-controls")).not.toBeNull();

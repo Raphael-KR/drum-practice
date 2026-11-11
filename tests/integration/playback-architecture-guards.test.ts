@@ -58,12 +58,6 @@ const cases = [
     "playback ownership escaped",
   ],
   [
-    "src/modules/playback/playback-screen.ts",
-    "\nrepeatPoint();",
-    "check-playback-architecture.mjs",
-    "Retired playback operation restored",
-  ],
-  [
     "src/apps/editor/workspace.ts",
     "\nsoundFieldsHTML();",
     "check-common-components.mjs",

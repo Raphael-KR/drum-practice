@@ -7,7 +7,7 @@ import {
 } from "../../src/modules/score/canonical-xml";
 import { validateSong, type Song } from "../../src/model/model";
 import { projectLyrics } from "../../src/modules/lyrics/lyric-score";
-import { renderMeasure } from "../../src/modules/playback/playback-measure";
+import { prepareScoreLyrics } from "../../src/modules/score/score-lyrics";
 const song = (): Song => {
   const s = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   s.lyrics = [];
@@ -56,30 +56,13 @@ it("rejects invalid measure references and duplicate measure assignments", () =>
   });
   expect(() => validateSong(duplicate)).toThrow();
 });
-it.each(["ribbon", "rows"] as const)(
-  "renders escaped text inside its measure for %s",
-  (view) => {
-    const s = song();
-    s.settings.view = view;
-    const render = (i: number) =>
-      renderMeasure({
-        s,
-        m: s.measures[i],
-        i,
-        width: 200,
-        r: s.regions.find((r) => r.id === s.measures[i].regionId)!,
-        ly: [],
-        pageURL: "page.svg",
-        pageRatio: 1,
-        isSVG: true,
-        positionInMeasure: () => 0,
-      });
-    const div = document.createElement("div");
-    div.innerHTML = render(0);
-    expect(div.querySelector(".measure-lyric")?.textContent).toBe(
-      "가사 <원문>",
-    );
-    expect(div.querySelectorAll(".syllable")).toHaveLength(0);
-    expect(render(1)).not.toContain("measure-lyric");
-  },
-);
+it("passes measure text from the canonical manifest to the shared SVG engraver", () => {
+  const s = song();
+  const xml = writeCanonical(s);
+  const partId = new DOMParser()
+    .parseFromString(xml, "application/xml")
+    .querySelector("part")!.id;
+  const prepared = prepareScoreLyrics(xml, partId);
+  expect(prepared.xml).toBe(xml);
+  expect([...prepared.texts]).toEqual([[0, "가사 <원문>"]]);
+});

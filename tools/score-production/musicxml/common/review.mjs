@@ -8,14 +8,9 @@ import {
 import { displayPage } from "../../../../src/modules/score/score-pages.ts";
 import { displayRegion } from "../../../../src/modules/score/score-view.ts";
 import { lyricMeasureId } from "../../../../src/modules/lyrics/lyric-grid.ts";
-import { xAtBeat } from "../../../../src/model/model.ts";
 
 const activeReviews = new WeakMap();
 const LABEL_HEIGHT = 28;
-const LYRIC_HEIGHT = 48;
-const LYRIC_GAP = 6;
-// CSSStyleDeclaration serializes decimal px values differently across browsers.
-export const REVIEW_ANCHOR_TOLERANCE_PX = 0.05;
 
 /** Numbers are one-based positions in record.song.measures; strings are stable IDs. */
 export function planScoreReview(record, options = {}) {
@@ -124,8 +119,6 @@ h2 { margin: 0 0 12px; font-size: 16px; }
 .review-row > .measure { position: relative; flex: none; box-sizing: content-box; border: 0; cursor: default; background: white; }
 .review-row .label { top: -${LABEL_HEIGHT}px; left: 6px; height: ${LABEL_HEIGHT}px; line-height: ${LABEL_HEIGHT}px; color: #536171; background: white; }
 .review-row .crop { position: absolute; top: 0; left: 0; background-color: white; background-repeat: no-repeat; }
-.review-row .lyrics { height: ${LYRIC_HEIGHT}px; line-height: 22px; color: #2458a0; background: white; }
-.review-row .syllable { color: #2458a0; }
 .review-row .measure-state-layer, .review-row .measure-marker { display: none; }
 .review-pages { margin-top: 28px; }
 figure { margin: 0 0 24px; background: white; }
@@ -283,20 +276,15 @@ export async function mountScoreReview(record, options = {}) {
           i,
           width,
           r: region,
-          ly: lyrics,
           pageURL: page.url,
           pageRatio: page.ratio,
           isSVG: plan.source.format === "musicxml",
-          positionInMeasure: (_, beat, w) => w * xAtBeat(region, measure, beat),
         });
         const element = template.content.firstElementChild;
         row.append(element);
         return { i, region, width, cropHeight, lyrics, element };
       });
-      const cellHeight =
-        Math.max(...cells.map((cell) => cell.cropHeight)) +
-        LYRIC_GAP +
-        LYRIC_HEIGHT;
+      const cellHeight = Math.max(...cells.map((cell) => cell.cropHeight));
       cells.forEach((cell) => {
         cell.element.style.height = `${cellHeight}px`;
       });
@@ -337,7 +325,6 @@ export async function mountScoreReview(record, options = {}) {
       let expectedAnchors = 0;
       let checkedAnchors = 0;
       let unanchoredLyrics = 0;
-      let maxAnchorErrorPx = 0;
       let layoutObserved = !disposed;
       let previousBottom;
       const rowReports = rows.map(({ element, cells, groupIndex }) => {
@@ -360,62 +347,33 @@ export async function mountScoreReview(record, options = {}) {
               ...extra,
             });
           const crop = cell.element.querySelector(".crop");
-          const lyrics = cell.element.querySelector(".lyrics");
           const height = parseFloat(cell.element.style.height);
-          const lyricTop = parseFloat(lyrics?.style.top ?? "");
           const rowHeight = parseFloat(element.style.height);
           const cropHeight = parseFloat(crop?.style.height ?? "");
           if (
             !crop ||
-            !lyrics ||
             !Number.isFinite(height) ||
             !Number.isFinite(rowHeight) ||
-            !Number.isFinite(lyricTop) ||
             !Number.isFinite(cropHeight) ||
-            height + 0.05 < cell.cropHeight + LYRIC_GAP + LYRIC_HEIGHT ||
-            rowHeight + 0.05 < LABEL_HEIGHT + height ||
-            lyricTop + 0.05 < cropHeight
+            height + 0.05 < cell.cropHeight ||
+            rowHeight + 0.05 < LABEL_HEIGHT + height
           )
             fail("row-height-insufficient", {
               details: {
                 rowHeight,
                 cellHeight: height,
                 cropHeight,
-                lyricTop,
-                requiredCellHeight: cell.cropHeight + LYRIC_GAP + LYRIC_HEIGHT,
+                requiredCellHeight: cell.cropHeight,
               },
             });
-          if (observed && crop && lyrics) {
-            const cropRect = crop.getBoundingClientRect();
-            const lyricRect = lyrics.getBoundingClientRect();
-            if (
-              cropRect.bottom > lyricRect.top + 0.5 ||
-              lyricRect.bottom > rect.bottom + 0.5
-            )
-              fail("row-content-overlap", {
-                details: {
-                  cropBottom: cropRect.bottom,
-                  lyricTop: lyricRect.top,
-                  lyricBottom: lyricRect.bottom,
-                  rowBottom: rect.bottom,
-                },
-              });
-            for (const text of lyrics.querySelectorAll(
-              ".syllable, .measure-lyric",
-            )) {
-              const textRect = text.getBoundingClientRect();
-              if (textRect.bottom > rect.bottom + 0.5)
-                fail("lyric-row-overlap", {
-                  details: {
-                    lyricBottom: textRect.bottom,
-                    rowBottom: rect.bottom,
-                  },
-                });
-            }
-          }
+          if (
+            observed &&
+            crop &&
+            crop.getBoundingClientRect().bottom > rect.bottom + 0.5
+          )
+            fail("row-content-overlap");
           if (plan.source.format !== "pdf") continue;
-          const syllables = [...cell.element.querySelectorAll(".syllable")];
-          cell.lyrics.forEach((lyric, index) => {
+          cell.lyrics.forEach((lyric) => {
             const anchor = cell.region.lyricAnchors?.find(
               (a) => a.lyricId === lyric.id,
             );
@@ -436,33 +394,11 @@ export async function mountScoreReview(record, options = {}) {
               fail("anchor-score-position-mismatch", { lyricId: lyric.id });
               return;
             }
-            const span = syllables[index];
-            if (
-              span?.dataset.pdfLyricAnchor !== "true" ||
-              span.textContent !== lyric.text ||
-              !span.style.left.endsWith("px")
-            ) {
-              fail("anchor-not-rendered", { lyricId: lyric.id });
+            if (!Number.isFinite(anchor.x) || anchor.x < 0 || anchor.x > 1) {
+              fail("anchor-out-of-range", { lyricId: lyric.id });
               return;
             }
-            const errorPx = Math.abs(
-              parseFloat(span.style.left) - anchor.x * cell.width,
-            );
-            maxAnchorErrorPx = Math.max(maxAnchorErrorPx, errorPx);
             checkedAnchors++;
-            if (
-              !Number.isFinite(errorPx) ||
-              errorPx > REVIEW_ANCHOR_TOLERANCE_PX
-            )
-              fail("anchor-position-error", {
-                lyricId: lyric.id,
-                errorPx,
-                details: {
-                  actualLeftPx: parseFloat(span.style.left),
-                  expectedLeftPx: anchor.x * cell.width,
-                  tolerancePx: REVIEW_ANCHOR_TOLERANCE_PX,
-                },
-              });
           });
         }
         return {
@@ -490,8 +426,7 @@ export async function mountScoreReview(record, options = {}) {
           expected: expectedAnchors,
           checked: checkedAnchors,
           unanchored: unanchoredLyrics,
-          maxErrorPx: maxAnchorErrorPx,
-          tolerancePx: REVIEW_ANCHOR_TOLERANCE_PX,
+          scope: "stored PDF anchor metadata; no HTML lyric overlay",
         },
         layoutObserved,
         failures,

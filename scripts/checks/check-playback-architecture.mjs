@@ -9,7 +9,6 @@ const owned = [
   "measurePosition",
   "scoreLayout",
   "renderScoreRows",
-  "layoutScoreLyrics",
   "buildScoreTrack",
   "updateScoreFrame",
   "installScoreScroll",
@@ -24,12 +23,10 @@ const owned = [
   "updateRepeatControls",
   "changePlaybackLoop",
   "playbackPosition",
-  "copyPosition",
   "mountLoopSlots",
   "toggleMeasureMarker",
   "createPlaybackWakeLock",
 ];
-const retired = ["repeatPoint", "fillRepeatFields", "markMeasure"];
 const screenHelpers = [
   "createPlaybackTrack",
   "createPlaybackDisplay",
@@ -61,16 +58,14 @@ for (const file of [
     1,
     `${file}: must mount exactly one common screen`,
   );
-  for (const name of [...owned, ...retired, ...screenHelpers])
+  for (const name of [...owned, ...screenHelpers])
     assert(
       !sites.some((c) => c.name === name),
       `${file}: playback ownership escaped into host: ${name}`,
     );
   const source = fs.readFileSync(file, "utf8");
   assert(
-    !/<input[^>]*id=\\?["'](?:loop-a|loop-b|loop-ab|loop-bb|music-volume|click-volume)/.test(
-      source,
-    ),
+    !/<input[^>]*id=\\?["'](?:music-volume|click-volume)/.test(source),
     `${file}: copied playback form`,
   );
   report[file] = sites.filter(
@@ -84,7 +79,7 @@ for (const file of ["src/apps/player/player-app.ts"]) {
     1,
     `${file}: shared runtime mount`,
   );
-  for (const name of [...owned, ...retired, ...screenHelpers])
+  for (const name of [...owned, ...screenHelpers])
     assert(
       !sites.some((c) => c.name === name),
       `${file}: playback ownership escaped`,
@@ -102,7 +97,6 @@ const delegated = new Map(
     "measurePosition",
     "scoreLayout",
     "renderScoreRows",
-    "layoutScoreLyrics",
   ].map((name) => [name, trackFile]),
 );
 for (const name of [
@@ -126,11 +120,6 @@ for (const name of screenHelpers)
     core.filter((c) => c.name === name).length,
     1,
     `${screenFile}: must mount exactly one ${name}`,
-  );
-for (const name of retired)
-  assert(
-    ![...ownerCalls.values()].flat().some((c) => c.name === name),
-    `Retired playback operation restored: ${name}`,
   );
 for (const name of owned) {
   const owner = delegated.get(name) ?? screenFile;

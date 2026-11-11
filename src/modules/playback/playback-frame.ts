@@ -28,19 +28,20 @@ function resizeScoreStage(stage: HTMLElement, ribbon: HTMLElement, s: Song) {
     delete stage.dataset.staffMiddle;
     stage.style.removeProperty("--ribbon-staff-middle");
   }
+  const audioPadding = s.audioPractice ? 30 : 0;
   const height =
     Math.max(
       s.settings.view === "rows" && stage.closest(".drawer-playback")
-        ? (stage.clientHeight - 84) / 2 - 30
+        ? (stage.clientHeight - 84) / 2 - audioPadding
         : 0,
       s.settings.view === "rows" && stage.closest(".drawer-playback") ? 0 : 100,
       ...Array.from(ribbon.querySelectorAll<HTMLElement>(".crop"), (e) =>
         parseFloat(e.style.height),
       ),
-    ) + 30;
+    ) + audioPadding;
   stage.style.setProperty("--row-content-height", `${height}px`);
   stage.style.setProperty("--browse-row-pitch", `${height + 28}px`);
-  stage.style.height = `${s.settings.view === "ribbon" ? Math.max(engravingHeight(stage.clientWidth, s.settings.zoom), ...Array.from(ribbon.querySelectorAll<HTMLElement>(".crop"), (e) => parseFloat(e.style.height) || 0)) + 94 : height * 2 + 84}px`;
+  stage.style.height = `${s.settings.view === "ribbon" ? Math.max(engravingHeight(stage.clientWidth, s.settings.zoom), ...Array.from(ribbon.querySelectorAll<HTMLElement>(".crop"), (e) => parseFloat(e.style.height) || 0)) + 64 + audioPadding : height * 2 + 84}px`;
 }
 export function timeAtScroll(
   s: Song,

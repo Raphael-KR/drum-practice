@@ -7,7 +7,6 @@ import {
   xAtBeat,
 } from "../../model/model";
 import { displayRegion } from "../score/score-view";
-import { layoutLyricRow } from "../lyrics/lyric-layout";
 import {
   practiceStaffLayout,
   staffFrameHeight,
@@ -27,7 +26,6 @@ interface RowHost {
   scrubbing: boolean;
   resume: boolean;
   measureHTML: (m: Measure, i: number, w: number) => string;
-  layoutLyrics: () => void;
   cellWidth?: number;
 }
 export function engravingHeight(stageWidth: number, zoom: number) {
@@ -112,16 +110,7 @@ export function measurePosition(
   );
 }
 export function renderScoreRows(h: RowHost, state: RowState, index: number) {
-  const {
-    stage,
-    ribbon,
-    song,
-    measureHTML,
-    layoutLyrics,
-    playing,
-    scrubbing,
-    resume,
-  } = h;
+  const { stage, ribbon, song, measureHTML, playing, scrubbing, resume } = h;
   let { rowWindow, pausedBrowseIndex, renderedBrowseWidth } = state;
   const { playbackRowOrigin } = state;
   try {
@@ -163,7 +152,6 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
               },
             ).join("")}</div></div>`,
         ).join("");
-        layoutLyrics();
       }
       if (!scrubbing && pausedBrowseIndex !== index) {
         pausedBrowseIndex = index;
@@ -285,7 +273,6 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
             .join("")
         : indices.map(html).join("");
     }
-    layoutLyrics();
   } finally {
     Object.assign(state, {
       rowWindow,
@@ -293,35 +280,5 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       renderedBrowseWidth,
       playbackRowOrigin,
     });
-  }
-}
-export function layoutScoreLyrics(
-  stage: HTMLElement,
-  ribbon: HTMLElement,
-  view: string,
-) {
-  const rows = new Map<number, { el: HTMLElement; rect: DOMRect }[]>();
-  ribbon.querySelectorAll<HTMLElement>(".syllable").forEach((el) => {
-    el.style.top = "0px";
-    el.style.marginLeft = "0px";
-    const rect = el.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const row =
-      el.closest<HTMLElement>(".browse-row")?.offsetTop ??
-      el.closest<HTMLElement>(".measure")!.offsetTop;
-    if (!rows.has(row)) rows.set(row, []);
-    rows.get(row)!.push({ el, rect });
-  });
-  for (const items of rows.values()) {
-    layoutLyricRow(
-      items,
-      // Clamp to the row content edge, not the moving viewport in ribbon mode.
-      view === "rows"
-        ? (items[0].el
-            .closest<HTMLElement>(".browse-strip")
-            ?.getBoundingClientRect().left ??
-            stage.getBoundingClientRect().left) + 4
-        : ribbon.getBoundingClientRect().left + 4,
-    );
   }
 }
