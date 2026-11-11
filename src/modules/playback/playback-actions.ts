@@ -158,16 +158,14 @@ export function installPlaybackWheel(
     scrub: (delta: number) => void;
   },
 ) {
+  let passive = false;
+  let disposed = false;
   const listener = (e: WheelEvent) => {
     if (!h.ready() || document.querySelector("dialog[open]") || e.ctrlKey)
       return;
-    if (
-      !h.playing() &&
-      h.view() === "rows" &&
-      Math.abs(e.deltaY) >= Math.abs(e.deltaX)
-    ) {
+    if (!h.playing() && h.view() === "rows") {
       h.cancel();
-      h.browse();
+      if (Math.abs(e.deltaY) >= Math.abs(e.deltaX)) h.browse();
       return;
     }
     if (h.playing()) {
@@ -185,14 +183,23 @@ export function installPlaybackWheel(
     }
     e.preventDefault();
     h.cancel();
-    if (h.view() !== "rows")
-      h.scrub(
-        (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) *
-          scale,
-      );
+    h.scrub(
+      (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * scale,
+    );
   };
-  stage.addEventListener("wheel", listener, { passive: false });
-  return () => stage.removeEventListener("wheel", listener);
+  stage.addEventListener("wheel", listener, { passive });
+  return {
+    setPassive(value: boolean) {
+      if (disposed || passive === value) return;
+      stage.removeEventListener("wheel", listener);
+      passive = value;
+      stage.addEventListener("wheel", listener, { passive });
+    },
+    dispose() {
+      disposed = true;
+      stage.removeEventListener("wheel", listener);
+    },
+  };
 }
 
 /** Host supplies audio preparation and optional compare-view target resolution. */

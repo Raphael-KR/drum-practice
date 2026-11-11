@@ -223,6 +223,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const canRepeat = () => available() && repeatEnabled();
   function renderTrack() {
     framePending = true;
+    syncWheel();
     if (!h.ready()) return;
     refreshSources();
     gestures.cancel();
@@ -300,6 +301,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   }
   function onState() {
     framePending = true;
+    syncWheel();
     wakeLock.setPlaying(h.ready() && h.player().playing);
     if (!h.ready()) return;
     const p = h.player();
@@ -466,7 +468,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   );
   disposers.push(loopSlots.dispose);
 
-  navigation.bind();
+  const syncWheel = navigation.bind();
   function progress() {
     const p = h.player(),
       v = input(ids.progress),

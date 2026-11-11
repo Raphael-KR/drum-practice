@@ -134,25 +134,30 @@ export function createPlaybackNavigation(
 
   // The screen mounts loop slots between gestures and the remaining input bindings.
   function bind() {
-    disposers.push(
-      installPlaybackWheel(stage, {
-        ready: available,
-        playing: () => h.player().playing,
-        view: () => h.song().settings.view,
-        cancel: gestures.cancel,
-        browse: () => renderRows(selectionIndex()),
-        scrub: (delta) =>
-          seek(
-            scrubTime(
-              h.song(),
-              h.player().current(),
-              -delta,
-              Math.max(150, stage.clientWidth / 4),
-              h.player().duration,
-            ),
+    const wheel = installPlaybackWheel(stage, {
+      ready: available,
+      playing: () => h.player().playing,
+      view: () => h.song().settings.view,
+      cancel: gestures.cancel,
+      browse: () => renderRows(selectionIndex()),
+      scrub: (delta) =>
+        seek(
+          scrubTime(
+            h.song(),
+            h.player().current(),
+            -delta,
+            Math.max(150, stage.clientWidth / 4),
+            h.player().duration,
           ),
-      }),
-    );
+        ),
+    });
+    disposers.push(wheel.dispose);
+    // Blocking wheel registration interrupts row-snap momentum in Dock WebKit.
+    const syncWheel = () =>
+      wheel.setPassive(
+        h.ready() && !h.player().playing && h.song().settings.view === "rows",
+      );
+    syncWheel();
     disposers.push(
       installScoreScroll(stage, {
         enabled: () =>
@@ -233,6 +238,7 @@ export function createPlaybackNavigation(
         h.player().pause();
       }
     });
+    return syncWheel;
   }
   return { gestures, bind };
 }

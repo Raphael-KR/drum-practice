@@ -90,7 +90,7 @@ it("wheel normalizes line units and preserves paused rows native scrolling", () 
   document.body.innerHTML = '<div id="stage"></div>';
   const stage = document.querySelector<HTMLElement>("div")!;
   let view = "ribbon";
-  const dispose = installPlaybackWheel(stage, {
+  const { dispose, setPassive } = installPlaybackWheel(stage, {
     ready: () => true,
     playing: () => false,
     view: () => view,
@@ -103,6 +103,7 @@ it("wheel normalizes line units and preserves paused rows native scrolling", () 
   );
   expect(stage.scrollLeft).toBe(32);
   view = "rows";
+  setPassive(true);
   const event = new WheelEvent("wheel", { deltaY: 10, cancelable: true });
   stage.dispatchEvent(event);
   expect(event.defaultPrevented).toBe(false);
