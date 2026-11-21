@@ -12,7 +12,7 @@ import {
 const sourcePDFHash =
   "33a98caa89daee7c5d9d56f272f73f0f8f6e9cb6526fe80af6c5f798807bcefd";
 const bundledXMLHash =
-  "31d6e7d3eec6655950abf74679595b4b8bfb721d584a1acd3fafd10e7aa3727a";
+  "2a6c0092a28169700d58ebd48553a20c48f0be4fb652b11b4df1fbe85f082d1e";
 async function hash(blob: Blob) {
   return sha256(await blob.arrayBuffer());
 }

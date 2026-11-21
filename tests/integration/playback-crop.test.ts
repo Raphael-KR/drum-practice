@@ -29,7 +29,7 @@ function song() {
       { id: "m", label: "17", regionId: "r", beats: 4, denominator: 4 },
     ],
     markers: [],
-    settings: { view: "rows", uniformSpacing: true, zoom: 1 },
+    settings: { view: "rows", zoom: 1 },
   } as unknown as Song;
 }
 
@@ -39,8 +39,7 @@ it.each(["rows", "ribbon"] as const)(
     const s = song();
     s.settings.view = view;
     const layout = scoreLayout(s, region, 300, 1200, staff)!;
-    const render = (uniform: boolean, isSVG = true) => {
-      s.settings.uniformSpacing = uniform;
+    const render = (isSVG = true) => {
       return new JSDOM(
         renderMeasure({
           s,
@@ -55,11 +54,7 @@ it.each(["rows", "ribbon"] as const)(
         }),
       ).window.document;
     };
-    const normal = render(false),
-      grid = render(true);
-    expect(grid.querySelector(".score-engraving")!.outerHTML).toBe(
-      normal.querySelector(".score-engraving")!.outerHTML,
-    );
+    const grid = render();
     const crop = grid.querySelector<HTMLElement>(".crop")!;
     const clip = (el: HTMLElement) =>
       el
@@ -68,19 +63,17 @@ it.each(["rows", "ribbon"] as const)(
         .split(" ")
         .map(parseFloat);
     const [top, right, bottom, left] = clip(crop);
-    const normalClip = clip(normal.querySelector<HTMLElement>(".crop")!);
-    expect([top, bottom]).toEqual([normalClip[0], normalClip[2]]);
+    expect([top, bottom].every(Number.isFinite)).toBe(true);
     expect([left, right]).toEqual([-layout.gap, -layout.gap]);
     const headLeft = (46.88 - 50) * (300 / 369);
     expect(headLeft).toBeLessThan(0);
     expect(headLeft).toBeGreaterThan(left);
     expect(crop.classList.contains("has-ink-overhang")).toBe(true);
-    expect(normal.querySelector(".has-ink-overhang")).toBeNull();
-    expect(render(true, false).querySelector(".has-ink-overhang")).toBeNull();
+    expect(render(false).querySelector(".has-ink-overhang")).toBeNull();
   },
 );
 
-it("fits equal grid cells and their outside ink inside the stage while retaining the half-cell onset", () => {
+it("fits equal grid cells and their outside ink while using the engraved grid onset", () => {
   const { document } = new JSDOM(
     '<div id="stage"><div id="ribbon"></div></div>',
   ).window;
@@ -94,7 +87,6 @@ it("fits equal grid cells and their outside ink inside the stage while retaining
     region,
     staff,
     ratio: staff.nativePageRatio,
-    phase: 1 / 128,
     url: "blob:score",
   };
   const track = createPlaybackTrack(
@@ -107,7 +99,7 @@ it("fits equal grid cells and their outside ink inside the stage while retaining
         ratios: [asset.ratio],
         highlights: [],
         staffs: new Map([[region.id, staff]]),
-        ribbon: new Map([[0, { ...asset, grid: asset }]]),
+        ribbon: new Map([[0, asset]]),
       }),
     },
     {
@@ -123,8 +115,8 @@ it("fits equal grid cells and their outside ink inside the stage while retaining
   expect(
     parseFloat(stage.style.getPropertyValue("--fitted-row-width")),
   ).toBeCloseTo(width * 4);
-  expect(track.position(0, 0, width)).toBeCloseTo(width / 128);
-  s.settings.uniformSpacing = false;
+  // Playback consumes the common onset stored by the shared engraver.
+  expect(track.position(0, 0, width)).toBeCloseTo(width * region.beatXs[0]);
   track.invalidate();
-  expect(track.rowCellWidth()).toBe(300);
+  expect(track.rowCellWidth()).toBeCloseTo(width);
 });

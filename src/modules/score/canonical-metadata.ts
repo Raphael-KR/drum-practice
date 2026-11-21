@@ -1,8 +1,8 @@
 import type { MeasureLyric } from "../../model/model";
+import { t } from "../../shared/i18n/i18n";
 
-export const LEGACY_LYRIC_PART = "DrumPracticeLyrics";
-export const CANONICAL_FIELD = "drum-practice:score:v2";
-export const LEGACY_CANONICAL_FIELD = "drum-practice:score:v1";
+export const TIMING_PART = "DrumPracticeLyrics";
+export const CANONICAL_FIELD = "drum-practice:score:v3";
 export const LYRIC_DIVISIONS = 9600;
 
 interface CommonManifest {
@@ -27,19 +27,30 @@ export interface LyricVoiceIdentity {
   id: string;
   confirmed: boolean;
 }
-export type CanonicalManifest = CommonManifest &
-  (
-    | { version: 1; lyrics: Omit<LyricVoiceIdentity, "noteId">[] }
-    | { version: 2; lyrics: LyricVoiceIdentity[] }
-  );
+export interface CanonicalManifest extends CommonManifest {
+  version: 3;
+  lyrics: LyricVoiceIdentity[];
+  /** Authored row-start IDs whose full-score rhythmic spacing fills the line. */
+  fullWidthSystems?: string[];
+}
 
-/** v1 partId belongs to the separate lyric part; v2 partId owns the lyric voices. */
+/** v3 owns final display groups; raw syllables live in production work files. */
 export function canonicalManifest(d: Document): CanonicalManifest | undefined {
   const fields = Array.from(
     d.querySelectorAll("identification > miscellaneous > miscellaneous-field"),
   );
-  const field =
-    fields.find((e) => e.getAttribute("name") === CANONICAL_FIELD) ??
-    fields.find((e) => e.getAttribute("name") === LEGACY_CANONICAL_FIELD);
-  return field ? JSON.parse(field.textContent || "") : undefined;
+  const field = fields.find((e) => e.getAttribute("name") === CANONICAL_FIELD);
+  if (!field) {
+    if (
+      fields.some((e) =>
+        /^drum-practice:score:v/.test(e.getAttribute("name") || ""),
+      )
+    )
+      throw new Error(t("canonical-xml.unsupportedVersion"));
+    return;
+  }
+  const data = JSON.parse(field.textContent || "");
+  if (data.version !== 3)
+    throw new Error(t("canonical-xml.unsupportedVersion"));
+  return data;
 }

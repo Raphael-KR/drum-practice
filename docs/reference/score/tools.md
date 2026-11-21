@@ -22,11 +22,12 @@
 | 역할                           | 코드/자료                                                                           | 입력과 책임                                                                                                                                                                                                                |
 | ------------------------------ | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 가사 시작점 검사               | `audit_lyric_onsets.py`, `common/lyric_onsets.py`                                   | 실제 XML의 유리수 시작점·마디 경계·음절 ID·text 없는 extend를 검사. 그리드 판정의 현재 지원 범위는 [이행 기록](../../records/archive/staff-grid64-rule-20261112.md#implementation-status)을 확인하며 자동 교정은 하지 않음 |
+| 최종 가사 묶음 제작            | `lyric_groups.py`, `group_canonical_lyrics.mjs`                                     | 원문·음절별 분수 시간 보존 → 앱의 공통 묶음·좌표 함수와 Pretendard 실측 폭 → 공통 가사 writer의 v3 정본. 작업 대응표와 정적 보존 대조를 남기며 앱·패키지·DB는 수정하지 않음                                                |
 | 원본 사본·해시·PDF 페이지 준비 | `prepare_inputs.py`, `common/artifacts.py`                                          | 지정한 원본을 새 폴더에 보존. 선택한 DPI로 원본 PDF만 래스터화                                                                                                                                                             |
 | 정본 조립·패키지 왕복          | `common/package.mjs`                                                                | 기존 앱 API 호출. 전체 Song/XML, 원본 음원·악보, 모든 페이지와 대체 악보 비교                                                                                                                                              |
 | 결과 파일 저장                 | `common/evidence.py`                                                                | 기존 `/render`, `/package`, `/artifacts` 요청과 로컬 출력명. 앱 서버는 계속 5173이며 별도 포트는 파일 수신기                                                                                                               |
 | 제작 계측                      | `measure_production.py`, `common/measurement.py`                                    | 실제 시작·단계와 요청별 사용량 메타데이터를 집계. 원시 대화 보존·상시 polling 없음. 단가/로그 범위/마감 시각 명시                                                                                                          |
-| 공통 검수 화면                 | `common/review.mjs`                                                                 | 기존 앱 표시 함수와 원본 시스템 구분을 사용하는 일시 화면. 가사 앵커/배치·해제 확인, DB 쓰기 없음                                                                                                                          |
+| 공통 검수 화면                 | `common/review.mjs`                                                                 | 원본 시스템을 보존하는 일시 화면. MusicXML 조판 결과가 없으면 앱의 공통 준비·파생 캐시를 사용하며, 라이브러리·패키지는 저장하지 않음                                                                                       |
 | 섹션·지시문 표시 offset        | `common/direction-offset.mjs`                                                       | XML cursor를 유지하며 표시 offset을 계산·저장. 단위·충돌 판정은 [지시문 offset 계약](#common-tools--지시문-offset)을 따름                                                                                                  |
 | 인계문 조립                    | `handoff_production.py`, `common/handoff.py`                                        | 실제 파일·해시와 후보에 결합된 기존 검증 근거. MusicXML 단독 인계의 첫 박은 기존 정본 metadata의 첫 마디 start에서 읽는다. 전송·수신자 수록/청취는 별도 상태                                                               |
 | 규격·음악적 시간 검사          | `common/musicxml.py`                                                                | 로컬 XSD, divisions·성부·backup/forward·화음·점·연음·꾸밈음의 유리수 시간. 드럼 파트만 집계                                                                                                                                |
@@ -42,6 +43,35 @@
 
 `xml_helpers.py`는 유지하며 곡별 표기·빔·성부를 기계적으로 통일하지 않는다.
 새 곡의 제목·가수 입력은 fixture·곡 설정에서 읽는다. 기존 정본 교정은 MusicXML 메타정보를 기준으로 하며 별도 정본을 중복 관리하지 않는다.
+
+가사 묶음의 저장 의미는 [정본 계약](musicxml.md#musicxml-canonical--최종-가사-묶음), 명령과 산출물은 [전환 절차](../../how-to/correct-lyrics.md#final-lyric-groups)를 따른다. Python 시작점 판독기는 보관 v1·v2와 현행 v3를 읽는다. 이 제작 도구의 판독 지원은 앱의 구형 파일 호환을 뜻하지 않는다.
+
+<a id="local-score-project-cli"></a>
+
+### 곡별 프로젝트 읽기·저장
+
+`tools/score-production/score_project.mjs`는 앱과 같은 `server/score-project-store.ts`를 사용한다. 프로젝트에 기록된 Node 26 실행 환경에서 저장소 루트를 작업 디렉터리로 사용한다. 독립 DB·서버를 만들지 않는다.
+
+```sh
+node tools/score-production/score_project.mjs list
+node tools/score-production/score_project.mjs read "$SONG_ID"
+node tools/score-production/score_project.mjs init "$SONG_ID" "$PACKED_RECORD_PATH"
+node tools/score-production/score_project.mjs save "$SONG_ID" "$PROJECT_WRITE_PATH"
+node tools/score-production/score_project.mjs work "$SONG_ID" "$WORK_ENTRY_PATH"
+```
+
+- `list/read`는 기존 프로젝트를 읽는다. `read`는 확정 `record`, 별도 `draft.record`·`draft.editDraft`, `head`, `work`, 실제 `directory`를 반환한다. 수정 기준은 확정 head이고 초안을 자동 확정하지 않는다.
+- `init`은 프로젝트가 없을 때만 packed version 2 record 또는 `{ record, editDraft? }`를 받는다. ID는 `record.song.id`와 같아야 한다. 기존 프로젝트를 초기화하거나 덮어쓰지 않는다.
+- `save` 입력은 `{ base, expectedDraft, record }`다. `base`는 실제로 읽은 head 전체, `expectedDraft`는 당시 초안 UUID 또는 `null`이다. 누락된 기준을 최신 값으로 추정하지 않는다. record는 같은 읽기 결과를 바탕으로 수정하고 이력·자산·작업 자료를 보존한다.
+- 가사 변경은 기존 공통 writer로 Song과 MusicXML을 함께 준비한다. 제작자 저장은 공통 차이 계산으로 `source: "producer"` 이력을 추가하며, 앞선 확정 교정 이력이 빠지거나 달라지면 거부한다. 재생성 때의 확정 가사 재적용은 [교정 절차](../../how-to/correct-lyrics.md#confirmed-lyric-corrections)를 따른다.
+- `work` 입력은 `{ kind: "progress" | "question" | "answer", text, questionId?, revision? }`다. 항목 ID·작성 시각·작성자는 CLI가 기록한다. 답장은 실제 질문 ID를 사용한다. 진행/결과 본문에는 처리한 저장본과 검증의 통과·실패·미실행을 구분한다.
+- 쓰기는 해당 프로젝트 파일에 영향을 준다. 충돌 시 파일을 직접 덮지 말고 최신 head와 초안을 다시 읽어 변경을 대조한다. 사용자 초안은 제작자 저장에서 보존한다. CLI 실행 성공과 실제 화면·음악적 정확성 검증은 별도다.
+
+파일 형식은 [로컬 제작 프로젝트](file-formats.md#local-score-projects)가 정본이다. 2026-11-14 구현에서는 CLI의 정적 검사만 수행하며 실제 프로젝트 생성·저장·송신은 실행하지 않는다.
+
+### 기존 요청 자료의 진행·결과 기록
+
+[`production_request.mjs`](../../../tools/score-production/production_request.mjs)는 보존된 요청별 자료의 타입·Node store를 사용해 입력 확인과 진행·질문·결과를 기록한다. 새 공동 작업의 접수·저장 경로로 사용하지 않는다. 앱 DB·원본 입력·전송 기록은 수정하지 않는다. 입력 해시와 실제 결과 파일을 검증하되 음악적 정확성을 대신 판정하지 않는다. 파일 계약은 [제작 요청 형식](file-formats.md#score-production-requests), 명령은 [공동작업 절차](../../how-to/collaborate-on-score.md)를 따른다.
 
 <a id="common-tools--지시문-offset"></a>
 
@@ -63,7 +93,9 @@
 
 #### 공통 패키지 API
 
-- `prepareCanonical(song, sourceXML, audioHash, editDocument?)`: 정본 writer → 중복 표제 정리 → 선택적 곡 메타정보 → 재읽기·마디 시간 비교. `{ canonicalXML, restored }` 반환.
+- `prepareProductionCanonical(song, sourceXML, audioHash, editDocument?)`: 묶기 전 Song/XML 보존 → 글꼴 준비·공통 묶음 → 곡 ID의 확정 교정 적용 → 가사 투영 → 정본 저장·재읽기. `{ canonicalXML, restored, lyricWork }` 반환. `lyricWork`에는 접수 봉투와 적용 보고서도 포함한다. 5개 곡별 패키지 어댑터는 이를 로컬 `package-audit.json`에 전달하며 정본·패키지에는 넣지 않는다. 교정 충돌 시 보고서가 있는 오류를 반환하고 패키지 생성을 중단한다.
+- `common/lyric-correction-input.mjs`·`common/lyric-correction-node.mjs`: 앱 공통 교정 타입·적용 함수를 재사용한다. 곡 ID와 접수 정본 SHA를 확인하며, 현행 정본 교정은 최종 묶음을 재병합하지 않는다. CLI·구판 전환·충돌 검토 순서는 [확정 교정 반영 절차](../../how-to/correct-lyrics.md#confirmed-lyric-corrections)를 따른다.
+- `prepareCanonical(song, sourceXML, audioHash, editDocument?)`: 이미 확정한 가사로 정본 writer → 중복 표제 정리 → 선택적 곡 메타정보 → 재읽기·마디 시간 비교. `{ canonicalXML, restored }` 반환. 원음절을 최종 묶음으로 만드는 함수와 구분한다.
 - `bindRenderedScore(song, rendered)`: 앱 renderer 결과를 기존 마디 ID에 연결하며 시작·끝 시각 유지.
 - `createVerifiedPackage(record)`: 앱 생성·읽기 API로 모든 자산·의미를 비교한 Blob 반환.
 - `sha`, `base64`: 앱의 `platform/browser/sha256.ts`·`platform/storage/binary-asset.ts`로 소문자 64자리 해시·Base64 문자열 반환. 별도 인코더 금지.

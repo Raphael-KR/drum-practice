@@ -27,7 +27,7 @@ export function soundFieldsHTML() {
     })
     .join("")}</div>`;
 }
-function zoomFieldHTML() {
+export function zoomFieldHTML() {
   return `<label class="playback-zoom-row"><strong class="settings-item-title">${t("playback.message455")}</strong><span class="zoom-scale"><input id="zoom" type="range" min="0" max="100" step="0.5" value="50" list="zoom-ticks"><datalist id="zoom-ticks">${ZOOM_TICKS.map((p) => `<option value="${p}"></option>`).join("")}</datalist><span class="zoom-tick-labels" aria-hidden="true">${ZOOM_TICKS.map((p) => `<span>${Math.round(zoomFromSlider(p) * 100)}%</span>`).join("")}</span></span><output id="zoom-value" for="zoom">100%</output></label>`;
 }
 export function progressFieldHTML(id: string) {
@@ -64,11 +64,6 @@ export function screenSettingsHTML(
     `<div id="pdf-view-row" class="settings-choice-row"><div class="settings-choice-buttons segmented-control" role="group" aria-label="${t("settings.scoreFormat")}"><button type="button" data-setting-control="${ids.pdf}" data-setting-value="true" title="${t("settings.pdfOriginal")}">${t("settings.pdfOriginal")}</button><button type="button" data-setting-control="${ids.pdf}" data-setting-value="false" title="${t("settings.musicxml")}">${t("settings.musicxml")}</button></div><p id="pdf-view-status" class="subtle">${t("main.message227")}</p><input id="${ids.pdf}" type="checkbox" hidden disabled></div>` +
     titleOrderFieldsHTML() +
     zoomFieldHTML() +
-    settingsSwitch(
-      "uniform-spacing",
-      t("settings.uniformSpacing"),
-      t("settings.uniformSpacingDescription"),
-    ) +
     settingsSwitch(
       ids.highlight,
       t("playback.message439"),

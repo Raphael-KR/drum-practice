@@ -568,11 +568,11 @@ body.has-song:has(.drawer-playback) {
   top: calc(var(--ribbon-center-top) - 53px);
 }
 
-/* Shared row wrappers allow duration-proportional cells in uniform spacing mode. */
-.two-rows.uniform-spacing .ribbon {
+/* Shared row wrappers contain duration-proportional MusicXML cells. */
+.two-rows.time-spaced-score .ribbon {
   display: block;
 }
 
-.two-rows.uniform-spacing .browse-strip > .measure:last-child {
+.two-rows.time-spaced-score .browse-strip > .measure:last-child {
   border-right-color: transparent;
 }

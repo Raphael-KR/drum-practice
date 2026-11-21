@@ -43,39 +43,41 @@ export function bindSoundAndViewSettings(
     sync();
     h.changed();
   };
-  listen(get("click"), "click", () => {
-    if (available()) changeMetronome(nextMetronomeMode(h.song().settings));
-  });
-  // Keep native button activation from also reaching playback shortcuts.
-  listen(get("click"), "keydown", (event) => {
-    const key = event as KeyboardEvent;
-    if (key.code === "Space" || key.key === "Enter") event.stopPropagation();
-  });
-  root
-    .querySelectorAll<HTMLButtonElement>(
-      "#metronome-choices [data-metronome-mode]",
-    )
-    .forEach((button) => {
-      listen(button, "click", () =>
-        changeMetronome(button.dataset.metronomeMode as MetronomeMode),
-      );
+  if (!h.authoring) {
+    listen(get("click"), "click", () => {
+      if (available()) changeMetronome(nextMetronomeMode(h.song().settings));
     });
-  for (const [id, key] of [
-    ["music-volume", "musicVolume"],
-    ["click-volume", "clickVolume"],
-  ] as const) {
-    if (key === "clickVolume" && !METRONOME_VOLUME_ADJUSTABLE) continue;
-    const change = () => {
-      if (!available()) return;
-      h.song().settings[key] = clamp(Number(input(id).value), 0, 1);
-      const output = root.querySelector(`#${id}-value`);
-      if (output)
-        output.textContent = `${Math.round(h.song().settings[key] * 100)}%`;
-      h.player().volumes();
-      h.changed();
-    };
-    listen(input(id), "input", change);
-    listen(input(id), "change", change);
+    // Keep native button activation from also reaching playback shortcuts.
+    listen(get("click"), "keydown", (event) => {
+      const key = event as KeyboardEvent;
+      if (key.code === "Space" || key.key === "Enter") event.stopPropagation();
+    });
+    root
+      .querySelectorAll<HTMLButtonElement>(
+        "#metronome-choices [data-metronome-mode]",
+      )
+      .forEach((button) => {
+        listen(button, "click", () =>
+          changeMetronome(button.dataset.metronomeMode as MetronomeMode),
+        );
+      });
+    for (const [id, key] of [
+      ["music-volume", "musicVolume"],
+      ["click-volume", "clickVolume"],
+    ] as const) {
+      if (key === "clickVolume" && !METRONOME_VOLUME_ADJUSTABLE) continue;
+      const change = () => {
+        if (!available()) return;
+        h.song().settings[key] = clamp(Number(input(id).value), 0, 1);
+        const output = root.querySelector(`#${id}-value`);
+        if (output)
+          output.textContent = `${Math.round(h.song().settings[key] * 100)}%`;
+        h.player().volumes();
+        h.changed();
+      };
+      listen(input(id), "input", change);
+      listen(input(id), "change", change);
+    }
   }
   root
     .querySelectorAll<HTMLButtonElement>("[data-row-view]")
@@ -143,8 +145,7 @@ export function bindPlaybackPreferences(
   h: PlaybackScreenHost,
   bindings: SettingsBindings,
 ) {
-  const { root, input, listen, run, available, sync, renderTrack, frame } =
-    bindings;
+  const { root, input, listen, run, sync, frame } = bindings;
   const titleButtons = Array.from(
     root.querySelectorAll<HTMLButtonElement>("[data-title-order]"),
   );
@@ -188,14 +189,7 @@ export function bindPlaybackPreferences(
       }
     }),
   );
-  listen(input("uniform-spacing"), "change", () => {
-    if (!available() || input("uniform-spacing").disabled) return;
-    h.song().settings.uniformSpacing = input("uniform-spacing").checked;
-    renderTrack();
-    sync();
-    frame();
-    h.changed();
-  });
+
   listen(input(h.display.highlightId), "change", () => {
     const inputElement = input(h.display.highlightId);
     if (!inputElement.disabled) h.display.setHighlight(inputElement.checked);

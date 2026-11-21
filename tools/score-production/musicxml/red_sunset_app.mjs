@@ -11,6 +11,7 @@ import {
 import { renderMusicXML } from "/src/modules/score/musicxml.ts";
 import { validateSong } from "/src/model/model.ts";
 import { displayPage } from "/src/modules/score/score-pages.ts";
+import { verifyPackage } from "./common/package.mjs";
 import {
   audioTimeMap,
   mapTime,
@@ -100,12 +101,7 @@ export async function build() {
   validateSong(record.song);
   const pack = await createScorePackage(record);
   const loaded = await readScorePackage(pack);
-  if (
-    JSON.stringify(loaded.song) !== JSON.stringify(record.song) ||
-    loaded.canonicalXML !== xml ||
-    (await sha(loaded.audio)) !== grid.audioSHA256
-  )
-    throw Error("Package roundtrip mismatch");
+  await verifyPackage(record, loaded);
   await verifyCanonicalAudio(loaded);
   const map = audioTimeMap(
     {

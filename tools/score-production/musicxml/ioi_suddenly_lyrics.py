@@ -219,7 +219,7 @@ def build(folder, out):
                 dict(
                     id=f'ioi-suddenly-lyric-{number}-{unit["id"].split("-")[-1]}',
                     text=unit["text"],
-                    confirmed=False,
+                    confirmed=bool(override and override.get("confirmed")),
                     scorePosition=dict(
                         measureId=f"ioi-suddenly-m{number}",
                         quarterOffset=candidate["quarterOffset"],

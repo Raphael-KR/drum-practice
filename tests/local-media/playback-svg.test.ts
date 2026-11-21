@@ -1,8 +1,7 @@
 import { beforeAll, expect, it, vi } from "vitest";
-import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { JSDOM } from "jsdom";
-import { readScorePackage } from "../../src/modules/library/score-package";
+import { preservedScoreLayout } from "./preserved-score-layout";
 import { displayPage } from "../../src/modules/score/score-pages";
 import { parsePlaybackSVG } from "../../src/modules/playback/playback-svg";
 
@@ -14,12 +13,8 @@ beforeAll(async () => {
     XMLSerializer: window.XMLSerializer,
     document: window.document,
   });
-  const record = await readScorePackage(
-    new Blob([
-      readFileSync(
-        "data/production/red-sunset/final/build-03/red-sunset.drumscore",
-      ),
-    ]),
+  const record = await preservedScoreLayout(
+    "data/production/red-sunset/final/build-03/red-sunset.drumscore",
   );
   source = await (await displayPage(record.pages[0])).text();
 });

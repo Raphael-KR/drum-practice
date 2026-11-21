@@ -1,4 +1,3 @@
-import { formatSongTitle } from "../../modules/library/song-title";
 import {
   markerPath,
   markerFill,
@@ -13,6 +12,11 @@ import type { ScoreVariant } from "../../model/record";
 import type { RecordData } from "../../model/record";
 import { displayPage } from "../../modules/score/score-pages";
 import { playbackPosition } from "../../modules/playback/playback-position";
+import { engravingHeight } from "../../modules/playback/playback-layout";
+import {
+  MUSICXML_TOP_SPACES,
+  staffFrameHeight,
+} from "../../modules/score/practice-staff-layout";
 
 export function reviewPair(record: RecordData): [ScoreVariant, ScoreVariant] {
   const scores = songScores(record),
@@ -37,6 +41,17 @@ export function reviewPair(record: RecordData): [ScoreVariant, ScoreVariant] {
   return [pdf, xml];
 }
 export class ScoreReview {
+  readonly layout: {
+    index: number;
+    page: number;
+    region: import("../../model/model").Region;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    clipTop: number;
+    clipBottom: number;
+  }[] = [];
   private urls: string[] = [];
   private images: HTMLImageElement[][] = [];
   private staffs: { top: number; gap: number }[][] = [];
@@ -45,6 +60,7 @@ export class ScoreReview {
   private markerKey = "";
   private width = 0;
   private height = 0;
+  private frame = { above: MUSICXML_TOP_SPACES, below: 8 };
   private scale = 2;
   constructor(
     private canvas: HTMLCanvasElement,
@@ -152,6 +168,18 @@ export class ScoreReview {
       }),
     );
     this.staffs = analyze(expected);
+    this.pair.forEach((score, row) =>
+      score.measures.forEach((m, i) => {
+        const r = score.regions.find((region) => region.id === m.regionId)!;
+        const staff = this.staffs[row][i],
+          height = r.h * this.images[row][r.page].naturalHeight;
+        this.frame.above = Math.max(this.frame.above, staff.top / staff.gap);
+        this.frame.below = Math.max(
+          this.frame.below,
+          (height - staff.top) / staff.gap,
+        );
+      }),
+    );
   }
 
   dispose() {
@@ -161,7 +189,10 @@ export class ScoreReview {
   draw(time: number) {
     if (!this.images.length) return;
     const w = Math.max(320, this.canvas.clientWidth),
-      h = Math.max(220, this.canvas.clientHeight),
+      frameHeight = staffFrameHeight({ top: 0, gap: 1, frame: this.frame }),
+      scoreHeight = engravingHeight(w, this.song.settings.zoom),
+      rowH = 40 + scoreHeight,
+      h = Math.ceil(62 + rowH * 2),
       loc = locate(this.song, time),
       start = Math.floor(loc.index / 4) * 4;
     const marked = markedMeasureIndices(this.song),
@@ -176,6 +207,8 @@ export class ScoreReview {
       this.window = start;
       this.width = w;
       this.height = h;
+      this.canvas.style.height = `${h}px`;
+      this.canvas.parentElement!.style.height = `${h}px`;
       this.canvas.width = this.base.width = Math.round(w * this.scale);
       this.canvas.height = this.base.height = Math.round(h * this.scale);
       const c = this.base.getContext("2d")!;
@@ -184,16 +217,15 @@ export class ScoreReview {
       c.fillRect(0, 0, w, h);
       c.fillStyle = "#233047";
       c.font = "bold 16px system-ui";
-      c.fillText(formatSongTitle(this.song), 12, 23, w - 24);
-      const rowH = (h - 62) / 2,
-        cellW = (w - 24) / 4,
-        staffGap = Math.min((rowH - 44) / 13, cellW / 25);
+      this.layout.length = 0;
+      const cellW = (w - 24) / 4,
+        staffGap = scoreHeight / frameHeight;
       this.pair.forEach((score, row) => {
         const y = 62 + row * rowH;
         c.fillStyle = "#3f74d4";
         c.font = "bold 13px system-ui";
         c.fillText(
-          row ? i18nText("term.MusicXMLSVG") : i18nText("term.PDF"),
+          row ? i18nText("term.MusicXML") : i18nText("term.PDF"),
           12,
           y + 16,
         );
@@ -206,6 +238,18 @@ export class ScoreReview {
             sh = r.h * image.naturalHeight,
             staff = this.staffs[row][start + j],
             scaleY = staffGap / staff.gap;
+          if (row === 1)
+            this.layout.push({
+              index: start + j,
+              page: r.page,
+              region: r,
+              x,
+              y: y + 40 + this.frame.above * staffGap - staff.top * scaleY,
+              width: cellW,
+              height: sh * scaleY,
+              clipTop: y + 40,
+              clipBottom: y + rowH,
+            });
           const isMarked = marked.has(start + j);
           if (isMarked) {
             c.save();
@@ -242,7 +286,7 @@ export class ScoreReview {
             sw,
             sh,
             x,
-            y + 40 + 5 * staffGap - staff.top * scaleY,
+            y + 40 + this.frame.above * staffGap - staff.top * scaleY,
             cellW,
             sh * scaleY,
           );
@@ -262,16 +306,17 @@ export class ScoreReview {
     c.scale(this.scale, this.scale);
     c.fillStyle = "#3f74d4";
     c.font = "14px system-ui";
+    c.textAlign = "center";
     c.fillText(
       i18nText("score-review.message536", {
         value1: playbackPosition(this.song, time).label,
         value2: time.toFixed(3),
       }),
-      12,
-      46,
+      w / 2,
+      78,
     );
-    const rowH = (h - 62) / 2,
-      cellW = (w - 24) / 4,
+    c.textAlign = "left";
+    const cellW = (w - 24) / 4,
       j = loc.index - start;
     this.pair.forEach((score, row) => {
       const m = score.measures[loc.index],

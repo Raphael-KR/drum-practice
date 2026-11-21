@@ -18,7 +18,7 @@
 | 0002 | [전체 페이지 출력과 원본 의미를 분리한다](0002-svg-page-output.md) | accepted | 2026-09-21 이후 |
 | 0003 | [원본 줄 구성과 연습용 자르기의 범위를 구분한다](0003-source-systems-and-cropping.md) | accepted | 2026-10-03 최종 정정·10-21 검수 |
 | 0004 | [두 앱은 정본 XML과 공통 native 조판을 사용한다](0004-browser-native-score-rendering.md) | accepted | 2026-10-03 |
-| 0005 | [연습 배치는 native 비율과 보기별 간격 정책을 사용한다](0005-practice-layout-and-spacing.md) | accepted | 2026-10-03~04 |
+| 0005 | [연습 배치는 native 비율과 보기별 간격 정책을 사용한다](0005-practice-layout-and-spacing.md) | superseded by 0034 | 2026-10-03~04 |
 | 0006 | [재생 위치·선택·구간 표시를 분리한다](0006-practice-navigation-and-overlays.md) | accepted | 2026-10-03~13 |
 | 0007 | [확정 범례와 음악 구조를 유지하며 native 기호를 보완한다](0007-native-drum-notation.md) | accepted | 2026-10-03~15 |
 | 0008 | [재생용 여러 마디 wedge를 연속 기하로 연결한다](0008-continuous-playback-wedges.md) | accepted | 2026-10-03·10-23 |
@@ -46,6 +46,9 @@
 | 0030 | [서로 다른 가사 음절의 음악적 시작점을 구분한다](0030-distinct-lyric-onsets.md) | accepted | 2026-11-11 |
 | 0031 | [모든 오선 부착 표기에 공통32분음표 그리드를 적용한다](0031-shared-staff-notation-grid.md) | superseded by 0032 | 2026-11-11 |
 | 0032 | [음악적 위치·음가와 표시 이동의 기본 단위를 64분음표로 통일한다](0032-common-sixty-fourth-unit.md) | accepted | 2026-11-12 |
+| 0033 | [최종 가사 묶음과 원음절 작업 자료를 분리한다](0033-final-lyric-groups.md) | accepted | 2026-11-13 |
+| 0034 | [모든 MusicXML 화면에 시간 비례 배치를 적용한다](0034-time-proportional-engraving.md) | accepted | 2026-11-13 |
+| 0035 | [사용자와 악보제작자가 같은 로컬 악보 프로젝트에서 공동작업한다](0035-score-session-collaboration.md) | accepted | 2026-11-13 |
 
 기존 0001~0016을 재사용했다. 0003 자르기·0004 공통 조판·0005 배치·0006 탐색·0007 범례·0009 섹션·0011 O+·0012 정본·0013 가사·0014 메타정보·0015 템포·0016 박 연결의 결정 식별자와 기존 주소를 유지한다. 현행 Rule 본문은 [주제별 정본](../RULES-INDEX.md)으로 통합했고, 옛 문서 주소는 문단별 이전 안내다. 0017~0027은 기존 다른 문서에서 확인한 변환/제작·키트·제품·공통 UX·파일·구조·문구·버전·로컬 분석·검증 선택을 분리한 것이다.
 ## 이전 문단 링크

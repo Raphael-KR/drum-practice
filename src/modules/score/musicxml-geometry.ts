@@ -1,3 +1,4 @@
+import { timeMeasureWidth, timePosition } from "./time-spacing";
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import type { VexFlowMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure";
 import { type Region } from "../../model/model";
@@ -5,6 +6,7 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import { MUSICXML_TOP_SPACES } from "./practice-staff-layout";
 import type { RibbonSpacing } from "./ribbon-engraving";
 import { gridPhase } from "./ribbon-timeline";
+import { fullScoreSystemTransform } from "./full-score-width";
 import type { installWordsPositions } from "./words-position";
 import type { installScoreLyrics } from "./score-lyrics";
 
@@ -46,11 +48,14 @@ export function measureMusicXMLSystems(
       const pi = g.ParentMusicSystem.Parent.PageNumber - 1;
       const rows = systemBounds[pi];
       const stave = (g as VexFlowMeasure).getVFStave();
+      const transform = fullScoreSystemTransform(g.ParentMusicSystem);
       const key = Math.round(stave.getYForLine(0) * 100);
       pageTops[pi] = Math.min(
         pageTops[pi],
-        stave.getYForLine(0) -
-          MUSICXML_TOP_SPACES * stave.getSpacingBetweenLines(),
+        (stave.getYForLine(0) -
+          MUSICXML_TOP_SPACES * stave.getSpacingBetweenLines()) *
+          transform.scale +
+          transform.y,
       );
       const box = measure.getBBox(),
         previous = rows.get(key);
@@ -147,37 +152,41 @@ export function extractMusicXMLRegions(
       height = view.height;
     if (!(width > 0 && height > 0))
       throw Error(i18nText("musicxml.message417"));
-    const sx = 1;
-    const x = Math.max(0, (p.x - pp.x + box.BorderLeft) * 10 * sx),
+    const transform = fullScoreSystemTransform(g.ParentMusicSystem);
+    const px = (x: number) => x * transform.scale + transform.x;
+    const py = (y: number) => y * transform.scale + transform.y;
+    const x = Math.max(0, px((p.x - pp.x + box.BorderLeft) * 10)),
       right = timeline
         ? x +
-          (timeline.uniformQuarters && timeline.rowWidth
-            ? timeline.rowWidth
-            : ((parsed.measures[i].beats * 4) /
-                parsed.measures[i].denominator) *
-              timeline.quarter)
-        : Math.min(width, (p.x - pp.x + box.BorderRight) * 10 * sx);
+          timeMeasureWidth(
+            (parsed.measures[i].beats * 4) / parsed.measures[i].denominator,
+            timeline,
+          )
+        : Math.min(width, px((p.x - pp.x + box.BorderRight) * 10));
     const stave = (g as VexFlowMeasure).getVFStave();
     const staffY = stave.getYForLine(0);
     const bounds = systemBounds[pi].get(Math.round(staffY * 100));
     const y = Math.max(
         view.y,
         bounds
-          ? bounds.top - 5
-          : staffY - MUSICXML_TOP_SPACES * stave.getSpacingBetweenLines(),
+          ? py(bounds.top - 5)
+          : py(staffY - MUSICXML_TOP_SPACES * stave.getSpacingBetweenLines()),
       ),
       bottom = Math.min(
         view.y + height,
-        bounds ? bounds.bottom + 5 : staffY + 95,
+        py(bounds ? bounds.bottom + 5 : staffY + 95),
       );
     const w = right - x,
       h = bottom - y;
-    if (w <= 0 || h <= 0) throw Error(i18nText("musicxml.message418"));
+    if (w <= 0 || h <= 0)
+      throw Error(
+        `${i18nText("musicxml.message418")} measure=${i + 1}, page=${pi + 1}, bounds=${x},${y},${right},${bottom}, size=${w}x${h}, viewBox=${view.x},${view.y},${width},${height}`,
+      );
     const meta = parsed.measures[i];
     const entries = g.staffEntries
       .map((e) => ({
         beat: e.relInMeasureTimestamp.RealValue * meta.denominator,
-        x: ((e.PositionAndShape.AbsolutePosition.x - pp.x) * 10 * sx - x) / w,
+        x: (px((e.PositionAndShape.AbsolutePosition.x - pp.x) * 10) - x) / w,
       }))
       .filter((e) => e.beat >= 0 && e.beat < meta.beats && e.x >= 0 && e.x < 1);
     entries.sort((a, b) => a.beat - b.beat);
@@ -187,14 +196,17 @@ export function extractMusicXMLRegions(
       : entries.filter((e, j) => !j || e.beat > entries[j - 1].beat + 1e-8);
     if (!points.length) points.push({ beat: 0, x: 0.08 });
     points.push({ beat: meta.beats, x: 1 });
+    const start = timeline ? timePosition(0, timeline) : 0;
+    if (timeline && !(Number.isFinite(start) && start >= 0 && start < w))
+      throw Error(
+        `Invalid shared grid start: measure=${i + 1}, start=${start}, width=${w}`,
+      );
     const beatXs = Array.from({ length: meta.beats + 1 }, (_, b) =>
-      timeline?.fixedGrid
-        ? Math.min(
-            1,
-            gridPhase(
-              (b * 4) / meta.denominator,
-              (meta.beats * 4) / meta.denominator,
-            ),
+      timeline
+        ? gridPhase(
+            (b * 4) / meta.denominator,
+            (meta.beats * 4) / meta.denominator,
+            start / w,
           )
         : interpolateX(points, b),
     );
@@ -219,13 +231,20 @@ export function extractMusicXMLRegions(
     });
   }
   const staffs = regions.map((r, i) => {
+    const transform = fullScoreSystemTransform(
+      osmd.GraphicSheet.MeasureList[i][0].ParentMusicSystem,
+    );
     const stave = (
       osmd.GraphicSheet.MeasureList[i][0] as VexFlowMeasure
     ).getVFStave();
     const view = svgs[r.page].viewBox.baseVal;
     return {
-      top: (stave.getYForLine(0) - view.y) / view.height,
-      gap: (stave.getYForLine(1) - stave.getYForLine(0)) / view.height,
+      top:
+        (stave.getYForLine(0) * transform.scale + transform.y - view.y) /
+        view.height,
+      gap:
+        ((stave.getYForLine(1) - stave.getYForLine(0)) * transform.scale) /
+        view.height,
     };
   });
 

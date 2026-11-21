@@ -1,3 +1,4 @@
+import { prepareLyricGroups } from "./lyric-group-record";
 import { readCanonicalLyrics } from "./canonical-lyric-read";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { sha256 } from "../../platform/browser/sha256";
@@ -10,9 +11,8 @@ import {
 import type { RecordData } from "../../model/record";
 import { migrateLyricPositions, projectLyrics } from "../lyrics/lyric-score";
 import {
-  LEGACY_LYRIC_PART as PART,
+  TIMING_PART as PART,
   CANONICAL_FIELD as FIELD,
-  LEGACY_CANONICAL_FIELD,
   LYRIC_DIVISIONS as DIV,
   canonicalManifest as manifest,
   type CanonicalManifest,
@@ -132,7 +132,6 @@ export function writeCanonical(
   const misc = child(ident, "miscellaneous") || add(ident, "miscellaneous");
   for (const name of [
     FIELD,
-    LEGACY_CANONICAL_FIELD,
     "drum-practice:display-title",
     "drum-practice:lyric-text",
   ])
@@ -142,28 +141,15 @@ export function writeCanonical(
   add(misc, "miscellaneous-field", s.title, {
     name: "drum-practice:display-title",
   });
-  if (s.lyricText)
-    add(misc, "miscellaneous-field", s.lyricText, {
-      name: "drum-practice:lyric-text",
-    });
   const partList = child(root, "part-list") || add(root, "part-list");
   if (!old && kids(root, "part").some((p) => p.id === PART))
     throw Error(i18nText("canonical-xml.message013"));
-  if (old?.version === 1) {
-    kids(root, "part")
-      .find((p) => p.id === old.partId)
-      ?.remove();
-    kids(partList, "score-part")
-      .find((p) => p.id === old.partId)
-      ?.remove();
-  }
   const candidates = kids(root, "part").filter(
     (p) => p.id !== "DrumPracticeVocalSource",
   );
   let part =
-    candidates.find(
-      (p) => p.id === (old?.version === 2 ? old.partId : s.scorePartId),
-    ) || candidates[0];
+    candidates.find((p) => p.id === (old?.partId ?? s.scorePartId)) ||
+    candidates[0];
   if (!part) {
     // Audio/PDF-only records still need lyric timing, but no invented drum notation.
     const sp = add(partList, "score-part", undefined, { id: PART });
@@ -200,14 +186,14 @@ export function writeCanonical(
       add(note, "voice", "1");
     });
   }
-  if (old?.version === 2 && old.partId === part.id)
+  if (old && old.partId === part.id)
     removeLyricVoices(
       part,
       old.lyrics.map((l) => l.voice),
     );
   const identities = writeLyricVoices(part, s);
   const data: CanonicalManifest = {
-    version: 2,
+    version: 3,
     partId: part.id,
     audioName: s.audioName,
     audioSHA256: audioSHA256 || old?.audioSHA256,
@@ -227,6 +213,9 @@ export function writeCanonical(
       ? { measureLyrics: s.measureLyrics.map((l) => ({ ...l })) }
       : {}),
     lyrics: identities,
+    ...(old?.fullWidthSystems?.length
+      ? { fullWidthSystems: [...old.fullWidthSystems] }
+      : {}),
   };
   add(misc, "miscellaneous-field", JSON.stringify(data), { name: FIELD });
   return new XMLSerializer().serializeToString(d);
@@ -234,12 +223,7 @@ export function writeCanonical(
 export function readCanonical(text: string, s: Song): void {
   const d = parse(text),
     data = manifest(d);
-  s.lyricText =
-    Array.from(d.querySelectorAll("miscellaneous-field")).find(
-      (e) => e.getAttribute("name") === "drum-practice:lyric-text",
-    )?.textContent || undefined;
-  if (!data || (data.version !== 1 && data.version !== 2))
-    throw Error(i18nText("canonical-xml.message016"));
+  if (!data) throw Error(i18nText("canonical-xml.message016"));
   if (
     data.measures.length !== s.measures.length ||
     data.measures.some(
@@ -274,8 +258,12 @@ export function readCanonical(text: string, s: Song): void {
   s.lyrics = readCanonicalLyrics(d, data);
   projectLyrics(s);
 }
-export async function ensureCanonical(record: RecordData) {
+export async function ensureCanonical(
+  record: RecordData,
+  preserveLyricGroups = false,
+) {
   if (record.canonicalXML) return;
+  await prepareLyricGroups(record, preserveLyricGroups);
   let base: string | undefined;
   const xml =
     record.song.scoreFormat === "musicxml"
@@ -298,7 +286,11 @@ export async function ensureCanonical(record: RecordData) {
     await audioHash(record.audio),
   );
 }
-export function saveCanonical(record: RecordData) {
+export async function saveCanonical(
+  record: RecordData,
+  preserveLyricGroups = false,
+) {
+  await prepareLyricGroups(record, preserveLyricGroups);
   record.canonicalXML = writeCanonical(record.song, record.canonicalXML);
 }
 const hashes = new WeakMap<Blob, Promise<string>>();
@@ -346,33 +338,6 @@ export function vocalLyrics(
     },
   }));
 }
-/** Keep the complete imported vocal notation, as well as its lyric rhythm projection. */
-export function withVocalSource(base: string, source: Document) {
-  const d = parse(base),
-    root = d.documentElement;
-  const old = kids(root, "part").find(
-    (p) => p.id === "DrumPracticeVocalSource",
-  );
-  old?.remove();
-  const list = child(root, "part-list");
-  kids(list, "score-part")
-    .find((p) => p.id === "DrumPracticeVocalSource")
-    ?.remove();
-  const part = source.querySelector("score-partwise > part"),
-    sp = source.querySelector("part-list > score-part");
-  if (!part || !sp) throw Error(i18nText("canonical-xml.message023"));
-  const cp = d.importNode(part, true),
-    cs = d.importNode(sp, true);
-  cp.id = cs.id = "DrumPracticeVocalSource"; // Avoid source note IDs colliding with existing drum notation.
-  for (const el of Array.from(cp.querySelectorAll("[id]")))
-    el.setAttribute("id", "Vocal-" + el.getAttribute("id"));
-  for (const el of Array.from(cs.querySelectorAll("[id]")))
-    el.setAttribute("id", "Vocal-" + el.getAttribute("id"));
-
-  list.append(cs);
-  root.append(cp);
-  return new XMLSerializer().serializeToString(d);
-}
 export function importedCanonical(text: string, s: Song): string | undefined {
   const data = manifest(parse(text));
   if (!data) return;
@@ -391,11 +356,8 @@ export function importedCanonical(text: string, s: Song): string | undefined {
   return text;
 }
 export function hasDrumNotation(text: string) {
-  const d = parse(text),
-    data = manifest(d);
+  const d = parse(text);
   return kids(d.documentElement, "part").some(
-    (e) =>
-      e.id !== (data?.version === 1 ? data.partId : PART) &&
-      e.id !== "DrumPracticeVocalSource",
+    (e) => e.id !== PART && e.id !== "DrumPracticeVocalSource",
   );
 }

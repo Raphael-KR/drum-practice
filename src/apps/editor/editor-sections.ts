@@ -11,7 +11,6 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import { $ } from "./editor-dom";
 import type { editorSession } from "./editor-session";
 import { mountSectionEditor, writeSections } from "./section-editor";
-import { selectEditorPane } from "./workspace";
 
 interface SectionWorkflowHost {
   readonly record: RecordData | undefined;
@@ -23,7 +22,7 @@ interface SectionWorkflowHost {
   flushEditorForm(): void;
   renderTrack(): void;
   renderLists(): void;
-  drawPage(): Promise<void>;
+  geometryChanged(): void;
   queueSave(): void;
 }
 
@@ -35,25 +34,16 @@ export function installEditorSections(h: SectionWorkflowHost) {
     flushEditorForm,
     renderTrack,
     renderLists,
-    drawPage,
+    geometryChanged,
     queueSave,
   } = h;
-  // Desktop authoring tab; section edits use the existing draft/history workflow.
-  const sectionPane = document.createElement("section");
-  sectionPane.id = "editor-sections";
-  sectionPane.hidden = true;
-  sectionPane.className = "section-editor";
-  $("editor-dialog").querySelector(".editor-body")!.append(sectionPane);
-  const sectionTab = document.createElement("button");
-  sectionTab.type = "button";
-  sectionTab.dataset.pane = "sections";
-  sectionTab.textContent = i18nText("sectionEditor.title");
-  $("editor-dialog").querySelector(".editor-tabs")!.append(sectionTab);
+  const sectionPane = $("editor-sections");
   const sectionEditor = mountSectionEditor(sectionPane, {
     song: () => h.record?.song,
     xml: () => h.record?.canonicalXML,
     apply: async (sections: SectionShortcut[]) => {
-      if (!h.record || h.busy) throw Error(i18nText("sectionEditor.busy"));
+      if (!h.record || h.busy || h.session?.saving())
+        throw Error(i18nText("sectionEditor.busy"));
       flushEditorForm();
       const original = h.record;
       const xml = writeSections(
@@ -79,7 +69,7 @@ export function installEditorSections(h: SectionWorkflowHost) {
         replacePlaybackAssets(h.assets(), prepared);
         renderTrack();
         renderLists();
-        await drawPage();
+        geometryChanged();
         h.session?.changed();
         queueSave();
       } finally {
@@ -87,16 +77,14 @@ export function installEditorSections(h: SectionWorkflowHost) {
       }
     },
   });
-  sectionTab.onclick = () => {
-    sectionEditor.refresh();
-    selectEditorPane("sections");
-  };
-
   async function refreshSectionGeometry(original: RecordData) {
     const expectedXML = original.canonicalXML;
     const next = await (
       await import("../../modules/score/browser-score")
-    ).prepareBrowserScore(original, status);
+    ).prepareBrowserScore(
+      { ...original, song: structuredClone(original.song) },
+      status,
+    );
     const prepared = await preparePlaybackAssets(next.pages, next.song);
     if (h.record !== original || original.canonicalXML !== expectedXML) {
       releasePlaybackAssets(prepared);
@@ -113,8 +101,7 @@ export function installEditorSections(h: SectionWorkflowHost) {
     sectionEditor.refresh();
     renderTrack();
     renderLists();
-    await drawPage();
   }
 
-  return { refreshSectionGeometry };
+  return { refreshSectionGeometry, refresh: () => sectionEditor.refresh() };
 }

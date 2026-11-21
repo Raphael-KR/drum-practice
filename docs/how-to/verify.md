@@ -76,6 +76,8 @@ TypeScript 7의 네이티브 컴파일러는 기존 JavaScript compiler API를 �
 | `public/demo/` | `song.json`, `score.pdf`, `score.musicxml`, `audio.mp3`, song.pageCount에 해당하는 `page-N.png`. 기존 변환 회귀용 데모 묶음을 그대로 복사한다. |
 | `public/scores/` | `src/content/bundled-scores.json`의 모든 `.drumscore`. 승인된 `data/production/<곡>/final/` 결과 또는 기존 로컬 배포용 자산을 복사한다. 새 악보를 임의 생성하지 않는다. |
 | `data/reference/grid_verified.json` | 보존된 가사/박자 검수 입력. |
+| `data/production/time-proportional-app-20261113/demo-before-song.json` | 원음절 교정 검사용 제작 이력. 현재 데모는 최종 묶음이므로 이전 교정의 입력을 대신하지 않는다. |
+| `data/production/`의 보존 패키지 | `check-local-assets.mjs`에 명시한 기존 갑자기·Loveholic·손 풀기·탐탐 무빙·붉은 노을 출력. 파서/DOM/좌표 연결 fixture에서만 직접 ZIP 자산을 읽으며 구형 앱 패키지 지원으로 취급하지 않는다. 현재 패키지 왕복 검사는 `public/scores/`의 v2를 쓴다. |
 | `data/reference/test-fixtures/musicxml-candidate.musicxml` | 쉼표 보정 회귀 입력. |
 | `data/reference/test-fixtures/tom-moving-28-portland.drumscore` | 구형 패키지 교체 호환 회귀 입력. |
 | `data/reference/test-fixtures/ioi-suddenly-canonical-v1.musicxml` | 같은 보표 전환 전 갑자기 v1 정본. 보존된 `data/production/shared-staff-lyrics-20261110/ioi-suddenly/before.musicxml`의 바이트 사본이며 SHA256은 `8f3ad3a47aa4453dc19fb71a514761f0665d9a429327478712c352852de6eaaf`다. 구형 읽기/전환과 현행 v2 수록본의 반복 저장을 별도로 검사한다. |
@@ -87,8 +89,8 @@ player 빌드에는 위 카탈로그의 패키지와 Git에 있는 `public/icons
 
 ### 호환성과 검사 범위
 
-- DB 이름·버전·저장 키, bytes-v1, 구형 Blob 복원, 저장 전 snapshot·큐·원자적 트랜잭션은 storage/shared-score-library/record-serialization/editor-session 검사로 확인한다.
-- `.drumscore` 읽기·쓰기와 제작기→연습실 전달은 score-package/app-separation/tom-moving-package-update 검사로 확인한다.
+- 현행 DB schema 5·packed record 2의 읽기/쓰기, 구형 활성 데이터 초기화 전 원본·제작 기록 보존, snapshot·큐·원자적 트랜잭션은 storage/shared-score-library/record-serialization/editor-session 검사로 확인한다. 실제 브라우저의 초기화와 메모리 DB 회귀 결과는 구분한다.
+- `.drumscore` v2 읽기·쓰기, MusicXML 파생 자산 생략, 구형 버전 거부와 제작기→연습실 전달은 score-package/app-separation/tom-moving-package-update 검사로 확인한다. 음원 연습 JSON은 현행 계약을 유지한다.
 - 변경한 모듈의 책임·의존 경계는 [구조 Rule](../reference/engineering/architecture.md#project-structure--의존-규칙)과 대조한다. 이동 이력을 조사할 때만 [구조 개편 기록](../records/archive/project-restructuring.md#restructuring-map--구조-개편-이동표와-의존-규칙)·[기계 판독 목록](../plans/restructuring-map.json)을 조회한다.
 - 로컬 화면 검수와 실제 iPad 터치·청취는 구분한다. 브라우저에서 확인한 화면만 기록하며 unit 성공을 실기기 성공으로 대신하지 않는다.
 

@@ -3,6 +3,7 @@ import playbackCSS from "../../../../src/modules/playback/styles/01-score-transp
 import interactionCSS from "../../../../src/modules/playback/styles/04-interaction.css?inline";
 import {
   activeScore,
+  songScores,
   useScore,
 } from "../../../../src/modules/score/song-scores.ts";
 import { displayPage } from "../../../../src/modules/score/score-pages.ts";
@@ -12,7 +13,7 @@ import { lyricMeasureId } from "../../../../src/modules/lyrics/lyric-grid.ts";
 const activeReviews = new WeakMap();
 const LABEL_HEIGHT = 28;
 
-/** Numbers are one-based positions in record.song.measures; strings are stable IDs. */
+/** Prepared geometry is required. Numbers are one-based measure positions; strings are stable IDs. */
 export function planScoreReview(record, options = {}) {
   const active = activeScore(record);
   const defaultAlternate = (record.otherScores ?? []).findIndex(
@@ -127,14 +128,26 @@ figcaption { margin-bottom: 8px; }
 `;
 
 /**
- * Temporary, read-only local editor inspection. No fetch, DB, cache, save or
- * engraving calls. Only package page blobs and the app's real measure component.
+ * Temporary local editor inspection, without library or package writes.
+ * Prepare missing MusicXML geometry through the app, including its derived render
+ * cache. Existing page blobs and PDF geometry are reused without engraving.
  * Caller must keep code edits/builds finished before browser review.
  */
 export async function mountScoreReview(record, options = {}) {
   const doc = globalThis.document;
   if (!doc?.body)
     throw Error("Score review requires the loaded editor document");
+  if (
+    songScores(record).some(
+      (score) =>
+        score.format === "musicxml" &&
+        (!score.pages.length || !score.regions.length),
+    )
+  ) {
+    const { prepareBrowserScore } =
+      await import("../../../../src/modules/score/browser-score.ts");
+    record = await prepareBrowserScore(record);
+  }
   const viewportWidth =
     doc.documentElement.clientWidth || doc.defaultView?.innerWidth;
   const rowWidth =
@@ -297,7 +310,7 @@ export async function mountScoreReview(record, options = {}) {
       const section = doc.createElement("section");
       section.className = "review-pages";
       const heading = doc.createElement("h2");
-      heading.textContent = "MusicXML SVG · 패키지 전체 페이지";
+      heading.textContent = "MusicXML SVG · 전체 페이지";
       section.append(heading);
       for (const [index, page] of pagesByScore.get(plan.svg).entries()) {
         const figure = doc.createElement("figure");

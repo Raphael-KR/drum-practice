@@ -2,7 +2,6 @@ import { expect, it } from "vitest";
 import {
   measureWidth,
   scoreLayout,
-  ribbonPosition,
 } from "../../src/modules/playback/playback-layout";
 import type { Song, Region } from "../../src/model/model";
 it("shows 16 quarters at 100%, scales uniformly, and ignores BPM", () => {
@@ -62,74 +61,37 @@ it("uses identical glyph scale on both axes for the shared row artwork", () => {
     }
 });
 
-it("moves uniformly across bar boundaries including different meters and empty bars", () => {
-  const quarterWidth = 70,
-    anchor = 9;
-  let offset = 0,
-    quarters = 0;
-  for (const [beats, denominator] of [
-    [4, 4],
-    [3, 4],
-    [6, 8],
-    [4, 4],
-  ]) {
-    const width = (quarterWidth * beats * 4) / denominator;
-    const phase = anchor / width;
-    for (let beat = 0; beat <= beats; beat += 0.125) {
-      expect(offset + ribbonPosition(width, beat, beats, phase)).toBeCloseTo(
-        anchor + quarterWidth * (quarters + (beat * 4) / denominator),
-      );
-    }
-    offset += width;
-    quarters += (beats * 4) / denominator;
-  }
-});
-
-it("aligns 64th grid positions independently of other notes in a bar", async () => {
-  const { gridPosition } =
-    await import("../../src/modules/score/ribbon-engraving");
-  const positions = Array.from({ length: 64 }, (_, i) =>
-    gridPosition(i / 16, 4, 320),
+it("uses duration-proportional widths and scales only overflowing rows", async () => {
+  const { timeMeasureWidth, timePosition, rowScale } =
+    await import("../../src/modules/score/time-spacing");
+  const width = timeMeasureWidth(4);
+  expect(timeMeasureWidth(3) - timePosition(0)).toBe(
+    ((width - timePosition(0)) * 3) / 4,
   );
-  for (let i = 1; i < 64; i++)
-    expect(positions[i] - positions[i - 1]).toBeCloseTo(
-      positions[1] - positions[0],
-    );
-  expect(gridPosition(1, 4, 320)).toBe(positions[16]);
-  expect(gridPosition(2, 4, 320)).toBe(positions[32]);
-  expect(gridPosition(0.25, 4, 320)).toBe(positions[4]);
-});
-it("selects native widths for ribbon and rows while preserving grid selection", async () => {
-  const { selectPlaybackEngraving } =
-    await import("../../src/modules/playback/playback-assets");
-  const row = { url: "row" },
-    grid = { url: "grid" },
-    asset = { row, grid } as unknown as Parameters<
-      typeof selectPlaybackEngraving
-    >[0];
-  expect(selectPlaybackEngraving(asset, true)).toBe(grid);
-  expect(selectPlaybackEngraving(asset, false)).toBe(row);
-  expect(selectPlaybackEngraving(asset, false, "ribbon")).toBe(asset);
-  expect(selectPlaybackEngraving(asset, true, "ribbon")).toBe(grid);
-  expect(selectPlaybackEngraving(undefined, false, "ribbon")).toBeUndefined();
+  expect(rowScale([width, width, width], width * 4)).toBe(1);
+  const mixed = [width, width, width, timeMeasureWidth(5)];
+  const scale = rowScale(mixed, width * 4);
+  expect(scale).toBeLessThan(1);
+  expect(mixed.reduce((sum, w) => sum + w * scale, 0)).toBeCloseTo(width * 4);
 });
 
-it("places barlines midway between adjacent 64th centres without fixed padding", async () => {
+it("retains the shared inset and preserves finer grid intervals", async () => {
   const { gridPhase } = await import("../../src/modules/score/ribbon-timeline");
   for (const width of [320, 480, 900]) {
-    const step = width / 64;
-    expect(width * gridPhase(0, 4)).toBeCloseTo(step / 2);
-    expect(width * gridPhase(63 / 16, 4)).toBeCloseTo(width - step / 2);
+    const start = 12 / width,
+      step = (width - 12) / 64;
+    expect(width * gridPhase(0, 4, start)).toBeCloseTo(12);
+    expect(width * gridPhase(63 / 16, 4, start)).toBeCloseTo(width - step);
     expect(
-      width + width * gridPhase(0, 4) - width * gridPhase(63 / 16, 4),
-    ).toBeCloseTo(step);
+      width +
+        width * gridPhase(0, 4, start) -
+        width * gridPhase(63 / 16, 4, start),
+    ).toBeCloseTo(12 + step);
     for (let q = 0; q < 4; q += 1 / 64) {
-      expect(width * (gridPhase(q + 1 / 64, 4) - gridPhase(q, 4))).toBeCloseTo(
-        width / 256,
-      );
+      expect(
+        width * (gridPhase(q + 1 / 64, 4, start) - gridPhase(q, 4, start)),
+      ).toBeCloseTo(step / 4);
     }
-    expect(width * gridPhase(4, 4)).toBeCloseTo(
-      width + width * gridPhase(0, 4),
-    );
+    expect(width * gridPhase(4, 4, start)).toBeCloseTo(width);
   }
 });

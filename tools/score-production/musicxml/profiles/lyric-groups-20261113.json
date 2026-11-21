@@ -1,0 +1,13 @@
+{
+  "sourceRoot": "data/production/canonical-corrections-20261112",
+  "outputRoot": "data/production/lyric-groups-20261113",
+  "schema": "data/reference/musicxml/schema",
+  "songs": [
+    "ioi-suddenly",
+    "loveholic",
+    "real-paradis",
+    "red-sunset",
+    "tom-moving",
+    "preplay-warmup"
+  ]
+}

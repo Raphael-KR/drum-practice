@@ -65,7 +65,7 @@ it("preserves the bundled v2 lyric block and counts drum silence independently",
   expect(
     doc.querySelectorAll('part[id="P1"] note > lyric').length,
   ).toBeGreaterThan(0);
-  expect(text).toContain("drum-practice:score:v2");
+  expect(text).toContain("drum-practice:score:v3");
 
   const result = fixAllDrumRestPositions(text);
   expect(result.counts).toEqual({

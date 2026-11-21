@@ -116,10 +116,16 @@ def inspect_artifacts(spec, root):
     checks = [
         "XML metadata read; schema and musical correctness require their own evidence"
     ]
-    canonical = xml.findtext(
-        "identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v2']"
-    ) or xml.findtext(
-        "identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v1']"
+    canonical = (
+        xml.findtext(
+            "identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v3']"
+        )
+        or xml.findtext(
+            "identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v2']"
+        )
+        or xml.findtext(
+            "identification/miscellaneous/miscellaneous-field[@name='drum-practice:score:v1']"
+        )
     )
     if canonical:
         try:
@@ -138,11 +144,14 @@ def inspect_artifacts(spec, root):
             if bad:
                 raise ValueError(mismatch("package CRC", None, bad))
             manifest = json.loads(archive.read("manifest.json"))
-            if (manifest.get("format"), manifest.get("version")) != ("drumscore", 1):
+            if manifest.get("format") != "drumscore" or manifest.get("version") not in (
+                1,
+                2,
+            ):
                 raise ValueError(
                     mismatch(
                         "package format/version",
-                        ("drumscore", 1),
+                        ("drumscore", "1 or 2; historical and current evidence"),
                         (manifest.get("format"), manifest.get("version")),
                     )
                 )

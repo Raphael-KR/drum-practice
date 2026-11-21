@@ -1,18 +1,13 @@
-import { readFileSync } from "node:fs";
+import { songBeforeLyricFeedback } from "./lyric-feedback-fixture";
 import { it, expect } from "vitest";
 import {
   applyBar34AcousticReview,
   feedbackCorrections,
   feedbackBatchRevision,
 } from "../../src/content/lyric-bar34-review";
-import { validateSong, type Song } from "../../src/model/model";
+import { validateSong } from "../../src/model/model";
 it("preserves listening anchors, separates estimates, limits changes to phrase, applies once", () => {
-  const s = JSON.parse(readFileSync("public/demo/song.json", "utf8")) as Song;
-  const archive = s.lyricArchive?.find(
-    (a) => a.revision === feedbackBatchRevision + "-before",
-  );
-  if (archive) s.lyrics = structuredClone(archive.lyrics);
-  s.lyricShifts = s.lyricShifts?.filter((r) => r !== feedbackBatchRevision);
+  const s = songBeforeLyricFeedback(feedbackBatchRevision);
   const before = structuredClone(s.lyrics),
     ids = new Set<string>(feedbackCorrections.map((r) => r[0]));
   expect(applyBar34AcousticReview(s)).toBe(5);

@@ -11,6 +11,8 @@ import type { PointF2D } from "opensheetmusicdisplay/build/dist/src/Common/DataO
 import type { FontStyles } from "opensheetmusicdisplay/build/dist/src/Common/Enums/FontStyles";
 import type { RehearsalBounds } from "./rehearsal-layout";
 import { scoreTextHeight } from "./score-text-font";
+import { timePosition, TIME_SPACING, type TimeSpacing } from "./time-spacing";
+import { scoreMeasureSpacing } from "./full-score-spacing";
 
 interface Calculator {
   calculateRehearsalMarks(): void;
@@ -45,34 +47,44 @@ type SectionBounds = (
   ) => number,
 ) => RehearsalBounds | undefined;
 
-/** Match section typography and flow native words before SVG drawing.
- * XML offsets still supply the native anchor; no source or SVG node is changed.
+/** Place the start of native words on the shared musical time axis.
+ * Timestamp includes XML's display offset; PlaybackTimestamp stays untouched.
  */
-export function installPlaybackWords(
+export function installScoreWords(
   osmd: OpenSheetMusicDisplay,
   sectionBounds: SectionBounds,
   cropLabels: WeakSet<GraphicalLabel>,
-  fitToMeasure = true,
+  playbackSpacing?: TimeSpacing,
 ) {
   const calculator = osmd.GraphicSheet.GetCalculator as unknown as Calculator;
+  const spacing = playbackSpacing ?? TIME_SPACING;
+  // Native automatic dynamic/words pairing bypasses calculateLabel and its
+  // XML anchor. Dynamics keep their own layout; words use their recorded time.
+  osmd.EngravingRules.PlaceWordsBesideSameTimeDynamic = false;
   const items: Item[] = [];
   const calculate = calculator.calculateMoodAndUnknownExpression;
   calculator.calculateMoodAndUnknownExpression = (multi, index, staff) => {
     const original = calculator.calculateLabel;
     calculator.calculateLabel = (...args) => {
-      const anchor = args[1].x;
-      const label = original.apply(calculator, args);
-      const shape = label.PositionAndShape;
-      const sourceLeft = shape.RelativePosition.x + shape.BorderLeft;
-      // Resize around the source left edge. Section size is points;
-      // OSMD label height is ten SVG pixels.
-      label.Label.fontHeight = scoreTextHeight(
-        osmd.EngravingRules.RehearsalMarkFontSize,
-      );
-      label.setLabelPositionAndShapeBorders();
-      shape.RelativePosition.x = sourceLeft - shape.BorderLeft;
       const measure = osmd.GraphicSheet.MeasureList[index]?.[staff];
-      if (fitToMeasure && measure)
+      if (measure) {
+        const prefix = playbackSpacing ? 0 : measure.beginInstructionsWidth;
+        args[1].x =
+          measure.PositionAndShape.RelativePosition.x +
+          prefix +
+          timePosition(
+            multi.Timestamp.RealValue * 4,
+            scoreMeasureSpacing(measure, spacing),
+          ) /
+            10;
+      }
+      const anchor = args[1].x;
+      // Set final size and left alignment before native bounds/skyline layout.
+      // Resizing an already centered label preserves the wrong left edge.
+      args[5] = scoreTextHeight(osmd.EngravingRules.RehearsalMarkFontSize);
+      args[6] = TextAlignmentEnum.LeftBottom;
+      const label = original.apply(calculator, args);
+      if (playbackSpacing && measure)
         items.push({ label, measure, anchor, placement: args[4], descent: 0 });
       return label;
     };
@@ -82,7 +94,7 @@ export function installPlaybackWords(
       calculator.calculateLabel = original;
     }
   };
-  if (!fitToMeasure) return;
+  if (!playbackSpacing) return;
   const marks = calculator.calculateRehearsalMarks;
   calculator.calculateRehearsalMarks = () => {
     marks.call(calculator);

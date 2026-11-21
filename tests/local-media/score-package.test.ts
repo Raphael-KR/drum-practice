@@ -1,3 +1,4 @@
+import { packageRecord } from "../../src/modules/library/package-song";
 import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import JSZip from "jszip";
@@ -42,7 +43,7 @@ async function changed(
     new Uint8Array(await zip.generateAsync({ type: "uint8array" })),
   ]);
 }
-it("round trips complete song, binary media, canonical source and alternate geometry", async () => {
+it("round trips display groups and sources while omitting derived XML geometry", async () => {
   const r = fixture();
   r.otherScores = [
     {
@@ -60,11 +61,14 @@ it("round trips complete song, binary media, canonical source and alternate geom
     },
   ];
   const loaded = await readScorePackage(await createScorePackage(r));
-  expect(loaded.song).toEqual(r.song);
+  expect(loaded.song).toEqual(packageRecord(r).song);
   expect(loaded.canonicalXML).toBe(r.canonicalXML);
   expect(await loaded.audio.text()).toBe("audio");
   expect(await loaded.otherScores![0].source.text()).toBe("xml");
-  expect(loaded.otherScores![0].measures).toEqual(r.otherScores[0].measures);
+  expect(loaded.otherScores![0].measures).toEqual(
+    packageRecord(r).otherScores![0].measures,
+  );
+  expect(loaded.otherScores![0].pages).toEqual([]);
   expect(loaded.pages).toHaveLength(r.pages.length);
 });
 it("signature ignores timing and title but detects changed meter/order/id", () => {
@@ -87,7 +91,7 @@ it.each([
   "traversal",
 ])("rejects malformed %s", async (kind) => {
   const blob = await changed((z, m) => {
-    if (kind === "version") m.version = 2;
+    if (kind === "version") m.version = 1;
     if (kind === "count") m.pages = [];
     if (kind === "mime") m.audio.type = "text/html";
     if (kind === "missing") z.remove(m.audio.path);

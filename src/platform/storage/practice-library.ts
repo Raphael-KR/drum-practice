@@ -10,6 +10,7 @@ import type { RecordData } from "./storage";
 import { scoreStructureSignature } from "../../modules/library/score-package";
 import { useScore } from "../../modules/score/song-scores";
 import { practiceMetadataUpgrade } from "../../modules/library/practice-metadata-upgrade";
+import { preserveLyricCorrections } from "../../modules/lyrics/lyric-corrections";
 import {
   storeMedia,
   restoreMedia,
@@ -47,6 +48,9 @@ function snapshot(record: RecordData): RecordData {
     song: structuredClone(record.song),
     editDraft: structuredClone(record.editDraft),
     revisions: structuredClone(record.revisions),
+    lyricCorrections: structuredClone(record.lyricCorrections),
+    lyricCorrectionDelivery: structuredClone(record.lyricCorrectionDelivery),
+    productionReceipts: structuredClone(record.productionReceipts),
     pages: [...record.pages],
     otherScores: record.otherScores?.map((score) => ({
       ...score,
@@ -264,7 +268,7 @@ export function removePracticeRecord(id: string): Promise<void> {
     }),
   );
 }
-/** Reimport is a direct replacement. No backup or practice-state restoration. */
+/** Replace the score/practice state while retaining its authoring correction journal. */
 export function importPracticeRecord(
   incoming: RecordData,
   options: { allowDuplicateAudio?: boolean } = {},
@@ -290,6 +294,14 @@ export function importPracticeRecord(
       request.onsuccess = () => {
         existed = !!request.result;
         try {
+          preserveLyricCorrections(
+            stored,
+            request.result as Stored | undefined,
+          );
+          stored.productionReceipts = structuredClone(
+            (request.result as Stored | undefined)?.productionReceipts ??
+              stored.productionReceipts,
+          );
           songs.put(stored);
         } catch (error) {
           failure = error;

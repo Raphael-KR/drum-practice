@@ -1,4 +1,4 @@
-/* global DOMParser, XMLSerializer */
+/* global DOMParser, XMLSerializer, document */
 import {
   writeCanonical,
   readCanonical,
@@ -8,8 +8,21 @@ import {
   createScorePackage,
   readScorePackage,
 } from "../../../../src/modules/library/score-package.ts";
+import { packageRecord } from "../../../../src/modules/library/package-song.ts";
 import { sha256 } from "../../../../src/platform/browser/sha256.ts";
 import { encodeAsset } from "../../../../src/platform/storage/binary-asset.ts";
+import { projectLyrics } from "../../../../src/modules/lyrics/lyric-score.ts";
+import {
+  loadScoreTextFonts,
+  SCORE_TEXT_FONT_FAMILY,
+} from "../../../../src/modules/score/score-text-font.ts";
+import { SCORE_LYRIC_POINTS } from "../../../../src/modules/score/time-spacing.ts";
+import { groupProductionLyrics } from "./lyric-group-data.mjs";
+import {
+  applyConfirmedCorrections,
+  loadBrowserCorrections,
+  LyricCorrectionConflict,
+} from "./lyric-correction-input.mjs";
 
 // Vite's transformed directory URL may omit its final slash. Every song path
 // below is repository-relative, so retain the directory boundary explicitly.
@@ -101,6 +114,7 @@ async function sameBlob(actual, expected, field) {
 }
 /** Check every asset, not only the first alternate score or audio. */
 export async function verifyPackage(record, loaded) {
+  record = packageRecord(record);
   equal(loaded.song, record.song, "song");
   equal(loaded.canonicalXML, record.canonicalXML, "canonicalXML");
   await sameBlob(loaded.pdf, record.pdf, "source");
@@ -146,6 +160,62 @@ export function prepareCanonical(song, sourceXML, audioHash, editDocument) {
   readCanonical(canonicalXML, restored);
   equal(restored.measures, song.measures, "canonical measures");
   return { canonicalXML, restored };
+}
+
+/** Raw production inputs -> final groups. Return work evidence outside canonical/package data. */
+export async function prepareProductionCanonical(
+  song,
+  sourceXML,
+  audioHash,
+  editDocument,
+) {
+  const sourceSong = structuredClone(song);
+  let measureText = () => 0;
+  if (song.lyrics.length) {
+    await loadScoreTextFonts();
+    const context = document.createElement("canvas").getContext("2d");
+    if (!context)
+      throw Error(
+        "Production lyric font measurement unavailable: canvas context=null",
+      );
+    context.font = `${(SCORE_LYRIC_POINTS * 96) / 72}px ${SCORE_TEXT_FONT_FAMILY}`;
+    measureText = (text) => context.measureText(text).width;
+  }
+  const grouped = groupProductionLyrics(
+    song.measures,
+    song.lyrics,
+    measureText,
+  );
+  song.lyrics = grouped.lyrics;
+  delete song.lyricText;
+  const correctionInput = await loadBrowserCorrections(song.id, projectBase);
+  const corrections = await applyConfirmedCorrections(song, correctionInput);
+  if (corrections.conflicts.length)
+    throw new LyricCorrectionConflict(corrections);
+  projectLyrics(song);
+  const removedFields = [];
+  const result = prepareCanonical(song, sourceXML, audioHash, (doc) => {
+    editDocument?.(doc);
+    for (const field of [...doc.querySelectorAll("miscellaneous-field")]) {
+      const name = field.getAttribute("name") || "";
+      if (name.includes("lyric")) {
+        removedFields.push({ name, value: field.textContent });
+        field.remove();
+      }
+    }
+  });
+  return {
+    ...result,
+    lyricWork: {
+      sourceXML,
+      sourceSong,
+      removedFields,
+      sources: grouped.sources,
+      groups: grouped.groups,
+      corrections,
+      confirmedCorrections: correctionInput,
+    },
+  };
 }
 
 /** Bind renderer output to existing musical IDs without changing timings. */

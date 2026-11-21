@@ -25,6 +25,6 @@ it("rejects missing pages rather than producing a silently incomplete song", asy
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
   const a = { type: "application/pdf", base64: "AA==" };
   expect(() =>
-    unpackSong({ version: 1, song, pdf: a, audio: a, pages: [] }),
+    unpackSong({ version: 2, song, pdf: a, audio: a, pages: [] }),
   ).toThrow("페이지");
 });

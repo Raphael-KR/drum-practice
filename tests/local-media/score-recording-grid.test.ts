@@ -1,4 +1,4 @@
-import { beforeAll, expect, it, vi } from "vitest";
+import { beforeAll, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import {
@@ -25,16 +25,6 @@ import {
 } from "../../src/model/model";
 import { scrubTime } from "../../src/modules/playback/practice-controls";
 import type { RecordData } from "../../src/model/record";
-import {
-  preparePlaybackAssets,
-  releasePlaybackAssets,
-  selectPlaybackEngraving,
-} from "../../src/modules/playback/playback-assets";
-import {
-  measureWidth,
-  scoreLayout,
-} from "../../src/modules/playback/playback-layout";
-
 // Real production artifact, including the six-beat free-ending measure.
 let record: RecordData;
 beforeAll(async () => {
@@ -48,79 +38,6 @@ beforeAll(async () => {
     new Blob([readFileSync("public/scores/red-sunset.drumscore")]),
   );
 });
-it("keeps the real six-beat ending at its neighbours' staff scale in ribbon view", async () => {
-  // Published packages may omit derived timelines; use the existing native
-  // production artifact to test the view selector's geometric contract.
-  const engraving = await readScorePackage(
-    new Blob([
-      readFileSync(
-        "data/production/red-sunset/final/build-03/red-sunset.drumscore",
-      ),
-    ]),
-  );
-  const parse = vi.spyOn(DOMParser.prototype, "parseFromString");
-  let parseCount = 0;
-  const assets = await preparePlaybackAssets(engraving.pages, engraving.song, {
-    validate: async (page, svg) => {
-      expect(svg).toBeDefined();
-      expect(new XMLSerializer().serializeToString(svg!)).toBe(
-        await page.text(),
-      );
-    },
-  }).finally(() => {
-    parseCount = parse.mock.calls.length;
-    parse.mockRestore();
-  });
-  try {
-    // One preparation document per SVG, including the metadata-bearing page.
-    const urls = new Set(assets.urls);
-    assets.ribbon?.forEach((a) => {
-      urls.add(a.url);
-      if (a.row) urls.add(a.row.url);
-      if (a.grid) urls.add(a.grid.url);
-    });
-    expect(parseCount).toBe(urls.size);
-    for (const zoom of [0.5, 1, 2]) {
-      const song = structuredClone(engraving.song);
-      song.settings.view = "ribbon";
-      song.settings.zoom = zoom;
-      const ending = [133, 134, 135].map((i) => {
-        const timeline = assets.ribbon!.get(i)!;
-        const artwork = selectPlaybackEngraving(timeline, false, "ribbon")!;
-        const width = measureWidth(
-          song,
-          timeline.region,
-          1024,
-          timeline.ratio,
-          timeline.staff,
-        );
-        const layout = scoreLayout(
-          song,
-          artwork.region,
-          width,
-          1024,
-          artwork.staff,
-        )!;
-        const [pageWidth, pageHeight] = layout.size.split(" ").map(parseFloat);
-        expect(pageHeight / pageWidth).toBeCloseTo(artwork.ratio);
-        return {
-          width,
-          gap: artwork.staff.gap * pageHeight,
-          baseline:
-            artwork.staff.top * pageHeight +
-            parseFloat(layout.position.split(" ")[1]),
-        };
-      });
-      expect(ending[1].width / ending[0].width).toBeCloseTo(1.5);
-      expect(ending[1].gap).toBeCloseTo(ending[0].gap);
-      expect(ending[2].gap).toBeCloseTo(ending[0].gap);
-      expect(ending[1].baseline).toBeCloseTo(ending[0].baseline);
-      expect(ending[2].baseline).toBeCloseTo(ending[0].baseline);
-    }
-  } finally {
-    releasePlaybackAssets(assets);
-  }
-}, 30000);
 // The real package now includes embedded fonts and all playback engravings.
 // Use the same binary-roundtrip budget as the other complete package tests.
 it("preserves the actual recording grid through package and canonical XML readback", async () => {

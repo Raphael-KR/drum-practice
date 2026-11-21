@@ -7,7 +7,8 @@ import {
 } from "./musicxml-geometry";
 import { finishMusicXMLGlyphs } from "./musicxml-glyphs";
 import { parseMusicXML, readMusicXML } from "./musicxml-parse";
-import { ribbonSpacing, type RibbonSpacing } from "./ribbon-engraving";
+import { type RibbonSpacing } from "./ribbon-engraving";
+import { TIME_SPACING } from "./time-spacing";
 import { RIBBON_TIMELINE_VERSION } from "./ribbon-timeline";
 import { compressSVG, displayPage } from "./score-pages";
 import { embedScoreTextFonts, loadScoreTextFonts } from "./score-text-font";
@@ -82,7 +83,7 @@ async function renderMusicXMLPass(
       regions,
       parsed,
       staffs,
-      spacing: timeline ?? ribbonSpacing(osmd),
+      spacing: timeline ?? TIME_SPACING,
     };
   } finally {
     host.remove();
@@ -95,8 +96,6 @@ export async function renderFullScore(
   song: Song,
   partId?: string,
 ) {
-  const { cachedScoreRender, scoreRenderKey, SCORE_RENDER_POLICY } =
-    await import("./score-render-cache");
   const parsed = parseMusicXML(xml, partId);
   if (parsed.measures.length !== song.measures.length)
     throw Error(
@@ -114,18 +113,7 @@ export async function renderFullScore(
       `Full-score meter mismatch: measure=${songMeasure.label}, XML=${xmlMeasure.beats}/${xmlMeasure.denominator}, song=${songMeasure.beats}/${songMeasure.denominator}, part=${parsed.partId}`,
     );
   }
-  const key = await scoreRenderKey(
-    JSON.stringify([
-      xml,
-      song.measures.map((m) => m.id),
-      song.measureLyrics ?? [],
-      song.artist ?? "",
-      song.bpm,
-    ]),
-    parsed.partId,
-    `${SCORE_RENDER_POLICY}:full-score-continuous-v10-xml-system-width`,
-  );
-  const { value } = await cachedScoreRender(key, () => {
+  const render = () => {
     const lyrics = prepareScoreLyrics(xml, parsed.partId, song);
     return renderMusicXMLPass(
       lyrics.xml,
@@ -135,7 +123,21 @@ export async function renderFullScore(
       song,
       lyrics.texts,
     );
-  });
+  };
+  const { cachedScoreRender, scoreRenderKey, SCORE_RENDER_POLICY } =
+    await import("./score-render-cache");
+  const key = await scoreRenderKey(
+    JSON.stringify([
+      xml,
+      song.measures.map((m) => m.id),
+      song.measureLyrics ?? [],
+      song.artist ?? "",
+      song.bpm,
+    ]),
+    parsed.partId,
+    `${SCORE_RENDER_POLICY}:full-score-continuous-v12-row-fit`,
+  );
+  const { value } = await cachedScoreRender(key, render);
   return value;
 }
 
@@ -175,27 +177,7 @@ async function engraveMusicXML(
 ) {
   const render = prepareMusicXMLRenderer(source, progress, partId);
   const printed = await render();
-  const ribbon = await render({
-    ...printed.spacing,
-    // The ribbon widens the native stave for longer meters, never the glyphs.
-    // A four-quarter bar retains the same native width as a two-row cell.
-    quarter: printed.spacing.rowWidth! / 4,
-  });
-  const durations = printed.parsed.measures.map(
-    (m) => (m.beats * 4) / m.denominator,
-  );
-  const uniformQuarters = Math.max(...durations);
-  // Rows reserve glyph clearance and distribute remaining space by time.
-  // Do not reuse the ribbon global shortest-duration spacing for row glyph size.
-  const rows = await render({
-    ...printed.spacing,
-    uniformQuarters,
-  });
-  const grid = await render({
-    ...printed.spacing,
-    uniformQuarters,
-    fixedGrid: true,
-  });
+  const ribbon = await render(TIME_SPACING);
   const document = new DOMParser().parseFromString(
     await (await displayPage(printed.pages[0])).text(),
     "image/svg+xml",
@@ -210,26 +192,6 @@ async function engraveMusicXML(
   );
   metadata.textContent = JSON.stringify({
     version: RIBBON_TIMELINE_VERSION,
-    grid: {
-      version: RIBBON_TIMELINE_VERSION,
-      ...printed.spacing,
-      uniformQuarters,
-      regions: grid.regions,
-      staffs: grid.staffs,
-      pages: await Promise.all(
-        grid.pages.map(async (p) => (await displayPage(p)).text()),
-      ),
-    },
-    rows: {
-      version: RIBBON_TIMELINE_VERSION,
-      ...printed.spacing,
-      uniformQuarters,
-      regions: rows.regions,
-      staffs: rows.staffs,
-      pages: await Promise.all(
-        rows.pages.map(async (p) => (await displayPage(p)).text()),
-      ),
-    },
     ...ribbon.spacing,
     regions: ribbon.regions,
     printStaffs: printed.staffs,

@@ -161,6 +161,8 @@ it("binds audio anchors to audio bytes", async () => {
       pages: [],
       canonicalXML: undefined,
     } as unknown as import("../../src/model/record").RecordData;
+  // Audio identity is independent of lyric grouping and font measurement.
+  s.lyrics = [];
   await ensureCanonical(r);
   await verifyCanonicalAudio(r);
   r.audio = new NativeBlob(["other"]) as unknown as Blob;

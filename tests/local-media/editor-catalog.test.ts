@@ -14,6 +14,11 @@ import { downloadScore } from "../../src/modules/library/download-score";
 import { editorHTML } from "../../src/apps/editor/editor-view";
 import { createEditorLibrary } from "../../src/apps/editor/editor-library";
 import type { RecordData } from "../../src/model/record";
+import {
+  listProjects,
+  readProject,
+  projectRecord,
+} from "../../src/apps/editor/score-project-client";
 vi.mock("../../src/platform/storage/storage", () => ({
   allRecords: vi.fn(async () => []),
   saveRecord: vi.fn(),
@@ -22,8 +27,10 @@ vi.mock("../../src/platform/storage/storage", () => ({
 vi.mock("../../src/modules/library/download-score", () => ({
   downloadScore: vi.fn(),
 }));
-vi.mock("../../src/apps/editor/workspace", () => ({
-  selectEditorPane: vi.fn(),
+vi.mock("../../src/apps/editor/score-project-client", () => ({
+  listProjects: vi.fn(async () => ({ projects: [], errors: [] })),
+  readProject: vi.fn(),
+  projectRecord: vi.fn(),
 }));
 let record: RecordData;
 let blob: Blob;
@@ -35,6 +42,7 @@ beforeAll(async () => {
 afterEach(() => {
   vi.clearAllMocks();
   vi.mocked(allRecords).mockResolvedValue([]);
+  vi.mocked(listProjects).mockResolvedValue({ projects: [], errors: [] });
   document.body.replaceChildren();
 });
 function setup() {
@@ -98,7 +106,7 @@ it("opens the saved edit without download or replacement", async () => {
   expect(downloadScore).not.toHaveBeenCalled();
   expect(saveRecord).not.toHaveBeenCalled();
 });
-it("downloads a missing score, saves it, and enters the editor; repeat clicks start only once", async () => {
+it("downloads a missing score for file-project activation without rewriting the legacy library", async () => {
   const { h, library } = setup();
   vi.mocked(downloadScore).mockResolvedValue(blob);
   await library.refreshCatalog();
@@ -106,9 +114,40 @@ it("downloads a missing score, saves it, and enters the editor; repeat clicks st
   button.click();
   button.click();
   await vi.waitFor(() => expect(h.openEditor).toHaveBeenCalledOnce());
-  expect(saveRecord).toHaveBeenCalledOnce();
+  expect(saveRecord).not.toHaveBeenCalled();
   expect(h.activate.mock.calls[0][0].song.id).toBe(record.song.id);
   expect(downloadScore).toHaveBeenCalledOnce();
+});
+it("opens the file project in preference to its legacy browser copy", async () => {
+  vi.mocked(allRecords).mockResolvedValue([record]);
+  vi.mocked(listProjects).mockResolvedValue({
+    projects: [
+      {
+        version: 1,
+        songId: record.song.id,
+        revision: "00000000-0000-4000-8000-000000000001",
+        savedAt: "2026-11-14T00:00:00Z",
+        author: "editor",
+        title: record.song.title,
+        artist: record.song.artist,
+      },
+    ],
+    errors: [],
+  });
+  vi.mocked(projectRecord).mockReturnValue(record);
+  const { h, library } = setup();
+  await library.refreshCatalog();
+  expect(
+    document.querySelector(
+      `[data-score-id="${record.song.id}"] [data-editor-remove]`,
+    ),
+  ).toBeNull();
+  loveholicButton().click();
+  await vi.waitFor(() => expect(h.openEditor).toHaveBeenCalledOnce());
+  expect(readProject).toHaveBeenCalledExactlyOnceWith(record.song.id);
+  expect(projectRecord).toHaveBeenCalledOnce();
+  expect(downloadScore).not.toHaveBeenCalled();
+  expect(saveRecord).not.toHaveBeenCalled();
 });
 it("keeps a record saved by another tab during download", async () => {
   const { h, library } = setup();

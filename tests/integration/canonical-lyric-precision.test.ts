@@ -135,26 +135,12 @@ it.each([
       updateSongHeading: vi.fn(),
     });
     form.fillMetadata();
-    const m = s.measures[0];
-    for (const [id, value] of Object.entries({
-      "measure-label": m.label,
-      "measure-beats": String(m.beats),
-      "measure-denominator": String(m.denominator),
-      "measure-start": m.start.toFixed(3),
-      "measure-end": m.end.toFixed(3),
-      "beat-xs": "",
-    }))
-      (document.getElementById(id) as HTMLInputElement).value = value;
-
     const editor = document.createElement("div");
     editor.id = "lyric-editor";
     editor.dataset.lyric = original.id;
     document.body.append(editor);
     for (const [field, value] of Object.entries({
       text: original.text,
-      "grid-measure": "m1",
-      "grid-tick": String(rhythm.offset * 4),
-      "duration-beats": String(rhythm.duration),
       confirmed: "false",
     })) {
       const input = document.createElement("input");

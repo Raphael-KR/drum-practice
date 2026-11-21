@@ -218,7 +218,6 @@
 .audio-practice #open-reader-settings,
 .audio-practice #reader-settings,
 .audio-practice #section-shortcuts,
-.audio-practice .settings-switch:has(#uniform-spacing),
 .audio-practice .settings-switch:has(#highlight) {
   display: none !important;
 }

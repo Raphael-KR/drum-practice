@@ -85,6 +85,7 @@ export function arrangePlaybackUI(root: HTMLElement, ids: PlaybackBindings) {
   const repeat = ids.repeat
     ? get(ids.repeat)
     : root.querySelector<HTMLElement>(".repeat-controls")!;
+  if (!repeat) return;
   repeat.classList.add("repeat-controls");
   let actions = repeat.querySelector<HTMLElement>(".repeat-actions");
   if (!actions) {

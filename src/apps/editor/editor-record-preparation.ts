@@ -18,10 +18,6 @@ import {
   attachBundledScore,
   repairBundledMetadata,
 } from "../../modules/library/bundled-score";
-import {
-  preferPDF,
-  scorePreference,
-} from "../../modules/library/score-preference";
 import { enableLyricGrid } from "../../modules/lyrics/lyric-grid";
 import { applyJapaneseReadings } from "../../modules/lyrics/lyric-reading";
 import { applyLyricRevision } from "../../modules/lyrics/lyric-revision";
@@ -39,8 +35,6 @@ import { replaceWithMusicXML } from "../../modules/score/score-import";
 import { SVG_GZIP } from "../../modules/score/score-pages";
 import { correctStoredRests } from "../../modules/score/score-rest-correction";
 import { songScores, useScore } from "../../modules/score/song-scores";
-import { isPhoneLandscape } from "../../platform/browser/phone-layout";
-import { saveRecord } from "../../platform/storage/storage";
 import { t as i18nText } from "../../shared/i18n/i18n";
 
 export type EditorScoreRenderer = (
@@ -89,21 +83,16 @@ export async function prepareEditorScore(
   status: (message: string) => void,
   renderScore: EditorScoreRenderer,
 ) {
-  if (await repairBundledMetadata(r)) await saveRecord(r);
-  r = await attachBundledScore(r, status);
-  r = await correctStoredRests(r, status);
+  if (!r.localProject) {
+    await repairBundledMetadata(r);
+    r = await attachBundledScore(r, status);
+    r = await correctStoredRests(r, status);
+  }
   r = await (
     await import("../../modules/score/browser-score")
   ).prepareBrowserScore(r, status);
-  const preferred = scorePreference(
-    r,
-    isPhoneLandscape() ? false : preferPDF(),
-  ).format;
-  if (preferred !== (r.song.scoreFormat ?? "pdf"))
-    r = useScore(
-      r,
-      songScores(r).find((s) => s.format === preferred)!,
-    );
+  const xml = songScores(r).find((s) => s.format === "musicxml");
+  if (xml && r.song.scoreFormat !== "musicxml") r = useScore(r, xml);
   if (
     r.song.scoreFormat === "musicxml" &&
     r.pages.some((p) => p.type !== SVG_GZIP)

@@ -1,10 +1,13 @@
 import { readFileSync } from "node:fs";
 import type { Song } from "../../src/model/model";
 
-/** Reopen the real demo at the state before one feedback revision. */
+/** Read preserved authoring history, not the final display groups shipped in v3. */
 export function songBeforeLyricFeedback(revision: string): Song {
   const song = JSON.parse(
-    readFileSync("public/demo/song.json", "utf8"),
+    readFileSync(
+      "data/production/time-proportional-app-20261113/demo-before-song.json",
+      "utf8",
+    ),
   ) as Song;
   const archive = song.lyricArchive?.find(
     (entry) => entry.revision === revision + "-before",

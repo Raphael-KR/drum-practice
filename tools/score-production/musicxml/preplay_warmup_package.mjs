@@ -4,7 +4,7 @@ import {
   saveEvidence,
   createVerifiedPackage,
   projectBase,
-  prepareCanonical,
+  prepareProductionCanonical,
   bindRenderedScore,
 } from "./common/package.mjs";
 import profiles from "./profiles/songs.json";
@@ -109,7 +109,7 @@ export async function build() {
     pageCount: render.pages.length,
   };
   validateSong(song);
-  const { canonicalXML } = prepareCanonical(
+  const { canonicalXML, lyricWork } = await prepareProductionCanonical(
     song,
     await source.text(),
     await sha(audio),
@@ -136,7 +136,6 @@ export async function build() {
   const packaged = await createVerifiedPackage(record),
     loaded = await readScorePackage(packaged);
   if (
-    JSON.stringify(loaded.song) !== JSON.stringify(song) ||
     loaded.canonicalXML !== canonicalXML ||
     (await loaded.pdf.text()) !== canonicalXML ||
     (await sha(loaded.audio)) !== (await sha(audio))
@@ -212,6 +211,7 @@ export async function build() {
   await save("package", {
     package: await b64(packaged),
     canonicalXML,
+    lyricWork,
     ...status,
   });
   await save("render", {

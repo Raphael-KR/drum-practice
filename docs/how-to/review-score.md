@@ -90,7 +90,7 @@ offset 후보는 공통 `renderPrintedScore`로 탐색하고 최종 XML만 전�
 
 ### 2. 공통 검수 화면
 
-코드/프로필 수정과 서식 정리를 마친 뒤 현재 로컬 5173 제작기에서 실제 패키지를 읽는다. 새 앱·독립 HTML을 만들지 않는다. 다음은 보존된 I.O.I 패키지의 적용 예다.
+코드/프로필 수정과 서식 정리를 마친 뒤 현재 로컬 5173 제작기에서 실제 패키지를 읽는다. 새 앱·독립 HTML을 만들지 않는다. 다음은 현행 I.O.I 수록 패키지의 적용 예다.
 
 ```javascript
 const { readScorePackage } =
@@ -98,7 +98,7 @@ const { readScorePackage } =
 const { mountScoreReview } =
   await import("/tools/score-production/musicxml/common/review.mjs");
 const response = await fetch(
-  "/data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly.drumscore",
+  "/scores/ioi-suddenly.drumscore",
 );
 if (!response.ok)
   throw new Error(`Package read failed: status=${response.status}`);
@@ -117,7 +117,7 @@ window.scoreReview.report();
 window.scoreReview.dispose();
 ```
 
-숫자는 현재 `record.song.measures`의 1부터 시작하는 위치이며 원본 인쇄 번호와 다를 수 있다. 고유 마디 ID도 사용할 수 있다. `measureGroups`를 생략하면 원본 영역의 page/y/h/x 시스템 경계를 따른다. 반복을 펼친 악보의 부분 시스템도 현재 연주 순서대로 보존한다. 원본 가사는 PDF 이미지에서, 파란 가사는 SVG에서 음표 대응·겹침을 대조한다. PDF에는 HTML 가사 행을 추가하지 않는다. SVG 페이지도 같은 패키지 자산으로 확인한다. 기본 행 너비는 현재 창 너비에서 여백 40px을 뺀 값이며 200~1200px 범위다. 특정 폭 비교가 필요할 때만 `rowWidth`를 명시한다.
+숫자는 현재 `record.song.measures`의 1부터 시작하는 위치이며 원본 인쇄 번호와 다를 수 있다. 고유 마디 ID도 사용할 수 있다. `measureGroups`를 생략하면 원본 영역의 page/y/h/x 시스템 경계를 따른다. 반복을 펼친 악보의 부분 시스템도 현재 연주 순서대로 보존한다. 원본 가사는 PDF 이미지에서, 파란 가사는 SVG에서 음표 대응·겹침을 대조한다. PDF에는 HTML 가사 행을 추가하지 않는다. MusicXML 파생 페이지가 없는 v2 패키지는 공통 브라우저 조판으로 먼저 준비하고 그 SVG를 확인한다. 원본·제작 보관함에는 쓰지 않으며 파생 렌더 캐시는 사용할 수 있다. 이미 준비한 결과에는 재조판을 요구하지 않는다. 기본 행 너비는 현재 창 너비에서 여백 40px을 뺀 값이며 200~1200px 범위다. 특정 폭 비교가 필요할 때만 `rowWidth`를 명시한다.
 
 `report()`는 행 높이·화면 배치와 저장된 PDF 가사 앵커의 마디/음악적 위치·좌표 범위를 확인한다. 앵커 항목은 저장 메타데이터 검사이며, 폐기한 HTML 가사의 픽셀 위치·그리기 성공을 검사하지 않는다. 실제 음표 의미·눈으로 본 화면·청취 완료를 뜻하지 않는다. JSDOM처럼 실제 배치값이 없는 환경은 `unmeasured`로 남긴다. 캡처가 필요하면 현재 프로젝트의 Safari MCP 승인을 따르고, 검수 종료 시 `dispose()` 또는 화면 닫기로 임시 DOM/URL을 해제한다. 생성 도중 모듈을 수정해 Vite 재로드가 발생했다면 현재 결과를 재확인한 후 검수를 재개한다.
 

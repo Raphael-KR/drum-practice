@@ -15,6 +15,8 @@ import {
   scoreChips,
   lyricDocument,
 } from "../../src/apps/editor/score-management";
+import type { RecordData } from "../../src/model/record";
+import { prepareLyricGroups } from "../../src/modules/score/lyric-group-record";
 vi.stubGlobal("Blob", NativeBlob);
 const make = () => {
   const song = JSON.parse(readFileSync("public/demo/song.json", "utf8"));
@@ -25,15 +27,20 @@ const make = () => {
     pages: Array.from({ length: song.pageCount }, () => new Blob(["page"])),
   };
 };
-it("stores untimed text and sections in XML without manufacturing timing", () => {
-  const r = make();
+it("preserves untimed text in authoring work without inventing canonical lyrics", async () => {
+  const r: RecordData = make();
   r.song.lyrics = [];
   r.song.lyricText = "1절\nhello & <world>\n\n후렴\nagain";
+  const text = r.song.lyricText;
+  await prepareLyricGroups(r);
+  expect(r.lyricWork?.text).toBe(text);
+  expect(r.song.lyricText).toBeUndefined();
   const xml = writeCanonical(r.song);
+  expect(xml).not.toContain("hello");
   const copy = structuredClone(r.song);
   delete copy.lyricText;
   readCanonical(xml, copy);
-  expect(copy.lyricText).toBe(r.song.lyricText);
+  expect(copy.lyricText).toBeUndefined();
   expect(copy.lyrics).toEqual([]);
   expect(lyricDocument(r)).toContain("후렴");
   expect(scoreChips(r)).toContain("가사 있음");

@@ -1,7 +1,3 @@
-import {
-  practiceLoopHTML,
-  practiceMarkerHTML,
-} from "../../modules/playback/practice-management";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { dialogHeader } from "../../shared/ui/dialog-ui";
 import { iconButtonHTML } from "../../shared/ui/icon-button";
@@ -15,9 +11,13 @@ export function editorHTML() {
     i18nText("editorHome.new") +
     '</button></div><a class="editor-player-link library-app-link library-editor" href="/player.html">' +
     i18nText("editorHome.playerLink") +
-    '</a><div class="actions library-common-actions"><button id="library-button">' +
-    i18nText("icons.message054") +
-    '</button></div></div></header>\n<main class="library-main"><section class="welcome editor-home" id="welcome"><div id="editor-home-list" class="library-sections" aria-live="polite"></div><button id="welcome-library" hidden></button></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
+    '</a><div class="actions library-common-actions">' +
+    iconButtonHTML(
+      "library-button",
+      icon("library"),
+      i18nText("icons.message054"),
+    ) +
+    '</div></div></header>\n<main class="library-main"><section class="welcome editor-home" id="welcome"><div id="editor-home-list" class="library-sections" aria-live="polite"></div><button id="welcome-library" hidden></button></section>\n<div id="busy" role="status" aria-live="polite"></div>\n<section id="practice" hidden><div class="statusline"><div class="flex"><button id="original-button">' +
     i18nText("main.message112") +
     '</button></div></div>\n<div id="review-tools" hidden><span id="review-message">' +
     i18nText("main.message113") +
@@ -31,13 +31,7 @@ export function editorHTML() {
         i18nText("main.message116") +
         '"></canvas>',
     ) +
-    '<div class="panels"><section class="panel">' +
-    practiceLoopHTML() +
-    '</section><section class="panel">' +
-    practiceMarkerHTML(true) +
-    '</section></div><p class="keyboard">' +
-    i18nText("main.message151") +
-    '</p></section></main>\n<dialog id="new-dialog">' +
+    '</section></main>\n<dialog id="new-dialog">' +
     dialogHeader(i18nText("main.message154"), "", "new-dialog", "") +
     "<p>" +
     i18nText("main.message155") +
@@ -69,91 +63,32 @@ export function editorHTML() {
     i18nText("main.message166") +
     '</p><button type="submit" class="primary">' +
     i18nText("main.message167") +
-    '</button></form></dialog>\n<dialog id="editor-dialog">' +
-    dialogHeader(i18nText("main.message099"), "", "editor-dialog", "") +
-    '<div class="flex"><label>' +
-    i18nText("main.message156") +
-    '<input id="edit-artist" type="text"></label><label>' +
-    i18nText("main.message169") +
-    '<input id="edit-title" type="text"></label><label>' +
-    i18nText("main.message170") +
-    '<input id="edit-original-title" type="text"></label><label>' +
-    i18nText("main.message171") +
-    '<input id="edit-lyricist" type="text"></label><label>' +
-    i18nText("main.message172") +
-    '<input id="edit-composer" type="text"></label><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>' +
+    '</button></form></dialog><section id="editor-dialog" class="editor-workbench" hidden><div class="editor-body"><div class="editor-content"><section id="editor-lyrics" tabindex="0" aria-label="' +
+    i18nText("main.message279") +
+    '"><div id="lyric-summary" role="status"></div><div id="lyric-editor" class="lyric-cards"></div></section><section id="editor-meta"><div class="metadata-fields">' +
+    (
+      [
+        ["edit-title", "main.message169"],
+        ["edit-original-title", "main.message170"],
+        ["edit-artist", "main.message156"],
+        ["edit-lyricist", "main.message171"],
+        ["edit-composer", "main.message172"],
+      ] as const
+    )
+      .map(
+        ([id, key]) =>
+          `<label>${i18nText(key)}<input id="${id}" type="text"></label>`,
+      )
+      .join("") +
+    '</div><div class="metadata-timing"><div class="timing-fields"><label>BPM <input id="edit-bpm" type="number" min="20" max="300"></label><label>' +
     i18nText("main.message162") +
-    '<input id="edit-first" data-numeric-drag="off" type="number" min="0" step="0.001"></label><button id="reflow">' +
+    '<input id="edit-first" data-numeric-drag="off" type="number" min="0" step="0.001"></label></div><div class="timing-actions"><button id="reflow">' +
     i18nText("main.message173") +
     '</button><button id="estimate-tempo">' +
     i18nText("main.message174") +
     '</button><button id="tap-tempo">' +
     i18nText("main.message175") +
-    '</button><span id="tap-result"></span></div><div class="editor"><section><div class="flex"><label>' +
-    i18nText("main.message177") +
-    '<select id="editor-page"></select></label><label>' +
-    i18nText("main.message178") +
-    '<select id="measure-select"></select></label></div><p class="subtle">' +
-    i18nText("main.message179") +
-    '</p><div class="pagebox"><canvas id="edit-canvas"></canvas></div><div class="flex"><button id="add-region">' +
-    i18nText("main.message180") +
-    '</button><button id="apply-crop">' +
-    i18nText("main.message181") +
-    "</button></div></section><section><h3>" +
-    i18nText("main.message182") +
-    '</h3><div class="flex"><label>' +
-    i18nText("main.message183") +
-    '<input id="measure-label" type="text"></label><label>' +
-    i18nText("main.message184") +
-    '<input id="measure-beats" type="number" min="1" max="16"></label><label>' +
-    i18nText("main.message164") +
-    '<input id="measure-denominator" type="number" min="2" max="16" value="4"></label></div><div class="flex"><label>' +
-    i18nText("main.message185") +
-    '<input id="measure-start" data-numeric-drag="off" type="number" min="0" step="0.001"></label><label>' +
-    i18nText("main.message186") +
-    '<input id="measure-end" data-numeric-drag="off" type="number" min="0" step="0.001"></label><button id="apply-measure">' +
-    i18nText("main.message187") +
-    "</button></div><label>" +
-    i18nText("main.message188") +
-    '<input id="beat-xs" type="text" placeholder="0,0.25,0.5,0.75,1"></label><p class="subtle">' +
-    i18nText("main.message189") +
-    '</p><div class="flex"><button id="preview-measure">' +
-    i18nText("main.message190") +
-    '</button><button id="anchor-now">' +
-    i18nText("main.message191") +
-    '</button><button id="editor-play">' +
-    i18nText("main.message192") +
-    '</button><span id="editor-time"></span></div><div class="flex"><button id="duplicate">' +
-    i18nText("main.message193") +
-    '</button><button id="split">' +
-    i18nText("main.message194") +
-    '</button><button id="merge">' +
-    i18nText("main.message195") +
-    '</button><button id="move-left">' +
-    i18nText("main.message119") +
-    '</button><button id="move-right">' +
-    i18nText("main.message196") +
-    '</button><button id="remove-measure" class="danger">' +
-    i18nText("main.message197") +
-    "</button></div><h3>" +
-    i18nText("canonical-xml.message014") +
-    '</h3><p class="subtle">' +
-    i18nText("main.message198") +
-    '</p><div class="flex"><button id="add-lyric">' +
-    i18nText("main.message199") +
-    '</button><button id="show-near">' +
-    i18nText("main.message200") +
-    '</button><button id="show-all">' +
-    i18nText("main.message201") +
-    '</button></div><div class="scroll"><table><thead><tr><th>' +
-    i18nText("main.message202") +
-    "</th><th>" +
-    i18nText("main.message203") +
-    "</th><th>" +
-    i18nText("main.message204") +
-    "</th><th>" +
-    i18nText("main.message205") +
-    '</th><th></th></tr></thead><tbody id="lyric-editor"></tbody></table></div></section></div></dialog>\n<dialog id="original-dialog">' +
+    '</button><span id="tap-result"></span></div></div></section></div><section id="editor-sections" class="section-editor"></section></div><section id="project-work" aria-live="polite"></section></section><dialog id="original-dialog">' +
     dialogHeader(i18nText("main.message206"), "", "original-dialog", "") +
     '<div id="page-original"></div></dialog><div id="error-notice" class="error-notice" hidden><strong>' +
     i18nText("main.message207") +

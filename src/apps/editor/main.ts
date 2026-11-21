@@ -11,48 +11,20 @@ import { installEditorPackages } from "./editor-file-transfer";
 import { type EditSnapshot, type EditorForm } from "../../model/edit-history";
 import type { RecordData } from "../../model/record";
 import "../../modules/help/help.css";
-import {
-  preferPDF,
-  savePreferPDF,
-  scorePreference,
-} from "../../modules/library/score-preference";
-import { isPhoneLandscape } from "../../platform/browser/phone-layout";
 import type { RibbonAsset } from "../../modules/playback/playback-assets";
 import {
   preparePlaybackAssets,
   releasePlaybackAssets,
   replacePlaybackAssets,
 } from "../../modules/playback/playback-assets";
-import { syncSettingsChoices } from "../../modules/playback/playback-settings";
-import {
-  readPlaybackPreferences,
-  savePlaybackPreferences,
-} from "../../modules/playback/playback-preferences";
 import { createPlaybackScreen } from "../../modules/playback/playback-screen";
 import { webPlaybackBindings } from "../../modules/playback/playback-ui";
 import "../../modules/playback/playback-ui.css";
-import { attachPracticeManagement } from "../../modules/playback/practice-management";
-import { readSectionShortcuts } from "../../modules/playback/section-shortcuts";
-import {
-  ensureCanonical,
-  saveCanonical,
-} from "../../modules/score/canonical-xml";
 import { type HighlightPage } from "../../modules/score/note-highlight";
-import {
-  readNoteHighlight,
-  saveNoteHighlight,
-} from "../../modules/score/note-highlight-preference";
 import { type StaffPosition } from "../../modules/score/practice-staff-layout";
-import { songScores, useScore } from "../../modules/score/song-scores";
-import {
-  autoFullscreenEnabled,
-  enterFullscreen,
-  saveAutoFullscreen,
-} from "../../platform/browser/fullscreen";
-import { saveRecord } from "../../platform/storage/storage";
+import { songScores } from "../../modules/score/song-scores";
 import { formatTime, t as i18nText } from "../../shared/i18n/i18n";
 import "../../shared/styles/controls.css";
-import { arrangeIcons } from "../../shared/ui/icons";
 import { showCopyableError } from "../../shared/ui/error-notice";
 import { Player } from "./audio";
 import { $, val } from "./editor-dom";
@@ -67,7 +39,10 @@ import { setupScoreManagement } from "./score-management";
 import { reviewPair } from "./score-review";
 import "./style.css";
 import "../../modules/library/player-library.css";
-import { arrangeWorkspace, selectSettingsCategory } from "./workspace";
+import { arrangeWorkspace } from "./workspace";
+import { openProject, writeProject } from "./score-project-client";
+import { installProjectWorkflow } from "./project-workflow";
+import { installLyricStage } from "./lyric-stage";
 const renderPDF: typeof import("../../modules/score/pdf").renderPDF = async (
   ...args
 ) => (await import("../../modules/score/pdf")).renderPDF(...args);
@@ -93,60 +68,55 @@ let player: Player | undefined,
 
 let selected = 0;
 let saveTimer = 0,
-  busy = false;
+  busy = false,
+  loadingRecord = false;
 
 const pageRatios: number[] = [];
 const practiceStaffs = new Map<string, StaffPosition>();
 const ribbonAssets = new Map<number, RibbonAsset>();
 const highlightPages: (HighlightPage | undefined)[] = [];
-let noteHighlightEnabled = readNoteHighlight();
+const reviewPreferences = () => ({ restartMeasure: false, countOff: false });
 
 const app = $("app");
 app.innerHTML = editorHTML();
 arrangeWorkspace();
-arrangeIcons();
 $("song-title").textContent = i18nText("separation.editorTitle");
 document.title = i18nText("separation.editorTitle");
 const playback = createPlaybackScreen({
   root: app,
   environment: "web",
+  authoring: true,
   preferences: {
-    restartId: "restart-measure",
-    countoffId: "count-off",
-    read: readPlaybackPreferences,
-    write: (value) => {
-      const saved = savePlaybackPreferences(value);
-      $("playback-settings-status").textContent = i18nText(
-        saved ? "main.message256" : "main.message257",
-      );
-    },
+    restartId: "",
+    countoffId: "",
+    read: reviewPreferences,
+    write: () => {},
   },
   display: {
-    setPhoneLandscape: (active) =>
-      changeScoreFormat(active ? false : preferPDF()),
-    highlightId: "note-highlight",
-    fullscreenId: "auto-fullscreen",
-    fullscreen: autoFullscreenEnabled,
-    setFullscreen: saveAutoFullscreen,
-    setHighlight: (value) => {
-      noteHighlightEnabled = value;
-      saveNoteHighlight(value);
-    },
-    report: (message) => {
-      $("fullscreen-status").textContent = message;
-    },
+    setPhoneLandscape: async () => {},
+    highlightId: "",
+    fullscreenId: "",
+    fullscreen: () => false,
+    setFullscreen: () => {},
+    setHighlight: () => {},
+    report: status,
+  },
+  selectionChanged: (index) => {
+    if (record && !busy && session?.active()) flushEditorForm(false);
+    selected = index;
+    if (record) lyricEditor.render();
   },
   afterFrame: updateEditorPlayback,
   ids: {
     ...webPlaybackBindings,
     rewindButton: "jump",
     radiusAttribute: "data-loop-radius",
-    settings: "open-settings-dialog",
+    settings: undefined,
   },
   canonicalXML: () => record?.canonicalXML,
   song,
   player: engine,
-  ready: () => !!record,
+  ready: () => !!record && !loadingRecord,
   busy: () => busy,
   setBusy: (value) => {
     busy = value;
@@ -158,15 +128,10 @@ const playback = createPlaybackScreen({
     highlights: highlightPages,
     ribbon: ribbonAssets,
   }),
-  highlight: () => noteHighlightEnabled,
+  highlight: () => false,
   formats: () => (record ? songScores(record).map((s) => s.format) : []),
   fail: error,
   changed: queueSave,
-  pauseOverride: () => {
-    if (song().settings.view !== "compare") return false;
-    reviewController.capture();
-    return true;
-  },
   compare: {
     render: () => {
       $("review-tools").hidden = $("review-canvas").hidden = false;
@@ -194,7 +159,7 @@ const playback = createPlaybackScreen({
       reviewController.dispose();
     }
   },
-  listsChanged: () => practiceManagement?.render(),
+  listsChanged: () => {},
   validateView: (view) => {
     if (view === "compare") {
       reviewPair(record!);
@@ -202,18 +167,9 @@ const playback = createPlaybackScreen({
     }
   },
   settingsChanged: syncViewChoices,
-  settingsSelected: selectSettingsCategory,
 });
 function songControlsAvailable(enabled: boolean) {
-  $("click").hidden = !enabled;
-  for (const id of [
-    "click",
-    "zoom",
-    "original-button",
-    "review-add-score",
-    "file-xml",
-    "file-export",
-  ]) {
+  for (const id of ["zoom", "original-button", "file-xml", "file-export"]) {
     const control = document.getElementById(id) as HTMLButtonElement | null;
     if (control) control.disabled = !enabled;
   }
@@ -285,29 +241,42 @@ function action(id: string, f: () => unknown) {
 }
 function engine() {
   if (!player) {
-    player = new Player(readPlaybackPreferences);
+    player = new Player(reviewPreferences);
     player.onprogress = status;
     player.onerror = status;
     player.onstate = () => playback.onState();
   }
   return player;
 }
-async function persist() {
-  if (!record) return;
-  await ensureCanonical(record);
-  saveCanonical(record);
-  await saveRecord(preferredRecordForStorage(session?.forStorage() || record));
-  management?.refresh();
-  status(i18nText("main.message216"));
-}
-function preferredRecordForStorage(value: RecordData) {
-  if (value.song.audioPractice) return value;
-  const format = scorePreference(value).format;
-  if (value.song.scoreFormat === format) return value;
-  return useScore(
-    value,
-    songScores(value).find((score) => score.format === format)!,
-  );
+let pendingPersistence: Promise<void> = Promise.resolve();
+const projectBindings = new Map<
+  string,
+  Pick<RecordData, "localProject" | "localDraft">
+>();
+function persist(confirmed?: RecordData): Promise<void> {
+  if (!record) return Promise.resolve();
+  if (confirmed) clearTimeout(saveTimer);
+  const source = confirmed || session?.forStorage() || record;
+  const value = {
+    ...source,
+    song: structuredClone(source.song),
+    editDraft: structuredClone(source.editDraft),
+    lyricWork: structuredClone(source.lyricWork),
+  };
+  const result = pendingPersistence.then(async () => {
+    Object.assign(value, projectBindings.get(value.song.id));
+    const result = await writeProject(value, !!confirmed);
+    const binding = {
+      localProject: result.head ?? value.localProject,
+      localDraft: result.draft,
+    };
+    projectBindings.set(value.song.id, binding);
+    if (record?.song.id === value.song.id) Object.assign(record, binding);
+    if (confirmed) Object.assign(confirmed, binding);
+    management?.refresh();
+  });
+  pendingPersistence = result.catch(() => {});
+  return result;
 }
 function queueSave() {
   clearTimeout(saveTimer);
@@ -325,23 +294,31 @@ function song() {
   return record.song;
 }
 // Activation owns the ordered save, media swap and visible-screen transition.
-async function activate(r: RecordData) {
+async function activate(r: RecordData, alreadySaved = false) {
   scoreGestures.cancel();
-  if (autoFullscreenEnabled() && !document.fullscreenElement)
-    requestScoreFullscreen();
   playback.reset();
-  await readEditorRecord(r);
   busy = true;
+  loadingRecord = true;
   try {
-    r = await prepareEditorScore(r, status, renderScore);
     engine().pause();
     clearTimeout(saveTimer);
-    if (record)
-      await saveRecord(
-        preferredRecordForStorage(session?.forStorage() || record),
-      );
+    if (record && !alreadySaved) await persist();
+    await pendingPersistence;
+    if (!alreadySaved && r.song.id === record?.song.id)
+      Object.assign(r, projectBindings.get(r.song.id));
+    await readEditorRecord(r);
+    if (!r.localProject) r = await openProject(r);
+    r = await prepareEditorScore(r, status, renderScore);
+    Object.assign(r.song.settings, {
+      click: false,
+      countIn: 0,
+      rate: 1,
+      tempoMode: "original",
+      practiceBpm: undefined,
+      musicVolume: 1,
+      clickVolume: 1,
+    });
     session?.reset();
-    record = r;
 
     // Materialize persisted blobs before image decoding; Safari may not load
     // an object URL backed directly by an IndexedDB blob after a reload.
@@ -365,6 +342,12 @@ async function activate(r: RecordData) {
       },
       prepared,
     );
+    // Publish the record only when its matching geometry is ready for frames.
+    record = r;
+    projectBindings.set(r.song.id, {
+      localProject: r.localProject,
+      localDraft: r.localDraft,
+    });
     try {
       await engine().load(r.audio, r.song);
     } catch (cause) {
@@ -379,14 +362,19 @@ async function activate(r: RecordData) {
     $("welcome").hidden = true;
     document.body.classList.add("has-song");
     $("practice").hidden = false;
+    loadingRecord = false;
     songControlsAvailable(true);
     updateSongHeading();
     syncSettings();
     renderTrack();
     renderLists();
-    await persist();
+    await openEditor();
+    sections.refresh();
+    projectWorkflow.open(r);
+    lyricStage.load(r);
     status("");
   } finally {
+    loadingRecord = false;
     busy = false;
     if (record) {
       renderLists();
@@ -395,110 +383,15 @@ async function activate(r: RecordData) {
   }
 }
 function syncViewChoices() {
-  syncNoteHighlightControl();
-  const view = record ? song().settings.view : val("view").value;
-  if (!record) {
-    $("review-help").hidden = true;
-    $("review-add-score").hidden = true;
-    $("review-availability").textContent = "";
-    ($("view") as HTMLSelectElement).querySelector<HTMLOptionElement>(
-      'option[value="compare"]',
-    )!.disabled = true;
-    $("pdf-view-row").hidden = false;
-    val("prefer-pdf").checked = preferPDF();
-    val("prefer-pdf").disabled = true;
-    $("pdf-view-status").textContent = i18nText("main.message227");
-    val("zoom").closest("label")!.hidden = view !== "ribbon";
-    syncSettingsChoices(document);
-    return;
-  }
+  if (!record) return;
   const formats = songScores(record).map((s) => s.format);
-  const missing = ["pdf", "musicxml"].filter(
-    (f) => !formats.includes(f as "pdf" | "musicxml"),
+  const available = formats.includes("pdf") && formats.includes("musicxml");
+  const button = document.querySelector<HTMLButtonElement>(
+    '[data-row-view="compare"]',
   );
-  const compare = song().settings.view === "compare";
-  ($("view") as HTMLSelectElement).querySelector<HTMLOptionElement>(
-    'option[value="compare"]',
-  )!.disabled = missing.length > 0;
-  const preference = scorePreference(
-    record,
-    isPhoneLandscape() ? false : preferPDF(),
-  );
-  val("prefer-pdf").checked = preference.checked;
-  val("prefer-pdf").disabled = preference.disabled;
-  $("pdf-view-status").textContent = preference.message;
-  $("pdf-view-row").hidden = compare;
-  syncSettingsChoices(document);
-  $("review-help").hidden = !compare;
-
-  $("review-availability").textContent = missing.length
-    ? i18nText("main.message230", {
-        value1: missing
-          .map((f) =>
-            f === "pdf" ? i18nText("term.PDF") : i18nText("term.MusicXML"),
-          )
-          .join(i18nText("main.message228")),
-        value2: formats
-          .map((f) =>
-            f === "pdf" ? i18nText("term.PDF") : i18nText("term.MusicXML"),
-          )
-          .join(", "),
-        value3: "",
-      })
-    : "";
-  $("review-add-score").hidden = !missing.length;
+  if (button) button.disabled = !available || busy;
+  $("copy-position").hidden = true;
 }
-// Prepare geometry before swapping it, leaving audio and loop scheduling intact.
-async function changeScoreFormat(wanted: boolean, persistPreference = false) {
-  if (!record || busy) {
-    if (record) syncViewChoices();
-    return;
-  }
-  const original = record;
-  if (original.song.scoreFormat === (wanted ? "pdf" : "musicxml")) return;
-  if (scorePreference(original).disabled) {
-    syncViewChoices();
-    return;
-  }
-  busy = true;
-  val("prefer-pdf").disabled = true;
-  let prepared: Awaited<ReturnType<typeof preparePlaybackAssets>> | undefined;
-  try {
-    const target = songScores(original).find(
-      (s) => s.format === (wanted ? "pdf" : "musicxml"),
-    )!;
-    const next = useScore(original, target);
-    prepared = await preparePlaybackAssets(next.pages, next.song);
-    if (record !== original) throw Error(i18nText("main.message231"));
-    // Settings may have changed while the images decoded; retain the latest values.
-    next.song.settings = original.song.settings;
-    replacePlaybackAssets(
-      {
-        urls,
-        pageRatios,
-        highlightPages,
-        practiceStaffs,
-        ribbon: ribbonAssets,
-      },
-      prepared,
-    );
-    prepared = undefined;
-    record = next;
-    engine().song = next.song;
-    if (persistPreference) savePreferPDF(wanted);
-    renderTrack();
-    if (persistPreference) queueSave();
-  } catch (e) {
-    if (prepared) releasePlaybackAssets(prepared);
-    error(e);
-  } finally {
-    busy = false;
-    syncViewChoices();
-  }
-}
-val("prefer-pdf").onchange = () => {
-  void changeScoreFormat(val("prefer-pdf").checked, true);
-};
 function syncSettings() {
   playback.sync();
   management?.refresh();
@@ -515,87 +408,39 @@ const prepareReview = () => reviewController.prepare();
 function renderTrack() {
   playback.renderTrack();
 }
-function updateEditorPlayback(t: number) {
-  const editorTime = $("editor-time"),
-    label = i18nText("main.message247", {
-      value1: t.toFixed(2),
-    });
-  if (editorTime.textContent !== label) editorTime.textContent = label;
+function updateEditorPlayback(time: number) {
+  if (!record) return;
+  if (engine().playing) {
+    const index = locate(song(), time).index;
+    if (selected !== index) {
+      selected = index;
+      lyricEditor.render();
+    }
+  }
+  lyricStage?.refresh();
 }
-const toggle = () => playback.toggle();
-
-function syncNoteHighlightControl() {
-  playback.syncDisplay();
-}
-syncNoteHighlightControl();
+playback.syncDisplay();
 const scoreGestures = {
   cancel: () => playback.cancel(),
   dispose: () => playback.dispose(),
 };
-if (import.meta.hot) import.meta.hot.dispose(() => playback.dispose());
 
-let fullscreenRequest: Promise<boolean> | undefined;
-const fullscreenReport = (message: string) => {
-  $("fullscreen-status").textContent = message;
-};
-function requestScoreFullscreen() {
-  if (
-    !autoFullscreenEnabled() ||
-    document.fullscreenElement ||
-    fullscreenRequest
-  )
-    return;
-  fullscreenRequest = enterFullscreen(fullscreenReport);
-  void fullscreenRequest.finally(() => {
-    fullscreenRequest = undefined;
-  });
-}
-// Request before asynchronous file/IndexedDB work consumes transient activation.
-document.addEventListener(
-  "click",
-  (e) => {
-    if ((e.target as Element).closest("#editor-home-list [data-editor-open]"))
-      requestScoreFullscreen();
-  },
-  true,
-);
-document.addEventListener(
-  "submit",
-  (e) => {
-    if ((e.target as HTMLElement).id === "new-form") requestScoreFullscreen();
-  },
-  true,
-);
-
-const practiceManagement: ReturnType<typeof attachPracticeManagement> =
-  attachPracticeManagement({
-    canonicalXML: () => record?.canonicalXML,
-    root: $("app"),
-    song,
-    playback: () => playback,
-    player: engine,
-    fail: error,
-  });
 function renderLists() {
   playback.renderLists();
 }
 for (const b of document.querySelectorAll<HTMLElement>("[data-close]"))
-  if (
-    ![
-      "settings-dialog",
-      "tempo-dialog",
-      "loop-dialog",
-      "marker-dialog",
-    ].includes(b.dataset.close!)
-  )
-    b.onclick = () => $<HTMLDialogElement>(b.dataset.close!).close();
+  b.onclick = () => $<HTMLDialogElement>(b.dataset.close!).close();
 async function showEditorHome() {
+  if (busy || session.saving()) return;
   engine().pause();
   clearTimeout(saveTimer);
   await persist();
   scoreGestures.cancel();
   playback.reset();
   session?.reset();
+  projectWorkflow.close();
+  lyricStage.clear();
+  $("editor-dialog").hidden = true;
   record = undefined;
   releasePlaybackAssets({ urls, ribbon: ribbonAssets });
   ribbonAssets.clear();
@@ -643,10 +488,6 @@ installEditorImport({
   openEditor,
   renderScore,
 });
-document.addEventListener("open-score-editor", () => {
-  if (!$<HTMLDialogElement>("editor-dialog").open)
-    void openEditor().catch(error);
-});
 const scoreEditor = createScoreEditor({
   cancelGestures: () => scoreGestures.cancel(),
   get selected() {
@@ -658,25 +499,19 @@ const scoreEditor = createScoreEditor({
   get record() {
     return record;
   },
-  get urls() {
-    return urls;
-  },
   get session() {
     return session;
   },
   song,
   engine,
-  renderLyricEditor,
-  renderCurrentLyrics: () => renderLyricEditor(lyricEditor.near),
-  flushEditorForm: () => flushEditorForm(),
-  renderTrack,
+  renderCurrentLyrics: renderLyricEditor,
   renderLists,
   queueSave,
   updateSongHeading,
   action,
-  error,
   tell,
-  toggle,
+  refreshGeometry,
+  error,
 });
 function openEditor() {
   return scoreEditor.openEditor();
@@ -684,22 +519,24 @@ function openEditor() {
 function updateMeasureForm() {
   scoreEditor.updateMeasureForm();
 }
-function drawPage() {
-  return scoreEditor.drawPage();
-}
-function edit(mut: (song: Song) => void) {
-  scoreEditor.edit(mut);
+function edit(mut: (song: Song) => void, work?: RecordData["lyricWork"]) {
+  scoreEditor.edit(mut, work);
 }
 const lyricEditor = createLyricEditor({
   song,
   selected: () => selected,
   edit,
-  current: () => engine().current(),
-  action,
+  record: () => record!,
+  selectMeasure: (index) => {
+    selected = index;
+    playback.selectMeasure(index, false);
+  },
+  flush: () => flushEditorForm(false),
+  selectionChanged: () => lyricStage?.refresh(true),
   error,
 });
-function renderLyricEditor(near: boolean, keepPage = false) {
-  lyricEditor.render(near, keepPage);
+function renderLyricEditor() {
+  lyricEditor.render();
 }
 installOriginalScoreView({
   get record() {
@@ -736,6 +573,7 @@ const { openScoreReplacement } = installEditorScoreFiles({
   },
   engine,
   edit,
+  flush: () => flushEditorForm(),
   persist,
   activate,
   renderScore,
@@ -756,27 +594,24 @@ const { editorForm, fillMetadata, pendingEditorValues, flushEditorForm } =
   });
 function applySnapshot(s: EditSnapshot) {
   if (!record) return;
-  const sectionsChanged =
-    JSON.stringify(readSectionShortcuts(record.canonicalXML ?? "")) !==
-    JSON.stringify(readSectionShortcuts(s.canonicalXML ?? ""));
   record.song = structuredClone(s.song);
   record.canonicalXML = s.canonicalXML;
-  if (sectionsChanged) void refreshSectionGeometry(record).catch(error);
+  record.lyricWork = structuredClone(s.lyricWork);
+  void refreshGeometry().catch(error);
   engine().song = record.song;
   engine().loop = undefined;
   selected = clamp(selected, 0, s.song.measures.length - 1);
   fillMetadata();
   updateMeasureForm();
-  renderLyricEditor(lyricEditor.near);
+  renderLyricEditor();
   renderTrack();
   renderLists();
   updateSongHeading();
-  void drawPage();
 }
 function restoreEditorForm(form: EditorForm) {
   selected = clamp(form.selected, 0, song().measures.length - 1);
   updateMeasureForm();
-  renderLyricEditor(lyricEditor.near);
+  renderLyricEditor();
   for (const id of editorFields)
     if (form.fields[id] !== undefined) val(id).value = form.fields[id];
   document
@@ -796,9 +631,7 @@ const session: ReturnType<typeof editorSession> = editorSession({
   get: () => record,
   pending: () => {
     const p = pendingEditorValues();
-    return (
-      p.metaChanged || p.measureChanged || p.tempoChanged || !!p.lyrics.length
-    );
+    return p.metaChanged || p.tempoChanged || !!p.lyrics.length;
   },
   form: editorForm,
   restoreForm: restoreEditorForm,
@@ -817,6 +650,8 @@ const management: ReturnType<typeof setupScoreManagement> =
         record = value;
       },
       song,
+      edit,
+      flush: () => flushEditorForm(),
       persist,
       activate,
       openLibrary,
@@ -833,7 +668,7 @@ const management: ReturnType<typeof setupScoreManagement> =
 
 installEditorPackages(fileTransfer);
 
-const { refreshSectionGeometry } = installEditorSections({
+const sections = installEditorSections({
   get record() {
     return record;
   },
@@ -858,6 +693,67 @@ const { refreshSectionGeometry } = installEditorSections({
   flushEditorForm,
   renderTrack,
   renderLists,
-  drawPage,
+  geometryChanged: () => {
+    if (record) lyricStage.load(record);
+  },
   queueSave,
 });
+
+let geometryQueue: Promise<void> = Promise.resolve();
+function refreshGeometry() {
+  const target = record;
+  const xml = target?.canonicalXML;
+  const job = geometryQueue
+    .catch(() => {})
+    .then(async () => {
+      if (!target || record !== target || target.canonicalXML !== xml) return;
+      const scroll = $("stage").scrollTop;
+      await sections.refreshSectionGeometry(target);
+      if (record === target && target.canonicalXML === xml) {
+        $("stage").scrollTop = scroll;
+        lyricStage.load(target);
+      }
+    });
+  geometryQueue = job;
+  return job;
+}
+const lyricStage = installLyricStage({
+  record: () => record,
+  editor: lyricEditor,
+  engine,
+  error,
+  editable: () => !busy && !session.saving(),
+  position: playback.position,
+  review: () => reviewController.layout(),
+});
+const projectWorkflow = installProjectWorkflow({
+  record: () => record,
+  persist,
+  activate,
+  dirty: () => session.dirty(),
+  blocked: () => busy || session.saving() || lyricStage.dragging(),
+  error,
+});
+if (import.meta.hot)
+  import.meta.hot.dispose(() => {
+    clearTimeout(saveTimer);
+    playback.dispose();
+    lyricEditor.dispose();
+    lyricStage.dispose();
+    projectWorkflow.close();
+    session.reset();
+  });
+for (const id of [
+  "edit-title",
+  "edit-original-title",
+  "edit-artist",
+  "edit-lyricist",
+  "edit-composer",
+])
+  val(id).addEventListener("change", () => {
+    try {
+      flushEditorForm();
+    } catch (e) {
+      error(e);
+    }
+  });

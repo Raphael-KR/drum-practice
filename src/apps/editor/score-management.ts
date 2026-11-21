@@ -1,9 +1,7 @@
 import { createDialog } from "../../shared/ui/dialog-ui";
-import { mountLiquidGlass } from "../../shared/ui/liquid-glass";
 import { hasLyrics, scoreAssets } from "../../modules/library/score-assets";
 export { hasLyrics } from "../../modules/library/score-assets";
 import { bindNumericDrag } from "../../shared/ui/numeric-drag";
-import { installScoreEditorLayout } from "./score-editor-layout";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { installUIStandard } from "../../shared/ui/ui-standard";
 import {
@@ -12,14 +10,13 @@ import {
 } from "../../modules/score/full-score-view";
 import { writeCanonical } from "../../modules/score/canonical-xml";
 import { displayPage } from "../../modules/score/score-pages";
-import { icon } from "../../shared/ui/icons";
+import { icon } from "../../shared/ui/icon-svg";
 import { songScores } from "../../modules/score/song-scores";
-import { selectEditorPane } from "./workspace";
 import type { RecordData } from "../../model/record";
-import { escapeHTML } from "../../shared/ui/html";
 import { $ } from "./editor-dom";
 export { escapeHTML } from "../../shared/ui/html";
 export function lyricDocument(r: RecordData) {
+  if (r.lyricWork?.text) return r.lyricWork.text;
   if (r.song.lyricText) return r.song.lyricText;
   if (r.song.measureLyrics?.length && !r.song.lyrics.length)
     return r.song.measures
@@ -142,37 +139,7 @@ export function setupScoreManagement(
   };
   const row = (label: string, sub: string, name: string, id: string) =>
     `<button id="${id}" class="management-row">${icon(name)}<span><strong>${label}</strong>${sub ? `<small>${sub}</small>` : ""}</span></button>`;
-  const summary = document.createElement("section");
-  summary.id = "score-summary";
-  summary.className = "asset-chips score-header-chips";
-  const overview = document.createElement("section");
-  overview.id = "score-overview";
-  const editEntry = document.createElement("button");
-  editEntry.id = "score-edit-entry";
-  editEntry.className = "score-edit-entry";
-  editEntry.innerHTML =
-    icon("pencil") + `<span>${i18nText("score.editEntry")}</span>`;
-  editEntry.onclick = () =>
-    document.dispatchEvent(new Event("open-score-editor"));
-  const libraryActions = document.createElement("div");
-  libraryActions.className = "score-library-actions";
-  libraryActions.append(editEntry);
-  for (const [id, target, label, glyph] of [
-    ["score-open-library", "welcome-library", "icons.message054", "library"],
-    ["score-add-new", "welcome-new", "icons.message055", "plus"],
-  ] as const) {
-    const button = document.createElement("button");
-    button.id = id;
-    button.innerHTML = icon(glyph) + `<span>${i18nText(label)}</span>`;
-    button.onclick = () => {
-      ($("settings-dialog") as HTMLDialogElement).close();
-      $(target).click();
-    };
-    libraryActions.append(button);
-  }
-  $("score-settings").prepend(overview, libraryActions);
-  const editor = $("editor-dialog") as HTMLDialogElement;
-  editor.classList.add("score-workspace-dialog");
+  const editor = $("editor-dialog");
   const measureCount = document.createElement("input");
   measureCount.id = "edit-measure-count";
   measureCount.readOnly = true;
@@ -182,16 +149,6 @@ export function setupScoreManagement(
   measureCountLabel.append(measureCount);
   const filePane = document.createElement("div");
   filePane.className = "connection-file-actions";
-  const metaTab = editor.querySelector('[data-pane="meta"]')!;
-  editor.querySelector(".editor-tabs")!.prepend(metaTab);
-  const tabs = editor.querySelector<HTMLElement>(".editor-tabs")!;
-  tabs.id = "score-workspace-tabs";
-  tabs.setAttribute("role", "tablist");
-  editor.querySelector(".dialoghead h2")!.after(summary, tabs);
-  const head = editor.querySelector<HTMLElement>(".dialoghead")!;
-  const tools = editor.querySelector<HTMLElement>(".editor-history-tools")!;
-  head.insertBefore(tools, head.querySelector('[data-close="editor-dialog"]'));
-  mountLiquidGlass(head);
   const fields = $("editor-meta").querySelector(".metadata-fields")!;
   fields.prepend($("edit-title").closest("label")!);
   $("edit-title")
@@ -214,7 +171,6 @@ export function setupScoreManagement(
   $("edit-bpm").closest("label")!.firstChild!.textContent =
     i18nText("editor.baseBpm");
   bindNumericDrag($("edit-bpm") as HTMLInputElement, { wheel: true });
-  selectEditorPane("meta");
   filePane.innerHTML =
     row(i18nText("score.files.replace"), "", "library", "file-xml") +
     row(i18nText("score.files.replaceAudio"), "", "sliders", "file-audio");
@@ -338,22 +294,12 @@ export function setupScoreManagement(
   const lyricPanel = document.createElement("section");
   lyricPanel.className = "lyric-edit-panel";
   while (lyricPane.firstChild) lyricPanel.append(lyricPane.firstChild);
-  lyricPane.append(lyricPanel);
   const lyricTools = document.createElement("nav");
   lyricTools.className = "lyric-screen-actions";
   lyricTools.setAttribute("aria-label", i18nText("lyrics.screenActions"));
   lyricTools.append(uploadButton, full, replaceButton, $("import-vocal"));
-  const controls = $("show-all").parentElement!;
-  controls.className = "lyric-list-toolbar";
-  const filterGroup = document.createElement("div");
-  filterGroup.className = "lyric-list-filter";
-  filterGroup.setAttribute("role", "group");
-  filterGroup.setAttribute("aria-label", i18nText("lyrics.displayRange"));
-  const filterLabel = document.createElement("span");
-  filterLabel.textContent = i18nText("lyrics.displayRange");
-  filterGroup.append(filterLabel, $("show-all"), $("show-near"));
-  controls.prepend(filterGroup);
-  lyricPane.append(lyricTools, emptyLyrics, lyricPanel);
+  $("editor-meta").append(lyricTools);
+  lyricPane.append(emptyLyrics, lyricPanel);
   full.onclick = () => {
     refresh();
     lyrics.showModal();
@@ -371,6 +317,7 @@ export function setupScoreManagement(
     "svg-full-dialog",
     i18nText("score-management.message503"),
   );
+  svgDialog.className = "full-score-dialog";
   const svgPages = document.createElement("div");
   svgDialog.append(svgPages);
   let svgURLs: string[] = [];
@@ -422,24 +369,7 @@ export function setupScoreManagement(
     }
   });
   originalTools.append(original, svgButton);
-  $("editor-score").prepend(originalTools);
-  installScoreEditorLayout();
-  $("editor-dialog").querySelector("h2")!.textContent = i18nText(
-    "score-management.message489",
-  );
-  $("apply-measure").textContent = i18nText("score-management.message508");
-  document.querySelector('[data-pane="score"]')!.textContent =
-    i18nText("score.tab.edit");
-  document.querySelector('[data-pane="meta"]')!.textContent = i18nText(
-    "score-management.message509",
-  );
-  for (const pane of ["meta", "score", "lyrics"]) {
-    const tab = tabs.querySelector<HTMLButtonElement>(`[data-pane="${pane}"]`)!;
-    const label = tab.textContent || "";
-    tab.title = label;
-    tab.setAttribute("aria-label", label);
-    tab.textContent = label;
-  }
+  $("editor-full-scores").append(originalTools);
   upload.insertAdjacentHTML(
     "beforeend",
     '<label class="form-field">' +
@@ -489,7 +419,7 @@ export function setupScoreManagement(
       "library-backup-restore",
     );
   // Library backup is available even with no score open.
-  $("score-settings").append(backup);
+  $("welcome").append(backup);
   const restore = document.createElement("input");
   restore.type = "file";
   restore.accept = ".zip";
@@ -506,14 +436,7 @@ export function setupScoreManagement(
   });
   function refresh() {
     const r = h.get();
-    overview.innerHTML = r
-      ? `<h3>${escapeHTML(r.song.title)}</h3><p class="subtle">${i18nText("score-management.message521", { value2: escapeHTML(r.song.artist || ""), value3: r.song.measures.length, value4: r.song.bpm })}</p><div class="asset-chips">${scoreChips(r)}</div>`
-      : "";
-    overview.hidden = !r;
-    editEntry.disabled = !r;
-    editEntry.hidden = !r;
-    libraryActions.classList.toggle("empty-score-actions", !r);
-    summary.innerHTML = r ? scoreChips(r) : "";
+
     measureCount.value = r ? String(r.song.measures.length) : "";
     editor.hidden = !r;
     const present = hasLyrics(r);

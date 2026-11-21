@@ -11,6 +11,7 @@ export interface ScoreCatalogEntry {
   category: LibraryCategory;
   record?: RecordData;
   bundled?: BundledScore;
+  metadata?: { title: string; artist?: string };
 }
 
 /** One catalog for both apps: saved edits win; missing bundled scores remain visible. */

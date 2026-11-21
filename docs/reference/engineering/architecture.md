@@ -16,6 +16,10 @@
 |---|---|
 | `src/apps/editor/main.ts` | 로컬 제작기 조립, 편집 세션·저장 큐·미디어 수명·화면 전환 |
 | `src/apps/editor/editor-*.ts` | 화면 구성, 보관함, 악보·가사 편집, 검수, 폼 반영 |
+| `src/apps/editor/lyric-correction-*.ts` | 저장 확정 가사 이력; 과거 봉투 전달 자료의 호환 처리 |
+| `src/apps/editor/lyric-editing.ts`·`editor-lyrics.ts`·`lyric-stage.ts` | 음악 좌표의 순서 보존 이동·병합/분리, 작업대 카드와 SVG 가사 ID 선택 연결 |
+| `src/apps/editor/score-project-client.ts`·`project-workflow.ts` | 파일 프로젝트 열기·초안/확정 저장·기존 자료 첫 편집 전환, 제작자 알림·진행·변경 확인 |
+| `src/apps/editor/production-*.ts` | 보존된 요청별 산출물 읽기·대조·반영 함수; 새 요청 폼은 없음 |
 | `src/apps/editor/editor-file-transfer.ts` | `.drumscore` 패키지 입출력 이벤트; 저장·편집 세션은 main의 host 사용 |
 | `src/apps/editor/editor-import.ts`·`editor-score-files.ts` | 새 곡 가져오기·악보 교체/내보내기·보컬 파일 입력; 현재 기록과 busy 상태는 host에서 읽음 |
 | `src/apps/editor/editor-record-preparation.ts`·`editor-management-actions.ts` | 기존 기록 검증/준비 순서와 보관함 입출력 콜백; 활성 기록·저장 큐·미디어 교체 책임은 main에 유지 |
@@ -30,6 +34,10 @@
 | `src/model/` | 공통 자료형과 박 시각·편집 규칙 |
 | `src/platform/storage/` | IndexedDB·설정·직렬화·캐시 |
 | `src/platform/browser/` | 브라우저 다운로드·전체화면·공통 SHA-256 등 |
+| `server/lyric-corrections.ts` | Vite 개발 서버 전용 제작 자료 접수·읽기; 공개 배포에는 포함하지 않음 |
+| `server/production-*.ts` | 구형 요청 자료 API·store와 재사용하는 Session Bridge CLI 연결 |
+| `server/score-project*.ts`·`local-editor-http.ts` | 앱·제작 CLI 공통 파일 저장, 자산 재사용·교정 이력·충돌 보호, 로컬 전용 API·SSE |
+| `tools/score-production/score_project.mjs` | 같은 파일 store의 목록·읽기·초기화·저장·진행 기록 |
 | `src/shared/` | 도메인 규칙 없는 UI·스타일·번역 |
 | `src/content/` | 수록곡 목록·녹음 분석 메타정보·기존 호환 자료 |
 | `src/generated/` | 생성하는 라이선스·빌드번호; Git 제외 |
@@ -48,17 +56,17 @@ HTML 주소는 `index.html`, `editor.html`, `player.html`을 유지한다. `src/
 
 pnpm 사용자 공통 저장소의 파일을 공유하고 프로젝트에는 필요한 연결을 구성한다. 보안 수정과 일반 업데이트는 중앙 목록 갱신·사본 및 lockfile 동기화·호환성 수정·검증을 함께 수행한다. 과거 검증 버전에 장기간 고정하는 운영으로 사용하지 않는다. 다른 저장소의 전환은 별도 범위이며 실행 방법은 [개발 절차](../../how-to/develop.md#공유-의존성과-중앙-버전-갱신), 선택 이유는 [ADR-0028](../../decisions/0028-shared-dependency-store-and-catalog.md)을 따른다.
 
-제작기와 연습실은 서로 import하지 않는다. 앱은 공통 모듈을 조립하며, 재생 화면의 소유자는 `playback-screen.ts` 하나다. 분리한 BPM 모듈과 `playback-settings.ts`의 음량·보기·사용자 설정 바인딩은 같은 host와 이벤트 등록·해제 경로를 사용한다. 설정 모듈이 별도 화면 상태나 저장소를 만들지 않는다. 제작기의 마디 탐색도 공통 진행률 숫자와 악보 제스처를 사용한다. 제작기 전용 `afterFrame`은 편집창의 현재 시각(`editor-time`)만 갱신한다.
+제작기와 연습실은 서로 import하지 않는다. 앱은 공통 모듈을 조립하며, 재생 화면의 소유자는 `playback-screen.ts` 하나다. 분리한 BPM 모듈과 `playback-settings.ts`의 음량·보기·사용자 설정 바인딩은 같은 host와 이벤트 등록·해제 경로를 사용한다. 설정 모듈이 별도 화면 상태나 저장소를 만들지 않는다. 제작기의 마디 탐색도 공통 진행률 숫자와 악보 제스처를 사용한다. 제작기 전용 `afterFrame`은 현재 마디의 가사 카드와 SVG 선택 영역을 갱신한다. authoring 설정은 연습 전용 제어를 연결하지 않으며, 재생 앱의 입력·저장 경로는 그대로 사용한다.
 
 `playback-track.ts`는 마디 위치·폭과 두 줄 보기의 배치 상태를, `playback-display.ts`는 제목·BPM·설정 표시 및 폰 가로 표시 모드 동기화를 맡는다. `playback-navigation.ts`는 제스처·휠·스크롤·숫자 드래그·키보드·문서 이벤트를 연결한다. 세 모듈은 `playback-screen.ts`가 화면당 한 번 생성한다. 선택·스크럽·반복 구간·재생 상태와 리스너 해제 목록은 화면 소유자에 남기고, 변경되는 상태는 getter/setter로 읽고 쓴다. navigation은 제스처 등록 → 화면의 반복 구간 연결 → 나머지 입력 등록 순서를 유지하며 해제 함수를 화면의 공통 목록에 추가한다. 배치 무효화·프레임 요청·종료 여부는 콜백으로 연결하고, host 앱은 이 내부 모듈을 따로 생성하지 않는다.
 
 MusicXML 조판의 공개 진입점은 `musicxml.ts`다. 입력 읽기/검증은 `musicxml-parse.ts`, 엔진 설정과 조판 훅은 `musicxml-engine.ts`, 공통 기호 표시 처리는 `musicxml-glyphs.ts`, SVG 경계·마디/박 좌표 추출은 `musicxml-geometry.ts`가 맡는다. 입력 → 엔진 → 기호 표시 → 경계 확정 → 글꼴 내장/압축 → 좌표 추출 순서를 유지한다. 다중 조판 pass·캐시·임시 host 해제는 진입점에 남기며, 기존 parse/read/type/interpolate export 경로를 유지한다. 출력 규칙은 [조판 정본](../score/rendering.md#browser-musicxml-rendering--구현-경계)을 따른다.
 
-SVG 전체 보기·연주 1줄/2줄의 음절 가사는 `musicxml-engine.ts`의 OSMD 기본 출력으로 통일한다. `score/score-lyrics.ts`는 구형 v1의 읽기용 준비와 마디 문구의 native 라벨을 공유하고, 크기·색은 공통 조판 규칙을 사용한다. `canonical-lyric-read.ts`는 저장 복원과 구형 조판에서 같은 ID·음악적 위치를 읽고, `canonical-lyric-voice.ts`는 저장과 읽기용 사본의 성부 작성을 담당한다. 마디 경계는 native 가사 잉크까지 포함한다. 연주 HTML 가사·별도 충돌 배치·전용 CSS는 제거했으며 PDF는 원본 가사만 표시한다.
+SVG 전체 보기·연주 1줄/2줄의 최종 가사 묶음은 `musicxml-engine.ts`의 OSMD 기본 출력으로 통일한다. `time-spacing.ts`가 음악적 시간 좌표·변박 폭을, `lyric-groups.ts`가 실제 텍스트 상자의 겹침 묶음을 공유한다. 제작 도구와 앱 저장 준비는 같은 식과 글꼴을 사용한다. `canonical-lyric-read.ts`·`canonical-lyric-voice.ts`는 v3 소유 정보·독립 시작값·음가를 읽고 쓰며, 원음절 작업 자료는 정본 밖에 보관한다. `score-lyrics.ts`는 마디 문구의 native 라벨을 담당한다. 연주용 마디 경계는 가사 잉크까지 포함한다. HTML 가사는 두지 않고 PDF는 원본 가사만 표시한다.
 
 `full-score-view.ts`는 두 앱의 지연 준비·연속 SVG 표시를 공유하고, `full-score-layout.ts`는 원본 줄 구성 위에 일정한 오선 간격과 제목 아래 기본 BPM·가수를 배치한다. 전체 보기의 간격은 연주용 pass로 전달하지 않으며 별도 정책 키로 공통 파생 캐시를 사용한다. 제작기의 미저장 가사 반영만 기존 정본 작성 함수를 사용하고 재생앱에는 제작 의존성을 추가하지 않는다. 배치·마디 문구·글꼴·배율 계약은 [전체 보기 규칙](../score/rendering.md#svg-score-rules--2-전체-페이지-생성)을 따른다.
 
-제작기 입력 모듈은 mount 시점의 기록을 복사하지 않고 host getter로 현재 기록을 읽는다. 기존 정본 검증·구형 기록 이관·저장·음원/자산 교체 순서를 유지하며, 보관함 복원 시 재생 중지·저장 타이머 해제·편집 세션 초기화는 main의 `beforeRestore` 콜백으로 실행한다. 모듈 분리는 기존 호환 경로를 늘리거나 곡별 예외를 추가하는 근거가 아니다.
+제작기 입력 모듈은 mount 시점의 기록을 복사하지 않고 host getter로 현재 기록을 읽는다. 정본 검증·현재 형식의 저장·음원/자산 교체 순서를 유지하며, 보관함 복원 시 재생 중지·저장 타이머 해제·편집 세션 초기화는 main의 `beforeRestore` 콜백으로 실행한다. 모듈 분리는 기존 호환 경로를 늘리거나 곡별 예외를 추가하는 근거가 아니다.
 
 `score-management.ts`는 파일 작업 버튼을 곡 정보의 연결 영역과 내보내기 영역에 직접 만든다. 임시 파일 팝업에서 옮기거나 표시명을 나중에 덮어쓰지 않는다. DOM 조회는 제작기 공통 `editor-dom.ts`를 사용하며, 버튼 ID·접근성 연결·파일 처리 콜백은 유지한다. UI 카탈로그에는 실제 화면에 남는 컴포넌트만 등록한다.
 
@@ -70,11 +78,21 @@ SVG 전체 보기·연주 1줄/2줄의 음절 가사는 `musicxml-engine.ts`의 
 
 재생 자산 준비는 SVG 페이지당 하나의 소유 문서를 사용한다. 강조 추출 후 연습용 보정을 적용하고 같은 문서를 안전 검사·크기 계산에 빌려준다. 검사는 내장 글꼴을 잠시 제외해 조사한 뒤 복원하며 외부 참조 차단을 유지한다. 디코딩된 SVG Blob은 불변이므로 복사하지 않지만, PNG 등 raster는 Safari의 구형 IndexedDB Blob URL 호환을 위해 기존 바이트 materialization을 유지한다. 큰 타임라인 메타데이터의 디코딩 사본과 임시 DOM은 준비 후 참조를 놓으며, 전역 비압축 캐시는 추가하지 않는다. 원본/저장 페이지·URL의 수명·자산 교체/실패 시 해제 계약은 유지한다.
 
-섹션·반복 구간 버튼판의 콘텐츠는 `playback-shell.ts`가 `playback-panel-content` 클래스로 연결한다. 호스트가 전달한 태그(`section`/`div`)에 레이아웃을 의존하지 않는다. 제작기 PDF 검수도 공통 dock의 3행·높이 배분 규칙을 따르며, 비교 캔버스는 렌더러의 최소 높이 220px을 확보한다.
+섹션·반복 구간 버튼판의 콘텐츠는 `playback-shell.ts`가 `playback-panel-content` 클래스로 연결한다. 호스트가 전달한 태그(`section`/`div`)에 레이아웃을 의존하지 않는다. 제작기 검수는 공통 악보 프레임과 배율로 높이를 계산하며 남은 창 높이에 맞춰 확대하지 않는다. 아래 작업대는 항상 표시한다.
 
-악보 목록 구성은 `modules/library/score-catalog.ts`가 소유한다. 저장 자료와 번들 카탈로그를 ID로 합쳐 기본 연습곡·내 악보·음원으로 분류하고 기본 연습곡 순서와 구획 제목/구조를 공유한다. 연습실과 제작기 홈은 이 결과를 사용하며, 제작기는 음원 전용 항목을 제외한다. 저장된 악보는 수정본을 사용하고, 미저장 번들은 제작기에서 다운로드·패키지 검증·저장 후 편집한다. DB 이름·스키마·저장 형식은 바꾸지 않는다.
+악보 목록 구성은 `modules/library/score-catalog.ts`가 소유한다. 저장 자료와 번들 카탈로그를 ID로 합쳐 기본 연습곡·내 악보·음원으로 분류하고 기본 연습곡 순서와 구획 제목/구조를 공유한다. 연습실과 제작기 홈은 이 결과를 사용하며, 제작기는 음원 전용 항목을 제외한다. 저장된 악보는 수정본을 사용하고, 미저장 번들은 제작기에서 다운로드·패키지 검증 후 파일 프로젝트로 저장해 편집한다. 파일 프로젝트와 같은 ID의 기존 브라우저 사본은 목록에서 중복 표시하지 않는다. 공개 재생 앱의 DB 이름·스키마·저장 경로는 바꾸지 않는다.
 
 model은 앱·UI·저장 구현에 의존하지 않는다. 기존 오류 문구를 위한 i18n 의존만 유지한다. shared는 음악 기능 모듈을 참조하지 않는다. 모듈별 named export를 직접 사용하며 전체를 모은 barrel을 추가하지 않는다.
+
+확정 가사 교정은 `model/lyric-correction.ts`의 자료 계약·순수 차이 계산과 `modules/lyrics/lyric-corrections.ts`의 재적용 함수를 앱과 제작 도구가 공유한다. 편집 세션의 확정 저장은 `lyric-correction-save.ts`, 제작자의 파일 저장은 `score-project-corrections.ts`에서 같은 모델 차이 계산으로 이력을 추가한다. main의 직렬 저장 큐는 이전 임시저장이 뒤늦게 확정본을 덮지 않게 한다. 최근 스냅샷과 누적 교정 이력은 [파일 계약](../score/file-formats.md#confirmed-lyric-corrections)에 따라 분리한다.
+
+현행 로컬 제작 저장은 `score-project-store.ts`가 소유한다. `/api/score-projects`와 제작 CLI가 같은 저장본·초안 비교 및 자산 해시 검사를 사용하고, 파일을 모두 확인한 뒤 head를 갱신한다. `project-workflow.ts`는 열린 프로젝트의 head/work 알림과 수동 새로고침을 연결한다. 사용자 초안은 자동 덮어쓰지 않고 새 확정본과의 차이를 표시한다. `SerializedRecord<T>`는 model에 두고 브라우저 직렬화와 서버 자산 참조에 공유한다. 파일별 계약은 [로컬 제작 프로젝트](../score/file-formats.md#local-score-projects)를 따른다.
+
+제작자 저장은 이전 가사 이력을 보존한 채 공통 차이를 기록한다. 제작 재생성의 교정 입력은 파일 프로젝트를 우선하고, 마지막 확정 가사 변경의 해시와 일치하는 저장 XML을 사용한다. 이후 메타정보만 바뀐 저장이나 미확정 초안으로 그 증거를 대체하지 않는다. 파일 프로젝트가 없을 때만 구형 봉투를 읽으며, 명시적 교정 파일 지정은 별도 입력으로 유지한다.
+
+구형 봉투 호환 경로인 `POST /api/lyric-corrections`는 기존 5173 Vite 개발 서버에서만 동작한다. 동일 로컬 origin의 JSON을 최대 32 MiB까지 받고, 봉투·XML 해시·이력 순서를 확인한 뒤 프로젝트 파일을 원자적으로 저장한다. 제작 도구의 `/data/production/lyric-corrections/<songId>/latest.json` GET은 JSON 또는 명시적 404를 반환하며 HTML fallback으로 교정을 누락 처리하지 않는다. player 모드·preview·공개 Worker에 이 기능을 추가하지 않는다. 새 서비스·DB·자동 Codex 채팅 호출은 만들지 않는다.
+
+구형 제작·교정 요청 모달과 진입점은 제거했다. 기존 요청 자료를 처리하는 계약·서버·CLI는 보존하며 현행 파일 프로젝트와 구분한다. 요청 자료는 `model/production-request.ts`와 `server/production-request-store.ts`를 앱 서버·제작 CLI가 공유한다. 기존 전송 API는 Session Bridge를 호출하지만 제거된 모달에서는 더 이상 연결되지 않는다. `/api/score-requests`의 요청 목록, 요청별 SSE·답장·산출물 다운로드·반영 접수는 같은 Vite에서 처리한다. SSE는 선택한 요청 폴더만 감시하며 창을 닫으면 해제한다. 새 daemon이나 대화 전체 polling은 없다. 폐기한 모달의 브라우저 요청 작성·결과 미리보기·반영 코드와 전용 IndexedDB 쓰기는 제거했다. 현재 결과 반영은 파일 프로젝트의 head/초안 대조와 새로고침 경로를 사용한다. 상세 계약은 [요청 파일](../score/file-formats.md#score-production-requests), 운영 절차는 [공동작업](../../how-to/collaborate-on-score.md)을 따른다.
 
 저장 계층은 model과 직렬화에 필요한 순수 악보·미디어 계약을 사용하고, library는 저장 정책을 호출한다. playback은 audio·score·lyrics·library·help를 조합한다. audio와 score는 model·저장 캐시·공통 UI를, lyrics는 model·content를 사용한다. content의 기존 score·lyrics 참조는 호환 자료를 읽는 범위에서 유지하며 새 순환 의존을 만들지 않는다. 이 경로는 새 곡별 보정의 허용 근거가 아니다. MusicXML 오류·누락은 [정본과 앱의 수정 책임](../score/musicxml.md#musicxml-canonical--정본과-앱의-수정-책임)에 따라 정본에서 고친다. help는 음악 화면의 도움말을 소유하고 shared/ui의 공통 표시 도구를 사용한다. 구조 개편 당시의 이동표는 [구조 개편 기록](../../records/archive/project-restructuring.md#restructuring-map--경계)에 보존한다.
 
@@ -82,9 +100,9 @@ model은 앱·UI·저장 구현에 의존하지 않는다. 기존 오류 문구�
 
 ### 호환성과 스타일
 
-DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·트랜잭션을 유지한다. `RecordData`와 `AudioBarOne`의 자료형 선언은 model에 두고 기존 모듈의 type 재수출을 유지한다. 이 구조에 따른 저장 데이터 마이그레이션을 요구하지 않는다. 새 설정에는 사용하지 않는 `countEach`를 생성하지 않지만, 기존 자료의 해당 속성은 구조 복제와 직렬화에서 그대로 보존한다. `countIn`의 기존 저장 검증 계약도 유지하며, 실제 카운트오프는 앱의 재생 선호 설정을 따른다.
+재생 앱과 제작기의 기존 자료 읽기는 같은 DB 계약을 유지한다. 제작기 편집 snapshot·직렬 큐는 재사용하고 확정/초안 저장 대상은 로컬 파일로 연결한다. 현행 DB schema 5·packed record 2·완성 패키지 2·정본 v3와 구형 자료 정리는 [파일 계약](../score/file-formats.md#앱-저장소와-구형-자료-정리)을 따른다. `RecordData.lyricWork`와 편집 이력은 원음절·전체 원문·보컬 원본을 보존하고 완성 패키지에서는 제외한다. `RecordData`와 `AudioBarOne` 자료형은 model에 둔다. 새 설정에는 사용하지 않는 `countEach`를 생성하지 않으며 `countIn`·클릭 분할과 실제 카운트오프 정책은 별개로 유지한다.
 
-지정된 폐기 악보의 존재 검사는 `songs`의 `song.id` 키로 해당 ID만 조회한다. 위치 자동 저장마다 무관한 음원·페이지 레코드 전체를 순회하지 않는다. 기존 16마디 판정·오류 처리·양쪽 DB의 폐기 정책과 원자적 저장은 유지한다.
+schema 5 전환은 기존 자료의 원본·제작 이력을 보존한 뒤 활성 보관함을 비운다. 사용자 결정으로 폐기된 16마디판만 보존 대상에서 제외한다. 이 처리는 스키마 전환/이전 DB 정리 시 한 번 수행하며 일반 위치 저장에서 전체 레코드를 순회하지 않는다.
 
 기능 CSS는 해당 모듈 가까이에 둔다. `modules/playback/playback-ui.css`와 `apps/editor/style.css`는 기존 순서대로 조각을 import한다. CSS 분리 시 원문 결합 순서·선택자·규칙 우선순위를 유지한다.
 
@@ -125,7 +143,7 @@ DB 이름·버전·저장 키, bytes-v1 직렬화, `.drumscore`, snapshot·큐·
 
 제작기의 ‘내 악보 목록’은 재생 중지·현재 기록 저장·재생 자원 해제 후 공통 홈으로 돌아간다. 별도 목록 모달은 제공하지 않는다. `editor-library.ts`의 홈 카드가 저장 곡을 열고, 저장되지 않은 수록 곡은 패키지를 내려받아 같은 준비·편집 경로로 연결한다. 삭제는 홈 카드, 전체 백업/복원은 설정의 악보 영역 안 `library-backup`, 패키지 가져오기는 새 곡 준비 창을 사용한다. 전체 백업은 곡을 열지 않아도 접근할 수 있다. 구형 개별 ZIP 생성·복원과 숨겨진 백업 도구는 제공하지 않는다. 악보 교체는 `file-xml`과 검수의 추가 버튼에서 공통 교체 함수를 직접 호출하며, 새 악보 입력은 `editor-import.ts`가 단독으로 처리한다.
 
-목록 상단바는 `library-header-actions` 안에 주 작업(`library-import`), 앱 전환(`library-app-link`), 공통 컨트롤(`library-common-actions`)을 배치한다. 제작기도 기존 새로고침·설정·도움말 컨트롤을 사용하며 공방 예약만 연습실에 둔다. 모양·간격은 공통 목록 CSS, 색상은 앱별 변수로 결정한다.
+목록 상단바는 `library-header-actions` 안에 주 작업(`library-import`), 앱 전환(`library-app-link`), 공통 컨트롤(`library-common-actions`)을 배치한다. 제작기 목록은 새로고침·도움말과 직접 배치한 백업 작업을 사용하며 설정창은 제공하지 않는다. 공방 예약은 연습실에 둔다. 모양·간격은 공통 목록 CSS, 색상은 앱별 변수로 결정한다.
 
 <a id="코드가-읽는-화면-소유권-표"></a>
 

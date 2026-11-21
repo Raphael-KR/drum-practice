@@ -39,11 +39,6 @@
   ],
   "measurement": "Row values are original PDF top coordinates in points; no sung timing is measured.",
   "measureOnly": {
-    "20:1": {
-      "kind": "source-measure-only",
-      "reason": "Several separately printed syllables lie inside the half rest and the final quarter note. Drum events do not establish their syllable subdivisions. Text retained without invented beat/duration.",
-      "text": "자려고 누웠는데"
-    },
     "46:1": {
       "kind": "source-measure-only",
       "reason": "Several separately printed syllables lie inside the half rest and the final quarter note. Drum events do not establish their syllable subdivisions. Text retained without invented beat/duration.",
@@ -75,12 +70,92 @@
       "text": "아무리 애써도"
     }
   },
-  "overrides": {},
+  "overrides": {
+    "ioi-source-m20-v1-u8": {
+      "quarterOffset": 0.5,
+      "durationQuarters": 0.5,
+      "confirmed": true,
+      "evidence": {
+        "kind": "user-confirmed-score-beat",
+        "date": "2026-11-13",
+        "beat": 1.5
+      }
+    },
+    "ioi-source-m20-v1-u9": {
+      "quarterOffset": 1,
+      "durationQuarters": 0.5,
+      "confirmed": true,
+      "evidence": {
+        "kind": "user-confirmed-score-beat",
+        "date": "2026-11-13",
+        "beat": 2
+      }
+    },
+    "ioi-source-m20-v1-u10": {
+      "quarterOffset": 1.5,
+      "durationQuarters": 0.5,
+      "confirmed": true,
+      "evidence": {
+        "kind": "user-confirmed-score-beat",
+        "date": "2026-11-13",
+        "beat": 2.5
+      }
+    },
+    "ioi-source-m20-v1-u11": {
+      "quarterOffset": 2,
+      "durationQuarters": 0.5,
+      "confirmed": true,
+      "evidence": {
+        "kind": "user-confirmed-score-beat",
+        "date": "2026-11-13",
+        "beat": 3
+      }
+    },
+    "ioi-source-m20-v1-u12": {
+      "quarterOffset": 2.5,
+      "durationQuarters": 0.5,
+      "confirmed": true,
+      "evidence": {
+        "kind": "user-confirmed-score-beat",
+        "date": "2026-11-13",
+        "beat": 3.5
+      }
+    },
+    "ioi-source-m20-v1-u13": {
+      "quarterOffset": 3,
+      "durationQuarters": 0.5,
+      "confirmed": true,
+      "evidence": {
+        "kind": "user-confirmed-score-beat",
+        "date": "2026-11-13",
+        "beat": 4
+      }
+    },
+    "ioi-source-m20-v1-u14": {
+      "quarterOffset": 3.5,
+      "durationQuarters": 0.5,
+      "confirmed": true,
+      "evidence": {
+        "kind": "user-confirmed-score-beat",
+        "date": "2026-11-13",
+        "beat": 4.5
+      }
+    }
+  },
   "printedWordSplits": {
     "idnight": ["id", "night"]
   },
   "printedWordSplitEvidence": "m25 and m51 are the same printed phrase. In the narrower five-bar system m51, id and night touch; each substring is independently centered on q1 and q1.5, matching m25.",
   "fixtures": {
+    "20:1": [
+      ["자", 0.5],
+      ["려", 1],
+      ["고", 1.5],
+      ["누", 2],
+      ["웠", 2.5],
+      ["는", 3],
+      ["데", 3.5]
+    ],
     "5:1": [
       ["어", 0],
       ["쩌", 1],

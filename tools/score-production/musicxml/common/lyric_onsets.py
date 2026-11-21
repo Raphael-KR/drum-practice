@@ -8,20 +8,24 @@ import json
 def lyric_onsets(root):
     """Count text-bearing syllables, not empty extend continuations or source vocals.
 
-    Canonical v1/v2 identifies its lyric part. Without a manifest, inspect native
+    Canonical v1/v2/v3 identifies its lyric part. Without a manifest, inspect native
     lyric parts except the archived DrumPracticeVocalSource. Absolute quarter
     positions include meter changes, pickups and bar boundaries.
     """
     data = None
     for field in root.findall("identification/miscellaneous/miscellaneous-field"):
-        if field.get("name") in ("drum-practice:score:v1", "drum-practice:score:v2"):
+        if field.get("name") in (
+            "drum-practice:score:v1",
+            "drum-practice:score:v2",
+            "drum-practice:score:v3",
+        ):
             data = json.loads(field.text)
     part_id = data.get("partId") if data else None
     if data and data["version"] == 1:
         part_id = "DrumPracticeLyrics"
     identities = {}
     for item in (data or {}).get("lyrics", []):
-        key = item.get("noteId") if data["version"] == 2 else item.get("voice")
+        key = item.get("noteId") if data["version"] >= 2 else item.get("voice")
         identities[key] = item["id"]
     rows = []
     for part in root.findall("part"):
@@ -92,7 +96,7 @@ def lyric_onsets(root):
                         if not text.strip():
                             continue
                         identity = identities.get(
-                            node.get("id") if data and data["version"] == 2 else voice
+                            node.get("id") if data and data["version"] >= 2 else voice
                         )
                         rows.append(
                             dict(

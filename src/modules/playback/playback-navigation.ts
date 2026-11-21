@@ -39,7 +39,7 @@ interface NavigationControls {
   toggle(): Promise<void>;
   mark(): void;
   frame(): void;
-  readonly loopSlots: ReturnType<typeof mountLoopSlots>;
+  readonly loopSlots: ReturnType<typeof mountLoopSlots> | undefined;
   readonly scrub:
     ScrubSnapshot<{ center?: number; radius?: number }> | undefined;
   readonly panStart: number;
@@ -200,7 +200,7 @@ export function createPlaybackNavigation(
       }),
     );
     disposers.push(bindNumericDrag(input(ids.rewind)));
-    disposers.push(bindNumericDrag(input(ids.tempoInput)));
+    if (!h.authoring) disposers.push(bindNumericDrag(input(ids.tempoInput)));
     disposers.push(
       installPlaybackKeys({
         ready: () => available() && !controls.loopSlots?.selecting,

@@ -1,7 +1,7 @@
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { beatTime, type Song, type Lyric } from "../../model/model";
 import { nearestQuarterBeat } from "./lyric-grid";
-export function projectLyrics(s: Song) {
+export function projectLyrics(s: Pick<Song, "measures" | "lyrics">) {
   const offsets: number[] = [];
   let total = 0;
   for (const m of s.measures) {

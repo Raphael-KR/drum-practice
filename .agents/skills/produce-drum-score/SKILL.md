@@ -1,6 +1,6 @@
 ---
 name: produce-drum-score
-description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보를 제작·교정·검증한다. 영상의 실제 연주 채보와 교육 개념을 참고한 새 연습곡 제작, 요청된 음원·drumscore 패키지 및 개발 인계에 사용한다. 일반 영상 요약, 가창 타이밍 검색, 재생 앱 기능 개발에는 사용하지 않는다.
+description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML을 제작·교정·검증한다. 사용자와 같은 곡별 프로젝트에서 첫 검수본, 사용자 검수·가사 위치 교정, 후속 수정·재검증을 이어간다. 영상 채보·연습곡·요청된 음원과 drumscore·개발 인계에도 사용한다. 일반 영상 요약, 가창 타이밍 검색, 재생 앱 기능 개발에는 사용하지 않는다.
 ---
 
 # 악보 제작
@@ -15,6 +15,18 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 - 실제 프로젝트 루트에서 작업한다. [전역 지침](/Users/raphael/AGENTS.md), [프로젝트 지침](../../../AGENTS.md), cwd·Git 상태·HEAD를 먼저 확인하고 기존 변경과 로컬 자료를 보존한다.
 - 매 제작 시작 전에 [전체 제작 프로세스](../../../docs/how-to/produce-score.md#score-production-process--악보-제작-프로세스)와 [변환 정책](../../../docs/reference/score/production.md#musicxml-conversion-policy--pdf--musicxml-변환-정책)을 읽는다. 매핑은 [MusicXML·OSMD 매핑](../../../docs/reference/score/notation.md#score-musicxml-osmd-mapping--악보의-musicxml--osmd-매핑-규칙), 표시는 [SVG 규칙](../../../docs/reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙), 저장·가사는 [canonical 계약](../../../docs/reference/score/musicxml.md#musicxml-canonical--musicxml-정본-계약), 패키지는 [완성 파일 계약](../../../docs/reference/score/file-formats.md#score-package--완성-악보-파일-계약--drumscore-v1)을 따른다. 이 스킬은 이 정본들의 대체 매핑을 만들지 않는다.
 - 입력이나 문서가 불명확하면 [문제·모순 확인 기준](../../../docs/reference/score/production.md#musicxml-conversion-policy--막힘과-문서-모순)으로 근거를 대조하고 수정 이유를 기록한다.
+
+## 사용자와 함께 제작·수정하기
+
+[공동작업 Rule](../../../docs/reference/score/production.md#score-session-collaboration)과 [제작·수정 워크플로우](../../../docs/how-to/collaborate-on-score.md#shared-score-workflow)를 먼저 읽는다. 악보제작기는 사용자와 이 제작자가 같은 프로젝트를 다루는 도구다. 실제 제작 흐름을 먼저 정하고, 가사 편집을 포함한 기능·화면·조작 개선을 기존 앱 담당과 조율한다.
+
+1. 곡별 프로젝트의 원본·현재 악보·변경 이력·남은 작업을 읽는다. 새 제작이면 아래 원본별 절차로 첫 검수본을 만들고 자체 검증을 먼저 수행한다.
+2. 사용자는 PDF · MusicXML 검수 화면에서 두 악보를 동시에 보며 전체를 확인한다. 가사는 직접 편집하거나 이 채팅에서 수정을 지시한다. 채팅으로 지시한 가사 교정과 다른 오류는 제작자가 수정·저장한다. 제작자 자체 검증과 사용자 검수를 각각 수행한다.
+3. 사용자가 작업을 이어 달라고 하면 같은 프로젝트의 최신 파일·변경 이력과 채팅 지시를 읽는다. 저장된 정보를 요청서·첨부로 다시 받거나 채팅 수정 지시에 별도 앱 편집·저장을 요구하지 않는다. 사용자 확정 교정을 재제작에도 유지하며 초안과 확정본을 구분한다.
+4. 같은 프로젝트에서 수정·검증을 이어가고 실제 상태와 남은 지적을 기록한다. 기존 결정으로 해결되지 않는 판단만 묻는다. 새 저장 경로·명령을 사용하기 전 [구현 상태](../../../docs/plans/local-score-projects-20261113.md)를 확인하며 미구현 기능을 있다고 가정하지 않는다.
+5. 완성 후 아래 개발 인계를 수행한다. 공동 편집의 파일 저장·앱 재열기와 재생 앱 수록은 각각 확인한다.
+
+이미 생성된 요청 UUID 알림은 [기존 요청 처리](../../../docs/how-to/collaborate-on-score.md#legacy-production-requests)로 입력·해시·완료 상태를 확인한다. 이를 새 공동작업의 필수 접수 방식으로 되살리지 않는다.
 
 ## 섹션·연주 지시 7가지 최종 원칙
 
@@ -60,6 +72,10 @@ description: 드럼 악보 PDF·음원·유튜브 영상에서 MusicXML 악보�
 5. **범위에 맞는 다음 단계.** PDF가 없는 제작에 PDF 유형 검사나 인쇄 가사 대조를 강제하지 않는다. 가사가 있으면 현재 정본의 표준 MusicXML 가사·음악적 위치 계약을 적용한다. 자료와 이전 시도는 프로젝트 안 Git 제외 실험 폴더에 보존하고, 영상 근거와 새 결과를 구별한다.
 
 ## 교정·검증·인계
+
+- 기존 곡을 재제작할 때 [악보제작기 확정 교정 반영 절차](../../../docs/how-to/correct-lyrics.md#confirmed-lyric-corrections)를 먼저 확인한다. 실제 Song ID로 접수 자료를 읽는 공통 제작 경로를 사용하고, 현행 v3 교정에는 `apply_lyric_corrections.mjs`를 사용한다. 적용·이미 반영·충돌 보고서를 보존하고 충돌 후보를 완성본으로 인계하지 않는다. 저장·프로젝트 접수·개발자 전달·앱 반영의 근거를 구분한다.
+
+- [최종 가사 묶음 계약](../../../docs/reference/score/musicxml.md#musicxml-canonical--최종-가사-묶음)을 읽고 [제작·전환 절차](../../../docs/how-to/correct-lyrics.md#final-lyric-groups)의 공통 도구를 사용한다. 묶기 전 원문·음절별 시간을 작업 파일에 보존하고 공통 묶음·좌표 함수와 가사 writer로 v3 정본을 만든다. 실제 경계를 곡별 코드로 추정하지 않으며 원음절 자료를 정본에 다시 넣지 않는다. 가사 없는 곡도 현행 manifest를 사용한다.
 
 - [가사 시작점 계약](../../../docs/reference/score/musicxml.md#musicxml-canonical--서로-다른-음절의-시작점)을 읽고 [전수검사·교정 절차](../../../docs/how-to/correct-lyrics.md#lyric-onset-audit)에 따라 `audit_lyric_onsets.py`를 실행한다. 검사 목록·곡별 판독/교정 근거·재읽기 결과를 함께 인계하며 스킬에서 별도 수치 규칙을 만들지 않는다.
 

@@ -61,7 +61,6 @@ export interface Settings {
   clickVolume: number;
   countIn: number;
   zoom: number;
-  uniformSpacing?: boolean;
   view: "ribbon" | "rows" | "compare";
   position: number;
 }
@@ -91,7 +90,7 @@ export interface Song {
   originalTitle?: string;
   composer?: string;
   lyricist?: string;
-  /** Untimed full lyric document, canonical MusicXML miscellaneous-field. */
+  /** Editor working text only; not part of canonical MusicXML or .drumscore. */
   lyricText?: string;
   bpm: number;
   firstBeat: number;
@@ -325,7 +324,7 @@ export function validateSong(x: unknown): asserts x is Song {
     !finite(s.firstBeat) ||
     s.firstBeat < 0 ||
     !Number.isInteger(s.pageCount) ||
-    s.pageCount < (s.audioPractice ? 0 : 1) ||
+    s.pageCount < (s.audioPractice || s.scoreFormat === "musicxml" ? 0 : 1) ||
     s.pageCount > 500 ||
     typeof s.audioName !== "string" ||
     typeof s.pdfName !== "string" ||
@@ -504,7 +503,9 @@ export function validateSong(x: unknown): asserts x is Song {
       (!s.audioPractice && m.audioPrelude !== undefined) ||
       !validMeasureBeatTimes(m) ||
       typeof m.id !== "string" ||
-      (s.audioPractice ? m.regionId !== "" : !ids.has(m.regionId)) ||
+      (s.audioPractice || (s.scoreFormat === "musicxml" && s.pageCount === 0)
+        ? m.regionId !== ""
+        : !ids.has(m.regionId)) ||
       mids.has(m.id) ||
       typeof m.label !== "string" ||
       !Number.isInteger(m.beats) ||

@@ -1,4 +1,9 @@
 import {
+  listProjects,
+  projectRecord,
+  readProject,
+} from "./score-project-client";
+import {
   libraryCardHTML,
   libraryPresentation,
 } from "../../modules/library/library-presentation";
@@ -11,11 +16,7 @@ import { downloadScore } from "../../modules/library/download-score";
 import { readScorePackage } from "../../modules/library/score-package";
 import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import type { RecordData } from "../../model/record";
-import {
-  allRecords,
-  deleteRecord,
-  saveRecord,
-} from "../../platform/storage/storage";
+import { allRecords, deleteRecord } from "../../platform/storage/storage";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { escapeHTML as esc } from "../../shared/ui/html";
 import { $ } from "./editor-dom";
@@ -30,6 +31,7 @@ interface LibraryHost {
 export function createEditorLibrary(h: LibraryHost) {
   const { activate, openEditor, error, action } = h;
   let opening = false;
+  let projectIds = new Set<string>();
   let homeEpoch = 0;
   const sections = (
     entries: ScoreCatalogEntry[],
@@ -55,7 +57,7 @@ export function createEditorLibrary(h: LibraryHost) {
   const catalogCard = (entry: ScoreCatalogEntry, index: number) =>
     libraryCardHTML(
       entry,
-      `<button ${entry.record ? 'class="primary"' : ""} data-editor-open="${index}">${i18nText(entry.record ? "editorHome.edit" : "separation.loadBundled")}</button>${entry.record ? `<button data-editor-remove="${index}" title="${esc(i18nText("library.tipRemove"))}">${i18nText("separation.remove")}</button>` : ""}`,
+      `<button ${entry.record ? 'class="primary"' : ""} data-editor-open="${index}">${i18nText(entry.record || projectIds.has(entry.id) ? "editorHome.edit" : "separation.loadBundled")}</button>${entry.record && !projectIds.has(entry.id) ? `<button data-editor-remove="${index}" title="${esc(i18nText("library.tipRemove"))}">${i18nText("separation.remove")}</button>` : ""}`,
     );
   async function openCatalogEntry(
     entry: ScoreCatalogEntry,
@@ -69,9 +71,11 @@ export function createEditorLibrary(h: LibraryHost) {
     let stage = "read-saved";
     const correctionNotice = createMetronomeCorrectionNotice();
     try {
-      let selected = (await allRecords(correctionNotice.collect)).find(
-        (record) => record.song.id === entry.id,
-      );
+      let selected = projectIds.has(entry.id)
+        ? projectRecord(await readProject(entry.id))
+        : (await allRecords(correctionNotice.collect)).find(
+            (record) => record.song.id === entry.id,
+          );
       if (!selected && entry.bundled) {
         stage = "download";
         const blob = await downloadScore(
@@ -95,8 +99,6 @@ export function createEditorLibrary(h: LibraryHost) {
           (record) => record.song.id === entry.id,
         );
         if (!selected) {
-          stage = "save";
-          await saveRecord(incoming);
           selected = incoming;
         }
       }
@@ -136,7 +138,22 @@ export function createEditorLibrary(h: LibraryHost) {
     const epoch = ++homeEpoch;
     const records = (await allRecords()).filter((r) => !r.song.audioPractice);
     if (epoch !== homeEpoch || (opening && !force)) return;
+    const files = await listProjects();
+    if (epoch !== homeEpoch) return;
+    for (const failed of files.errors)
+      error(Error(`${failed.id}: ${failed.error}`));
+    projectIds = new Set(files.projects.map((p) => p.songId));
     const catalog = scoreCatalog(records);
+    for (const project of files.projects) {
+      const entry = catalog.find((e) => e.id === project.songId);
+      if (entry) entry.metadata = project;
+      else
+        catalog.push({
+          id: project.songId,
+          category: "personal",
+          metadata: project,
+        });
+    }
     $("editor-home-list").innerHTML =
       '<div id="editor-home-favorites" class="practice-records" hidden></div>' +
       sections(

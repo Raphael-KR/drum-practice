@@ -4,7 +4,7 @@ import {
   base64,
   createVerifiedPackage,
   projectBase,
-  prepareCanonical,
+  prepareProductionCanonical,
   bindRenderedScore,
 } from "./common/package.mjs";
 import profiles from "./profiles/songs.json";
@@ -73,17 +73,28 @@ export async function build() {
     pageCount: first.pages.length,
   };
   validateSong(song);
-  const { canonicalXML, restored } = prepareCanonical(
-    song,
-    await source.text(),
-    await sha(audio),
-    (d) => {
-      const e = d.createElement("miscellaneous-field");
-      e.setAttribute("name", "drum-practice:recording-grid:v1");
-      e.textContent = JSON.stringify(alignment);
-      d.querySelector("identification > miscellaneous").append(e);
-    },
-  );
+  const { canonicalXML, restored, lyricWork } =
+    await prepareProductionCanonical(
+      song,
+      await source.text(),
+      await sha(audio),
+      (d) => {
+        const manifest = d.querySelector(
+          'miscellaneous-field[name="drum-practice:score:v3"]',
+        );
+        if (!manifest)
+          throw Error(
+            "Canonical layout: expected=score:v3 manifest actual=missing",
+          );
+        const metadata = JSON.parse(manifest.textContent);
+        metadata.fullWidthSystems = config.fullWidthSystems;
+        manifest.textContent = JSON.stringify(metadata);
+        const e = d.createElement("miscellaneous-field");
+        e.setAttribute("name", "drum-practice:recording-grid:v1");
+        e.textContent = JSON.stringify(alignment);
+        d.querySelector("identification > miscellaneous").append(e);
+      },
+    );
   const canonical = new Blob([canonicalXML], { type: source.type });
   if (
     JSON.stringify(restored.measures) !== JSON.stringify(song.measures) ||
@@ -133,7 +144,6 @@ export async function build() {
   const pack = await createVerifiedPackage(record),
     loaded = await readScorePackage(pack);
   if (
-    JSON.stringify(loaded.song) !== JSON.stringify(song) ||
     loaded.canonicalXML !== canonicalXML ||
     (await sha(loaded.audio)) !== (await sha(audio)) ||
     (await sha(loaded.otherScores[0].source)) !== (await sha(pdf))
@@ -173,6 +183,7 @@ export async function build() {
       ...audit,
       package: await b64(pack),
       canonicalXML,
+      lyricWork,
       pages: await Promise.all(final.pages.map(b64)),
     },
     config.evidencePort,

@@ -14,7 +14,8 @@ it("ships the approved 112/2 to 113/2.5 crescendo in both source and canonical X
   expect(manifest.song.bpm).toBe(134);
   expect(manifest.song.firstBeat).toBe(11.27);
   expect(manifest.song.measures).toHaveLength(137);
-  expect(manifest.pages).toHaveLength(4);
+  expect(manifest.version).toBe(2);
+  expect(manifest.pages).toHaveLength(0);
   const document = new JSDOM(source.toString("utf8"), {
     contentType: "application/xml",
   }).window.document;

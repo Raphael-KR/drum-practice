@@ -2,7 +2,7 @@ import { readPreference, writePreference } from "../storage/preference-storage";
 import { setIconButton } from "../../shared/ui/icon-button";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { uiText } from "../../shared/ui/ui-standard";
-import { icon } from "../../shared/ui/icons";
+import { icon } from "../../shared/ui/icon-svg";
 const KEY = "drum-practice.auto-fullscreen";
 export function fullscreenSupported() {
   return (
