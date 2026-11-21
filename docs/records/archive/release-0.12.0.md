@@ -1,6 +1,6 @@
 # 0.12.0 릴리스
 
-상태: 2026-11-21 로컬 필수 검사와 변경 영향 화면 검증 통과. 두 앱 버전 0.12.0, 소스 빌드 `acef6395a0b1`. 커밋·PR·발행 전.
+상태: 2026-11-21 16:21:49 KST, 드럼연습실 0.12.0 발행·공개 확인 통과. 두 앱 버전 0.12.0, 소스 빌드 `acef6395a0b1`. 제작기는 로컬 전용이다. 결과 문서 통합 후 Git 최종 상태는 `final-state.json`에 남긴다.
 
 - 목표: 누적된 공통 조판·제작 작업대·파일 프로젝트 변경을 검증해 두 앱 0.12.0으로 릴리스한다.
 - 범위: 시작 시 전체 미커밋 소스·설정·문서·테스트, 기존 수록 패키지와 원격 main/PR 상태를 대조한다.
@@ -32,7 +32,7 @@
 | 제작 도구 | 변경 Python 정적·unittest, 변경 CLI `node --check`, 제작 스킬 문법 | 정적 검사는 11월 17일 결과 재사용. 도구 입력 불변. 11월 21일 unittest 23 PASS·과거 실측 opt-in 1 skip |
 | 저장·작업대·가사 | 임시 프로젝트에서 초안/확정/충돌/재열기, SVG 드래그·격자·병합/분리 | 집중 회귀 및 실제 Safari/ego 조작 통과. 실제 사용자 프로젝트 이관·제작자 송신은 제외 |
 | 공통 조판·재생 | Safari 전체 SVG·1/2줄, 변박/가사/지시문/쉼표·진행선 | 아래 실제 출력 결과 참조 |
-| PR/main·Sites·공개 | 최신 SHA CI, main 빌드, 별도 배포 소스/자산 대응과 공개 읽기 | 로컬 검사 완료 후 진행 |
+| PR/main·Sites·공개 | 최신 SHA CI, main 빌드, 별도 배포 소스/자산 대응과 공개 읽기 | PR #54/main CI·main 두 앱 빌드·Sites 106 발행·48파일 일치·공개 읽기 21항목 통과 |
 | 비대상 | 중앙 의존성 갱신, Apple STT/AFM 실행, 과거 벤치마크 재현, 실계정/iOS 실기기 | 관련 변경·별도 요청 없음 |
 
 ### 11월 17일 정적 준비 기록
@@ -74,6 +74,7 @@
 - 제작기: 실제 초기화 후 시험용 Real Paradis 사본에서 가사 Ah를 방향키로 0→0.0625 quarter 이동, 임시저장·확정저장·페이지 재열기를 확인했다. Safari MCP가 지원하지 않는 포인터 드래그만 ego-browser 전용 TaskSpace에서 확인했다. 40px 드래그 결과 0.0625→0.625 quarter, 되돌리기 0.0625, 다시 실행 0.625를 카드 표시에서 대조했다. M으로 Ah/나를 `Ah 나`로 묶고 S로 두 항목과 위치를 복원했다. 확정 저장 `21df89bb-3ab8-4bdc-b168-b1231134f952`, 초안 없음·교정 이력 2건을 재조회했다.
 - `browser/editor-open.png`, `editor-full.png`, `editor-drag.png`, `player-one-row.png`, `player-two-row.png`, `player-meter-row.png`, `real-paradis-full.png`을 보존한다. 드래그 캡처는 재조판 완료 전일 수 있으므로 이동 수치 판정은 카드/저장 재조회 결과를 사용한다.
 - 검사 도구의 잘못된 기대 문자열(`변경됨`, 공백 없는 `Ah나`), stale ref, 재조판 중 없는 노드를 읽은 진단 실패는 제품 실패와 구분했다. 정확한 UI 상태·저장 결과로 후속 확인했다.
+- 좁은 화면: Safari MCP의 시험 창이 네이티브 Safari 윈도우 목록/Computer Use에 나타나지 않아 응답형 프리셋 대신 MCP의 viewport 명령을 사용했다. 요청 1024×768의 실제 viewport는 1024×664, 요청 390×844는 390×740, DPR 2였다. 1024px 변박 줄의 네 마디와 진행선, 390px 1/2줄·재생/일시정지·컨트롤 재배치를 확인했다. 페이지 가로 넘침·새 콘솔 오류 0건. `player-1024-meter-row.png`, `player-390-two-row.png`, `player-390-one-row.png` 보존. 기기 프리셋·iPad Safari·터치 제스처 검증으로 보고하지 않는다.
 - 실제 제작자 요청/답장, 실제 사용자 자료 이관, iOS/iPadOS 실기기, 청취, 정밀 성능 비교는 이번 검증에 포함하지 않는다. 제작기 최초 cold 값 약 51.6초는 비활성 Safari 탭에서 오디오 초기화가 중단된 실행의 값이므로 성능 기준 통과/실패 근거로 쓰지 않는다. 탭 활성화 후 열기와 warm 재열기는 완료했다.
 
 ### 최종 로컬 검사
@@ -82,3 +83,24 @@
 - `verify-final-20261121-2.log`에서 Lint·서식·앱/도구/hosting 타입·JSZip·i18n·공통 모듈/소스 경계가 통과했다. 문서 검사는 과거 검사 기록의 삭제된 파일 링크 1개에서 멈췄다. 기록 원문은 파일명으로 보존하고 현행 schema 전환 검사로의 이동 근거를 덧붙였다.
 - 통과한 단계는 반복하지 않고 `check-docs-20261121.log`, `test-drum-final-20261121.log`, `bundle-final-20261121.log`로 남은 단계를 마쳤다. 문서 188개·링크 5,041개·앵커 3,578개, 전체 Vitest **131파일·791검사**, 두 앱 번들·player 공개 경계와 `git diff --check`가 통과했다. `verify` 한 번의 종료 성공으로 보고하지 않는다.
 - 기존 500 kB 번들 경고는 유지한다. 이후 기록 문서만 수정하면 문서/링크/diff 검사만 다시 실행한다. main 병합 후 코드·설정·의존성·검사 자산이 같으면 이 결과를 재사용하고 릴리스용 두 앱 빌드는 새로 수행한다.
+
+## 원격 통합과 공개 발행
+
+- 전체 225파일을 구현 `3161b625091a8873109f2398399541bc0c12cb88`로 커밋·push하고 [PR #54](https://github.com/Raphael-KR/drum-practice/pull/54)로 통합했다. 최종 저장·공통 조판·제작기/공개 경계와 변경 목록을 Codex가 자체 검토했다. 독립 리뷰가 아니며 저장소의 main 보호/필수 리뷰 및 ruleset은 없음을 확인했다.
+- 정확한 head의 [PR CI](https://github.com/Raphael-KR/drum-practice/actions/runs/44879164044) 성공 후 ready/merge했다. 제품 main `1474ac6383cff17dd783dd476c3b89274459fa40`의 [main CI](https://github.com/Raphael-KR/drum-practice/actions/runs/44879554004)도 통과했다. head/main tracked tree와 소스·설정·검사·공개 자산 등 647개 입력 해시가 같아 로컬 정적·회귀 결과를 재사용했다(`candidate-inputs.json`). main에서 `generate`·`bundle:apps`는 새로 실행해 빌드 `acef6395a0b1`을 확인했다.
+- 기존 Sites 소스 checkout을 공식 helper로 먼저 열고 별도 수정 없음 확인 후 player 사본을 준비했다. frozen 설치·Sites 빌드·원본/사본/Worker 48파일과 HTML 응답 일치 검사를 통과했다. source helper는 완료한 빌드를 반복하지 않고 소스 commit/push·아카이브 패키징을 수행했다.
+- Sites 소스 `880d58dcc21015bce1f8421d8b1e776f20618f1a`, 버전 **106**, 버전 ID `appgprj_6ab0790baa048191aaee49f58c1ffe7b~appgver_fa5d84b53c248191829eb6d7a238f62b`, 배포 ID `appgdep_6b01467ce0d8819194d6a44fc2b2fce2`: **succeeded, 2026-11-21 16:21:49 KST** / 07:21:49 UTC. 기존 public 범위와 player 전용·DB 바인딩 없음 유지. [공개 드럼연습실](https://drum-practice-studio.dgkma.chatgpt.site).
+- 공개 읽기 **21항목** 통과: HTML 3경로의 새 번들과 보안 헤더, 주요 JS/CSS·MusicXML·분석/스트레치 Worker·악보 6개 해시, editor/제작 API/폐기 API의 404. `public-smoke.json`, `sites-parity.json`, `publication-receipt.json`에 근거를 보존한다. 공개 사용자 저장·재생·청취 검증으로 확대하지 않는다.
+- 최신 아카이브 `local-archives/releases/drum-practice-0.12.0-sites.tar.gz`: 40,058,795bytes, gzip SHA256 `ee435b2237783128abb05923d6eaa605d23b425b0b99876ccd20ee8384026a78`. Sites tar content hash `e0472eddc9157e019466f62845e1be3d5b2fd1d54e17754898192bb68ec8b350`와 구분한다.
+- 비차단 경고: 기존 번들 500 kB 안내와 개발 서버의 향후 Vite native config-loader 확장자 안내가 남아 있다. 현재 빌드/실행은 통과했으며 의존성·로더 변경 시 관련 설정을 다시 확인한다.
+
+## 발행 후 작업 파일 정리
+
+공개 확인 후 경로·보존 범위를 알리고 **94,196,946bytes(89.83MiB)**를 정리했다(`cleanup.json`).
+
+- 구형 `local-archives/releases/drum-practice-0.11.5-sites.tar.gz` 77,081,463bytes: 기록의 SHA256 `148a8c887e5b2ffb31ecd107619283b611e1f4c9a136340689d37580dcc7971d` 일치를 확인하고 최신 0.12.0 보존 후 삭제했다. 과거 발행 기록 원문·해시는 유지한다.
+- 이번 검사에서 시작한 5173 Vite 서버만 정상 종료하고 `node_modules/.vite` 캐시 17,115,483bytes를 삭제했다. 설치 의존성과 두 앱의 최신 dist·Sites checkout은 유지한다.
+- 시험용 파일 프로젝트 33파일은 해시를 대조해 `.tmp/release-0.12.0/qa-project/`로 이동·보존했다. 일반 제작 프로젝트 목록에서 제거했으며 시험 전후 실제 사용자 프로젝트 파일은 0개로 동일하다. 실제 사용자 DB·원본·제작 입력·검증 기록을 삭제하지 않았다.
+- 과거 임시 폴더의 원본/검증 입력과 대용량 자료는 용도 또는 중복성이 확정되지 않아 보존했다. 날짜·Git 제외만으로 삭제하지 않았다. `.tmp/release-0.12.0/`의 로그·캡처·격리 harness·시험 프로젝트와 최신 발행 아카이브를 유지한다.
+
+결과 문서는 별도 작업 브랜치/PR로 통합한다. 제품 소스와 배포 입력이 같으면 앱 버전·전체 회귀·발행을 반복하지 않는다. 병합 후 로컬/GitHub main 일치, Git clean, main 외 브랜치 부재, 제품 입력/최신 아카이브 보존을 `final-state.json`으로 확인한다.
