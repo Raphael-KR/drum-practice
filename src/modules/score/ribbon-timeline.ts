@@ -1,21 +1,13 @@
 import type { Region } from "../../model/model";
-import { NOTATION_STEPS_PER_QUARTER } from "../../model/notation-grid";
 import type { StaffPosition } from "./practice-staff-layout";
-export const RIBBON_TIMELINE_VERSION = 1;
-/** Normal drum notehead centre, in the unscaled OSMD SVG coordinate system. */
-export const RIBBON_HEAD_ANCHOR = 6;
-/** Notehead centre on a padding-free 64th grid; may cross 1 at a bar transition. */
-export function gridPhase(quarter: number, duration: number) {
-  return (
-    (quarter * NOTATION_STEPS_PER_QUARTER + 0.5) /
-    (duration * NOTATION_STEPS_PER_QUARTER)
-  );
+export const RIBBON_TIMELINE_VERSION = 2;
+
+/** Keep the shared start fraction and distribute the remaining width by time. */
+export function gridPhase(quarter: number, duration: number, start: number) {
+  return start + ((1 - start) * quarter) / duration;
 }
 export interface RibbonTimeline {
   version: number;
-  uniformQuarters?: number;
-  rows?: RibbonTimeline;
-  grid?: RibbonTimeline;
   quarter: number;
   offset: number;
   regions: Region[];
@@ -45,13 +37,6 @@ export function validateRibbonTimeline(
     d.staffs.length !== count
   )
     throw Error("Invalid SVG ribbon timeline");
-  if (d.rows) validateRibbonTimeline(d.rows, count);
-  if (d.grid) validateRibbonTimeline(d.grid, count);
-  if (
-    d.uniformQuarters !== undefined &&
-    !(Number.isFinite(d.uniformQuarters) && d.uniformQuarters > 0)
-  )
-    throw Error("Invalid row duration");
   d.regions.forEach((r, i) => {
     const s = d.staffs[i];
     if (

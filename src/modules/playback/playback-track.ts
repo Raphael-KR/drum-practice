@@ -1,17 +1,12 @@
-import {
-  beatTime as audioBeatTime,
-  xAtBeat,
-  type Song,
-} from "../../model/model";
+import { beatTime as audioBeatTime, type Song } from "../../model/model";
 import { audioMeasureHTML } from "../audio/audio-practice-view";
 import { gridPhase } from "../score/ribbon-timeline";
 import { displayRegion } from "../score/score-view";
-import { selectPlaybackEngraving } from "./playback-assets";
+import { timeMeasureWidth, rowScale } from "../score/time-spacing";
 import {
   measurePosition,
   measureWidth,
   renderScoreRows,
-  ribbonPosition,
   scoreLayout,
 } from "./playback-layout";
 import { renderMeasure } from "./playback-measure";
@@ -43,22 +38,14 @@ export function createPlaybackTrack(
     const s = h.song(),
       asset = ribbonAsset(index);
     if (asset) {
-      if (s.settings.uniformSpacing) {
-        const m = s.measures[index];
-        return (
-          width *
-          gridPhase((beat * 4) / m.denominator, (m.beats * 4) / m.denominator)
-        );
-      }
-      if (s.settings.view === "rows")
-        return width * xAtBeat(asset.region, s.measures[index], beat);
-      // Ribbon motion retains the continuous musical timeline.
-      const timeline = h.assets().ribbon!.get(index)!;
-      return ribbonPosition(
-        width,
-        beat,
-        s.measures[index].beats,
-        timeline.phase,
+      const m = s.measures[index];
+      return (
+        width *
+        gridPhase(
+          (beat * 4) / m.denominator,
+          (m.beats * 4) / m.denominator,
+          asset.region.beatXs[0],
+        )
       );
     }
     if (s.audioPractice) {
@@ -69,13 +56,9 @@ export function createPlaybackTrack(
   }
   function ribbonAsset(index: number) {
     if (h.song().scoreFormat !== "musicxml") return undefined;
-    const asset = h.assets().ribbon?.get(index);
-    return selectPlaybackEngraving(
-      asset,
-      h.song().settings.uniformSpacing,
-      h.song().settings.view,
-    );
+    return h.assets().ribbon?.get(index);
   }
+
   function widthOf(m: Song["measures"][number]) {
     if (h.song().audioPractice)
       return Math.max(120, (stage.clientWidth / 4) * h.song().settings.zoom);
@@ -91,11 +74,6 @@ export function createPlaybackTrack(
           s,
           s.regions.find((r) => r.id === m.regionId)!,
         );
-    if (s.settings.uniformSpacing && timeline?.grid)
-      return (
-        (stage.clientWidth / 4) *
-        (s.settings.view === "ribbon" ? s.settings.zoom : 1)
-      );
     return measureWidth(
       s,
       r,
@@ -140,16 +118,19 @@ export function createPlaybackTrack(
     const s: Song = { ...song, settings: { ...song.settings, view: "rows" } };
     const assets = h.assets();
     // Reserve the same one-space overhang at the outer viewport edges. The
-    // four equal bar widths and their internal grid coordinates stay intact.
+    // rhythmic unit stays the same across meters; overflowing rows scale together.
     const inkRatio =
-      s.scoreFormat === "musicxml" && s.settings.uniformSpacing
+      s.scoreFormat === "musicxml"
         ? Math.max(
             0,
-            ...Array.from(assets.ribbon?.values() ?? [], (asset) =>
-              asset.grid
-                ? (asset.grid.staff.gap * asset.grid.ratio) /
-                  asset.grid.region.w
-                : 0,
+            ...Array.from(
+              assets.ribbon?.entries() ?? [],
+              ([i, asset]) =>
+                (((asset.staff.gap * asset.ratio) / asset.region.w) *
+                  timeMeasureWidth(
+                    (s.measures[i].beats * 4) / s.measures[i].denominator,
+                  )) /
+                timeMeasureWidth(4),
             ),
           )
         : 0;
@@ -157,7 +138,7 @@ export function createPlaybackTrack(
     if (!stage.clientHeight) return base;
     const naturalHeight = Math.max(
       s.audioPractice ? 100 : 1,
-      ...s.regions.map((region) => {
+      ...(s.scoreFormat === "musicxml" ? [] : s.regions).map((region) => {
         const staff = assets.staffs.get(region.id);
         return staff
           ? scoreLayout(
@@ -175,17 +156,14 @@ export function createPlaybackTrack(
     const selectedHeight =
       s.scoreFormat === "musicxml"
         ? Math.max(
-            ...s.measures.map((_, i) => {
-              const asset = selectPlaybackEngraving(
-                assets.ribbon?.get(i),
-                s.settings.uniformSpacing,
-                "rows",
-              );
+            ...s.measures.map((m, i) => {
+              const asset = assets.ribbon?.get(i);
               return asset
                 ? scoreLayout(
                     s,
                     asset.region,
-                    base,
+                    (base * timeMeasureWidth((m.beats * 4) / m.denominator)) /
+                      timeMeasureWidth(4),
                     stage.clientWidth,
                     asset.staff,
                   )!.height
@@ -206,6 +184,20 @@ export function createPlaybackTrack(
     fittedStageWidth = stage.clientWidth;
     return width;
   }
+  function rowWidths(start: number) {
+    const s = h.song();
+    const base = rowCellWidth();
+    if (s.scoreFormat !== "musicxml") return Array(4).fill(base) as number[];
+    const widths = s.measures
+      .slice(start, start + 4)
+      .map(
+        (m) =>
+          (base * timeMeasureWidth((m.beats * 4) / m.denominator)) /
+          timeMeasureWidth(4),
+      );
+    const scale = rowScale(widths, base * 4);
+    return widths.map((width) => width * scale);
+  }
   function renderRows(index: number) {
     renderScoreRows(
       {
@@ -217,6 +209,7 @@ export function createPlaybackTrack(
         resume: controls.resuming(),
         measureHTML,
         cellWidth: rowCellWidth(),
+        rowWidths,
       },
       rows,
       index,

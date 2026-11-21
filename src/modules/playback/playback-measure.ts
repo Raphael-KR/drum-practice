@@ -31,9 +31,9 @@ export function renderMeasure({
 }: MeasureView) {
   const height =
     layout?.height ?? (width > 1 ? (width / r.w) * r.h * pageRatio : 165);
-  // A 64th-grid half-cell can be narrower than a notehead. Keep the musical
-  // viewport fixed and allow one staff space of ink across its side edges.
-  const bleed = isSVG && s.settings.uniformSpacing ? (layout?.gap ?? 0) : 0;
+  // Final fine-duration notes and attached marks may overhang the barline.
+  // Keep the musical viewport fixed and allow one staff space of side ink.
+  const bleed = isSVG ? (layout?.gap ?? 0) : 0;
   // Two-row alignment keeps a shared height; mask ink outside this source system.
   let trim = "";
   if (layout) {

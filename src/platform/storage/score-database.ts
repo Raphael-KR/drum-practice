@@ -1,60 +1,88 @@
 import type { Song } from "../../model/model";
-// Migration only reads song identity and copies the rest of each stored record unchanged.
-type MigrationRecord = { song: Pick<Song, "id"> };
 import { t } from "../../shared/i18n/i18n";
 /** Both local apps own one score library on the same origin. */
 const SCORE_DATABASE = "drum-practice";
-const MIGRATION = "player-library-v1";
+const RESET = "canonical-v3";
 export const RETIRED_SCORE_ID = "tom-moving-original-v1";
-/** User explicitly retired the 16-bar edition, including recoverable archives. */
-async function purgeRetiredScore(db: IDBDatabase): Promise<void> {
-  const stores = ["songs"].filter((name) => db.objectStoreNames.contains(name));
-  if (!stores.length) return;
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(stores, "readwrite");
-    let failure: Error | undefined;
-    tx.oncomplete = () => resolve();
-    tx.onerror = tx.onabort = () => reject(failure ?? tx.error);
-    for (const name of stores) {
-      // songs is keyed by song.id. Reading every media-bearing record here on
-      // each position save needlessly deserializes the entire score library.
-      const store = tx.objectStore(name);
-      const request = store.get(RETIRED_SCORE_ID);
-      request.onsuccess = () => {
-        const record = request.result;
-        if (record?.song?.id === RETIRED_SCORE_ID) {
-          if (record.song.measures?.length !== 16) {
-            failure = new Error(
-              "Retired score ID has unexpected measure count",
-            );
-            tx.abort();
-            return;
-          }
-          store.delete(RETIRED_SCORE_ID);
-        }
-      };
-    }
-  });
+
+interface OldRecord {
+  song: Song;
+  canonicalXML?: string;
+  mediaFormat?: unknown;
+  pdf: unknown;
+  audio: unknown;
+  otherScores?: {
+    format: string;
+    name: string;
+    partId?: string;
+    source: unknown;
+  }[];
+  lyricWork?: unknown;
+  editDraft?: unknown;
+  revisions?: unknown;
+  lyricCorrections?: unknown;
+  lyricCorrectionDelivery?: unknown;
+  productionReceipts?: unknown;
 }
-function connect(name: string, version?: number): Promise<IDBDatabase> {
+/** Keep originals and authoring evidence, discard derived geometry and app preferences. */
+function sourceArchive(value: OldRecord, database: string) {
+  const song = { ...value.song } as Partial<Song>;
+  delete song.settings;
+  delete song.regions;
+  delete song.pageCount;
+  return {
+    id: `${database}:${song.id}`,
+    database,
+    song,
+    canonicalXML: value.canonicalXML,
+    mediaFormat: value.mediaFormat,
+    pdf: value.pdf,
+    audio: value.audio,
+    otherScores: value.otherScores?.map((s) => ({
+      format: s.format,
+      name: s.name,
+      partId: s.partId,
+      source: s.source,
+    })),
+    lyricWork: value.lyricWork,
+    editDraft: value.editDraft,
+    revisions: value.revisions,
+    lyricCorrections: value.lyricCorrections,
+    lyricCorrectionDelivery: value.lyricCorrectionDelivery,
+    productionReceipts: value.productionReceipts,
+  };
+}
+function preserveAndClear(tx: IDBTransaction, database: string) {
+  const songs = tx.objectStore("songs");
+  const cursor = songs.openCursor();
+  cursor.onsuccess = () => {
+    const item = cursor.result;
+    if (!item) return;
+    // The retired 16-bar edition was explicitly deleted, including archives.
+    if (
+      item.value.song?.id !== RETIRED_SCORE_ID ||
+      item.value.song?.measures?.length !== 16
+    )
+      tx.objectStore("sourceFiles").put(sourceArchive(item.value, database));
+    item.delete();
+    item.continue();
+  };
+}
+function connect(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request =
-      version === undefined
-        ? indexedDB.open(name)
-        : indexedDB.open(name, version);
-    request.onupgradeneeded = () => {
-      const db = request.result;
+    const request = indexedDB.open(SCORE_DATABASE, 5);
+    request.onupgradeneeded = (event) => {
+      const db = request.result,
+        tx = request.transaction!;
       if (!db.objectStoreNames.contains("songs"))
         db.createObjectStore("songs", { keyPath: "song.id" });
-      // User removed playback recovery copies. Schema upgrade deletes all old copies.
-      if (db.objectStoreNames.contains("archives"))
-        db.deleteObjectStore("archives");
-      if (name === SCORE_DATABASE) {
-        if (!db.objectStoreNames.contains("audioAnalyses"))
-          db.createObjectStore("audioAnalyses", { keyPath: "sha256" });
-        if (!db.objectStoreNames.contains("migrations"))
-          db.createObjectStore("migrations");
-      }
+      if (!db.objectStoreNames.contains("sourceFiles"))
+        db.createObjectStore("sourceFiles", { keyPath: "id" });
+      if (event.oldVersion > 0) preserveAndClear(tx, SCORE_DATABASE);
+      for (const name of ["audioAnalyses", "migrations", "archives"])
+        if (db.objectStoreNames.contains(name)) db.deleteObjectStore(name);
+      db.createObjectStore("audioAnalyses", { keyPath: "sha256" });
+      db.createObjectStore("migrations");
     };
     let blocked = false;
     request.onsuccess = () => {
@@ -73,63 +101,63 @@ function connect(name: string, version?: number): Promise<IDBDatabase> {
     };
   });
 }
-function values(db: IDBDatabase, store: string): Promise<MigrationRecord[]> {
-  if (!db.objectStoreNames.contains(store)) return Promise.resolve([]);
+/** Open only an existing old player DB; aborting creation leaves no empty database. */
+function legacyDatabase(): Promise<IDBDatabase | undefined> {
   return new Promise((resolve, reject) => {
-    const request = db.transaction(store).objectStore(store).getAll();
+    const request = indexedDB.open("drum-practice-player");
+    let missing = false;
+    request.onupgradeneeded = () => {
+      missing = true;
+      request.transaction!.abort();
+    };
+    request.onerror = () =>
+      missing ? resolve(undefined) : reject(request.error);
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
   });
 }
-export async function openScoreDatabase(): Promise<IDBDatabase> {
-  const db = await connect(SCORE_DATABASE, 4);
+async function clearLegacy(db: IDBDatabase) {
+  const done = await new Promise((resolve, reject) => {
+    const r = db.transaction("migrations").objectStore("migrations").get(RESET);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+  if (done) return;
+  const legacy = await legacyDatabase();
   try {
-    const migrated = await new Promise((resolve, reject) => {
-      const r = db
-        .transaction("migrations")
-        .objectStore("migrations")
-        .get(MIGRATION);
-      r.onsuccess = () => resolve(r.result);
-      r.onerror = () => reject(r.error);
-    });
-    if (migrated) {
-      await purgeRetiredScore(db);
-      const legacy = await connect("drum-practice-player", 3);
-      try {
-        await purgeRetiredScore(legacy);
-      } finally {
-        legacy.close();
-      }
-      return db;
-    }
-    const legacy = await connect("drum-practice-player", 3);
-    let songs: MigrationRecord[];
-    try {
-      await purgeRetiredScore(legacy);
-      songs = await values(legacy, "songs");
-    } finally {
-      legacy.close();
-    }
+    const records: OldRecord[] = legacy?.objectStoreNames.contains("songs")
+      ? await new Promise((resolve, reject) => {
+          const r = legacy.transaction("songs").objectStore("songs").getAll();
+          r.onsuccess = () => resolve(r.result);
+          r.onerror = () => reject(r.error);
+        })
+      : [];
     await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(["songs", "migrations"], "readwrite");
+      const tx = db.transaction(["sourceFiles", "migrations"], "readwrite");
+      for (const record of records)
+        if (
+          record.song?.id !== RETIRED_SCORE_ID ||
+          record.song?.measures?.length !== 16
+        )
+          tx.objectStore("sourceFiles").put(
+            sourceArchive(record, "drum-practice-player"),
+          );
+      tx.objectStore("migrations").put(true, RESET);
       tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () =>
-        reject(tx.error ?? new Error("Score library migration aborted"));
-      // Recheck under the write transaction, so simultaneous app opens migrate once.
-      const marker = tx.objectStore("migrations").get(MIGRATION);
-      marker.onsuccess = () => {
-        if (marker.result) return;
-        for (const record of songs) {
-          const current = tx.objectStore("songs").get(record.song.id);
-          current.onsuccess = () => {
-            if (!current.result) tx.objectStore("songs").put(record);
-          };
-        }
-        tx.objectStore("migrations").put(true, MIGRATION);
-      };
+      tx.onerror = tx.onabort = () => reject(tx.error);
     });
-    await purgeRetiredScore(db);
+  } finally {
+    legacy?.close();
+  }
+  if (legacy) {
+    // Originals are already retained in sourceFiles. A still-open old app may
+    // postpone deletion until it closes; it never gets imported into the new library.
+    indexedDB.deleteDatabase("drum-practice-player");
+  }
+}
+export async function openScoreDatabase(): Promise<IDBDatabase> {
+  const db = await connect();
+  try {
+    await clearLegacy(db);
     return db;
   } catch (error) {
     db.close();

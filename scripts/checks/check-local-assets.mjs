@@ -9,6 +9,13 @@ const needed = new Set([
   "public/demo/score.musicxml",
   "public/demo/audio.mp3",
   "data/reference/grid_verified.json",
+  // Preserved layout/parser and authoring-history fixtures; never app v1 imports.
+  "data/production/time-proportional-app-20261113/demo-before-song.json",
+  "data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly.drumscore",
+  "data/production/loveholic/final/Loveholic.drumscore",
+  "data/production/preplay-warmup/final/preplay-warmup.drumscore",
+  "data/production/tom-moving/final/tom-moving.drumscore",
+  "data/production/red-sunset/final/build-03/red-sunset.drumscore",
   "data/reference/test-fixtures/musicxml-candidate.musicxml",
   "data/reference/test-fixtures/tom-moving-28-portland.drumscore",
   "data/reference/test-fixtures/red-sunset-wedge-native-20261024.json",

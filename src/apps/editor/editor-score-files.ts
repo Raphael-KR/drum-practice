@@ -1,10 +1,6 @@
 import { type Song } from "../../model/model";
 import type { RecordData } from "../../model/record";
-import {
-  vocalLyrics,
-  withVocalSource,
-  writeCanonical,
-} from "../../modules/score/canonical-xml";
+import { vocalLyrics, writeCanonical } from "../../modules/score/canonical-xml";
 import {
   replaceWithMusicXML,
   scoreFormat,
@@ -20,16 +16,17 @@ import { escapeHTML as esc } from "../../shared/ui/html";
 import { Player } from "./audio";
 import { $, val } from "./editor-dom";
 import type { EditorScoreRenderer } from "./editor-record-preparation";
-import { openSettingsChild } from "./workspace";
+import { openEditorDialog } from "./workspace";
 
 interface EditorScoreFilesHost {
   readonly record: RecordData | undefined;
   engine(): Player;
-  edit(mut: (song: Song) => void): void;
+  edit(mut: (song: Song) => void, work?: RecordData["lyricWork"]): void;
+  flush(): void;
   persist(): Promise<void>;
   activate(record: RecordData): Promise<void>;
   renderScore: EditorScoreRenderer;
-  renderLyricEditor(near: boolean): void;
+  renderLyricEditor(): void;
   tell(message: string): void;
   error(error: unknown): void;
 }
@@ -72,9 +69,8 @@ export function installEditorScoreFiles(h: EditorScoreFilesHost) {
   const openScoreReplacement = () => {
     if (!h.record) return;
     engine().pause();
-    openSettingsChild(replaceDialog);
+    openEditorDialog(replaceDialog);
   };
-  $("review-add-score").onclick = openScoreReplacement;
   let replaceGeneration = 0;
   val("replace-score-file").onchange = async () => {
     const gen = ++replaceGeneration;
@@ -108,9 +104,10 @@ export function installEditorScoreFiles(h: EditorScoreFilesHost) {
   $("replace-score-apply").onclick = async () => {
     const file = val("replace-score-file").files?.[0];
     if (!file || !h.record) return;
-    const original = h.record;
     val("replace-score-apply").disabled = true;
     try {
+      h.flush();
+      const original = h.record;
       const format = scoreFormat(file.name);
       if (
         songScores(original).some((s) => s.format === format) &&
@@ -162,6 +159,8 @@ export function installEditorScoreFiles(h: EditorScoreFilesHost) {
         pages: r.pages,
       });
       const next = useScore(original, target);
+      delete next.editDraft;
+      next.localDraftChanges = true;
       if (format === "musicxml")
         next.canonicalXML = writeCanonical(
           next.song,
@@ -206,7 +205,7 @@ export function installEditorScoreFiles(h: EditorScoreFilesHost) {
   const vocalButton = document.createElement("button");
   vocalButton.id = "import-vocal";
   vocalButton.textContent = i18nText("main.message362");
-  $("show-all").after(vocalButton);
+  $("editor-meta").append(vocalButton);
   vocalButton.onclick = () => {
     engine().pause();
     vocalDialog.showModal();
@@ -247,26 +246,23 @@ export function installEditorScoreFiles(h: EditorScoreFilesHost) {
       const lyrics = vocalLyrics(original.song, parsed);
       if (!confirm(i18nText("main.message363"))) return;
       if (h.record !== original) throw Error(i18nText("main.message364"));
-      const base = withVocalSource(original.canonicalXML!, parsed.document);
-      const previous = original.canonicalXML;
-      original.canonicalXML = base;
-      try {
-        edit((s) => {
-          s.lyricArchive = [
-            ...(s.lyricArchive || []),
-            {
-              revision: "before-vocal-import",
-              lyrics: structuredClone(s.lyrics),
-            },
-          ];
-          s.lyrics = lyrics;
-        });
-      } catch (e) {
-        original.canonicalXML = previous;
-        throw e;
-      }
+      const work = {
+        ...original.lyricWork,
+        vocalXML: new XMLSerializer().serializeToString(parsed.document),
+        groups: undefined,
+      };
+      edit((s) => {
+        s.lyricArchive = [
+          ...(s.lyricArchive || []),
+          {
+            revision: "before-vocal-import",
+            lyrics: structuredClone(s.lyrics),
+          },
+        ];
+        s.lyrics = lyrics;
+      }, work);
       await persist();
-      renderLyricEditor(false);
+      renderLyricEditor();
       vocalDialog.close();
       tell(i18nText("main.message365"));
     } catch (e) {

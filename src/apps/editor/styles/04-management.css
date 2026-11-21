@@ -2,6 +2,16 @@
 .management-dialog {
   width: min(640px, calc(100vw - 32px));
 }
+.production-dialog {
+  width: min(900px, calc(100vw - 48px));
+}
+.production-content {
+  margin-top: 16px;
+}
+.production-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .asset-chips {
   display: flex;
   flex-wrap: wrap;

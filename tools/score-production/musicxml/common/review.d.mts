@@ -54,6 +54,7 @@ export interface MountedScoreReview {
   report(): ScoreReviewReport;
   dispose(): void;
 }
+/** Pure planning for prepared geometry. Use mountScoreReview for source-only packages. */
 export function planScoreReview(
   record: RecordData,
   options?: ScoreReviewOptions,
@@ -66,6 +67,7 @@ export function planScoreReview(
   rowWidth: number;
   alternateIndex: number | null;
 };
+/** Prepares missing MusicXML geometry through the app's renderer/cache; never saves library records. */
 export function mountScoreReview(
   record: RecordData,
   options?: ScoreReviewOptions,

@@ -32,6 +32,7 @@ async function writeBuildInfo() {
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
     "config/shared-catalog.yaml",
+    "config/score-session-bridge.json",
     ...(await files("config/patches")).filter((path) =>
       path.endsWith(".patch"),
     ),

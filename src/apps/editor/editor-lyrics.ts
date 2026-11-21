@@ -1,246 +1,198 @@
-import {
-  gridLabel,
-  lyricGridPoint,
-  lyricGridStep,
-  lyricGridTickForMeasure,
-  lyricGridTicks,
-  setLyricGrid,
-} from "../../modules/lyrics/lyric-grid";
-import {
-  advanceLyricPosition,
-  lyricDurationBeats,
-} from "../../modules/lyrics/lyric-score";
-import { t as i18nText } from "../../shared/i18n/i18n";
-
-import { uid, type Song } from "../../model/model";
+import type { Song } from "../../model/model";
+import type { RecordData } from "../../model/record";
+import { t } from "../../shared/i18n/i18n";
 import { escapeHTML as esc } from "../../shared/ui/html";
-import { $ } from "./editor-dom";
-interface LyricEditorHost {
+import {
+  lyricAxis,
+  moveLyric,
+  mergeLyrics,
+  splitLyrics,
+} from "./lyric-editing";
+import { $, val } from "./editor-dom";
+interface Host {
   song(): Song;
+  record(): RecordData;
   selected(): number;
-  edit(mut: (song: Song) => void): void;
-  current(): number;
-  action(id: string, fn: () => unknown): void;
+  selectMeasure(index: number): void;
+  flush(): void;
+  edit(mut: (song: Song) => void, work?: RecordData["lyricWork"]): void;
+  selectionChanged(ids: ReadonlySet<string>): void;
   error(error: unknown): void;
 }
-export function createLyricEditor(h: LyricEditorHost) {
-  const { song, edit, action, error } = h;
-  const engine = () => ({ current: h.current });
-  let lyricPage = 0,
-    lyricNear = false;
-  action("lyrics-prev", () => {
-    lyricPage = Math.max(0, lyricPage - 1);
-    renderLyricEditor(lyricNear, true);
-  });
-  action("lyrics-next", () => {
-    lyricPage++;
-    renderLyricEditor(lyricNear, true);
-  });
-  function lyricGridEditor(l: Song["lyrics"][number]) {
-    const point = lyricGridPoint(song(), l);
-    const m = song().measures.find((m) => m.id === point.measureId)!;
-    const measures = song()
-      .measures.map(
-        (x) =>
-          '<option value="' +
-          String(esc(x.id)) +
-          '" ' +
-          String(x.id === m.id ? "selected" : "") +
-          ">" +
-          i18nText("main.message316", { value3: esc(x.label) }) +
-          "</option>",
-      )
-      .join("");
-    const ticks = lyricGridTicks(m, point.tick)
-      .map(
-        (tick) =>
-          '<option value="' +
-          String(tick) +
-          '" ' +
-          String(tick === point.tick ? "selected" : "") +
-          ">" +
-          (tick === m.beats * 4
-            ? gridLabel(m, tick)
-            : Number.isInteger(tick / lyricGridStep(m))
-              ? i18nText("main.message318", {
-                  value3: tick / 4 + 1,
-                  value4: "",
-                })
-              : i18nText("main.message317", {
-                  value2: tick / 4 + 1,
-                })) +
-          "</option>",
-      )
-      .join("");
-    return (
-      '<div class="lyric-grid-controls"><select data-field="grid-measure" aria-label="' +
-      i18nText("main.message319") +
-      '">' +
-      String(measures) +
-      '</select><select data-field="grid-tick" aria-label="' +
-      i18nText("main.message320") +
-      '">' +
-      String(ticks) +
-      "</select></div>"
-    );
-  }
-  function durationStep(l: Song["lyrics"][number]) {
-    const point = lyricGridPoint(song(), l);
-    const measure = song().measures.find((m) => m.id === point.measureId)!;
-    const step = lyricGridStep(measure) / 4;
-    // Native arrows use the base unit; existing tuplets stay valid numeric input.
-    return Number.isInteger(lyricDurationBeats(song(), l) / step)
-      ? step
-      : "any";
-  }
-  function renderLyricEditor(near: boolean, keepPage = false) {
-    if (!keepPage) lyricPage = 0;
-    lyricNear = near;
-    $("show-near").setAttribute("aria-pressed", String(near));
-    $("show-all").setAttribute("aria-pressed", String(!near));
-    const m = song().measures[h.selected()];
-    const list = song().lyrics.filter(
-      (l) => !near || !m || (l.time >= m.start - 1 && l.time < m.end + 1),
-    );
-    const perPage = Math.max(
-      2,
-      Math.min(6, Math.floor((window.innerHeight - 370) / 62)),
-    );
-    const pages = Math.max(1, Math.ceil(list.length / perPage));
-    lyricPage = Math.min(lyricPage, pages - 1);
-    $("lyrics-page").textContent = i18nText("main.message321", {
-      value1: lyricPage + 1,
-      pages: pages,
-      value3: list.length,
-    });
-    $<HTMLButtonElement>("lyrics-prev").disabled = lyricPage === 0;
-    $<HTMLButtonElement>("lyrics-next").disabled = lyricPage === pages - 1;
-    $("lyric-editor").innerHTML = list
-      .slice(lyricPage * perPage, (lyricPage + 1) * perPage)
-      .map(
-        (l) =>
-          '<tr data-lyric="' +
-          String(esc(l.id)) +
-          '"><td><input data-field="text" value="' +
-          String(esc(l.text)) +
-          '" aria-label="' +
-          i18nText("main.message279") +
-          '"></td><td>' +
-          String(lyricGridEditor(l)) +
-          '</td><td><input data-field="duration-beats" type="number" min="0" step="' +
-          String(durationStep(l)) +
-          '" value="' +
-          String(lyricDurationBeats(song(), l)) +
-          '" aria-label="' +
-          i18nText("main.message322") +
-          '"></td><td><input data-field="confirmed" type="checkbox" ' +
-          String(l.confirmed ? "checked" : "") +
-          ' aria-label="' +
-          i18nText("main.message232") +
-          '"></td><td><button data-split-lyric="' +
-          String(esc(l.id)) +
-          '" title="' +
-          i18nText("main.message323") +
-          '">÷</button><button data-delete-lyric="' +
-          String(esc(l.id)) +
-          '" aria-label="' +
-          i18nText("main.message324") +
-          '">×</button></td></tr>',
-      )
-      .join("");
-  }
-  $("lyric-editor").onchange = (e) => {
-    const input = e.target as HTMLInputElement;
-    const id = input.closest<HTMLElement>("[data-lyric]")?.dataset.lyric;
-    const field = input.dataset.field;
-    if (!id || !field) return;
+export function createLyricEditor(h: Host) {
+  const pane = $("editor-lyrics"),
+    cards = $("lyric-editor");
+  let selected = new Set<string>(),
+    anchor: string | undefined,
+    selecting = false;
+  let renderedSong: Song | undefined,
+    renderedMeasure = -1;
+  const run = (fn: () => void) => {
     try {
-      edit((s) => {
+      fn();
+    } catch (e) {
+      h.error(e);
+    }
+  };
+  const grid = () => Number(val("lyric-grid").value);
+  function selection(id: string, range = false, focus = false) {
+    h.flush();
+    const lyrics = h.song().lyrics;
+    const item = lyrics.find((l) => l.id === id);
+    if (!item) return;
+    if (range && anchor) {
+      const a = lyrics.findIndex((l) => l.id === anchor),
+        b = lyrics.indexOf(item);
+      selected = new Set(
+        lyrics.slice(Math.min(a, b), Math.max(a, b) + 1).map((l) => l.id),
+      );
+    } else {
+      anchor = id;
+      selected = new Set([id]);
+    }
+    const index = h
+      .song()
+      .measures.findIndex((m) => m.id === item.scorePosition?.measureId);
+    if (index >= 0 && index !== h.selected()) h.selectMeasure(index);
+    render();
+    if (focus) pane.focus({ preventScroll: true });
+  }
+  function render() {
+    const s = h.song(),
+      index = h.selected(),
+      m = s.measures[index];
+    if (!m) return;
+    selected = new Set(
+      [...selected].filter((id) => s.lyrics.some((l) => l.id === id)),
+    );
+    const items = s.lyrics.filter((l) => l.scorePosition?.measureId === m.id);
+    if (renderedSong !== s || renderedMeasure !== index) {
+      cards.innerHTML =
+        items
+          .map(
+            (l) =>
+              `<div class="lyric-card" data-lyric="${esc(l.id)}" role="option" aria-selected="${selected.has(l.id)}"><input data-field="text" aria-label="${esc(t("main.message279"))}" value="${esc(l.text)}"><small>${t("editorWork.beat", { value: Number((1 + (l.scorePosition!.quarterOffset * m.denominator) / 4).toFixed(4)) })}${h.record().lyricWork?.groups?.[l.id] ? " · S" : ""}</small><label><input type="checkbox" data-field="confirmed" ${l.confirmed ? "checked" : ""}>${t("editorWork.confirmed")}</label></div>`,
+          )
+          .join("") || `<p>${t("editorWork.noLyrics")}</p>`;
+      renderedSong = s;
+      renderedMeasure = index;
+    }
+    cards
+      .querySelectorAll<HTMLElement>("[data-lyric]")
+      .forEach((el) =>
+        el.setAttribute(
+          "aria-selected",
+          String(selected.has(el.dataset.lyric!)),
+        ),
+      );
+    $("lyric-summary").textContent = t("editorWork.summary", {
+      measure: m.label,
+      count: items.length,
+      selected: selected.size,
+    });
+    h.selectionChanged(selected);
+  }
+  cards.setAttribute("role", "listbox");
+  cards.setAttribute("aria-multiselectable", "true");
+  cards.addEventListener("pointerdown", (e) => {
+    if ((e.target as Element).closest("input,textarea,button,select")) return;
+    const item = (e.target as Element).closest<HTMLElement>("[data-lyric]");
+    if (!item) return;
+    selection(item.dataset.lyric!, e.shiftKey, true);
+    selecting = true;
+    e.preventDefault();
+  });
+  cards.addEventListener("pointerover", (e) => {
+    if (!selecting || !e.buttons) return;
+    const item = (e.target as Element).closest<HTMLElement>("[data-lyric]");
+    if (item) selection(item.dataset.lyric!, true);
+  });
+  const stopSelecting = () => {
+    selecting = false;
+  };
+  window.addEventListener("pointerup", stopSelecting);
+  cards.addEventListener("focusin", (e) => {
+    const item = (e.target as Element).closest<HTMLElement>("[data-lyric]");
+    if (item) selection(item.dataset.lyric!);
+  });
+  cards.addEventListener("change", (e) =>
+    run(() => {
+      const input = e.target as HTMLInputElement,
+        id = input.closest<HTMLElement>("[data-lyric]")?.dataset.lyric;
+      if (!id) return;
+      h.edit((s) => {
         const l = s.lyrics.find((l) => l.id === id)!;
-        if (field === "text") l.text = input.value;
-        if (field === "grid-measure" || field === "grid-tick") {
-          const point = lyricGridPoint(s, l);
-          const measureId =
-            field === "grid-measure" ? input.value : point.measureId;
-          const measure = s.measures.find((m) => m.id === measureId)!;
-          setLyricGrid(s, l, {
-            measureId,
-            tick:
-              field === "grid-tick"
-                ? Number(input.value)
-                : lyricGridTickForMeasure(measure, point.tick),
-          });
-        }
-        if (field === "duration-beats") {
-          const m = s.measures.find(
-            (m) => m.id === l.scorePosition!.measureId,
-          )!;
-          l.scorePosition!.durationQuarters =
-            (Number(input.value) * 4) / m.denominator;
-        }
-        if (field === "confirmed") l.confirmed = input.checked;
-        s.lyrics.sort((a, b) => a.time - b.time);
+        if (input.dataset.field === "text") l.text = input.value;
+        else if (input.dataset.field === "confirmed")
+          l.confirmed = input.checked;
       });
-      renderLyricEditor(false);
-    } catch (e) {
-      error(e);
-      renderLyricEditor(false);
-    }
-  };
-  $("lyric-editor").onclick = (e) => {
-    const b = (e.target as HTMLElement).closest("button");
-    if (!b) return;
-    try {
-      edit((s) => {
-        if (b.dataset.deleteLyric)
-          s.lyrics = s.lyrics.filter((l) => l.id !== b.dataset.deleteLyric);
-        if (b.dataset.splitLyric) {
-          const i = s.lyrics.findIndex((l) => l.id === b.dataset.splitLyric),
-            l = s.lyrics[i],
-            letters = [...l.text.replace(/\s/g, "")];
-          s.lyrics.splice(
-            i,
-            1,
-            ...letters.map((text, n) => ({
-              id: uid(),
-              text,
-              time: 0,
-              end: 0,
-              confirmed: false,
-              scorePosition: {
-                ...advanceLyricPosition(
-                  s,
-                  l.scorePosition!,
-                  (l.scorePosition!.durationQuarters * n) / letters.length,
-                ),
-                durationQuarters:
-                  l.scorePosition!.durationQuarters / letters.length,
-              },
-            })),
-          );
-        }
-      });
-      renderLyricEditor(false);
-    } catch (e) {
-      error(e);
-    }
-  };
-  action("show-near", () => renderLyricEditor(true));
-  action("show-all", () => renderLyricEditor(false));
-  action("add-lyric", () => {
-    const text = prompt(i18nText("main.message325"));
-    if (!text) return;
-    edit((s) => {
-      const t = engine().current();
-      s.lyrics.push({ id: uid(), text, time: t, end: t + 1, confirmed: false });
-      s.lyrics.sort((a, b) => a.time - b.time);
+      render();
+    }),
+  );
+  function move(id: string, target: number, source = h.song()) {
+    const lyrics = moveLyric(
+      source,
+      id,
+      target,
+      grid(),
+      h.record().lyricWork?.groups,
+    );
+    h.edit((s) => {
+      s.lyrics = lyrics;
     });
-    renderLyricEditor(false);
+    render();
+  }
+  pane.addEventListener("keydown", (e) => {
+    if (
+      e.isComposing ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.altKey ||
+      (e.target as Element).closest(
+        "input,textarea,select,[contenteditable=true]",
+      )
+    )
+      return;
+    if (!["m", "s", "arrowleft", "arrowright"].includes(e.key.toLowerCase()))
+      return;
+    e.preventDefault();
+    e.stopPropagation();
+    run(() => {
+      if (e.key.startsWith("Arrow")) {
+        const id = [...selected][0],
+          l = h.song().lyrics.find((l) => l.id === id);
+        if (l)
+          move(
+            id,
+            lyricAxis(h.song()).at(l) +
+              ((e.key === "ArrowRight" ? 1 : -1) * 4) / grid(),
+          );
+        return;
+      }
+      const r = h.record(),
+        ids = [...selected];
+      const result = (e.key.toLowerCase() === "m" ? mergeLyrics : splitLyrics)(
+        h.song(),
+        ids,
+        r.lyricWork?.groups,
+      );
+      // edit() snapshots the complete record before replacing component evidence.
+      h.edit(
+        (s) => {
+          s.lyrics = result.lyrics;
+        },
+        { ...r.lyricWork, groups: result.groups },
+      );
+      renderedSong = undefined;
+      render();
+    });
   });
   return {
-    render: renderLyricEditor,
-    get near() {
-      return lyricNear;
-    },
+    render,
+    selection,
+    selected: () => selected,
+    move,
+    grid,
+    dispose: () => window.removeEventListener("pointerup", stopSelecting),
   };
 }

@@ -1,8 +1,7 @@
-import { readFileSync } from "node:fs";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { expect, it, vi } from "vitest";
 import { ScoreReview, reviewPair } from "../../src/apps/editor/score-review";
-import { readScorePackage } from "../../src/modules/library/score-package";
+import { preservedScoreLayout } from "./preserved-score-layout";
 
 // Decode the existing package's real pages; no generated score or database.
 function canvasEnvironment() {
@@ -40,9 +39,9 @@ function canvasEnvironment() {
   return crops;
 }
 
-it("loads all Loveholic PDF/SVG measures and measures dense PDF bars with their printed system", async () => {
-  const record = await readScorePackage(
-    new Blob([readFileSync("public/scores/loveholic.drumscore")]),
+it("reads preserved Loveholic PDF/SVG pixels and measures dense PDF bars with their printed system", async () => {
+  const record = await preservedScoreLayout(
+    "data/production/loveholic/final/Loveholic.drumscore",
   );
   const pair = reviewPair(record);
   const original = JSON.stringify(
@@ -94,8 +93,8 @@ it("loads all Loveholic PDF/SVG measures and measures dense PDF bars with their 
 it.each([false, true])(
   "rejects a PDF crop without staff lines even when diagnostic logging fails=%s",
   async (logFails) => {
-    const record = await readScorePackage(
-      new Blob([readFileSync("public/scores/loveholic.drumscore")]),
+    const record = await preservedScoreLayout(
+      "data/production/loveholic/final/Loveholic.drumscore",
     );
     const pair = reviewPair(record);
     const r = pair[0].regions.find(

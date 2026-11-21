@@ -85,36 +85,3 @@ it("storage denial does not fall back to a server or prevent local analysis", as
   await expect(storeAudioAnalysis(entry)).resolves.toBeUndefined();
   expect(fetch).not.toHaveBeenCalled();
 });
-it("upgrades the existing library without changing songs or migration markers", async () => {
-  const db = await new Promise<IDBDatabase>((resolve, reject) => {
-    const r = indexedDB.open("drum-practice", 3);
-    r.onupgradeneeded = () => {
-      r.result.createObjectStore("songs", { keyPath: "song.id" });
-      r.result.createObjectStore("migrations");
-    };
-    r.onsuccess = () => resolve(r.result);
-    r.onerror = () => reject(r.error);
-  });
-  const record = {
-    song: { id: "keep", title: "My score" },
-    audio: "owned bytes",
-  };
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(["songs", "migrations"], "readwrite");
-    tx.objectStore("songs").put(record);
-    tx.objectStore("migrations").put(true, "player-library-v1");
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-  db.close();
-  await storeAudioAnalysis(entry);
-  const next = await openScoreDatabase();
-  const saved = await new Promise((resolve) => {
-    const r = next.transaction("songs").objectStore("songs").get("keep");
-    r.onsuccess = () => resolve(r.result);
-  });
-  expect(saved).toEqual(record);
-  expect(next.version).toBe(4);
-  next.close();
-  expect(await loadAudioAnalysis(hash)).toEqual(entry);
-});

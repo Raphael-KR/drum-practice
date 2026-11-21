@@ -1,4 +1,4 @@
-/* Real saved package + common playback functions, without IndexedDB writes. */
+/* Current saved package + common rendering/cache; never writes library records. */
 import { readScorePackage } from "/src/modules/library/score-package.ts";
 import {
   readCanonical,
@@ -18,8 +18,7 @@ import { displayRegion } from "/src/modules/score/score-view.ts";
 import { prepareBrowserScore } from "/src/modules/score/browser-score.ts";
 import { displayPage } from "/src/modules/score/score-pages.ts";
 
-const path =
-  "/@fs/Users/raphael/Playground/drum-practice/data/production/loveholic/final/Loveholic.drumscore";
+const path = "/scores/loveholic.drumscore";
 const positions = (s) =>
   s.lyrics.map((l) => ({ id: l.id, text: l.text, ...l.scorePosition }));
 
@@ -166,7 +165,8 @@ export async function review(format = "svg", packagePath = path) {
       "All times +5s, musical positions unchanged; second XML save/read identical",
     inferredMeasures: [48, 99, 107, 109],
     vocalTimingVerified: false,
-    storageWrites: 0,
+    libraryWrites: 0,
+    renderCache: "App-managed derived cache may be read or written",
     scope:
       "Current prepareBrowserScore/preparePlaybackAssets/renderMeasure; native SVG lyrics, no HTML overlay. Visual collision review pending; no persisted import",
     fixtures: [

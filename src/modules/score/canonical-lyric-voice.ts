@@ -54,7 +54,7 @@ function lyricVoiceBlock(measure: Element, voices: string[]): ChildNode[] {
 export function lyricVoiceNotes(part: Element): ReadonlySet<Element> {
   const data = canonicalManifest(part.ownerDocument);
   const voices =
-    data?.version === 2 && data.partId === part.id
+    data?.version === 3 && data.partId === part.id
       ? data.lyrics.map((l) => l.voice)
       : [];
   const notes = new Set<Element>();
@@ -71,7 +71,7 @@ export function removeLyricVoices(part: Element, voices: string[] = []) {
     lyricVoiceBlock(measure, voices).forEach((node) => node.remove());
 }
 
-/** Shared by canonical saving and the read-only upgrade of legacy engraving input. */
+/** Shared by canonical saving and production conversion. */
 export function writeLyricVoices(
   part: Element,
   song: {
@@ -225,7 +225,10 @@ export function writeLyricVoices(
         add(unpitched, "display-octave", "4");
         add(n, "duration", Math.round((end - start) * divisions));
         add(n, "voice", lane.voice);
-        const lyric = add(n, "lyric", undefined, { name: "pronunciation" });
+        const lyric = add(n, "lyric", undefined, {
+          name: "pronunciation",
+          justify: "left",
+        });
         if (begins) {
           add(lyric, "syllabic", "single");
           add(

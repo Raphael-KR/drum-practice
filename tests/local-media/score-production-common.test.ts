@@ -2,6 +2,8 @@ import { beforeAll, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import { readScorePackage } from "../../src/modules/library/score-package";
+import { useScore } from "../../src/modules/score/song-scores";
+import { preservedScoreLayout } from "./preserved-score-layout";
 import { metadataFromXML } from "../../src/modules/score/canonical-xml";
 import { canonicalManifest } from "../../src/modules/score/canonical-metadata";
 // Production helpers are shared with browser entrypoints; real saved assets only.
@@ -18,16 +20,19 @@ beforeAll(() => {
   globalThis.DOMParser = window.DOMParser;
   globalThis.XMLSerializer = window.XMLSerializer;
 });
-const paths = [
+const preservedPaths = [
   "data/production/loveholic/final/Loveholic.drumscore",
   "data/production/preplay-warmup/final/preplay-warmup.drumscore",
   "data/production/tom-moving/final/tom-moving.drumscore",
   "data/production/red-sunset/final/build-03/red-sunset.drumscore",
 ];
+const paths = ["loveholic", "preplay-warmup", "tom-moving", "red-sunset"].map(
+  (id) => `public/scores/${id}.drumscore`,
+);
 async function load(path: string) {
   return readScorePackage(new Blob([readFileSync(path)]));
 }
-for (const path of paths) {
+for (const [index, path] of paths.entries()) {
   it(`preserves every source, page, alternate, lyric and timing: ${path}`, async () => {
     const original = await load(path);
     const current = await readScorePackage(
@@ -54,11 +59,14 @@ for (const path of paths) {
       )!.audioSHA256,
     ).toBe(audioHash);
     const before = structuredClone(song.measures);
+    const layout = await preservedScoreLayout(preservedPaths[index]);
     bindRenderedScore(song, {
-      regions: original.song.regions,
-      pages: original.pages,
+      regions: layout.song.regions,
+      pages: layout.pages,
     });
-    expect(song.measures).toEqual(before);
+    expect(song.measures).toEqual(
+      before.map((m, i) => ({ ...m, regionId: layout.song.regions[i].id })),
+    );
   }, 30000);
 }
 it("detects substitution by a different real score or its pages", async () => {
@@ -68,13 +76,18 @@ it("detects substitution by a different real score or its pages", async () => {
   await expect(verifyPackage(a, { ...a, audio: b.audio })).rejects.toThrow(
     "audio",
   );
-  await expect(verifyPackage(a, { ...a, pages: b.pages })).rejects.toThrow(
-    "pages",
-  );
-  const substitutedPages = [...a.pages];
-  substitutedPages[substitutedPages.length - 1] = b.pages[0];
+  // PDF assets remain part of source-only v2 packages and must still be compared.
+  const pdfSource = await load(paths[0]),
+    pdfOther = await load(paths[3]);
+  const pdf = useScore(pdfSource, pdfSource.otherScores![0]);
+  const otherPDF = useScore(pdfOther, pdfOther.otherScores![0]);
   await expect(
-    verifyPackage(a, { ...a, pages: substitutedPages }),
+    verifyPackage(pdf, { ...pdf, pages: otherPDF.pages }),
+  ).rejects.toThrow("pages");
+  const substitutedPages = [...pdf.pages];
+  substitutedPages[substitutedPages.length - 1] = otherPDF.pages[0];
+  await expect(
+    verifyPackage(pdf, { ...pdf, pages: substitutedPages }),
   ).rejects.toThrow("pages[");
   expect(() =>
     bindRenderedScore(structuredClone(a.song), {

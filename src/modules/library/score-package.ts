@@ -5,6 +5,7 @@ import {
   type MetronomeCorrectionReporter,
 } from "../../model/metronome";
 import type { RecordData } from "../../model/record";
+import { packageRecord } from "./package-song";
 import type { ScoreVariant } from "../../model/record";
 
 const MAX_BYTES = 512 * 1024 * 1024;
@@ -21,7 +22,7 @@ interface Variant extends Omit<ScoreVariant, "source" | "pages"> {
 }
 interface Manifest {
   format: "drumscore";
-  version: 1;
+  version: 2;
   song: Song;
   source: Asset;
   audio: Asset;
@@ -44,7 +45,7 @@ function safePath(path: string): boolean {
     path.split("/").every((p) => p && p !== "." && p !== "..")
   );
 }
-/** Read central-directory limits before JSZip allocates decompressed assets. ZIP64/multidisk are not part of v1. */
+/** Read central-directory limits before JSZip allocates decompressed assets. ZIP64/multidisk are not supported. */
 function inspectZip(bytes: Uint8Array, nestedMXL = false) {
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let end = bytes.length - 22;
@@ -122,7 +123,7 @@ function pageTypes(format: string) {
     : ["image/svg+xml", "application/vnd.drum-practice.svg+gzip"];
 }
 function validateManifest(m: Manifest) {
-  if (!m || m.format !== "drumscore" || m.version !== 1) invalid();
+  if (!m || m.format !== "drumscore" || m.version !== 2) invalid();
   validateSong(m.song);
   if (
     !m.song.id ||
@@ -164,7 +165,7 @@ function validateManifest(m: Manifest) {
       s.format === format ||
       typeof s.name !== "string" ||
       !Array.isArray(s.pages) ||
-      !s.pages.length ||
+      (s.format !== "musicxml" && !s.pages.length) ||
       s.pages.length > 500 ||
       !Array.isArray(s.measures) ||
       scoreStructureSignature({ measures: s.measures } as Song) !==
@@ -267,6 +268,7 @@ async function audioType(blob: Blob): Promise<string> {
   invalid();
 }
 export async function createScorePackage(record: RecordData): Promise<Blob> {
+  record = packageRecord(record);
   const zip = new JSZip();
   let total = 0;
   const asset = async (
@@ -282,8 +284,8 @@ export async function createScorePackage(record: RecordData): Promise<Blob> {
     Promise.all(items.map((p, i) => asset(p, `${prefix}/${i}`)));
   const manifest: Manifest = {
     format: "drumscore",
-    version: 1,
-    song: structuredClone(record.song),
+    version: 2,
+    song: record.song,
     source: await asset(
       record.pdf,
       "score/source",

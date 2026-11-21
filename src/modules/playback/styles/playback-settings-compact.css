@@ -65,9 +65,7 @@
 }
 .settings-phone-landscape
   [data-settings-panel="screen"]
-  > :not(.settings-section-heading):not(.playback-zoom-row):not(
-    :has(#view)
-  ):not(:has(#uniform-spacing)),
+  > :not(.settings-section-heading):not(.playback-zoom-row):not(:has(#view)),
 .settings-phone-landscape [data-setting-value="compare"] {
   display: none;
 }
@@ -77,8 +75,7 @@
   gap: 8px;
   width: 100%;
 }
-.settings-phone-landscape #view-description,
-.settings-phone-landscape #uniform-spacing-description {
+.settings-phone-landscape #view-description {
   font-size: 12px;
   line-height: 1.4;
 }

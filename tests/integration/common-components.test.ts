@@ -6,7 +6,8 @@ import {
   webPlaybackBindings,
   playerPlaybackBindings,
 } from "../../src/modules/playback/playback-ui";
-import { iconButton } from "../../src/shared/ui/icons";
+import { setIconButton } from "../../src/shared/ui/icon-button";
+import { icon } from "../../src/shared/ui/icon-svg";
 import { download } from "../../src/platform/browser/download";
 import {
   encodeAsset,
@@ -81,7 +82,7 @@ it("icon updates preserve the button identity and handler; escape captions", () 
   const button = document.querySelector<HTMLButtonElement>("button")!;
   const action = vi.fn();
   button.onclick = action;
-  iconButton("example", "play", 'A "label"', "<b>caption</b>");
+  setIconButton(button, icon("play"), 'A "label"', "<b>caption</b>");
   button.click();
   expect(action).toHaveBeenCalledOnce();
   expect(button.querySelector("b")).toBeNull();

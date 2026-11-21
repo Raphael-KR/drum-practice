@@ -27,6 +27,7 @@ export function audioSetupMetronomeHTML() {
   });
 }
 export interface PlaybackShellOptions {
+  authoring?: false;
   ids: PlaybackBindings & {
     rewindButton: string;
     settings: string;
@@ -41,16 +42,57 @@ export interface PlaybackShellOptions {
   loopExtra?: HTMLElement;
   markerContent: HTMLElement;
 }
+interface AuthoringShellOptions {
+  authoring: true;
+  ids: Pick<
+    PlaybackBindings,
+    "title" | "tempo" | "rewind" | "position" | "progress"
+  > & { rewindButton: string };
+}
+interface PlaybackShell {
+  settings: HTMLDialogElement;
+  screen: HTMLElement;
+  addSettings(
+    category: SettingsCategory,
+    id: string,
+    buttonId: string,
+  ): HTMLElement;
+}
 /** Sole owner of playback composition. Hosts provide authoring slots, never rearrange common controls. */
 export function mountPlaybackShell(
   root: HTMLElement,
+  options: AuthoringShellOptions,
+): void;
+export function mountPlaybackShell(
+  root: HTMLElement,
   options: PlaybackShellOptions,
+): PlaybackShell;
+export function mountPlaybackShell(
+  root: HTMLElement,
+  options: PlaybackShellOptions | AuthoringShellOptions,
 ) {
   const { ids } = options;
   root.querySelector(".brand")!.innerHTML = playbackBrandHTML(
     ids.title,
     ids.tempo,
   );
+  const practice = root.querySelector("#practice")!;
+  practice.insertAdjacentHTML(
+    "beforeend",
+    transportHTML({
+      rewindId: ids.rewind,
+      rewindButton: ids.rewindButton,
+      positionId: ids.position,
+      showPosition: options.authoring ? true : options.showPosition,
+      right: progressFieldHTML(ids.progress),
+    }),
+  );
+  if (options.authoring) return;
+  return mountPracticePanels(root, options);
+}
+function mountPracticePanels(root: HTMLElement, options: PlaybackShellOptions) {
+  const { ids } = options;
+  const practice = root.querySelector("#practice")!;
   const actions = root.querySelector("header .actions")!;
   root
     .querySelector(`#${ids.tempo}`)!
@@ -66,22 +108,14 @@ export function mountPlaybackShell(
   const gear = root.querySelector<HTMLButtonElement>(`#${ids.settings}`)!;
   gear.setAttribute("aria-haspopup", "dialog");
   gear.onclick = options.openSettings;
-  const practice = root.querySelector("#practice")!;
   practice.insertAdjacentHTML(
     "beforeend",
-    transportHTML({
-      rewindId: ids.rewind,
-      rewindButton: ids.rewindButton,
-      positionId: ids.position,
-      showPosition: options.showPosition,
-      right: progressFieldHTML(ids.progress),
-    }) +
-      repeatBarHTML({
-        repeat: ids.repeat,
-        adjust: ids.adjust,
-        markers: ids.markers,
-        radiusAttribute: ids.radiusAttribute,
-      }),
+    repeatBarHTML({
+      repeat: ids.repeat,
+      adjust: ids.adjust,
+      markers: ids.markers,
+      radiusAttribute: ids.radiusAttribute,
+    }),
   );
   const panel = (name: string, title: string, body: string) => {
     const dialog = createDialog(

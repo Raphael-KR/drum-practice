@@ -1,3 +1,4 @@
+import { timeMeasureWidth } from "./time-spacing";
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import type { GraphicalMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalMeasure";
 import type { GraphicalContinuousDynamicExpression } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalContinuousDynamicExpression";
@@ -73,10 +74,7 @@ function layoutPlaybackWedges(
     const segments = pieces.map((piece, i) => {
       const duration = piece.measure.parentSourceMeasure.Duration.RealValue * 4;
       // Native coordinates are engraving units, ten SVG units per unit.
-      const width =
-        (spacing.uniformQuarters && spacing.rowWidth
-          ? spacing.rowWidth
-          : duration * spacing.quarter) / 10;
+      const width = timeMeasureWidth(duration, spacing) / 10;
       return {
         ...piece,
         left:

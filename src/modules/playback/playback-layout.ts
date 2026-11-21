@@ -27,6 +27,7 @@ interface RowHost {
   resume: boolean;
   measureHTML: (m: Measure, i: number, w: number) => string;
   cellWidth?: number;
+  rowWidths?: (start: number) => number[];
 }
 export function engravingHeight(stageWidth: number, zoom: number) {
   return (clamp(stageWidth * 0.245, 170, 340) * zoom) / 2;
@@ -78,15 +79,6 @@ export function measureWidth(
     ? (r.w * height) / (staffFrameHeight(staff) * staff.gap * ratio)
     : (height * r.w) / r.h / ratio;
 }
-/** Linear timeline position; phase * width is the shared note-head offset. */
-export function ribbonPosition(
-  width: number,
-  beat: number,
-  beats: number,
-  phase: number,
-) {
-  return width * (phase + beat / beats);
-}
 export function measurePosition(
   s: Song,
   index: number,
@@ -111,6 +103,18 @@ export function measurePosition(
 }
 export function renderScoreRows(h: RowHost, state: RowState, index: number) {
   const { stage, ribbon, song, measureHTML, playing, scrubbing, resume } = h;
+  const cellWidth = (i: number, fallback: number) =>
+    h.rowWidths?.(Math.floor(i / 4) * 4)[i % 4] ?? fallback;
+  const emptyWidth = (i: number, fallback: number) => {
+    const start = Math.floor(i / 4) * 4,
+      widths = h.rowWidths?.(start);
+    if (!widths) return fallback;
+    const slots = 4 - widths.length;
+    return slots
+      ? Math.max(0, fallback * 4 - widths.reduce((sum, w) => sum + w, 0)) /
+          slots
+      : 0;
+  };
   let { rowWindow, pausedBrowseIndex, renderedBrowseWidth } = state;
   const { playbackRowOrigin } = state;
   try {
@@ -147,8 +151,8 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
               (_, j) => {
                 const i = row * 4 + j;
                 return i >= 0 && i < measures.length
-                  ? measureHTML(measures[i], i, width)
-                  : `<div class="measure empty-measure" style="width:${width}px"></div>`;
+                  ? measureHTML(measures[i], i, cellWidth(i, width))
+                  : `<div class="measure empty-measure" style="width:${emptyWidth(i, width)}px"></div>`;
               },
             ).join("")}</div></div>`,
         ).join("");
@@ -228,17 +232,17 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
     // Preserve all four slots when the upcoming final row is incomplete.
     const html = (i: number) =>
       i < s.measures.length
-        ? measureHTML(s.measures[i], i, width)
-        : `<div class="measure empty-measure" style="width:${width}px"></div>`;
-    const uniform = s.scoreFormat === "musicxml" && s.settings.uniformSpacing;
-    const parents = uniform
+        ? measureHTML(s.measures[i], i, cellWidth(i, width))
+        : `<div class="measure empty-measure" style="width:${emptyWidth(i, width)}px"></div>`;
+    const wrapped = s.scoreFormat === "musicxml";
+    const parents = wrapped
       ? [
           ...ribbon.querySelectorAll<HTMLElement>(
             ":scope > .browse-row > .browse-strip",
           ),
         ]
       : [ribbon];
-    if (reuse && parents.length === (uniform ? 2 : 1)) {
+    if (reuse && parents.length === (wrapped ? 2 : 1)) {
       const existing = new Map(
         [...ribbon.querySelectorAll<HTMLElement>("[data-index]")].map(
           (cell) => [Number(cell.dataset.index), cell],
@@ -253,7 +257,7 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
       // outgoing row needs new cells; final-row swaps move the same nodes.
       parents.forEach((parent, row) => {
         const cells = (
-          uniform ? indices.slice(row * 4, row * 4 + 4) : indices
+          wrapped ? indices.slice(row * 4, row * 4 + 4) : indices
         ).map((i) => existing.get(i)!);
         const wanted = new Set(cells);
         for (const cell of [...parent.children])
@@ -264,7 +268,7 @@ export function renderScoreRows(h: RowHost, state: RowState, index: number) {
         });
       });
     } else {
-      ribbon.innerHTML = uniform
+      ribbon.innerHTML = wrapped
         ? [indices.slice(0, 4), indices.slice(4)]
             .map(
               (row) =>

@@ -18,8 +18,8 @@ interface DisplayControls {
   get<T extends HTMLElement = HTMLElement>(id: string): T;
   input(id: string): HTMLInputElement;
   tempo: ReturnType<typeof createPlaybackTempo>;
-  scoreOnlyView: ReturnType<typeof installScoreOnlyView>;
-  settingsLayout: ReturnType<typeof installPhoneLandscapeSettings>;
+  scoreOnlyView: ReturnType<typeof installScoreOnlyView> | undefined;
+  settingsLayout: ReturnType<typeof installPhoneLandscapeSettings> | undefined;
   requestFrame(): void;
   syncRepeatAvailability(): void;
   isDisposed(): boolean;
@@ -57,7 +57,9 @@ export function createPlaybackDisplay(
       bpm = originalTempoMode(s)
         ? s.bpm
         : Number((originalAudioBpm() * s.settings.rate).toFixed(3));
-    get(ids.title).textContent = formatSongTitle(s);
+    get(ids.title).textContent = h.authoring
+      ? [s.title, s.artist].filter(Boolean).join(" - ")
+      : formatSongTitle(s);
     const info = root.querySelector<HTMLElement>("#recording-tempo-info");
     if (info) {
       const recording = readRecordingTempo(h.canonicalXML?.());
@@ -78,23 +80,25 @@ export function createPlaybackDisplay(
       t("main.message210", { value1: headerBpm() }),
     );
     tempo.title = t("main.message211");
-    const v = input(ids.tempoInput);
-    if (!h.busy()) v.value = String(bpm);
-    v.min = String(minimumPracticeBpm());
-    v.max = String(Math.floor(originalAudioBpm() * 1.2));
-    for (const [key, value] of [
-      ["now", v.value],
-      ["min", v.min],
-      ["max", v.max],
-    ])
-      v.setAttribute(`aria-value${key}`, value);
-    syncMetronomeControls(root, s.settings);
-    input("music-volume").value = String(s.settings.musicVolume);
-    input("click-volume").value = String(metronomeVolume(s.settings));
-    for (const id of ["music-volume", "click-volume"]) {
-      const output = root.querySelector(`#${id}-value`);
-      if (output)
-        output.textContent = `${Math.round(Number(input(id).value) * 100)}%`;
+    if (!h.authoring) {
+      const v = input(ids.tempoInput);
+      if (!h.busy()) v.value = String(bpm);
+      v.min = String(minimumPracticeBpm());
+      v.max = String(Math.floor(originalAudioBpm() * 1.2));
+      for (const [key, value] of [
+        ["now", v.value],
+        ["min", v.min],
+        ["max", v.max],
+      ])
+        v.setAttribute(`aria-value${key}`, value);
+      syncMetronomeControls(root, s.settings);
+      input("music-volume").value = String(s.settings.musicVolume);
+      input("click-volume").value = String(metronomeVolume(s.settings));
+      for (const id of ["music-volume", "click-volume"]) {
+        const output = root.querySelector(`#${id}-value`);
+        if (output)
+          output.textContent = `${Math.round(Number(input(id).value) * 100)}%`;
+      }
     }
     input("zoom").value = String(sliderFromZoom(s.settings.zoom));
     input("zoom").setAttribute(
@@ -118,17 +122,23 @@ export function createPlaybackDisplay(
   }
   function syncDisplay() {
     requestFrame();
-    scoreOnlyView.sync();
+    scoreOnlyView?.sync();
     if (h.ready()) prepareTempo();
-    settingsLayout.sync(scoreOnlyView.active());
+    settingsLayout?.sync(!!scoreOnlyView?.active());
     syncPhoneDisplayMode();
     syncRepeatAvailability();
     syncSettingsChoices(root);
     const view = h.ready() ? h.song().settings.view : input("view").value;
     const zoom = input("zoom");
     zoom.closest("label")!.hidden =
-      view !== "ribbon" && !scoreOnlyView.active();
-    zoom.disabled = view !== "ribbon";
+      !h.authoring && view !== "ribbon" && !scoreOnlyView?.active();
+    zoom.disabled = view === "rows" || (!h.authoring && view !== "ribbon");
+    if (h.authoring && view === "rows") {
+      // Fixed four-measure rows use the common fit-to-width scale.
+      zoom.value = String(sliderFromZoom(1));
+      get("zoom-value").textContent = "100%";
+      zoom.setAttribute("aria-valuetext", "100%");
+    }
     root
       .querySelectorAll<HTMLButtonElement>("[data-row-view]")
       .forEach((button) => {
@@ -138,6 +148,10 @@ export function createPlaybackDisplay(
         );
         button.disabled = !h.ready() || h.busy();
       });
+    if (h.authoring) {
+      h.settingsChanged?.();
+      return;
+    }
     get("view-description").textContent = t(
       view === "compare"
         ? "main.message224"
@@ -146,22 +160,11 @@ export function createPlaybackDisplay(
           : "main.message226",
     );
     const pdf = h.ready() && h.song().scoreFormat !== "musicxml";
-    const spacing = input("uniform-spacing");
-    spacing.disabled =
-      !h.ready() ||
-      pdf ||
-      view === "compare" ||
-      !h.assets().ribbon?.get(0)?.grid;
-    spacing.checked = h.ready() && !!h.song().settings.uniformSpacing;
-    get("uniform-spacing-description").textContent = t(
-      spacing.disabled
-        ? "settings.uniformSpacingUnavailable"
-        : "settings.uniformSpacingDescription",
-    );
+
     const control = input(h.display.highlightId);
     control.disabled = view === "compare" || pdf;
     control.checked =
-      !control.disabled && (scoreOnlyView.active() || h.highlight());
+      !control.disabled && (!!scoreOnlyView?.active() || h.highlight());
     get("note-highlight-description").textContent = t(
       view === "compare"
         ? "main.message252"
@@ -180,7 +183,7 @@ export function createPlaybackDisplay(
       !h.display.setPhoneLandscape
     )
       return;
-    const phone = scoreOnlyView.active();
+    const phone = !!scoreOnlyView?.active();
     applyingDisplayMode = true;
     void Promise.resolve()
       .then(() => {
@@ -190,7 +193,7 @@ export function createPlaybackDisplay(
       .catch(h.fail)
       .finally(() => {
         applyingDisplayMode = false;
-        if (!isDisposed() && phone !== scoreOnlyView.active()) syncDisplay();
+        if (!isDisposed() && phone !== !!scoreOnlyView?.active()) syncDisplay();
       });
   }
 

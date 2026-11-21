@@ -480,3 +480,14 @@ SoCal EXS에는 키50 zone이 없고 고음 탐 zone은 키48이다. 위 연결�
 - 최신 제작 경로: `data/production/canonical-corrections-20261112/tom-moving/`. 정본은 `score.musicxml`, 전체 보기는 `full-score.svg`, 패키지는 `tom-moving.drumscore`다. 로컬 수록본 `public/scores/tom-moving.drumscore`와 5173 응답이 인계본과 같은 해시임을 확인했다.
 - 이전 정본과 원본 미디어는 보존했다. 공통 XSD·정확한 음악 시간축·가사/메타정보·패키지 전체 자산 왕복 검사에서 승인된 변경 이외의 음악·음원 연결을 유지했다.
 - 원본 판독·최소 offset·같은 줄·글꼴·실제 화면의 검수 범위, 남은 미확정과 개발자 인계/수록 상태는 [후속 교정 기록](../archive/canonical-corrections-20261112.md)을 따른다. 정본 생성·화면·수록·청취·배포를 같은 상태로 표시하지 않는다.
+
+
+<a id="tom-moving-lyric-groups-20261113"></a>
+
+## 2026-11-13 — 최종 가사 묶음 정본 v3
+
+- 새 현행 정본: `data/production/lyric-groups-20261113/tom-moving/score.musicxml`. SHA256 `7385b414cecd1f35445081e907c1f9f6de646d855cf20fea80c28fd0717f6c66`.
+- 28마디, 원래 가사 0개 → 최종 표시 항목 0개. 시간 없는 마디 문구 0개는 유지했다. 묶음은 첫 시작과 ID·가장 늦은 끝을 쓰며 기존 확인 상태를 임의 확정하지 않았다.
+- 같은 폴더의 `before.musicxml`·`before-song.json`·`work.json`에 이전 XML/Song·원문·원음절 분수 위치·음가를, `groups.json`에 문자 폭·구성 ID 대응을 보존했다. 원문/상세 음절 근거는 정본에서 제거했다.
+- XSD·그리드·중복·문구/시작/끝/확인 상태·완전 대응·드럼/기타 XML·음원 연결 보존 정적 대조 PASS. 실제 표시·회귀·저장/재열기·청취는 실행하지 않았다.
+- 원인·해결·재사용 절차·공통 도구 및 인계 상태는 [전환 기록](../archive/canonical-lyric-groups-20261113.md)을 따른다. 이전 정본·음원·원본·기록은 보존했다. 앱 수록 패키지는 개발 담당이 반영한다.

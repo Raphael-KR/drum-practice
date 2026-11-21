@@ -19,7 +19,7 @@ export const preferenceKeys = [
   "drum-practice.settings-category",
 ];
 export interface LibraryArchive {
-  version: 1;
+  version: 2;
   kind: "drum-practice-library";
   createdAt: string;
   records: (PackedRecord & Pick<RecordData, "editDraft" | "revisions">)[];
@@ -30,7 +30,7 @@ export async function exportLibrary(
   preferences: Record<string, string> = {},
 ) {
   const data: LibraryArchive = {
-    version: 1,
+    version: 2,
     kind: "drum-practice-library",
     createdAt: new Date().toISOString(),
     preferences,
@@ -55,7 +55,7 @@ export async function importLibrary(
   if (!file) throw Error(i18nText("library-backup.message077"));
   const data: LibraryArchive = JSON.parse(await file.async("string"));
   if (
-    data.version !== 1 ||
+    data.version !== 2 ||
     data.kind !== "drum-practice-library" ||
     !Array.isArray(data.records)
   )

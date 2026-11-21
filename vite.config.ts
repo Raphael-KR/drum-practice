@@ -1,6 +1,9 @@
 import { defineConfig } from "vite";
 import ko from "./src/shared/i18n/locales/ko.json" with { type: "json" };
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { lyricCorrectionsPlugin } from "./server/lyric-corrections";
+import { productionRequestsPlugin } from "./server/production-requests";
+import { scoreProjectsPlugin } from "./server/score-projects";
 export default defineConfig(({ mode }) => {
   const separate = mode === "editor" || mode === "player";
   return {
@@ -19,6 +22,13 @@ export default defineConfig(({ mode }) => {
         }
       : {}),
     plugins: [
+      ...(mode !== "player"
+        ? [
+            lyricCorrectionsPlugin(),
+            productionRequestsPlugin(),
+            scoreProjectsPlugin(),
+          ]
+        : []),
       {
         name: "static-app-no-api",
         configureServer(server) {

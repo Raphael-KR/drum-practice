@@ -1,3 +1,4 @@
+import { listProjects } from "./score-project-client";
 import type { RecordData } from "../../model/record";
 import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import {
@@ -6,7 +7,7 @@ import {
 } from "../../modules/library/score-package";
 import { saveCanonical } from "../../modules/score/canonical-xml";
 import { download } from "../../platform/browser/download";
-import { allRecords, saveRecord } from "../../platform/storage/storage";
+import { allRecords } from "../../platform/storage/storage";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { $ } from "./editor-dom";
 
@@ -22,8 +23,7 @@ interface FileTransferHost {
 
 export function installEditorPackages(h: FileTransferHost) {
   const { action, persist, activate, tell, error } = h;
-  // New-score entry uses one package-import path. The authoring database remains
-  // the existing library; an existing identity is never silently overwritten.
+  // Import through the shared project opener; never silently overwrite an existing identity.
   const packageInput = document.createElement("input");
   packageInput.type = "file";
   packageInput.accept = ".drumscore";
@@ -45,15 +45,19 @@ export function installEditorPackages(h: FileTransferHost) {
     try {
       const correctionNotice = createMetronomeCorrectionNotice();
       const imported = await readScorePackage(file, correctionNotice.collect);
-      if ((await allRecords()).some((r) => r.song.id === imported.song.id)) {
+      if (
+        (await listProjects()).projects.some(
+          (p) => p.songId === imported.song.id,
+        ) ||
+        (await allRecords()).some((r) => r.song.id === imported.song.id)
+      ) {
         if (!confirm(i18nText("separation.importCopy"))) return;
         imported.song.id = crypto.randomUUID();
         imported.song.title = i18nText("separation.copyTitle", {
           title: imported.song.title,
         });
-        saveCanonical(imported);
+        await saveCanonical(imported);
       }
-      await saveRecord(imported);
       await activate(imported);
       $<HTMLDialogElement>("new-dialog").close();
       tell(

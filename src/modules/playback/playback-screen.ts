@@ -62,6 +62,9 @@ import { syncCurrentSection } from "./section-shortcuts";
 export interface PlaybackScreenHost {
   root: HTMLElement;
   environment: "web" | "player";
+  /** Authoring shares score navigation, without practice settings or tools. */
+  authoring?: boolean;
+  selectionChanged?(index: number): void;
   preferences: {
     restartId: string;
     countoffId: string;
@@ -118,16 +121,19 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   const { root, ids } = h;
   arrangePlaybackUI(root, ids);
   installUIStandard(h.environment, root);
-  installHelp(root);
-  const drawer = mountPlaybackDrawer(root, ids);
-  const scoreOnlyView = installScoreOnlyView(root, h.ready);
-  const settingsLayout = installPhoneLandscapeSettings(
-    root,
-    h.settingsSelected,
-  );
-  const phoneLayout = window.matchMedia?.(PHONE_LAYOUT_QUERY);
-  const repeatEnabled = () => !phoneLayout?.matches;
-  root.classList.toggle("phone-layout", !repeatEnabled());
+  if (!h.authoring) installHelp(root);
+  const drawer = h.authoring ? undefined : mountPlaybackDrawer(root, ids);
+  const scoreOnlyView = h.authoring
+    ? undefined
+    : installScoreOnlyView(root, h.ready);
+  const settingsLayout = h.authoring
+    ? undefined
+    : installPhoneLandscapeSettings(root, h.settingsSelected);
+  const phoneLayout = h.authoring
+    ? undefined
+    : window.matchMedia?.(PHONE_LAYOUT_QUERY);
+  const repeatEnabled = () => !h.authoring && !phoneLayout?.matches;
+  root.classList.toggle("phone-layout", !h.authoring && !repeatEnabled());
   const get = <T extends HTMLElement = HTMLElement>(id: string) =>
     root.querySelector<T>(`#${id}`)!;
   const input = (id: string) => get<HTMLInputElement>(id);
@@ -135,10 +141,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     ribbon = get("ribbon");
   const wakeLock = createPlaybackWakeLock();
   const disposers: (() => void)[] = [
-    drawer.dispose,
+    () => drawer?.dispose(),
     wakeLock.dispose,
-    scoreOnlyView.dispose,
-    settingsLayout.dispose,
+    () => scoreOnlyView?.dispose(),
+    () => settingsLayout?.dispose(),
     () => root.classList.remove("phone-layout"),
   ];
   const listen = (target: EventTarget, type: string, fn: EventListener) => {
@@ -184,11 +190,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     !h.player().playing && selectedIndex !== undefined
       ? h.song().measures[selectedIndex].start
       : h.player().current();
-  function selectMeasure(index: number) {
+  function selectMeasure(index: number, focus = true) {
     if (h.player().playing) seek(h.song().measures[index].start);
     else selectedIndex = index;
+    h.selectionChanged?.(index);
     frame();
-    stage.focus({ preventScroll: true });
+    if (focus) stage.focus({ preventScroll: true });
   }
   const offsets: number[] = [],
     widths: number[] = [];
@@ -243,11 +250,11 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     get("practice").classList.toggle("two-rows", s.settings.view !== "ribbon");
     get("practice").classList.toggle("score-review", compare);
     get("practice").classList.toggle(
-      "uniform-spacing",
-      !!s.settings.uniformSpacing && s.scoreFormat === "musicxml",
+      "time-spaced-score",
+      s.scoreFormat === "musicxml",
     );
     input("zoom").closest("label")!.hidden =
-      s.settings.view !== "ribbon" && !scoreOnlyView.active();
+      !h.authoring && s.settings.view !== "ribbon" && !scoreOnlyView?.active();
     if (compare) {
       stage.style.removeProperty("height");
       h.compare?.render();
@@ -263,12 +270,12 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     }
     h.trackChanged?.();
     renderLists();
-    scoreOnlyView.alignStaff();
+    scoreOnlyView?.alignStaff();
   }
   function open(id: string) {
     gestures.cancel();
     if (id === "loop" || id === "marker") {
-      drawer.show(id);
+      drawer?.show(id);
       return;
     }
     get<HTMLDialogElement>(`${id}-dialog`).showModal();
@@ -334,6 +341,10 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   function renderLists() {
     framePending = true;
     if (!h.ready()) return;
+    if (h.authoring) {
+      h.listsChanged?.();
+      return;
+    }
     const s = h.song();
     if (pruneMarkerOverflow(s)) h.changed();
     updateRepeatControls(
@@ -441,31 +452,29 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   });
   const { gestures } = navigation;
   disposers.push(gestures.dispose);
-  const loopSlots: ReturnType<typeof mountLoopSlots> = mountLoopSlots(
-    root,
-    stage,
-    {
-      song: h.song,
-      player: () => ({ loop: h.player().loop, current: selectionTime }),
-      changed: () => {
-        framePending = true;
-        h.changed();
-      },
-      pause: () => {
-        gestures.cancel();
-        pause();
-        frame();
-        stationary = h.player().current();
-      },
-      use: (loop) => {
-        if (loop) selectedIndex = undefined;
-        clearPreset();
-        useLoop(loop);
-      },
-      ready: canRepeat,
-    },
-  );
-  disposers.push(loopSlots.dispose);
+  const loopSlots = h.authoring
+    ? undefined
+    : mountLoopSlots(root, stage, {
+        song: h.song,
+        player: () => ({ loop: h.player().loop, current: selectionTime }),
+        changed: () => {
+          framePending = true;
+          h.changed();
+        },
+        pause: () => {
+          gestures.cancel();
+          pause();
+          frame();
+          stationary = h.player().current();
+        },
+        use: (loop) => {
+          if (loop) selectedIndex = undefined;
+          clearPreset();
+          useLoop(loop);
+        },
+        ready: canRepeat,
+      });
+  if (loopSlots) disposers.push(loopSlots.dispose);
 
   const syncWheel = navigation.bind();
   function progress() {
@@ -544,7 +553,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       repeatEnabled: repeatEnabled(),
       highlight:
         s.scoreFormat === "musicxml" &&
-        (scoreOnlyView.active() || h.highlight()),
+        (scoreOnlyView?.active() || h.highlight()),
       native,
       scrubbing: !!scrub || !!loopSlots?.selecting,
       stationary,
@@ -663,51 +672,56 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
     center = preset.center;
     radius = value;
     useLoop(preset.loop);
-    drawer.show("loop");
+    drawer?.show("loop");
   }
-  listen(root.querySelector(".repeat-presets")!, "click", (e) => {
-    const b = (e.target as Element).closest(`[${ids.radiusAttribute}]`);
-    if (b) run(() => quickRepeat(Number(b.getAttribute(ids.radiusAttribute))));
-  });
+  if (!h.authoring)
+    listen(root.querySelector(".repeat-presets")!, "click", (e) => {
+      const b = (e.target as Element).closest(`[${ids.radiusAttribute}]`);
+      if (b)
+        run(() => quickRepeat(Number(b.getAttribute(ids.radiusAttribute))));
+    });
 
-  action(ids.adjust, () => {
-    if (!canRepeat()) return;
-    if (h.player().loop) {
-      stopLoop();
-      return;
-    }
-    const recent = [...repeatPresets.entries()].at(-1);
-    if (recent) quickRepeat(recent[0]);
-  });
+  if (!h.authoring)
+    action(ids.adjust, () => {
+      if (!canRepeat()) return;
+      if (h.player().loop) {
+        stopLoop();
+        return;
+      }
+      const recent = [...repeatPresets.entries()].at(-1);
+      if (recent) quickRepeat(recent[0]);
+    });
   function mark() {
-    if (!available()) return;
+    if (!available() || h.authoring) return;
     toggleMeasureMarker(h.song(), selectionTime(), uid());
     renderLists();
     progress();
     h.changed();
   }
-  disposers.push(
-    bindMarkerSlots(
-      get(ids.markers),
-      h.song,
-      (time) => seek(time, true),
-      "data-quick-marker",
-      false,
-      {
-        current: selectionTime,
-        toggleCurrent: mark,
-        remove: (id) => {
-          deleteMarkerSlot(h.song(), id);
-          renderLists();
-          progress();
-          h.changed();
+  if (!h.authoring)
+    disposers.push(
+      bindMarkerSlots(
+        get(ids.markers),
+        h.song,
+        (time) => seek(time, true),
+        "data-quick-marker",
+        false,
+        {
+          current: selectionTime,
+          toggleCurrent: mark,
+          remove: (id) => {
+            deleteMarkerSlot(h.song(), id);
+            renderLists();
+            progress();
+            h.changed();
+          },
         },
-      },
-    ),
-  );
-  bindPlaybackPreferences(h, settingsBindings);
+      ),
+    );
+  if (!h.authoring) bindPlaybackPreferences(h, settingsBindings);
   disposers.push(installNumericInputs(root));
   function syncRepeatAvailability() {
+    if (h.authoring) return;
     const phone = !repeatEnabled();
     const enteringPhone = phone && !root.classList.contains("phone-layout");
     root.classList.toggle("phone-layout", phone);
@@ -716,7 +730,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       gestures.cancel();
       if (scrub) finishScrub(true);
     }
-    if (loopSlots.awaitingEndpoint) loopSlots.cancel();
+    if (loopSlots?.awaitingEndpoint) loopSlots?.cancel();
     clearPreset();
     // Reuse the normal loop-off path so already scheduled audio is cancelled too.
     // Saved loops and slots remain on the song; returning to a wider layout only
@@ -736,7 +750,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       renderLists();
       frame();
     });
-  if (scoreOnlyView.media)
+  if (scoreOnlyView?.media)
     listen(scoreOnlyView.media, "change", () => {
       syncDisplay();
       frame();
@@ -760,7 +774,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
       selectedIndex !== framedSelection ||
       document.activeElement !== framedFocus ||
       !!scrub ||
-      loopSlots.awaitingEndpoint ||
+      loopSlots?.awaitingEndpoint ||
       copyActive !== framedCopyActive
     )
       frame();
@@ -776,7 +790,7 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
           if (w !== lastWidth) {
             lastWidth = w;
             renderTrack();
-          } else scoreOnlyView.alignStaff();
+          } else scoreOnlyView?.alignStaff();
         })
       : undefined;
   observer?.observe(stage);
@@ -803,6 +817,8 @@ export function createPlaybackScreen(h: PlaybackScreenHost) {
   return {
     sync,
     syncDisplay,
+    position: track.position,
+    selectMeasure,
     frame,
     onState,
     renderTrack,

@@ -4,10 +4,12 @@
 
 제작을 시작하기 전에 [오선 부착 표기의 64분음표 공통 기본 단위](../reference/score/production.md#score-production-rules--오선-부착-표기의-공통-기본단위)를 읽고 모든 표기의 음악적 위치·음가와 허용된 표시 이동에 적용한다. [구현 상태](../records/archive/staff-grid64-rule-20261112.md#implementation-status)를 확인해 사용할 도구의 지원 범위와 요구 기준을 대조한다.
 
+사용자와의 제작·수정은 [공동작업 워크플로우](collaborate-on-score.md#shared-score-workflow)를 따른다. 곡별 프로젝트에서 첫 검수본을 준비하고, 사용자의 검수 지적·직접 교정·채팅 수정 지시를 받아 같은 프로젝트에서 수정·재검증한다. 아래 단계는 제작자가 수행하는 기술 절차다. 로컬 파일 저장 전환의 실제 지원 상태는 공동작업 문서에 연결된 구현 계획에서 확인한다.
+
 ## 작업 순서 바로가기
 
 1. 접수·보존과 PDF 유형 평가, 구조·악기·주법 교정은 아래 단계 1–3을 수행한다.
-2. [4. 인쇄 가사와 음악적 위치](correct-lyrics.md#score-production-process--4-인쇄-가사-대조와-음악적-위치-저장)를 확인한다. 수동 가창 피드백은 별도 요청에만 적용한다.
+2. [4. 인쇄 가사와 음악적 위치](correct-lyrics.md#score-production-process--4-인쇄-가사-대조와-음악적-위치-저장)를 판독한 뒤 [최종 표시 묶음](correct-lyrics.md#final-lyric-groups)을 작성한다. 수동 가창 피드백은 별도 요청에만 적용한다.
 3. 아래 단계 5로 음원의 첫 박·BPM·마디 연결을 확인한다.
 4. [6. 조판·패키지](review-score.md#score-production-process--6-svg-조판재생-캐시완성-패키지), [7. 실제 앱 검수](review-score.md#score-production-process--7-실제-앱-수록본과-저장-곡-검수), [완료 판정](review-score.md#score-production-process--완료-판정과-필수-근거)을 채운다.
 5. 아래 단계 8에 따라 기존 개발자에게 인계한다. 앱 반영·청취가 남으면 그 상태와 다음 확인을 함께 전달한다.
@@ -32,17 +34,17 @@
 
 ### 시작 전에 읽을 문서
 
-| 목적 | 정본과 진입점 |
-|---|---|
-| 작업 위치·보존·권한 | [전역 지침](/Users/raphael/AGENTS.md), [프로젝트 지침](../../AGENTS.md) |
-| PDF 유형별 변환, 문제 해결, 첫 박·카운트오프, 악보 우선 가사 | [변환 정책](../reference/score/production.md#musicxml-conversion-policy--pdf--musicxml-변환-정책) |
-| 악기·주법·쉼표·스티킹·가사 입력 | [MusicXML·OSMD 매핑](../reference/score/notation.md#score-musicxml-osmd-mapping--악보의-musicxml--osmd-매핑-규칙) |
-| 전체 SVG·연습 화면·자르기·캐시 | [SVG 출력 규칙](../reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙), [브라우저 공통 조판](../reference/score/rendering.md#browser-musicxml-rendering--브라우저-공통-musicxml-조판-계약) |
-| XML 정본·가사 음악적 위치·음원 연결 | [MusicXML 저장 계약](../reference/score/musicxml.md#musicxml-canonical--musicxml-정본-계약) |
-| 새 드럼 음원 제작 시 라이브러리 선택 | [GarageBand 드럼킷 소개·선택 기준](../reference/score/drum-kits.md#garageband-drum-kits--드럼킷-선택과-보존-라이브러리) |
-| 완성 파일·업데이트·구조 충돌 | [패키지 계약](../reference/score/file-formats.md#score-package--완성-악보-파일-계약--drumscore-v1), [제작/재생 앱 범위](../../PRD.md#앱과-입력) |
-| 공통 코드·곡별 설정·판독 어댑터 | [공통 제작 도구](../reference/score/tools.md#common-tools--공통-제작-도구-계약과-곡별-판독) |
-| 실패의 재현과 해결 | [문제 해결 기록](../records/archive/musicxml-evaluation.md#musicxml-troubleshooting--악보-변환-문제-해결-기록), [history](../../history.md) |
+| 목적                                                         | 정본과 진입점                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 작업 위치·보존·권한                                          | [전역 지침](/Users/raphael/AGENTS.md), [프로젝트 지침](../../AGENTS.md)                                                                                                                                       |
+| PDF 유형별 변환, 문제 해결, 첫 박·카운트오프, 악보 우선 가사 | [변환 정책](../reference/score/production.md#musicxml-conversion-policy--pdf--musicxml-변환-정책)                                                                                                             |
+| 악기·주법·쉼표·스티킹·가사 입력                              | [MusicXML·OSMD 매핑](../reference/score/notation.md#score-musicxml-osmd-mapping--악보의-musicxml--osmd-매핑-규칙)                                                                                             |
+| 전체 SVG·연습 화면·자르기·캐시                               | [SVG 출력 규칙](../reference/score/rendering.md#svg-score-rules--svg-전체-악보-생성-규칙), [브라우저 공통 조판](../reference/score/rendering.md#browser-musicxml-rendering--브라우저-공통-musicxml-조판-계약) |
+| XML 정본·가사 음악적 위치·음원 연결                          | [MusicXML 저장 계약](../reference/score/musicxml.md#musicxml-canonical--musicxml-정본-계약)                                                                                                                   |
+| 새 드럼 음원 제작 시 라이브러리 선택                         | [GarageBand 드럼킷 소개·선택 기준](../reference/score/drum-kits.md#garageband-drum-kits--드럼킷-선택과-보존-라이브러리)                                                                                       |
+| 완성 파일·업데이트·구조 충돌                                 | [패키지 계약](../reference/score/file-formats.md#score-package--완성-악보-파일-계약--drumscore-v1), [제작/재생 앱 범위](../../PRD.md#앱과-입력)                                                               |
+| 공통 코드·곡별 설정·판독 어댑터                              | [공통 제작 도구](../reference/score/tools.md#common-tools--공통-제작-도구-계약과-곡별-판독)                                                                                                                   |
+| 실패의 재현과 해결                                           | [문제 해결 기록](../records/archive/musicxml-evaluation.md#musicxml-troubleshooting--악보-변환-문제-해결-기록), [history](../../history.md)                                                                   |
 
 읽은 정본의 날짜·Git HEAD·이번 곡에 적용할 사용자 결정을 곡별 제작 문서에 남긴다. 문서 간 모순은 변환 정책의 확인 순서를 따른다. 이미 확정된 악기나 가사 정책을 사용자에게 다시 묻지 않는다.
 
@@ -164,15 +166,16 @@
 
 반복 입출력·검사·패키지·MIDI·샘플 렌더링은 [공통 제작 도구](../reference/score/tools.md#common-tools--공통-제작-도구-계약과-곡별-판독)의 실제 코드로 재사용한다. 곡 설정과 판독 근거를 분리하며, 새 곡용 범용 자동 판독 CLI가 완성됐다는 뜻은 아니다. 아래 곡별 도구는 원본 양식별 어댑터와 재현 진입점이다. 새 양식의 추출·fixture·메타데이터·패키지 helper를 이번 입력에 맞게 작성/검증한 뒤 곡별 문서에 **실제로 실행한 명령**을 남겨야 처음부터 재현할 수 있다.
 
-| 도구·코드 | 확인한 인터페이스와 선행 조건 | 새 곡에서의 적용 |
-|---|---|---|
-| `tools/score-production/musicxml/convert.py` → `export.py` → `verify.py` | convert: `--pdf --geometry --out`; export: `--input --out`; verify: `--xml --ir --schema --out`. Real Paradis 해시/geometry·전용 예외에 결합 | 구조를 참고. 새 입력에 그대로 실행하지 않음 |
-| `tools/score-production/musicxml/loveholic.py`, `verify_loveholic.py` | `--pdf --out`, `--dir`. 원본 해시, provenance, Poppler 페이지, 로컬 XSD, 원본 fixture 필요 | Opus 좌표·마디 예외를 새로 평가. 보존 결과에 재실행하지 않음 |
-| `loveholic_printed_lyrics.py`, `loveholic_lyric_notes.py` | 원본 문자 bbox·이벤트와 동일 원본 해시. 후자 `--dir --out` | 직접 음표 대응/추정표의 검증 방법을 참고 |
-| `loveholic_audio.py` | `--audio --bars --out`; ffmpeg·numpy 필요. 신호 분석 추정 출력 | 새 곡의 위상·템포·변화 구간을 다시 검증 |
-| `loveholic_package.mjs` | Vite 브라우저 모듈, 특정 곡 경로/해시/개수·loopback 수신기에 결합 | 범용 명령으로 제시하지 않음. 공통 API 사용 방법을 참고 |
-| `src/modules/score/canonical-xml.ts`, `src/modules/score/musicxml.ts`, `src/modules/library/score-package.ts` | 브라우저 DOM/Blob 계약, 현재 공통 정본/조판/ZIP API | 새 곡도 공통 계약으로 저장·렌더·재읽기 |
-| `src/modules/score/browser-score.ts`, `src/platform/storage/practice-library.ts` | 공통 조판 결과와 실제 저장/업데이트 계약 | 실제 앱 수록·재열기에 사용 |
+| 도구·코드                                                                                                     | 확인한 인터페이스와 선행 조건                                                                                                                | 새 곡에서의 적용                                                                             |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `tools/score-production/musicxml/convert.py` → `export.py` → `verify.py`                                      | convert: `--pdf --geometry --out`; export: `--input --out`; verify: `--xml --ir --schema --out`. Real Paradis 해시/geometry·전용 예외에 결합 | 구조를 참고. 새 입력에 그대로 실행하지 않음                                                  |
+| `tools/score-production/musicxml/loveholic.py`, `verify_loveholic.py`                                         | `--pdf --out`, `--dir`. 원본 해시, provenance, Poppler 페이지, 로컬 XSD, 원본 fixture 필요                                                   | Opus 좌표·마디 예외를 새로 평가. 보존 결과에 재실행하지 않음                                 |
+| `loveholic_printed_lyrics.py`, `loveholic_lyric_notes.py`                                                     | 원본 문자 bbox·이벤트와 동일 원본 해시. 후자 `--dir --out`                                                                                   | 직접 음표 대응/추정표의 검증 방법을 참고                                                     |
+| `lyric_groups.py`, `group_canonical_lyrics.mjs`                                                               | 보존한 v2 XML·선택적 Song → 공통 묶음 함수·글꼴 폭·공통 가사 writer → v3 XML/작업 대응표                                                     | [가사 제작 절차](correct-lyrics.md#final-lyric-groups)에서 사용. 원음절 XML은 제작 중간 자료 |
+| `loveholic_audio.py`                                                                                          | `--audio --bars --out`; ffmpeg·numpy 필요. 신호 분석 추정 출력                                                                               | 새 곡의 위상·템포·변화 구간을 다시 검증                                                      |
+| `loveholic_package.mjs`                                                                                       | Vite 브라우저 모듈, 특정 곡 경로/해시/개수·loopback 수신기에 결합                                                                            | 범용 명령으로 제시하지 않음. 공통 API 사용 방법을 참고                                       |
+| `src/modules/score/canonical-xml.ts`, `src/modules/score/musicxml.ts`, `src/modules/library/score-package.ts` | 브라우저 DOM/Blob 계약, 현재 공통 정본/조판/ZIP API                                                                                          | 새 곡도 공통 계약으로 저장·렌더·재읽기                                                       |
+| `src/modules/score/browser-score.ts`, `src/platform/storage/practice-library.ts`                              | 공통 조판 결과와 실제 저장/업데이트 계약                                                                                                     | 실제 앱 수록·재열기에 사용                                                                   |
 
 실행 전에 [기록된 환경과 필수 의존성](develop.md#development--작업-전-조회와-실행-환경)을 확인한다. 해당 작업에 필요한 Node/package lock, Python interpreter·라이브러리, Poppler/ffmpeg, 로컬 XSD의 `musicxml.xsd/xml.xsd/xlink.xsd`, Audiveris/OSMD 경로·버전을 기록하고 사용 가능한 환경을 재사용한다. `tools/score-production/musicxml/requirements.txt`의 기존 환경에 numpy·ffmpeg까지 포함된다고 가정하지 않는다. 이동된 venv도 실제 interpreter·모듈 사용 가능 여부부터 확인하며, 재생성을 먼저 하지 않는다. [Loveholic 재현 절](../records/songs/loveholic.md#loveholic-conversion--근거재현-경로)은 해당 곡의 정확한 선행 파일과 명령 예다.
 
@@ -277,11 +280,13 @@ python3 tools/score-production/musicxml/handoff_production.py receipt --help
 
 ### 새 곡에서 할 일
 
+기존 곡을 재제작할 때는 [악보제작기 확정 교정 반영](correct-lyrics.md#confirmed-lyric-corrections)부터 확인한다. 자동 추출·묶음 결과로 사용자가 확정한 가사 위치를 덮어쓰지 않도록 같은 곡 ID의 접수 자료를 공통 재적용 단계에 연결한다.
+
 반복 계측·검수 화면·인계 준비는 [실행 안내](produce-score.md#reusable-production-workflow--제작-계측검수인계-재사용)를 따른다. 공통화의 선택 근거는 [ADR-0018](../decisions/0018-reusable-score-production-and-handoff.md)에 둔다.
 
 1. 원본·기존 결과를 식별하고, `profiles/songs.json`에 이번 작업에 필요한 설정만 추가한다. 다른 곡의 `firstBeat`나 BPM을 기본값으로 복사하지 않는다.
 2. 새로운 PDF 양식이면 대표 구간을 판독하고, 필요할 때 양식별 어댑터를 만든다. 음표 시작/길이·악기·성부를 해독한 데이터와 독립 원본 기대값을 별도로 보존한다.
-3. 확인한 가사 위치·음원 연결·교정 사항과 불확실성을 곡별 근거에 적는다. 후보 계산은 공통 코드에, 후보 채택 이유는 판독 자료에 둔다.
+3. 확인한 가사 위치·음원 연결·교정 사항과 불확실성을 곡별 근거에 적는다. [최종 묶음 절차](correct-lyrics.md#final-lyric-groups)로 원음절 작업 자료와 v3 정본을 나눈다. 후보 계산은 공통 코드에, 후보 채택 이유는 판독 자료에 둔다.
 4. 공통 규격 검사·정본/패키지 API를 호출한다. 확정된 입력으로 새 폴더에 생성하고 기존 결과와 검증한다.
 5. 제작 완료 후 자동 인계 절차를 따른다. 도구 리팩터링만으로 새 악보를 제작/수록한 것으로 간주하지 않는다.
 

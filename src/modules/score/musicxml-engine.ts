@@ -1,10 +1,18 @@
-import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import {
+  OpenSheetMusicDisplay,
+  TextAlignmentEnum,
+} from "opensheetmusicdisplay";
 import { installDrumBeams } from "./drum-beams";
+import { installLyricCollisions } from "./lyric-collisions";
 import { applyDrumDecorations, prepareDrumDecorations } from "./drum-notation";
 import { installPlaybackWedges } from "./playback-wedges";
-import { installPlaybackWords } from "./playback-words";
+import { installScoreWords } from "./score-words";
 import { installRehearsalLayout } from "./rehearsal-layout";
-import { installRibbonEngraving, type RibbonSpacing } from "./ribbon-engraving";
+import {
+  installRibbonEngraving,
+  renderTimeSpacedScore,
+  type RibbonSpacing,
+} from "./ribbon-engraving";
 import { SCORE_TEXT_FONT_FAMILY, scoreTextHeight } from "./score-text-font";
 import { installTechnicalPositions } from "./technical-position";
 import { installWedgeEndpoints } from "./wedge-endpoints";
@@ -13,11 +21,11 @@ import { installWordsPositions, prepareWordsPositions } from "./words-position";
 import type { XMLScore } from "./musicxml-parse";
 import type { Song } from "../../model/model";
 import { installScoreLyrics, SCORE_LYRIC_COLOR } from "./score-lyrics";
-import {
-  fitFullScoreSystems,
-  installFullScoreLayout,
-} from "./full-score-layout";
+import { installFullScoreLayout } from "./full-score-layout";
+import { TIME_SPACING, SCORE_LYRIC_POINTS } from "./time-spacing";
 import { prepareEngravingTitles } from "./engraving-titles";
+import { configureScoreInstructions } from "./score-instructions";
+import { fullWidthSystemStarts } from "./full-score-spacing";
 
 /** Configure and render one disposable engraving copy in the existing hook order. */
 export async function renderMusicXMLEngine(
@@ -44,10 +52,16 @@ export async function renderMusicXMLEngine(
   // XML owns system boundaries; do not impose a fixed measure count.
   osmd.EngravingRules.DefaultFontFamily = SCORE_TEXT_FONT_FAMILY;
   osmd.EngravingRules.VexFlowTextFontFamily = SCORE_TEXT_FONT_FAMILY;
-  osmd.EngravingRules.LyricsHeight = scoreTextHeight(
-    osmd.EngravingRules.RehearsalMarkFontSize + 3,
-  );
+  osmd.EngravingRules.LyricsHeight = scoreTextHeight(SCORE_LYRIC_POINTS);
   osmd.EngravingRules.DefaultColorLyrics = SCORE_LYRIC_COLOR;
+  osmd.EngravingRules.LyricsAlignmentStandard = TextAlignmentEnum.LeftBottom;
+  // Only the endless full score can suppress native pagination. Both print
+  // pages and one-measure playback systems need it when they exceed page height.
+  osmd.EngravingRules.RenderSingleHorizontalStaffline =
+    !!fullScoreSong &&
+    !!parsed.document.querySelector(
+      'print[new-system="yes"], print[new-page="yes"]',
+    );
   osmd.EngravingRules.HiddenVoicesKeepLayout = true;
   osmd.EngravingRules.RenderLyricsOfHiddenVoices = true;
   if (fullScoreSong) {
@@ -85,7 +99,14 @@ export async function renderMusicXMLEngine(
   const decorations = prepareDrumDecorations(renderDocument);
   const wordsPositions = prepareWordsPositions(renderDocument);
   await osmd.load(renderDocument);
-  const lyricLabels = installScoreLyrics(osmd, measureLyrics, !!timeline);
+  configureScoreInstructions(osmd, renderDocument, !!timeline);
+  installLyricCollisions(osmd, renderDocument);
+  const lyricLabels = installScoreLyrics(
+    osmd,
+    measureLyrics,
+    !!timeline,
+    renderDocument,
+  );
   if (fullScoreSong) {
     installFullScoreLayout(osmd, fullScoreSong);
   }
@@ -117,13 +138,18 @@ export async function renderMusicXMLEngine(
   const rehearsalBounds = installRehearsalLayout(osmd, renderDocument);
   installTechnicalPositions(osmd, decorations);
   const positionedWords = installWordsPositions(osmd, wordsPositions);
+  installRibbonEngraving(osmd, timeline ?? TIME_SPACING, !!timeline);
   if (timeline) {
-    installRibbonEngraving(osmd, timeline);
     installPlaybackWedges(osmd, timeline);
   }
-  installPlaybackWords(osmd, rehearsalBounds, positionedWords, !!timeline);
-  osmd.render();
-  if (fullScoreSong) fitFullScoreSystems(osmd, host);
+  installScoreWords(osmd, rehearsalBounds, positionedWords, timeline);
+  renderTimeSpacedScore(osmd, {
+    printHost: !timeline && !fullScoreSong ? host : undefined,
+    alignSystems: !timeline,
+    fullWidthSystems: fullScoreSong
+      ? fullWidthSystemStarts(renderDocument, parsed.partId)
+      : undefined,
+  });
   applyDrumDecorations(host, osmd, decorations);
 
   return { osmd, renderDocument, positionedWords, lyricLabels };

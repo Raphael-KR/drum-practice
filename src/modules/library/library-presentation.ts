@@ -9,7 +9,7 @@ const FAVORITES_KEY = "drum-practice:favorite-scores";
 
 /** Common card structure. Each host supplies only its action controls. */
 export function libraryCardHTML(entry: ScoreCatalogEntry, actions = "") {
-  return `<article class="practice-card" data-score-id="${escapeHTML(entry.id)}"><div class="practice-card-title"><h3>${escapeHTML(entry.record?.song.title ?? entry.bundled!.title)}</h3><p>${escapeHTML(entry.record?.song.artist || "")}</p></div><div class="practice-card-actions">${actions}</div></article>`;
+  return `<article class="practice-card" data-score-id="${escapeHTML(entry.id)}"><div class="practice-card-title"><h3>${escapeHTML(entry.metadata?.title ?? entry.record?.song.title ?? entry.bundled!.title)}</h3><p>${escapeHTML(entry.metadata?.artist ?? entry.record?.song.artist ?? "")}</p></div><div class="practice-card-actions">${actions}</div></article>`;
 }
 
 export function syncCardTitleOrder(heading: Element) {

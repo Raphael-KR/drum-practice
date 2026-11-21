@@ -106,7 +106,7 @@ Node 26.13.0·pnpm 12.18.0·Vitest 5.1.0에서 지정한 15경로를 `pnpm exec 
 | [playback-runtime](../../tests/integration/playback-runtime.test.ts) | 9 | player의 저장 직렬화/실패 복구·해제·BFCache·SVG/글꼴 검증·설정 입력 이동/복원을 확인한다. screen을 mock하므로 화면 조작 검사를 대체하지 않는다. 이번에는 잘못 옮긴 메뉴 순서 기대값을 수정했다. | player runtime·저장 연결·SVG 검증·설정 배치 |
 | [player-library-render](../../tests/integration/player-library-render.test.ts) | 18 | 실제 player 앱의 목록 갱신 경쟁·가져오기/재시도·즐겨찾기·파일 선택기 복귀·음원 전용 목록을 확인한다. 제작기 목록은 다른 진입점이므로 별도 검사한다. | player 목록·가져오기·focus 처리 |
 | [retired-score](../../tests/integration/retired-score.test.ts) | 2 | 현행 DB를 여는 실제 경로가 폐기된 16마디 키만 제거하고 28/96마디 자료를 보존하며 재수입을 거절하는지 확인한다. 전체 미디어 cursor 조회를 하지 않는 성능 계약도 유지한다. 폐기 SQL과 달리 현재 실행 중인 동작이다. | 공통 DB 열기·폐기 악보 식별·가져오기 |
-| [player-recovery-removal](../../tests/integration/player-recovery-removal.test.ts) | 1 | 지원하는 구형 IndexedDB v2에서 복구 사본만 지우고 악보·편집 이력·초안을 유지하는 스키마 이관을 확인한다. 현행 DB 정리 테스트와 입력 버전이 다르다. 마지막 중복 재열기만 제거했다. | IndexedDB 버전·이관·삭제 범위 |
+| `player-recovery-removal.test.ts` (당시 파일) | 1 | 지원하는 구형 IndexedDB v2에서 복구 사본만 지우고 악보·편집 이력·초안을 유지하는 스키마 이관을 확인한다. 현행 DB 정리 테스트와 입력 버전이 다르다. 마지막 중복 재열기만 제거했다. | IndexedDB 버전·이관·삭제 범위 |
 | [player-worker](../../tests/integration/player-worker.test.ts) | 3 | HTML 진입점의 보안 헤더, API 404 및 ASSETS 미호출, 패키지 바이트 전달을 검증한다. 제거한 번들 문자열 검사의 실제 응답 책임을 유지한다. | Worker 라우팅·헤더·자산 전달 |
 | [editor-catalog](../../tests/local-media/editor-catalog.test.ts) | 9 | 실제 수록 패키지로 제작기 편집 열기·다른 탭의 저장 보존·오다운로드 차단·삭제 후 수입 복원·재시도를 확인한다. 저장된 원본을 덮어쓰지 않는 제작기 고유 경계다. | 제작기 목록·패키지 입력·편집 열기 |
 | [loop-slots](../../tests/local-media/loop-slots.test.ts) | 20 | 현재 반복 구간 등록·정렬·오래된 슬롯 교체·JSON 재읽기·명시적 삭제와 터치/키보드 입력 보호를 확인한다. screen의 재생 연결 검사와 달리 슬롯 데이터·등록 상태를 직접 다룬다. | 반복 슬롯 저장·입력·삭제 |
@@ -119,3 +119,5 @@ Node 26.13.0·pnpm 12.18.0·Vitest 5.1.0에서 지정한 15경로를 `pnpm exec 
 jsdom과 모의 오디오/치수로 실행한 회귀검사다. 실제 Safari 화면 배치·청취·스크롤 성능, iOS 실기기·시뮬레이터, 전체 테스트·빌드·배포의 성공을 의미하지 않는다. 추가 사용자 결정이 필요한 사항은 없다.
 
 수정한 두 테스트 파일의 ESLint·Prettier와 앱/테스트 타입 검사를 통과했다. 문서·링크·앵커와 `git diff --check`도 통과했다. 이번 후속 작업의 변경은 두 테스트와 이 기록·`history.md`뿐이다. 시작 해시와 대조해 `src` 255파일(생성 파일 2개 포함), 읽은 악보 입력, 이전 history 원문과 HEAD/index 보존을 확인했다. 근거는 같은 실행 디렉터리의 `lint.log`·`format.log`·`types.log`·`docs.log`·`preservation.json`에 둔다.
+
+2026-11-21 후속: 위 표는 당시 검사 결과를 보존한다. 현행 schema 전환에서는 복구 제거·폐기 악보 정리를 [저장 초기화 검사](../../tests/integration/score-database-reset.test.ts)로 통합했으며, 원본/이력 보존과 현행 자료 재열기를 함께 확인한다. 변경 근거는 [0.12.0 기록](archive/release-0.12.0.md)을 따른다.

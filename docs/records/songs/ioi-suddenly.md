@@ -175,3 +175,45 @@ python3 tools/score-production/musicxml/verify_ioi_suddenly.py --xml data/produc
 - 최신 제작 경로: `data/production/canonical-corrections-20261112/ioi-suddenly/`. 정본은 `score.musicxml`, 전체 보기는 `full-score.svg`, 패키지는 `ioi-suddenly.drumscore`다. 로컬 수록본 `public/scores/ioi-suddenly.drumscore`와 5173 응답이 인계본과 같은 해시임을 확인했다.
 - 이전 정본과 원본 미디어는 보존했다. 공통 XSD·정확한 음악 시간축·가사/메타정보·패키지 전체 자산 왕복 검사에서 승인된 변경 이외의 음악·음원 연결을 유지했다.
 - 원본 판독·최소 offset·같은 줄·글꼴·실제 화면의 검수 범위, 남은 미확정과 개발자 인계/수록 상태는 [후속 교정 기록](../archive/canonical-corrections-20261112.md)을 따른다. 정본 생성·화면·수록·청취·배포를 같은 상태로 표시하지 않는다.
+
+
+<a id="ioi-suddenly-lyric-groups-20261113"></a>
+
+## 2026-11-13 — 최종 가사 묶음 정본 v3
+
+- 새 현행 정본: `data/production/lyric-groups-20261113/ioi-suddenly/score.musicxml`. SHA256 `eb156be249a7e196c0f566ed3c18b471c8f04699b9a17601eaca4d58eef6b8de`.
+- 93마디, 원래 가사 301개 → 최종 표시 항목 301개. 시간 없는 마디 문구 7개는 유지했다. 묶음은 첫 시작과 ID·가장 늦은 끝을 쓰며 기존 확인 상태를 임의 확정하지 않았다.
+- 같은 폴더의 `before.musicxml`·`before-song.json`·`work.json`에 이전 XML/Song·원문·원음절 분수 위치·음가를, `groups.json`에 문자 폭·구성 ID 대응을 보존했다. 원문/상세 음절 근거는 정본에서 제거했다.
+- XSD·그리드·중복·문구/시작/끝/확인 상태·완전 대응·드럼/기타 XML·음원 연결 보존 정적 대조 PASS. 실제 표시·회귀·저장/재열기·청취는 실행하지 않았다.
+- 원인·해결·재사용 절차·공통 도구 및 인계 상태는 [전환 기록](../archive/canonical-lyric-groups-20261113.md)을 따른다. 이전 정본·음원·원본·기록은 보존했다. 앱 수록 패키지는 개발 담당이 반영한다.
+
+<a id="ioi-suddenly-m20-20261113"></a>
+
+## 2026-11-13 — 20마디 가사 시작점 교정
+
+사용자가 원본 캡처와 함께 20마디의 7음절 시작점을 확정했다. 기존 정본은 이 구간을 세부 박 미확정 `measureLyrics`로 저장해 마디 중앙에 문구 전체를 표시했다. 이 항목을 제거하고 같은 드럼 보표의 표준 가사 성부에 다음과 같이 기록했다.
+
+| 음절 | 사용자 지정 박 | 마디 시작 기준 사분음표 위치 |
+| --- | ---: | ---: |
+| 자 | 1.5 | 0.5 |
+| 려 | 2 | 1 |
+| 고 | 2.5 | 1.5 |
+| 누 | 3 | 2 |
+| 웠 | 3.5 | 2.5 |
+| 는 | 4 | 3 |
+| 데 | 4.5 | 3.5 |
+
+- 최신 정본: `data/production/ioi-suddenly-m20-20261113/score.musicxml`. SHA256 `5bc4b0e904c73ee96e1a35a516183092e52fd37e857e2f5f9f2bf2831b93f5fa`.
+- 각 가사 운반 음표는 다음 지정 시작점까지 0.5사분음표이며 마지막은 마디 끝까지다. 실제 가창 길이를 측정한 값이 아니다. 공통 글자 폭·묶음 함수를 새 7음절에만 적용했으며 서로 겹치지 않아 각각 유지했다. 기존 최종 묶음은 다시 묶지 않았다.
+- 가사 항목은 301→308개, 박 미확정 마디 문구는 7→6개다. 새 7음절만 사용자 확인 상태로 기록했다. 다른 가사·마디 문구·드럼·표제·지시문·음원 연결은 그대로다.
+- 재발 방지: `profiles/ioi-suddenly-lyrics.json`의 `20:1` 마디 문구 예외를 7개 확정 위치와 독립 기대값으로 교체했다. `ioi_suddenly_lyrics.py`는 해당 override의 확인 상태를 사용한다. 원본 PDF에서 재생성한 판독 자료의 다른 301개 가사·원문 428문자·원본 좌표·다른 마디 문구가 이전과 같음을 대조했다.
+- 검증: 공통 writer/reader 재읽기, MusicXML 4.0 XSD, 64분음표 그리드·시작점 중복, 비변경 XML·메타정보 및 이전 가사 전체 대조 PASS. `verification.json`, `canonical-readback.json`, `groups.json`, `work.json`에 근거를 보존했다. `correct.mjs`·`verify.py`는 이 교정의 재현·대조 경로다. 앱 화면·보관함 저장/재열기·청취는 이 정적 대조와 별개다.
+- 읽은 기준: 현행 전역·프로젝트 `AGENTS.md`, 악보 제작 스킬, `production.md`의 64분음표/원본·인계 기준, `musicxml.md`의 v3 가사·마디 문구 계약, `correct-lyrics.md`. 시작 HEAD는 `0d74c288ddeb4c274ddef14cdbdd2360a3e28b18`이며 기존 변경을 보존했다.
+- 개발 인계: 2026-11-13 04:25:20 KST에 기존 웹앱 개발자에게 새 정본·해시·근거를 전달했다. `handoff/handoff.md`와 `handoff/delivery.json`에 본문과 접수를 보존했다. 수신자가 수록 패키지 갱신을 시작했으며, 수록·표시 확인 결과는 실제 회신과 파일 대조 후 기록한다.
+
+### 앱 수록 반영
+
+- 개발 담당이 같은 정본 SHA256을 `public/scores/ioi-suddenly.drumscore`의 source와 canonicalXML에 반영했다. 공통 `readCanonical`·패키지 v2 생성/재읽기 경로를 사용했고 원본 정본은 수정하지 않았다.
+- 이전 수록 패키지는 `data/production/ioi-suddenly-m20-20261113/app-integration/before.drumscore`에 보존했다. 같은 폴더의 `package-audit.json`에서 93마디·다른 301개 가사·다른 6개 마디 문구·나머지 Song 메타정보와 음원/PDF/페이지 자산 4개 바이트 보존을 확인했다.
+- Safari 실제 SVG 출력은 308가사이며 20마디의 `자·려·고·누·웠·는·데`가 0.5~3.5사분음표 위치의 파란색 개별 가사로 출력됐다. 기존 중앙 문구는 없다. 근거는 `.tmp/full-score-row-fit-20261113/output-audit.json`이다.
+- 수록 파일 갱신과 기존 보관함 사본은 별개다. 사용자 보관함의 저장된 구판과 연습 기록은 덮어쓰지 않았다. 교정본으로 악보를 교체/다시 불러오기 전의 보관함 사본에는 예전 문구가 남을 수 있다. 보관함 저장·재열기·청취는 이번 확인에 포함하지 않는다.

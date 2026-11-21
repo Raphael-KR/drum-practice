@@ -7,9 +7,8 @@ import {
   it,
   vi,
 } from "vitest";
-import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
-import { readScorePackage } from "../../src/modules/library/score-package";
+import { preservedScoreLayout } from "./preserved-score-layout";
 import type { RecordData } from "../../src/model/record";
 import {
   mountScoreReview,
@@ -74,14 +73,13 @@ beforeAll(async () => {
   dom.window.HTMLDialogElement.prototype.close = function () {
     this.open = false;
   };
-  const load = async (path: string) =>
-    readScorePackage(new Blob([readFileSync(path)]));
+  const load = preservedScoreLayout;
   [ioi, loveholic, warmup] = await Promise.all([
     load(
       "data/production/ioi-suddenly-20261023/package-v1/ioi-suddenly.drumscore",
     ),
-    load("public/scores/loveholic.drumscore"),
-    load("public/scores/preplay-warmup.drumscore"),
+    load("data/production/loveholic/final/Loveholic.drumscore"),
+    load("data/production/preplay-warmup/final/preplay-warmup.drumscore"),
   ]);
 });
 beforeEach(() => {

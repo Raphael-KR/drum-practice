@@ -1,5 +1,6 @@
 import type { Song } from "./model";
 export interface EditSnapshot {
+  lyricWork?: import("./record").RecordData["lyricWork"];
   song: Song;
   canonicalXML?: string;
 }
@@ -15,7 +16,11 @@ export interface SavedRevision extends EditSnapshot {
   savedAt: string;
 }
 export const snapshot = (r: EditSnapshot): EditSnapshot =>
-  structuredClone({ song: r.song, canonicalXML: r.canonicalXML });
+  structuredClone({
+    song: r.song,
+    canonicalXML: r.canonicalXML,
+    lyricWork: r.lyricWork,
+  });
 export class EditHistory {
   base: EditSnapshot;
   undoStack: EditSnapshot[] = [];

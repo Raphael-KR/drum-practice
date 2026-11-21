@@ -47,6 +47,7 @@
   "red-sunset": {
     "root": "data/production/red-sunset/",
     "packageStem": "red-sunset",
+    "fullWidthSystems": ["red-sunset-m134", "red-sunset-m136"],
     "evidencePort": 5191,
     "expectedMeasures": 137,
     "bpm": 134,

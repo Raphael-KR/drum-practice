@@ -19,6 +19,12 @@ interface StoredScore extends Omit<ScoreVariant, "source" | "pages"> {
   pages: StoredMedia[];
 }
 interface StoredRecord {
+  localProject?: RecordData["localProject"];
+  localDraft?: RecordData["localDraft"];
+  lyricWork?: RecordData["lyricWork"];
+  lyricCorrections?: RecordData["lyricCorrections"];
+  lyricCorrectionDelivery?: RecordData["lyricCorrectionDelivery"];
+  productionReceipts?: RecordData["productionReceipts"];
   editDraft?: import("../../model/edit-history").EditDraft;
   revisions?: import("../../model/edit-history").SavedRevision[];
   canonicalXML?: string;
@@ -32,7 +38,13 @@ interface StoredRecord {
 function restoreRecord(value: StoredRecord | RecordData): RecordData {
   if (!("mediaFormat" in value)) return value;
   return {
+    localProject: value.localProject,
+    localDraft: value.localDraft,
     song: value.song,
+    lyricWork: value.lyricWork,
+    lyricCorrections: value.lyricCorrections,
+    lyricCorrectionDelivery: value.lyricCorrectionDelivery,
+    productionReceipts: value.productionReceipts,
     editDraft: value.editDraft,
     revisions: value.revisions,
     canonicalXML: value.canonicalXML,
@@ -58,7 +70,13 @@ async function serializeRecord(record: RecordData): Promise<StoredRecord> {
     })),
   );
   const stored: StoredRecord = {
+    localProject: structuredClone(record.localProject),
+    localDraft: structuredClone(record.localDraft),
     song: structuredClone(record.song),
+    lyricWork: structuredClone(record.lyricWork),
+    lyricCorrections: structuredClone(record.lyricCorrections),
+    lyricCorrectionDelivery: structuredClone(record.lyricCorrectionDelivery),
+    productionReceipts: structuredClone(record.productionReceipts),
     editDraft: structuredClone(record.editDraft),
     revisions: structuredClone(record.revisions),
     canonicalXML: record.canonicalXML,
@@ -77,6 +95,10 @@ export function saveRecords(records: RecordData[]) {
   const copies = records.map((r) => ({
     ...r,
     song: structuredClone(r.song),
+    lyricWork: structuredClone(r.lyricWork),
+    lyricCorrections: structuredClone(r.lyricCorrections),
+    lyricCorrectionDelivery: structuredClone(r.lyricCorrectionDelivery),
+    productionReceipts: structuredClone(r.productionReceipts),
     editDraft: structuredClone(r.editDraft),
     revisions: structuredClone(r.revisions),
     pages: [...r.pages],

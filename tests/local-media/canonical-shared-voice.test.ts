@@ -42,26 +42,16 @@ beforeAll(async () => {
   readCanonical(source, song);
 });
 
-it("갑자기: upgrades the real v1 score without changing its lyric identities or timing", () => {
-  expect(canonicalManifest(documentOf(legacySource))!.version).toBe(1);
-  const candidate = writeCanonical(structuredClone(song), legacySource);
+it("갑자기: reads current groups and rejects the retired canonical format", () => {
+  expect(() => canonicalManifest(documentOf(legacySource))).toThrow();
+  const candidate = writeCanonical(structuredClone(song), source);
   const restored = structuredClone(song);
   restored.lyrics = [];
   readCanonical(candidate, restored);
   expect(restored.lyrics).toEqual(song.lyrics);
   expect(restored.measureLyrics).toEqual(song.measureLyrics);
   expect(restored.measures).toEqual(song.measures);
-  const doc = documentOf(candidate);
-  const before = canonicalManifest(documentOf(legacySource))!;
-  const after = canonicalManifest(doc)!;
-  expect(after.version).toBe(2);
-  expect(after.partId).toBe("P1");
-  expect(after.audioSHA256).toBe(before.audioSHA256);
-  expect(new Set(after.lyrics.map((l) => l.voice)).size).toBe(1);
-  expect(doc.querySelectorAll("part")).toHaveLength(1);
-  expect(doc.querySelectorAll("part#P1 note > lyric > text")).toHaveLength(
-    song.lyrics.length,
-  );
+  expect(canonicalManifest(documentOf(candidate))!.version).toBe(3);
   expect(hasDrumNotation(candidate)).toBe(true);
 });
 
@@ -78,8 +68,8 @@ it("갑자기: repeated saves neither duplicate lyrics nor delete drum notation"
   );
 });
 
-it("갑자기: legacy SVG preparation uses the shared voice writer in a copy", () => {
-  const { xml: prepared } = prepareScoreLyrics(legacySource, "P1");
+it("갑자기: SVG preparation retains the current canonical groups", () => {
+  const { xml: prepared } = prepareScoreLyrics(source, "P1");
   const rendered = parseMusicXML(prepared, "P1");
   expect(
     rendered.document.querySelectorAll("score-partwise > part"),
@@ -92,5 +82,5 @@ it("갑자기: legacy SVG preparation uses the shared voice writer in a copy", (
     expect(lyric.beat).toBeCloseTo(expected.quarterOffset);
     expect(lyric.duration).toBeCloseTo(expected.durationQuarters);
   }
-  expect(canonicalManifest(documentOf(legacySource))!.version).toBe(1);
+  expect(prepared).toBe(source);
 });

@@ -1,10 +1,9 @@
 import type { Lyric } from "../../model/model";
 import type { CanonicalManifest } from "./canonical-metadata";
-import { LYRIC_DIVISIONS as DIV } from "./canonical-metadata";
 import { xmlChild as child, xmlChildren as kids } from "./canonical-xml-dom";
 import { t as i18nText } from "../../shared/i18n/i18n";
 
-/** Restore owned lyric identities and independent rhythm from either canonical format. */
+/** Restore owned lyric identities and independent rhythm from the canonical display groups. */
 export function readCanonicalLyrics(
   d: Document,
   data: CanonicalManifest,
@@ -15,7 +14,7 @@ export function readCanonicalLyrics(
   if (!part) throw Error(i18nText("canonical-xml.message018"));
   const lyrics = new Map<string, Lyric>();
   const activeVoice = new Map<string, Lyric>();
-  let divisions = data.version === 1 ? DIV : 1;
+  let divisions = 1;
   kids(part, "measure").forEach((m, i) => {
     let cursor = 0;
     for (const e of Array.from(m.children)) {
@@ -42,17 +41,11 @@ export function readCanonicalLyrics(
             .map((t) => t.textContent)
             .join("");
       if (lyric && kids(lyric, "text").length) {
-        const meta =
-          data.version === 1
-            ? data.lyrics.find((l) => l.voice === voice)
-            : data.lyrics.find((l) => l.noteId === e.id);
+        const meta = data.lyrics.find((l) => l.noteId === e.id);
         if (!meta) {
-          if (data.version === 2) {
-            // Imported drum lyrics are not the managed lyric voice.
-            if (!child(e, "chord")) cursor += duration;
-            continue;
-          }
-          throw Error(i18nText("canonical-xml.message019"));
+          // Imported drum lyrics are not the managed lyric voice.
+          if (!child(e, "chord")) cursor += duration;
+          continue;
         }
         const restored: Lyric = {
           id: meta.id,

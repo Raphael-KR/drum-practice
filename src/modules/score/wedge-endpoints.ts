@@ -1,7 +1,7 @@
 import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import type { GraphicalMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalMeasure";
 import type { GraphicalContinuousDynamicExpression } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalContinuousDynamicExpression";
-import { RIBBON_HEAD_ANCHOR } from "./ribbon-timeline";
+import { RIBBON_HEAD_ANCHOR } from "./time-spacing";
 
 /** Native timed entries anchor the note's right edge; interpolate fractional stops. */
 export function wedgeAnchor(

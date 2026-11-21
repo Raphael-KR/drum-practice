@@ -760,3 +760,44 @@ Python 명령은 lxml·pdfplumber가 설치된 `/Users/raphael/.cache/codex-runt
 - 최신 제작 경로: `data/production/canonical-corrections-20261112/red-sunset/`. 정본은 `score.musicxml`, 전체 보기는 `full-score.svg`, 패키지는 `red-sunset.drumscore`다. 로컬 수록본 `public/scores/red-sunset.drumscore`와 5173 응답이 인계본과 같은 해시임을 확인했다.
 - 이전 정본과 원본 미디어는 보존했다. 공통 XSD·정확한 음악 시간축·가사/메타정보·패키지 전체 자산 왕복 검사에서 승인된 변경 이외의 음악·음원 연결을 유지했다.
 - 원본 판독·최소 offset·같은 줄·글꼴·실제 화면의 검수 범위, 남은 미확정과 개발자 인계/수록 상태는 [후속 교정 기록](../archive/canonical-corrections-20261112.md)을 따른다. 정본 생성·화면·수록·청취·배포를 같은 상태로 표시하지 않는다.
+
+
+<a id="red-sunset-lyric-groups-20261113"></a>
+
+## 2026-11-13 — 최종 가사 묶음 정본 v3
+
+- 새 현행 정본: `data/production/lyric-groups-20261113/red-sunset/score.musicxml`. SHA256 `abcd533aa36bf9d270d662ee506b5a8d7626cce8657844a5100b06974d337a5a`.
+- 137마디, 원래 가사 0개 → 최종 표시 항목 0개. 시간 없는 마디 문구 0개는 유지했다. 묶음은 첫 시작과 ID·가장 늦은 끝을 쓰며 기존 확인 상태를 임의 확정하지 않았다.
+- 같은 폴더의 `before.musicxml`·`before-song.json`·`work.json`에 이전 XML/Song·원문·원음절 분수 위치·음가를, `groups.json`에 문자 폭·구성 ID 대응을 보존했다. 원문/상세 음절 근거는 정본에서 제거했다.
+- XSD·그리드·중복·문구/시작/끝/확인 상태·완전 대응·드럼/기타 XML·음원 연결 보존 정적 대조 PASS. 실제 표시·회귀·저장/재열기·청취는 실행하지 않았다.
+- 원인·해결·재사용 절차·공통 도구 및 인계 상태는 [전환 기록](../archive/canonical-lyric-groups-20261113.md)을 따른다. 이전 정본·음원·원본·기록은 보존했다. 앱 수록 패키지는 개발 담당이 반영한다.
+
+<a id="red-sunset-full-width-20261113"></a>
+
+## 2026-11-13 — 엔딩 두 줄의 전체 폭 표시 의도
+
+- 목표: 사용자 결정대로 134–135 / 136–137을 각각 두 마디짜리 줄로 유지하고 전체 보기에서 두 줄을 전체 폭으로 펼친다.
+- 범위: 최신 정본의 선택 메타정보와 해당 곡의 제작 설정. 앱 구현·공통 Rule·history·수록 패키지는 웹앱 개발 담당 범위다.
+- 완료 조건: 새 필드 외 XML·137마디 구성·134/136 줄바꿈·135마디의 6/4·음악 시간·가사·음원 연결을 보존한 새 정본과 개발 인계.
+- 제외: SVG 생성·GUI·DB·음원·패키지 수정·커밋·push·발행.
+- 검증: 실제 이전/새 정본의 XSD·유리수 시간표·메타정보 대조와 나머지 XML 바이트 동일성, 수정한 제작 파일의 서식·구문 검사.
+
+### 원인과 결정
+
+일반 시간 비례 조판에서 엔딩의 짧은 줄이 전체 폭을 쓰지 않았다. 사용자는 웹앱 개발 채팅에서 두 줄 모두 전체 폭으로 펼치고 각 줄의 두 마디 구성을 유지하도록 확정했다. 136마디 줄바꿈 제거 제안은 채택하지 않았다. 결정 근거는 개발 채팅 `01a0afc9-ca21-7371-9390-06eb07c017e9`의 turn `01a1d180-3fd4-7c01-b0ad-cbcb35fdfeb0`이며, 구현 계약은 [정본 저장 계약](../../reference/score/musicxml.md#musicxml-canonical--저장-계약)을 따른다.
+
+### 교정본과 재제작
+
+- 최신 제작 정본: `data/production/red-sunset-full-width-20261113/score.musicxml`, SHA256 `6ed349c993e5ca414e4a756c66453f79efb35050ebf793ece26da9eac64e51e3`, 669,196 bytes.
+- `drum-practice:score:v3`에 `fullWidthSystems: ["red-sunset-m134", "red-sunset-m136"]`만 추가했다. 표시 마디 번호 대신 manifest의 안정 ID를 사용한다. 전체 보기의 두 줄에만 적용하며 1줄/2줄 연습 보기의 동작 변경은 요청하지 않았다.
+- 이전 정본 `data/production/lyric-groups-20261113/red-sunset/score.musicxml`의 SHA256은 `abcd533aa36bf9d270d662ee506b5a8d7626cce8657844a5100b06974d337a5a`다. 새 폴더의 `before.musicxml`과 기존 제작 설정·진입점·이 기록의 변경 전 사본을 보존했다.
+- `tools/score-production/musicxml/profiles/songs.json`의 `red-sunset.fullWidthSystems`를 곡별 설정으로 추가했다. `red_sunset_package.mjs`의 공통 정본 생성 후처리가 이 설정을 manifest에 기록한다. 마디 ID를 앱 코드에 하드코딩하지 않는다.
+- 현행 정본의 최소 재적용 경로는 같은 출력 폴더의 `apply-layout.py INPUT OUTPUT`이다. 곡별 설정을 읽고 정본 외 나머지 바이트를 유지하며 새 경로에만 쓴다. 이미 같은 필드가 있는 입력도 중복 추가하지 않는다. 이전 전체 제작 진입점의 렌더링·패키지 재실행은 이번 범위에서 하지 않았다.
+
+### 검증과 인계
+
+- `score.verification.json`: MusicXML 4.0 XSD PASS. 필드 외 manifest 값과 manifest 영역 밖의 XML 바이트 동일. 공통 `read_timeline`으로 137마디·550사분음표·음표/쉼표 1,563개 이벤트의 시간·성부·악기·음가가 이전과 동일함을 확인했다.
+- 134·136마디 `new-system="yes"`, 135마디 6/4를 확인했다. 지시문 offset·전체 음표/쉼표·가사·다른 메타정보는 위 바이트/manifest 대조로 보존을 확인했다.
+- `pnpm exec prettier --check`(해당 JSON/MJS), `node --check`(해당 MJS), Python 작업 스크립트 Black, 변경 범위 `git diff --check` 통과. 실제 새 조판·앱 저장/재읽기·패키지 반영은 미검증이며 개발 담당이 확인한다.
+- 인계 자료: 같은 폴더의 `handoff-manifest.json`과 `handoff/`. 실제 전송 접수 근거는 `handoff/delivery.json`에 남긴다. 제작본 생성·전송 접수·앱 수록·실제 표시 검증은 별도 상태로 관리한다.
+- 05:55:14 KST(2026-11-12 20:55:14 UTC)에 기존 웹앱 개발 채팅으로 최종 인계문을 전송했고 도구의 일치하는 thread ID·`isError=false`를 확인했다. 접수는 `accepted`이며 이 기록 시점의 앱 수록·실제 조판 완료를 뜻하지 않는다.

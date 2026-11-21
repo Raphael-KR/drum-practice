@@ -4,7 +4,6 @@ import { t as i18nText } from "../../shared/i18n/i18n";
 import type { RecordData } from "../../model/record";
 import { replaceWithMusicXML } from "../../modules/score/score-import";
 import { SVG_GZIP } from "../../modules/score/score-pages";
-import { saveRecord } from "../../platform/storage/storage";
 import { ScoreReview, copyReviewImage, reviewPair } from "./score-review";
 
 import { type Song } from "../../model/model";
@@ -64,7 +63,6 @@ export function createEditorReview(h: ReviewHost) {
           sourceRecord.otherScores = sourceRecord.otherScores?.map((s) =>
             s.format === "musicxml" ? pair[1] : s,
           );
-        await saveRecord(sourceRecord);
       }
       if (generation !== reviewGeneration) return;
       const candidate = new ScoreReview(
@@ -117,6 +115,7 @@ export function createEditorReview(h: ReviewHost) {
     download(await reviewPNG, i18nText("main.message242"));
   });
   return {
+    layout: () => review?.layout ?? [],
     capture: captureReview,
     prepare: prepareReview,
     draw: (time: number) => review?.draw(time),

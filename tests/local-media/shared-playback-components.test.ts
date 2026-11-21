@@ -249,22 +249,6 @@ it("marker slot seeks first and deletes only when its measure is already selecte
   dispose();
 });
 
-it("places the shared uniform spacing switch immediately before note following", async () => {
-  const { screenSettingsHTML } =
-    await import("../../src/modules/playback/playback-forms");
-  const node = document.createElement("div");
-  node.innerHTML = screenSettingsHTML({
-    pdf: "pdf",
-    highlight: "highlight",
-    fullscreen: "fullscreen",
-  });
-  const row = node.querySelector("#uniform-spacing")!.closest("label")!;
-  expect(row.nextElementSibling?.querySelector("#highlight")).not.toBeNull();
-  expect(
-    (node.querySelector("#uniform-spacing") as HTMLInputElement).checked,
-  ).toBe(false);
-});
-
 it("keeps configured ranges visible while the master repeat is off", () => {
   const s = song();
   const root = document.createElement("div");
@@ -352,7 +336,6 @@ it("empty bookmark buttons invoke the existing current-measure toggle", () => {
 it("rows progress follows the displayed crop's first beat and later beats", () => {
   const s = song();
   s.settings.view = "rows";
-  s.settings.uniformSpacing = false;
   const m = s.measures[0];
   m.beats = 4;
   const original = s.regions.find((r) => r.id === m.regionId)!;

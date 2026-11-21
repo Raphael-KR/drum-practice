@@ -2,14 +2,13 @@ import {
   sha,
   base64,
   saveEvidence,
-  prepareCanonical,
+  prepareProductionCanonical,
   bindRenderedScore,
   createVerifiedPackage,
   projectBase,
 } from "./common/package.mjs";
 import profiles from "./profiles/songs.json";
 import { renderMusicXML } from "/src/modules/score/musicxml.ts";
-import { readScorePackage } from "/src/modules/library/score-package.ts";
 import { defaults, validateSong } from "/src/model/model.ts";
 import { projectLyrics } from "/src/modules/lyrics/lyric-score.ts";
 
@@ -129,44 +128,45 @@ export async function build({ xmlDirectory, lyricFile, pdfRegionsFile }) {
   window.ioiBuildState.phase = "lyrics-canonical";
   projectLyrics(song);
   validateSong(song);
-  const { canonicalXML, restored } = prepareCanonical(
-    song,
-    await source.text(),
-    await sha(audio),
-    (doc) => {
-      const misc = doc.querySelector("identification > miscellaneous");
-      const values = {
-        "recording-tempo:v1": {
-          version: 1,
-          scoreBpm: config.bpm,
-          bpmEstimate: alignment.bpmEstimate,
-          firstBeatEstimateSeconds: alignment.firstBeatEstimateSeconds,
-          audioSHA256: alignment.audioSHA256,
-          method: alignment.method,
-          status: "signal estimate; actual listening unverified",
-        },
-        "source-measure-map:v1": order,
-        "printed-lyric-anchors:v1": {
-          sourcePDFSHA256: provenance.pdf_sha256,
-          positionBasis:
-            lyricReview.positionBasis ??
-            "Printed note/rest underlay; uncertain subdivisions retained only as measure text",
-          durationBasis: lyricReview.durationBasis,
-          measureOnly: lyricReview.measureLyrics.map(
-            ({ sourceMeasure, evidence }) => ({ sourceMeasure, evidence }),
-          ),
-          unresolved: lyricReview.unresolved ?? [],
-          vocalTimingVerified: false,
-        },
-      };
-      for (const [name, value] of Object.entries(values)) {
-        const field = doc.createElement("miscellaneous-field");
-        field.setAttribute("name", "drum-practice:" + name);
-        field.textContent = JSON.stringify(value);
-        misc.append(field);
-      }
-    },
-  );
+  const { canonicalXML, restored, lyricWork } =
+    await prepareProductionCanonical(
+      song,
+      await source.text(),
+      await sha(audio),
+      (doc) => {
+        const misc = doc.querySelector("identification > miscellaneous");
+        const values = {
+          "recording-tempo:v1": {
+            version: 1,
+            scoreBpm: config.bpm,
+            bpmEstimate: alignment.bpmEstimate,
+            firstBeatEstimateSeconds: alignment.firstBeatEstimateSeconds,
+            audioSHA256: alignment.audioSHA256,
+            method: alignment.method,
+            status: "signal estimate; actual listening unverified",
+          },
+          "source-measure-map:v1": order,
+          "printed-lyric-anchors:v1": {
+            sourcePDFSHA256: provenance.pdf_sha256,
+            positionBasis:
+              lyricReview.positionBasis ??
+              "Printed note/rest underlay; uncertain subdivisions retained only as measure text",
+            durationBasis: lyricReview.durationBasis,
+            measureOnly: lyricReview.measureLyrics.map(
+              ({ sourceMeasure, evidence }) => ({ sourceMeasure, evidence }),
+            ),
+            unresolved: lyricReview.unresolved ?? [],
+            vocalTimingVerified: false,
+          },
+        };
+        for (const [name, value] of Object.entries(values)) {
+          const field = doc.createElement("miscellaneous-field");
+          field.setAttribute("name", "drum-practice:" + name);
+          field.textContent = JSON.stringify(value);
+          misc.append(field);
+        }
+      },
+    );
   const signature = (lyrics) =>
     lyrics.map(({ id, text, scorePosition, time, end }) => ({
       id,
@@ -219,7 +219,6 @@ export async function build({ xmlDirectory, lyricFile, pdfRegionsFile }) {
   };
   window.ioiBuildState.phase = "package";
   const pack = await createVerifiedPackage(record);
-  const loaded = await readScorePackage(pack);
   const audit = {
     status: "PASS",
     scope:
@@ -256,10 +255,10 @@ export async function build({ xmlDirectory, lyricFile, pdfRegionsFile }) {
   );
   await saveEvidence(
     "package",
-    { ...audit, package: await base64(pack), canonicalXML },
+    { ...audit, package: await base64(pack), canonicalXML, lyricWork },
     config.evidencePort,
   );
-  window.ioiRecord = loaded;
+  window.ioiRecord = record;
   window.ioiFinal = final;
   window.ioiPackage = pack;
   return audit;

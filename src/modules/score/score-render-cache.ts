@@ -2,7 +2,7 @@
 import type { Region } from "../../model/model";
 import { version as osmdVersion } from "opensheetmusicdisplay/package.json";
 import { sha256 } from "../../platform/browser/sha256";
-export const SCORE_RENDER_POLICY = `osmd-${osmdVersion}:drum-print-ribbon-v47-stem-initialization:svg1500:quarter-native:rows4`;
+export const SCORE_RENDER_POLICY = `osmd-${osmdVersion}:drum-time-proportional-v62-lyric-class-token:svg1500:quarter64:rows4`;
 interface RenderedScore {
   pages: Blob[];
   regions: Region[];
@@ -28,11 +28,28 @@ export async function scoreRenderKey(
 }
 async function database(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DATABASE, 1);
-    request.onupgradeneeded = () =>
-      request.result.createObjectStore("renders", { keyPath: "key" });
-    request.onsuccess = () => resolve(request.result);
+    const request = indexedDB.open(DATABASE, 2);
+    let blocked = false;
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (db.objectStoreNames.contains("renders"))
+        db.deleteObjectStore("renders");
+      db.createObjectStore("renders", { keyPath: "key" });
+    };
+    request.onsuccess = () => {
+      if (blocked) {
+        request.result.close();
+        return;
+      }
+      request.result.onversionchange = () => request.result.close();
+      resolve(request.result);
+    };
     request.onerror = () => reject(request.error);
+    request.onblocked = () => {
+      blocked = true;
+      // An older open tab must not prevent rendering from canonical XML.
+      reject(new Error("Render cache upgrade blocked"));
+    };
   });
 }
 async function read(key: string): Promise<RenderedScore | undefined> {

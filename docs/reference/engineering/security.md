@@ -15,6 +15,8 @@
 ### 보호 조치
 
 - `server/player-worker.ts`는 HTML 문서와 정적 자산만 제공한다. `/api/` 요청은 404이며 분석정보 읽기/쓰기 경로가 없다. 서버 악보 다운로드는 유지한다.
+- 로컬 제작 전용 예외는 [파일 프로젝트 저장·확정 교정 접수와 제작 요청](architecture.md#project-structure--의존-규칙)이다. 기존 5173 Vite 개발 서버의 같은 origin에서만 기록을 받고, 공개 Worker·preview·player 모드에는 연결하지 않는다. 자료는 공개 자산과 분리된 `data/production/projects/`와 구형 `data/production/lyric-corrections/`·`data/production/requests/`에 둔다. 프로젝트 쓰기는 512 MiB로 제한하고 곡/저장 ID·자산 상대 경로·바이트 해시·읽었던 저장본과 초안을 대조한다. 프로젝트 폴더 열기는 검증한 곡 ID에서 유도한 경로만 shell 없이 전달한다.
+- 제작 요청의 첨부는 서버에서 최대 512 MiB로 제한하고 크기·SHA를 확인한다. 요청/결과 경로와 symlink가 요청 폴더를 벗어나지 않게 검사한다. 결과 파일 응답은 MIME 실행 없이 첨부로 제공한다. 미리보기는 검증한 패키지에서 공통 SVG 조판을 사용하며 보고서는 텍스트로 표시한다. 폴더 열기는 same-origin POST에서 요청 ID로 확인한 `result/`만 고정 `/usr/bin/open -a Finder`에 인자로 전달한다. 임의 경로·명령을 받거나 shell을 사용하지 않는다. 사용자의 전송 클릭은 고정된 악보제작자 하나만 대상으로 하며, 메시지는 shell 보간 없이 설치 CLI의 stdin으로 전달한다. `accepted`와 실제 작업 시작을 구분하고, timeout·불확실 송신은 자동 재전송하지 않는다. 기존 Bridge 원장과 프로젝트 전용 설정을 사용하며 외부·유료 작업이나 배포의 추가 권한을 부여하지 않는다.
 - Worker 문서 응답: nosniff, Referrer-Policy, X-Frame-Options, HTTPS HSTS. CSP의 frame-ancestors/object/base는 강제하고 전체 리소스 CSP는 보고 전용이다. JS/CSS 정적 전달에도 모두 같은 헤더가 적용된다고 보증하지 않는다.
 - 음원 사전 검사: 전체 읽기 전 100MiB, 디코딩 전 30분/2채널/32kHz PCM 256MiB 상한. 메타정보가 거짓일 수 있으므로 디코더의 모든 메모리 사용을 보증하지 않는다.
 - 브라우저 캐시: 분석기 버전·해시·유효 숫자/박 배열 검사. 저장 실패 시 기기에서 분석하며 네트워크로 우회하지 않는다. 음원 원본과 기존 보관함·수동 설정은 보존한다.

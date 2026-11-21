@@ -66,7 +66,7 @@ it("bounds cache retention to four results", async () => {
 it("rejects corrupted cached bytes and regenerates", async () => {
   await cachedScoreRender("corrupt", async () => value());
   const db = await new Promise<IDBDatabase>((ok, no) => {
-    const r = indexedDB.open("drum-score-render-cache", 1);
+    const r = indexedDB.open("drum-score-render-cache");
     r.onsuccess = () => ok(r.result);
     r.onerror = () => no(r.error);
   });

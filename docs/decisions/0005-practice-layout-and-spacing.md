@@ -1,9 +1,11 @@
 ---
-status: accepted
-date: 2026-11-09
+status: superseded by 0034
+date: 2026-11-13
 ---
 
 # 연습 배치는 native 비율과 보기별 간격 정책을 사용한다
+
+2026-11-13: 보기별 row/grid·일반/균등 간격 정책은 [ADR-0034](0034-time-proportional-engraving.md)로 대체했다. 아래 결정과 원문은 당시 기록이며 native 종횡비·제3선 정렬은 현행 Rule에서도 유지한다.
 
 ## Context and Problem Statement
 

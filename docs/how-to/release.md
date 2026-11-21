@@ -37,7 +37,7 @@
 
 패키지 변경은 [릴리스 스킬](../../.agents/skills/release-drum-practice/SKILL.md)의 변경 검토·로컬 검증 단계에서 끝낸다. 이후 작업 브랜치 커밋·PR/CI·main 검증이 같은 패키지와 회귀 입력을 대상으로 하도록 한다.
 
-패키지의 반복 렌더 캐시가 배포 크기를 늘려 정리가 필요한 경우 `node scripts/release/compact-score-packages.mjs <새 출력 폴더> <실제 패키지>...`로 후보를 만든다. 원본 패키지를 보존하고 ZIP 엔트리·manifest·인쇄 잉크·공통 재읽기를 대조한 뒤 수록본에 적용한다. canonical XML이 있는 MusicXML 페이지의 알려진 버전1 timeline metadata만 생략하며 동봉 글꼴·원음원·가사는 제거하지 않는다.
+현행 `.drumscore` v2는 MusicXML 파생 페이지·영역을 넣지 않는다. 별도 캐시 압축기를 실행하지 않고 [공통 패키지 계약](../reference/score/file-formats.md#score-package--zip-내용)의 `packageRecord` 정규화를 사용한다. 정본·최종 가사·음원·PDF 자산과 재생성 가능 여부를 확인하고 제작 작업 파일·검증 기록은 보존한다.
 
 변경한 패키지의 승인된 인계 해시와 릴리스 입력 해시를 대조·기록하고 실제 회귀 입력을 갱신한다. `pnpm run verify`로 공통 정적 검사·전체 회귀·두 앱 번들·player 경계를 순서대로 확인한다. 교정 가능한 패키지 전체 해시를 테스트에 고정하는 대신 음악적 의미와 source/정본 일치·왕복 보존을 검사한다. 해시·검증 결과는 관련 문서와 함께 커밋·검토 대상에 포함하되, Git에서 제외된 원본·패키지 파일을 새로 추적하지 않는다. 검증된 패키지는 main 빌드에서도 같은 바이트로 사용한다. CI의 portable 검사는 이 로컬 자산 검증을 대신하지 않는다.
 

@@ -1,214 +1,40 @@
 import appVersions from "../../app-versions.json";
 import buildInfo from "../../generated/build-info.generated.json";
 import { showAppBuildLabel } from "../../shared/ui/app-build-label";
-import { t as i18nText } from "../../shared/i18n/i18n";
-import { appInfoContent } from "../../shared/ui/app-info";
-import type { SettingsCategory } from "../../modules/playback/playback-forms";
-import { selectPlaybackSettings } from "../../modules/playback/playback-settings-layout";
+import { t } from "../../shared/i18n/i18n";
+import { zoomFieldHTML } from "../../modules/playback/playback-forms";
 import { mountPlaybackShell } from "../../modules/playback/playback-shell";
-import { webPlaybackBindings } from "../../modules/playback/playback-ui";
-import { componentName } from "../../shared/ui/ui-standard";
-// Arrange existing controls without duplicating their state or event handlers.
-export type { SettingsCategory } from "../../modules/playback/playback-forms";
-const settingsTitles: Record<SettingsCategory, string> = {
-  screen: componentName("settings.screen"),
-  playback: componentName("settings.playback"),
-  score: componentName("settings.score"),
-  info: componentName("settings.info"),
-  audio: componentName("settings.audio"),
-  metronome: componentName("settings.metronome"),
-  tempo: componentName("settings.tempo"),
-};
-const SETTINGS_KEY = "drum-practice.settings-category";
-let lastCategory: SettingsCategory = "screen";
-function rememberedCategory(): SettingsCategory {
-  try {
-    const saved = localStorage.getItem(SETTINGS_KEY);
-    if (saved && Object.hasOwn(settingsTitles, saved))
-      return saved as SettingsCategory;
-  } catch {
-    /* Session fallback. */
-  }
-  return lastCategory;
-}
-export function selectSettingsCategory(category: SettingsCategory) {
-  lastCategory = selectPlaybackSettings(document, category);
-  try {
-    localStorage.setItem(SETTINGS_KEY, lastCategory);
-  } catch {
-    /* Session fallback. */
-  }
-}
-export function openSettings(
-  category: SettingsCategory = rememberedCategory(),
-) {
-  (document.getElementById("settings-dialog") as HTMLDialogElement).showModal();
-  selectSettingsCategory(category);
-}
-export function closeSettings() {
-  (document.getElementById("settings-dialog") as HTMLDialogElement).close();
-}
-/** Restore settings only for dialogs opened from settings, including native Escape. */
-export function openSettingsChild(child: HTMLDialogElement) {
-  const settings = document.getElementById(
-    "settings-dialog",
-  ) as HTMLDialogElement;
-  if (settings.open) {
-    const category = lastCategory;
-    const scroll = settings.scrollTop;
-    const detail = settings.querySelector<HTMLElement>(".settings-detail")!;
-    const detailScroll = detail.scrollTop;
-    const origin = document.activeElement as HTMLElement | null;
-    child.addEventListener(
-      "close",
-      () => {
-        openSettings(category);
-        settings.scrollTop = scroll;
-        detail.scrollTop = detailScroll;
-        origin?.focus({ preventScroll: true });
-      },
-      { once: true },
-    );
-    settings.close();
-  }
-  child.showModal();
-}
+
+/** Authoring composes the shared score and transport without practice-only panels. */
 export function arrangeWorkspace() {
   const el = (id: string) => document.getElementById(id)!;
-  const practice = el("practice");
-  document.getElementById("app")!.classList.add("touch-workspace");
-  practice.querySelector(".statusline")!.append(el("error-notice"));
-  const loops = el("loop-slots").closest(".panel")!;
-  const markers = el("section-shortcuts").closest(".panel")!;
-  loops.querySelector("h2")?.remove();
-  markers.querySelector("h2")!.remove();
-  const { screen: screenBody, addSettings: settingsPanel } = mountPlaybackShell(
-    el("app"),
-    {
-      ids: {
-        ...webPlaybackBindings,
-        rewindButton: "jump",
-        settings: "open-settings-dialog",
-        radiusAttribute: "data-loop-radius",
-      },
-      screen: {
-        pdf: "prefer-pdf",
-        highlight: "note-highlight",
-        fullscreen: "auto-fullscreen",
-      },
-      preferences: { restart: "restart-measure", countoff: "count-off" },
-      select: selectSettingsCategory,
-      openSettings: () => openSettings(),
-      compare: true,
-      loopExtra: loops as HTMLElement,
-      markerContent: markers as HTMLElement,
+  el("app").classList.add("authoring-workspace");
+  mountPlaybackShell(el("app"), {
+    authoring: true,
+    ids: {
+      title: "song-title",
+      tempo: "original-tempo",
+      rewind: "goto",
+      rewindButton: "jump",
+      position: "copy-position",
+      progress: "progress-percent",
     },
-  );
+  });
+  const header = document.createElement("div");
+  header.id = "editor-view-controls";
+  header.innerHTML = `<div class="row-view-toggle segmented-control" role="group" aria-label="${t("main.message108")}">${(["ribbon", "rows", "compare"] as const).map((view, i) => `<button type="button" data-row-view="${view}">${t((["main.message109", "main.message110", "main.message111"] as const)[i])}</button>`).join("")}</div><select id="view" hidden><option value="ribbon"></option><option value="rows"></option><option value="compare"></option></select><div id="editor-full-scores"></div>${zoomFieldHTML()}`;
+  el("app").querySelector("header")!.append(header);
   showAppBuildLabel(el("app"), appVersions.editor.version, buildInfo.source);
-  screenBody.insertAdjacentHTML(
-    "beforeend",
-    '<div id="review-help"><p id="review-availability"></p><button id="review-add-score">' +
-      i18nText("main.message346") +
-      "</button></div>",
-  );
-  settingsPanel("score", "score-settings", "open-score-settings");
-  const info = settingsPanel("info", "info-settings", "open-info-settings");
-  info.append(
-    appInfoContent(appVersions.editor.version, buildInfo, { scoreInfo: true }),
-  );
-  info.append(practice.querySelector(".keyboard")!);
-  const log = document.createElement("section");
-  log.className = "work-log";
-  log.innerHTML =
-    "<h4>" +
-    i18nText("workspace.message564") +
-    '</h4><p class="subtle">' +
-    i18nText("workspace.message565") +
-    "</p>";
-  el("busy").textContent = i18nText("workspace.message566");
-  log.append(el("busy"));
-  info.append(log);
-  practice.querySelector(".panels")!.remove();
-  selectSettingsCategory(rememberedCategory());
-
-  // Editing has explicit tabs; lyrics and metadata no longer sit below a PDF page.
-  const editor = el("editor-dialog");
-  const metadata = editor.querySelector(":scope > .flex")!;
-  const score = editor.querySelector(".editor")!;
-  const right = score.children[1];
-  const lyricHeading = right.querySelectorAll("h3")[1];
-  const lyricPane = document.createElement("section");
-  lyricPane.id = "editor-lyrics";
-  let node: Element | null = lyricHeading;
-  while (node) {
-    const next: Element | null = node.nextElementSibling;
-    lyricPane.append(node);
-    node = next;
-  }
-  const metaPane = document.createElement("section");
-  metaPane.id = "editor-meta";
-  metadata.className = "metadata-fields";
-  const timing = document.createElement("section");
-  timing.className = "metadata-timing";
-  timing.innerHTML =
-    "<h3>" +
-    i18nText("workspace.message568") +
-    "</h3><div class='timing-fields'></div><div class='timing-actions'></div>";
-  for (const id of ["edit-bpm", "edit-first"])
-    timing.querySelector(".timing-fields")!.append(el(id).closest("label")!);
-  for (const id of ["reflow", "estimate-tempo", "tap-tempo", "tap-result"])
-    timing.querySelector(".timing-actions")!.append(el(id));
-  metaPane.append(metadata, timing);
-  score.id = "editor-score";
-  editor.append(metaPane, lyricPane);
-  const tabs = document.createElement("div");
-  tabs.className = "editor-tabs";
-  tabs.innerHTML =
-    '<button data-pane="score">' +
-    i18nText("workspace.message569") +
-    '</button><button data-pane="lyrics">' +
-    i18nText("main.message279") +
-    '</button><button data-pane="meta">' +
-    i18nText("workspace.message570") +
-    "</button>";
-  editor.querySelector(".dialoghead")!.after(tabs);
-  tabs
-    .querySelectorAll<HTMLButtonElement>("button")
-    .forEach((b) => (b.onclick = () => selectEditorPane(b.dataset.pane!)));
-  lyricPane.insertAdjacentHTML(
-    "beforeend",
-    '<div class="pager"><button id="lyrics-prev">' +
-      i18nText("workspace.message572") +
-      '</button><span id="lyrics-page"></span><button id="lyrics-next">' +
-      i18nText("workspace.message573") +
-      "</button></div>",
-  );
-  const scrollBody = document.createElement("div");
-  scrollBody.className = "editor-body";
-  scrollBody.append(score, lyricPane, metaPane);
-  editor.append(scrollBody);
-  selectEditorPane("score");
+  el("practice").querySelector(".statusline")!.append(el("error-notice"));
+  el("copy-position").classList.add("review-position");
+  el("practice").querySelector(".statusline")!.append(el("copy-position"));
+  const controls = document.createElement("div");
+  controls.id = "editor-controls";
+  controls.className = "editor-controls";
+  controls.innerHTML = `<label class="editor-grid">${t("editorWork.grid")}<select id="lyric-grid">${[8, 16, 32, 64].map((n) => `<option value="${n}"${n === 64 ? " selected" : ""}>${t("editorWork.gridValue", { value: n })}</option>`).join("")}</select></label>`;
+  el("practice").querySelector(".transport-right")!.append(controls);
+  el("practice").append(el("editor-dialog"));
 }
-const editorScroll = new Map<string, number>();
-let currentEditorPane = "meta";
-export function selectEditorPane(name: string) {
-  const scroller = document.querySelector<HTMLElement>(
-    "#editor-dialog .editor-body",
-  );
-  if (scroller) editorScroll.set(currentEditorPane, scroller.scrollTop);
-  currentEditorPane = name;
-  const editor = document.getElementById("editor-dialog");
-  if (editor) editor.dataset.activePane = name;
-  for (const id of ["score", "lyrics", "meta", "sections"]) {
-    if (!document.getElementById(`editor-${id}`)) continue;
-    document.getElementById(`editor-${id}`)!.hidden = id !== name;
-    const b = document.querySelector(`[data-pane="${id}"]`)!;
-    b.classList.toggle("primary", id === name);
-    b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(id === name));
-    b.setAttribute("aria-controls", `editor-${id}`);
-    b.setAttribute("aria-pressed", String(id === name));
-    document.getElementById(`editor-${id}`)!.setAttribute("role", "tabpanel");
-  }
-  if (scroller) scroller.scrollTop = editorScroll.get(name) || 0;
+export function openEditorDialog(child: HTMLDialogElement) {
+  child.showModal();
 }

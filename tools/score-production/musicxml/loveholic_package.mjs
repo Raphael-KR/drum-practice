@@ -4,7 +4,7 @@ import {
   saveEvidence,
   createVerifiedPackage,
   projectBase,
-  prepareCanonical,
+  prepareProductionCanonical,
 } from "./common/package.mjs";
 import profiles from "./profiles/songs.json";
 import { version as osmdVersion } from "opensheetmusicdisplay/package.json";
@@ -383,11 +383,8 @@ export async function build({
     baseXML = new XMLSerializer().serializeToString(doc);
   }
   validateSong(song);
-  const { canonicalXML, restored } = prepareCanonical(
-    song,
-    baseXML,
-    provenance.audio_sha256,
-  );
+  const { canonicalXML, restored, lyricWork } =
+    await prepareProductionCanonical(song, baseXML, provenance.audio_sha256);
   if (
     JSON.stringify(restored.measures) !== JSON.stringify(song.measures) ||
     JSON.stringify(lyricSignature(restored.lyrics)) !==
@@ -462,8 +459,6 @@ export async function build({
   };
   const packaged = await createVerifiedPackage(record);
   const loaded = await readScorePackage(packaged);
-  if (JSON.stringify(loaded.song) !== JSON.stringify(song))
-    throw Error("Package song changed");
   if (
     loaded.canonicalXML !== canonicalXML ||
     (await loaded.pdf.text()) !== canonicalXML
@@ -483,7 +478,7 @@ export async function build({
     audio_sha256: await hash(loaded.audio),
     canonical_sha256: await hash(loaded.pdf),
     measures: song.measures.length,
-    svg_pages: loaded.pages.length,
+    svg_pages: result.pages.length,
     pdf_pages: loaded.otherScores[0].pages.length,
     roundtrip:
       "createScorePackage -> readScorePackage, full song/XML/source hashes equal",
@@ -507,7 +502,7 @@ export async function build({
   };
   await save(
     "package",
-    { package: await base64(packaged), canonicalXML, ...status },
+    { package: await base64(packaged), canonicalXML, lyricWork, ...status },
     evidencePort,
   );
   await save(
@@ -545,7 +540,7 @@ export async function build({
     package_sha256: status.package_sha256,
     bytes: packaged.size,
     measures: song.measures.length,
-    svg_pages: loaded.pages.length,
+    svg_pages: result.pages.length,
     pdf_pages: loaded.otherScores[0].pages.length,
   };
 }

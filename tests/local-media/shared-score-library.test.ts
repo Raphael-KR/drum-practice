@@ -57,7 +57,7 @@ it("both apps read the same record and practice saves retain authoring data", as
   await savePracticeRecord(record("from-player"));
   expect((await allRecords()).map((r) => r.song.id)).toContain("from-player");
 });
-it("migrates player-only records once and keeps current collisions without overwriting editor", async () => {
+it("resets old app libraries once while retaining both sets of originals", async () => {
   const editor = record("collision");
   editor.song.title = "Editor";
   const player = record("collision");
@@ -65,7 +65,25 @@ it("migrates player-only records once and keeps current collisions without overw
   await seed("drum-practice", [editor], false);
   await seed("drum-practice-player", [player, record("player-only")], true);
   await Promise.all([allRecords(), listPracticeRecords()]);
-  expect((await allRecords()).length).toBe(2);
-  expect((await loadPracticeRecord("collision"))!.song.title).toBe("Editor");
-  await allRecords();
+  expect(await allRecords()).toEqual([]);
+  const db = await new Promise<IDBDatabase>((resolve) => {
+    const request = indexedDB.open("drum-practice");
+    request.onsuccess = () => resolve(request.result);
+  });
+  const sources = await new Promise<{ song: { title: string } }[]>(
+    (resolve) => {
+      const request = db
+        .transaction("sourceFiles")
+        .objectStore("sourceFiles")
+        .getAll();
+      request.onsuccess = () => resolve(request.result);
+    },
+  );
+  db.close();
+  expect(sources).toHaveLength(3);
+  expect(sources.map((r) => r.song.title)).toEqual(
+    expect.arrayContaining(["Editor", "Player"]),
+  );
+  await saveRecord(record("current"));
+  expect((await allRecords()).map((r) => r.song.id)).toEqual(["current"]);
 });

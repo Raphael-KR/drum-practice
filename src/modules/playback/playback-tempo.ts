@@ -134,6 +134,7 @@ export function createPlaybackTempo(
   let preparedOriginal = 0,
     preparedScore = 0;
   function prepareTempo() {
+    if (h.authoring) return;
     const original = originalAudioBpm();
     if (preparedOriginal === original && preparedScore === h.song().bpm) return;
     preparedOriginal = original;
@@ -160,7 +161,7 @@ export function createPlaybackTempo(
     sync();
     open("tempo");
   }
-  action(ids.tempo, openTempo);
+  if (!h.authoring) action(ids.tempo, openTempo);
   function applyTempoInput(original = false) {
     const value = input(ids.tempoInput);
     value.setAttribute("aria-valuenow", value.value);
@@ -171,13 +172,15 @@ export function createPlaybackTempo(
     input(ids.tempoInput).value = String(bpm);
     return applyTempoInput(original);
   }
-  action("tempo-reset", () => selectTempo(h.song().bpm, true));
-  action("tempo-score", () => selectTempo(h.song().bpm));
-  listen(get("tempo-options"), "click", (e) => {
-    const b = (e.target as Element).closest<HTMLElement>("[data-tempo]");
-    if (b && h.ready()) run(() => selectTempo(Number(b.dataset.tempo)));
-  });
-  listen(input(ids.tempoInput), "change", () => run(() => applyTempoInput()));
+  if (!h.authoring) {
+    action("tempo-reset", () => selectTempo(h.song().bpm, true));
+    action("tempo-score", () => selectTempo(h.song().bpm));
+    listen(get("tempo-options"), "click", (e) => {
+      const b = (e.target as Element).closest<HTMLElement>("[data-tempo]");
+      if (b && h.ready()) run(() => selectTempo(Number(b.dataset.tempo)));
+    });
+    listen(input(ids.tempoInput), "change", () => run(() => applyTempoInput()));
+  }
   return {
     rate,
     headerBpm,

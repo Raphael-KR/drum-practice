@@ -12,71 +12,21 @@ import type { StaffLine } from "opensheetmusicdisplay/build/dist/src/MusicalScor
 import type { Song } from "../../model/model";
 import { formatNumber, t } from "../../shared/i18n/i18n";
 import { SCORE_TEXT_FONT_FAMILY } from "./score-text-font";
+import {
+  fitFullScoreWidth,
+  fullScoreSystemTransform,
+  installFullScoreDrawing,
+} from "./full-score-width";
 
 // OSMD units are staff spaces. Keep two spaces between adjacent content bounds.
 const CLEARANCE = 2;
-
-/** Keep XML rows intact when native note/lyric spacing exceeds the normal engraving width. */
-export function fitFullScoreSystems(
-  osmd: OpenSheetMusicDisplay,
-  host: HTMLElement,
-) {
-  const measures = osmd.GraphicSheet.MeasureList;
-  const starts = new Set([0]);
-  for (const [index, row] of measures.entries()) {
-    const source = row[0]?.parentSourceMeasure;
-    if (source?.printNewSystemXml || source?.printNewPageXml) starts.add(index);
-  }
-  // Without explicit XML row boundaries, leave automatic wrapping to OSMD.
-  if (starts.size === 1) return;
-  const extraBreak = osmd.GraphicSheet.MusicPages.some((page) =>
-    page.MusicSystems.some((system) => {
-      const first = system.StaffLines[0]?.Measures[0];
-      return first && !starts.has(first.parentSourceMeasure.measureListIndex);
-    }),
-  );
-  if (!extraBreak) return;
-
-  let width = 0;
-  let rowWidth = 0;
-  let lookahead = 0;
-  for (const [index, row] of measures.entries()) {
-    if (starts.has(index)) {
-      width = Math.max(width, rowWidth);
-      rowWidth = 0;
-    }
-    rowWidth += Math.max(
-      ...row.map(
-        (measure) =>
-          measure.minimumStaffEntriesWidth +
-          measure.beginInstructionsWidth +
-          measure.endInstructionsWidth,
-      ),
-    );
-    lookahead = Math.max(
-      lookahead,
-      ...row.map((measure) => measure.beginInstructionsWidth),
-    );
-  }
-  const rules = osmd.EngravingRules;
-  // The native builder also reserves the next measure's opening instructions.
-  width =
-    Math.max(width, rowWidth) +
-    lookahead +
-    rules.MeasureLeftMargin +
-    rules.PageLeftMargin +
-    rules.PageRightMargin +
-    rules.SystemLeftMargin +
-    rules.SystemRightMargin;
-  host.style.width = `${Math.ceil(Math.max(width, osmd.Sheet.pageWidth) * 10 * osmd.Zoom)}px`;
-  osmd.render();
-}
 
 /** Reposition native systems once, after all ink bounds and before absolute coordinates/drawing. */
 export function installFullScoreLayout(
   osmd: OpenSheetMusicDisplay,
   song: Song,
 ) {
+  installFullScoreDrawing(osmd);
   const calculator = osmd.GraphicSheet.GetCalculator as unknown as {
     calculateMusicSystems(): void;
     calculateMeasureNumberPlacement(system: MusicSystem): void;
@@ -105,11 +55,22 @@ export function installFullScoreLayout(
     const page = osmd.GraphicSheet.MusicPages[0];
     if (!page?.MusicSystems.length) return;
     const systems = page.MusicSystems;
-    let bottom = addMetadata(osmd, page, song);
+    const width = fitFullScoreWidth(page);
+    const left =
+      systems[0].PositionAndShape.RelativePosition.x +
+      systems[0].StaffLines[0].PositionAndShape.RelativePosition.x;
+    for (const label of [
+      osmd.GraphicSheet.Title,
+      osmd.GraphicSheet.Subtitle,
+      osmd.GraphicSheet.Copyright,
+    ])
+      if (label) label.PositionAndShape.RelativePosition.x = left + width / 2;
+    let bottom = addMetadata(osmd, page, song, width);
     const pixelPhase = osmd.EngravingRules.SnapStafflinesToCrispPixels
       ? 0.05
       : 0;
     for (const system of systems) {
+      const { scale } = fullScoreSystemTransform(system);
       const offset = system.StaffLines[0].PositionAndShape.RelativePosition.y;
       // Keep staff-relative skyline coordinates; system/page margins are not ink.
       const bounds = system.StaffLines.map((staff) => ({
@@ -122,12 +83,12 @@ export function installFullScoreLayout(
           offset +
           staff.SkyBottomLineCalculator.getBottomLineMax(),
       }));
-      const top = Math.min(...bounds.map((b) => b.top));
+      const top = Math.min(...bounds.map((b) => b.top)) * scale;
       const staffY =
         Math.ceil((bottom + CLEARANCE - top - pixelPhase) * 10) / 10 +
         pixelPhase;
       system.PositionAndShape.RelativePosition.y = staffY - offset;
-      bottom = staffY + Math.max(...bounds.map((b) => b.bottom));
+      bottom = staffY + Math.max(...bounds.map((b) => b.bottom)) * scale;
     }
     for (const label of page.Labels) {
       if (label.AnchoredToPageBottom)
@@ -139,6 +100,9 @@ export function installFullScoreLayout(
     box.BorderTop = box.BorderMarginTop = 0;
     box.BorderBottom = box.BorderMarginBottom = bottom;
     box.calculateTopBottomBorders(false);
+    // The horizontal backend adds its page margins to this content width.
+    box.BorderLeft = box.BorderMarginLeft = 0;
+    box.BorderRight = box.BorderMarginRight = width;
   };
 }
 
@@ -147,6 +111,7 @@ function addMetadata(
   osmd: OpenSheetMusicDisplay,
   page: GraphicalMusicPage,
   song: Song,
+  width: number,
 ) {
   const rules = osmd.EngravingRules;
   const headings = page.Labels.filter((label) => !label.AnchoredToPageBottom);
@@ -163,7 +128,7 @@ function addMetadata(
   const left =
     firstSystem.PositionAndShape.RelativePosition.x +
     staff.PositionAndShape.RelativePosition.x;
-  const right = left + staff.PositionAndShape.Size.width;
+  const right = left + width;
   const height = rules.SheetSubtitleHeight;
   const label = (text: string, x: number, alignment: TextAlignmentEnum) => {
     const result = new GraphicalLabel(

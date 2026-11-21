@@ -1,7 +1,9 @@
-import {
-  createDialog,
-  createConfirmationDialog,
-} from "../../shared/ui/dialog-ui";
+import { projectRequest } from "./score-project-client";
+import { unpackSong } from "../../platform/storage/record-serialization";
+import type { LocalProjectHead } from "../../model/score-project";
+import type { PackedRecord } from "../../model/serialized-record";
+import { mediaIdentity } from "../../modules/audio/media";
+import { createDialog } from "../../shared/ui/dialog-ui";
 import {
   EditHistory,
   retainRevision,
@@ -11,6 +13,8 @@ import {
 } from "../../model/edit-history";
 import { formatDate, t as i18nText } from "../../shared/i18n/i18n";
 import type { RecordData } from "../../model/record";
+import { prepareLyricCorrectionSave } from "./lyric-correction-save";
+import { appendLyricCorrectionHistory } from "./lyric-correction-history";
 export interface SessionHost {
   get: () => RecordData | undefined;
   pending: () => boolean;
@@ -18,13 +22,14 @@ export interface SessionHost {
   restoreForm: (f: EditorForm) => void;
   apply: (s: EditSnapshot) => void;
   flush: () => void;
-  persist: () => Promise<void>;
+  persist: (confirmed?: RecordData) => Promise<void>;
   error: (e: unknown) => void;
 }
 export function editorSession(host: SessionHost) {
-  const dialog = document.getElementById("editor-dialog") as HTMLDialogElement;
+  const dialog = document.getElementById("editor-dialog")!;
   let history: EditHistory | undefined,
     pendingWrite: ReturnType<typeof setTimeout> | undefined;
+  let committing = false;
   const status = document.createElement("small");
   status.id = "edit-draft-status";
   status.setAttribute("role", "status");
@@ -53,32 +58,9 @@ export function editorSession(host: SessionHost) {
     redo = button(i18nText("editor-session.message029"), "↷", () => move(true));
   button(i18nText("editor-session.message030"), "◴", showVersions).id =
     "edit-revisions";
-  button(i18nText("editor-session.message031"), "✓", () => commit(false)).id =
+  button(i18nText("editor-session.message031"), "✓", () => commit()).id =
     "edit-commit";
-  dialog.querySelector(".editor-tabs")!.after(controls);
-  const confirmDialog = createConfirmationDialog({
-    id: "edit-exit-dialog",
-    label: i18nText("editor-session.message032"),
-    title: i18nText("editor-session.message032"),
-    message: i18nText("editor-session.message033"),
-    actions: [
-      {
-        answer: "save",
-        label: i18nText("editor-session.message036"),
-        className: "primary",
-      },
-      {
-        answer: "discard",
-        label: i18nText("editor-session.message034"),
-        className: "danger",
-      },
-      {
-        answer: "continue",
-        label: i18nText("editor-session.message035"),
-        autofocus: true,
-      },
-    ],
-  });
+  document.getElementById("editor-controls")!.append(controls);
   const versions = createDialog(
     "edit-versions-dialog",
     i18nText("editor-session.message030"),
@@ -86,7 +68,11 @@ export function editorSession(host: SessionHost) {
   );
   function dirty() {
     const r = host.get();
-    return !!history && !!r && (history.changed(r) || host.pending());
+    return (
+      !!history &&
+      !!r &&
+      (!!r.localDraftChanges || history.changed(r) || host.pending())
+    );
   }
   function refresh() {
     status.textContent = dirty()
@@ -103,7 +89,7 @@ export function editorSession(host: SessionHost) {
       : undefined;
   }
   function schedule() {
-    if (!history) return;
+    if (!history || committing) return;
     capture();
     refresh();
     clearTimeout(pendingWrite);
@@ -144,7 +130,7 @@ export function editorSession(host: SessionHost) {
   }
   function move(forward: boolean) {
     const r = host.get();
-    if (!history || !r) return;
+    if (!history || !r || committing) return;
     host.flush();
     const s = forward ? history.redo(r) : history.undo(r);
     if (s) {
@@ -152,66 +138,44 @@ export function editorSession(host: SessionHost) {
       schedule();
     }
   }
-  async function commit(close: boolean) {
+  async function commit() {
     clearTimeout(pendingWrite);
     const r = host.get();
-    if (!r || !history) return;
+    if (!r || !history || committing) return;
     host.flush();
     const oldRevisions = r.revisions,
-      oldDraft = r.editDraft;
+      oldDraft = r.editDraft,
+      oldCorrections = r.lyricCorrections,
+      oldDelivery = r.lyricCorrectionDelivery;
+    const oldFileChanges = r.localDraftChanges;
     const previous = history;
-    if (history.changed(r))
-      r.revisions = retainRevision(r.revisions, history.base);
-    delete r.editDraft;
-    history = undefined;
+    committing = true;
+    // Async hashing/storage must not mix this save with another edit or close.
+    const wasInert = dialog.inert;
+    dialog.inert = true;
     try {
-      await host.persist();
+      await prepareLyricCorrectionSave(r, previous.base);
+      if (previous.changed(r))
+        r.revisions = retainRevision(r.revisions, previous.base);
+      delete r.editDraft;
+      delete r.localDraftChanges;
+      history = undefined;
+      await host.persist(r);
       history = new EditHistory(r);
       refresh();
-      if (close) {
-        history = undefined;
-        dialog.close();
-      }
     } catch (e) {
       history = previous;
       r.revisions = oldRevisions;
       r.editDraft = oldDraft;
+      r.lyricCorrections = oldCorrections;
+      r.lyricCorrectionDelivery = oldDelivery;
+      r.localDraftChanges = oldFileChanges;
       throw e;
+    } finally {
+      dialog.inert = wasInert;
+      committing = false;
     }
   }
-  async function discard() {
-    const r = host.get();
-    if (!r || !history) return;
-    const previous = history;
-    host.apply(history.base);
-    delete host.get()!.editDraft;
-    history = undefined;
-    try {
-      await host.persist();
-      dialog.close();
-    } catch (e) {
-      history = previous;
-      throw e;
-    }
-  }
-  function exit() {
-    clearTimeout(pendingWrite);
-    if (!history || !dirty()) {
-      history = undefined;
-      dialog.close();
-      return;
-    }
-    capture();
-    void host.persist().catch(host.error);
-    confirmDialog.showModal();
-  }
-  dialog.querySelector<HTMLButtonElement>(
-    '[data-close="editor-dialog"]',
-  )!.onclick = exit;
-  dialog.addEventListener("cancel", (e) => {
-    e.preventDefault();
-    exit();
-  });
   dialog.addEventListener("input", schedule);
   dialog.addEventListener("change", schedule);
   dialog.addEventListener("keydown", (e) => {
@@ -228,26 +192,51 @@ export function editorSession(host: SessionHost) {
       host.error(err);
     }
   });
-  confirmDialog.querySelectorAll<HTMLButtonElement>("[data-answer]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        const answer = b.dataset.answer;
-        if (answer === "continue") {
-          confirmDialog.close();
-          return;
-        }
-        b.disabled = true;
-        void (answer === "save" ? commit(true) : discard())
-          .then(() => confirmDialog.close())
-          .catch(host.error)
-          .finally(() => (b.disabled = false));
-      }),
-  );
-  function showVersions() {
+  async function showVersions() {
     const r = host.get();
     if (!r) return;
     for (const child of [...versions.children])
       if (!child.classList.contains("dialoghead")) child.remove();
+    appendLyricCorrectionHistory(versions, r);
+    let count = r.revisions?.length ?? 0;
+    if (r.localProject) {
+      const history = await projectRequest<LocalProjectHead[]>(
+        `/${encodeURIComponent(r.song.id)}/history`,
+      );
+      if (host.get() !== r) return;
+      count += history.length;
+      for (const head of history) {
+        const button = document.createElement("button");
+        button.className = "management-row";
+        button.textContent = `${formatDate(new Date(head.savedAt))} · ${head.author} · ${head.revision.slice(0, 8)}`;
+        button.onclick = () =>
+          void (async () => {
+            if (!confirm(i18nText("editor-session.message045"))) return;
+            const saved = await projectRequest<{ record: PackedRecord }>(
+              `/${encodeURIComponent(r.song.id)}/save/${head.revision}`,
+            );
+            if (host.get() !== r) return;
+            const previous = unpackSong(saved.record);
+            // Restore music as an editable draft only when its original media is unchanged.
+            const [oldMedia, currentMedia] = await Promise.all([
+              mediaIdentity(previous.pdf, previous.audio),
+              mediaIdentity(r.pdf, r.audio),
+            ]);
+            if (
+              oldMedia.pdf !== currentMedia.pdf ||
+              oldMedia.audio !== currentMedia.audio
+            )
+              throw Error(i18nText("editorWork.historyAssets"));
+            if (host.get() !== r || committing) return;
+            host.flush();
+            before();
+            host.apply(snapshot(previous));
+            schedule();
+            versions.close();
+          })().catch(host.error);
+        versions.append(button);
+      }
+    }
     for (const v of [...(r.revisions || [])].reverse()) {
       const b = document.createElement("button");
       b.className = "management-row";
@@ -272,7 +261,7 @@ export function editorSession(host: SessionHost) {
       };
       versions.append(b);
     }
-    if (!r.revisions?.length) {
+    if (!count) {
       const p = document.createElement("p");
       p.textContent = i18nText("editor-session.message047");
       versions.append(p);
@@ -288,6 +277,9 @@ export function editorSession(host: SessionHost) {
     before,
     changed: schedule,
     active: () => !!history,
+    saving: () => committing,
+    dirty,
+    commit,
     forStorage: (): RecordData | undefined => {
       const r = host.get();
       if (!r || !history) return r;

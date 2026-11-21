@@ -86,7 +86,7 @@ export function mountSectionEditor(
     apply(sections: SectionShortcut[]): Promise<void>;
   },
 ) {
-  root.innerHTML = `<div class="section-editor-heading"><div><h3>${t("sectionEditor.copy6")}</h3><p>${t("sectionEditor.copy7")}</p></div><button type="button" id="section-add">${t("sectionEditor.copy8")}</button></div><table class="section-editor-table"><thead><tr><th>${t("sectionEditor.copy9")}</th><th>${t("sectionEditor.copy10")}</th><th>${t("sectionEditor.copy11")}</th></tr></thead><tbody></tbody></table><div class="form-footer"><span role="status" id="section-status"></span><button type="button" id="section-reset">${t("sectionEditor.copy12")}</button><button type="button" id="section-apply" class="primary">${t("sectionEditor.copy13")}</button></div>`;
+  root.innerHTML = `<div class="section-editor-heading"><div><h3>${t("sectionEditor.copy6")}</h3></div><button type="button" id="section-add">${t("sectionEditor.copy8")}</button></div><table class="section-editor-table"><thead><tr><th>${t("sectionEditor.copy9")}</th><th>${t("sectionEditor.copy10")}</th><th>${t("sectionEditor.copy11")}</th></tr></thead><tbody></tbody></table><div class="form-footer"><span role="status" id="section-status"></span><button type="button" id="section-reset">${t("sectionEditor.copy12")}</button><button type="button" id="section-apply" class="primary">${t("sectionEditor.copy13")}</button></div>`;
   const body = root.querySelector("tbody")!;
   let working = false;
   const status = root.querySelector<HTMLElement>("#section-status")!;

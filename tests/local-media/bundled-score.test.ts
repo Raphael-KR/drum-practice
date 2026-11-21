@@ -74,7 +74,7 @@ it("repairs legacy metadata from verified source while preserving display title 
   );
   expect(await repairBundledMetadata(r)).toBe(true);
   expect(song.originalTitle).toBe("風と丘のバラード");
-  expect(song.artist).toBe("Real Paradis with のだめオーケストラ");
+  expect(song.artist).toBe("Real Paradis");
   expect(song.lyricist).toBe("Jane Su");
   expect(song.composer).toBe("野村陽一郎");
   expect(song.title).toBe(before.title);

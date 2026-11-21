@@ -1,49 +1,5 @@
 import { expect, it } from "vitest";
-import {
-  ribbonSpacing,
-  installRibbonEngraving,
-} from "../../src/modules/score/ribbon-engraving";
-function entry(q: number, left = 0, right = 16) {
-  return {
-    LyricsEntries: [],
-    relInMeasureTimestamp: { RealValue: q / 4 },
-    graphicalVoiceEntries: [
-      {
-        parentVoiceEntry: { IsGrace: false },
-        vfStaveNote: {
-          getTickContext: () => ({
-            getMetrics: () => ({ extraLeftPx: left, notePx: right }),
-          }),
-        },
-      },
-    ],
-  };
-}
-it("budgets the densest subdivision and grace modifiers across the entire song", () => {
-  const osmd = {
-    GraphicSheet: {
-      MeasureList: [
-        [
-          {
-            staffEntries: [entry(0), entry(1)],
-            parentSourceMeasure: { Duration: { RealValue: 1 } },
-          },
-        ],
-        [
-          {
-            staffEntries: [entry(0, 45), entry(3.875)],
-            parentSourceMeasure: { Duration: { RealValue: 1 } },
-          },
-        ],
-      ],
-    },
-  };
-  const s = ribbonSpacing(
-    osmd as unknown as Parameters<typeof ribbonSpacing>[0],
-  );
-  expect(s.offset).toBeGreaterThanOrEqual(49);
-  expect(s.quarter * 0.125).toBeGreaterThanOrEqual(s.offset + 16 + 4);
-});
+import { installRibbonEngraving } from "../../src/modules/score/ribbon-engraving";
 it("moves shared native tick contexts once, preserves grace association and uses 5/4 duration", () => {
   let x = 200,
     width = 0,
@@ -84,15 +40,16 @@ it("moves shared native tick contexts once, preserves grace association and uses
   };
   const calculator = { calculateMeasureXLayout: () => 1 };
   installRibbonEngraving(
-    { GraphicSheet: { GetCalculator: calculator } } as unknown as Parameters<
-      typeof installRibbonEngraving
-    >[0],
+    {
+      Sheet: { SourceMeasures: [g.parentSourceMeasure] },
+      GraphicSheet: { GetCalculator: calculator },
+    } as unknown as Parameters<typeof installRibbonEngraving>[0],
     { quarter: 160, offset: 24 },
   );
   (calculator.calculateMeasureXLayout as (row: (typeof g)[]) => number)([g]);
   (g.formatVoices as (width: number, parent: typeof g) => void)(800, g);
   expect(formatCount).toBe(1);
-  expect(width).toBe(80);
+  expect(width).toBe(83);
   expect(note.getAbsoluteX() - 50).toBe(24 + 1.5 * 160);
   // Repeated layout/skyline passes cannot accumulate offsets.
   (g.formatVoices as (width: number, parent: typeof g) => void)(800, g);
@@ -102,7 +59,7 @@ it("moves shared native tick contexts once, preserves grace association and uses
 import { validateRibbonTimeline } from "../../src/modules/score/ribbon-timeline";
 it("rejects malformed embedded assets before creating image resources", () => {
   const data = {
-    version: 1,
+    version: 2,
     quarter: 160,
     offset: 24,
     pages: ["<svg/>"],
@@ -120,27 +77,7 @@ it("rejects malformed embedded assets before creating image resources", () => {
     expect(() => validateRibbonTimeline({ ...data, ...change }, 1)).toThrow();
 });
 
-it("does not charge an interior ornament as every measure's leading margin", () => {
-  const osmd = {
-    GraphicSheet: {
-      MeasureList: [
-        [
-          {
-            staffEntries: [entry(0), entry(2, 45), entry(3.75)],
-            parentSourceMeasure: { Duration: { RealValue: 1 } },
-          },
-        ],
-      ],
-    },
-  };
-  const s = ribbonSpacing(
-    osmd as unknown as Parameters<typeof ribbonSpacing>[0],
-  );
-  expect(s.offset).toBe(8);
-  expect(s.quarter).toBe(112);
-});
-
-it("re-spaces a short measure into a uniform row cell before engraving, without scaling glyphs", () => {
+it("preserves short measure duration without scaling glyphs", () => {
   let x = 0,
     width = 0;
   const stave = { getX: () => 0 };
@@ -174,31 +111,19 @@ it("re-spaces a short measure into a uniform row cell before engraving, without 
   };
   const calculator = { calculateMeasureXLayout: () => 1 };
   installRibbonEngraving(
-    { GraphicSheet: { GetCalculator: calculator } } as unknown as Parameters<
-      typeof installRibbonEngraving
-    >[0],
-    { quarter: 100, offset: 8, uniformQuarters: 4 },
+    {
+      Sheet: { SourceMeasures: [m.parentSourceMeasure] },
+      GraphicSheet: { GetCalculator: calculator },
+    } as unknown as Parameters<typeof installRibbonEngraving>[0],
+    { quarter: 100, offset: 8 },
   );
   (calculator.calculateMeasureXLayout as (row: (typeof m)[]) => number)([m]);
   (m.formatVoices as (width: number, parent: typeof m) => void)(400, m);
-  expect(width).toBe(40);
-  expect(x).toBeCloseTo(8 + (2 * 100 * 4) / 3);
+  expect(width).toBe(31.4);
+  expect(x).toBeCloseTo(8 + 2 * 100);
 });
 
-import { rowPositions } from "../../src/modules/score/ribbon-engraving";
-it("allocates row clearance without letting a single short duration shrink the whole score", () => {
-  const e = [
-    { q: 0, left: 0, right: 12 },
-    { q: 3.5, left: 20, right: 12 },
-    { q: 3.833333, left: 0, right: 12 },
-    { q: 4, left: 0, right: 0 },
-  ];
-  const p = rowPositions(e, 8, 320);
-  expect(p[3]).toBeCloseTo(320);
-  expect(p[1] - p[0]).toBeGreaterThanOrEqual(36);
-  expect(p[3] - p[2]).toBeGreaterThanOrEqual(16);
-});
-it("engraves sparse and dense bars on identical fixed grid coordinates without scaling notes", () => {
+it("uses the normal inset instead of native system prefixes for sparse and dense grid bars", () => {
   function bar(qs: number[]) {
     const xs = qs.map(() => 200);
     const entries = qs.map((q, i) => ({
@@ -238,21 +163,25 @@ it("engraves sparse and dense bars on identical fixed grid coordinates without s
     dense = bar(Array.from({ length: 64 }, (_, i) => i / 16));
   const calc = { calculateMeasureXLayout: () => 0 };
   installRibbonEngraving(
-    { GraphicSheet: { GetCalculator: calc } } as unknown as Parameters<
-      typeof installRibbonEngraving
-    >[0],
+    {
+      Sheet: {
+        SourceMeasures: [
+          sparse.g.parentSourceMeasure,
+          dense.g.parentSourceMeasure,
+        ],
+      },
+      GraphicSheet: { GetCalculator: calc },
+    } as unknown as Parameters<typeof installRibbonEngraving>[0],
     {
       quarter: 200,
       offset: 8,
-      rowWidth: 320,
-      uniformQuarters: 4,
-      fixedGrid: true,
     },
   );
   for (const b of [sparse, dense]) {
     (calc.calculateMeasureXLayout as (row: (typeof b.g)[]) => number)([b.g]);
     (b.g.formatVoices as (width: number, parent: typeof b.g) => void)(320, b.g);
-    expect(b.width).toBe(32);
+    expect(b.width).toBe(81.4);
+    expect(b.xs[0]).toBe(8);
   }
   expect(sparse.xs).toEqual([
     dense.xs[0],
@@ -260,8 +189,8 @@ it("engraves sparse and dense bars on identical fixed grid coordinates without s
     dense.xs[32],
     dense.xs[48],
   ]);
-  // A 4/4 bar has 64 cells; note heads sit at the centers of 5 px cells.
-  expect(dense.xs[0] + 6).toBeCloseTo(2.5);
-  expect(dense.xs[63] + 6).toBeCloseTo(317.5);
-  expect(320 + dense.xs[0] - dense.xs[63]).toBeCloseTo(5);
+  // The common inset is 8, and the unchanged notehead centre is 6 units further.
+  expect(dense.xs[0] + 6).toBeCloseTo(14);
+  expect(dense.xs[63] + 6).toBeCloseTo(814 - 800 / 64);
+  expect(814 + dense.xs[0] - dense.xs[63]).toBeCloseTo(14 + 800 / 64);
 });

@@ -1,12 +1,10 @@
 import JSZip from "jszip";
-import { retainRevision } from "../../model/edit-history";
 import { type Song } from "../../model/model";
 import type { RecordData } from "../../model/record";
 import { mediaIdentity } from "../../modules/audio/media";
 import {
   exportLibrary,
   importLibrary,
-  preferenceKeys,
 } from "../../modules/library/library-backup";
 import { createMetronomeCorrectionNotice } from "../../modules/library/metronome-corrections";
 import {
@@ -16,13 +14,21 @@ import {
 } from "../../modules/score/canonical-xml";
 import { songScores } from "../../modules/score/song-scores";
 import { download } from "../../platform/browser/download";
-import { allRecords, saveRecords } from "../../platform/storage/storage";
+import { allRecords } from "../../platform/storage/storage";
+import {
+  listProjects,
+  readProject,
+  projectRecord,
+  restoreProject,
+} from "./score-project-client";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import type { setupScoreManagement } from "./score-management";
 
 interface ManagementActionsHost {
   record: RecordData | undefined;
   song(): Song;
+  edit(mut: (song: Song) => void, work?: RecordData["lyricWork"]): void;
+  flush(): void;
   persist(): Promise<void>;
   activate(record: RecordData): Promise<void>;
   openLibrary(): Promise<void>;
@@ -46,8 +52,8 @@ export function createEditorManagementActions(
         !confirm(i18nText("main.message371"))
       )
         return;
-      h.record.revisions = retainRevision(h.record.revisions, h.record);
-      song().lyricText = text;
+      h.flush();
+      h.edit(() => {}, { ...h.record.lyricWork, text });
       await persist();
     },
     exportFiles: async (kinds) => {
@@ -89,15 +95,19 @@ export function createEditorManagementActions(
     },
     exportAll: async () => {
       await persist();
-      const records = await allRecords();
+      const legacy = await allRecords(),
+        { projects, errors } = await listProjects();
+      if (errors.length)
+        throw Error(errors.map((e) => `${e.id}: ${e.error}`).join("\n"));
+      const records = [
+        ...legacy.filter((r) => !projects.some((p) => p.songId === r.song.id)),
+        ...(await Promise.all(
+          projects.map(async (p) => projectRecord(await readProject(p.songId))),
+        )),
+      ];
       if (!records.length) throw Error(i18nText("main.message372"));
-      const prefs = Object.fromEntries(
-        preferenceKeys
-          .map((k) => [k, localStorage.getItem(k)])
-          .filter((p): p is [string, string] => p[1] !== null),
-      );
       download(
-        new Blob([new Uint8Array(await exportLibrary(records, prefs))]),
+        new Blob([new Uint8Array(await exportLibrary(records))]),
         i18nText("main.message373", { value1: records.length }),
       );
       tell(i18nText("main.message374", { value1: records.length }));
@@ -111,7 +121,12 @@ export function createEditorManagementActions(
       for (const r of parsed.records) {
         if (r.canonicalXML) readCanonical(r.canonicalXML, r.song);
       }
-      const existing = await allRecords(),
+      await persist();
+      const { projects } = await listProjects();
+      const existing = [
+          ...(await allRecords()),
+          ...projects.map((p) => ({ song: { id: p.songId } })),
+        ],
         overlap = parsed.records.filter((r) =>
           existing.some((x) => x.song.id === r.song.id),
         );
@@ -124,17 +139,19 @@ export function createEditorManagementActions(
         )
       )
         return;
-      h.beforeRestore();
-      await saveRecords(parsed.records);
-      for (const [k, v] of Object.entries(parsed.preferences))
-        localStorage.setItem(k, v);
-      const replacement = parsed.records.find(
-        (r) => r.song.id === h.record?.song.id,
+      // Capture every expected head before writing. Concurrent producer updates
+      // fail CAS instead of being silently replaced by this archive.
+      const sources = await Promise.all(
+        parsed.records.map((r) =>
+          projects.some((p) => p.songId === r.song.id)
+            ? readProject(r.song.id)
+            : undefined,
+        ),
       );
-      if (replacement) {
-        h.record = undefined;
-        await activate(replacement);
-      }
+      for (const [index, record] of parsed.records.entries())
+        await restoreProject(record, sources[index]);
+      h.beforeRestore();
+      h.record = undefined;
       await openLibrary();
       tell(
         [
@@ -148,6 +165,7 @@ export function createEditorManagementActions(
     replaceAudio: async (f) => {
       if (!h.record) return;
       if (!confirm(i18nText("main.message377"))) return;
+      h.flush();
       const old = h.record;
       const next = {
         ...old,
@@ -160,6 +178,8 @@ export function createEditorManagementActions(
         (await mediaIdentity(next.pdf, next.audio)).audio,
       );
       await ensureCanonical(next);
+      delete next.editDraft;
+      next.localDraftChanges = true;
       await activate(next);
       await persist();
     },

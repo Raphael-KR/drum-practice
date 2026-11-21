@@ -5,6 +5,7 @@ export function hasLyrics(r?: RecordData): boolean {
   if (
     r.song.measureLyrics?.some((l) => l.text.trim()) ||
     r.song.lyricText?.trim() ||
+    r.lyricWork?.text?.trim() ||
     r.song.lyrics.some((l) => l.text.trim())
   )
     return true;

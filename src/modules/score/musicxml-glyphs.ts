@@ -1,4 +1,6 @@
-import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { TIME_SPACING, timeMeasureWidth, timePosition } from "./time-spacing";
+import { scoreMeasureSpacing } from "./full-score-spacing";
+import { NoteType, type OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import type { VexFlowMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import {
@@ -19,14 +21,11 @@ export function finishMusicXMLGlyphs(
   parsed: XMLScore,
   timeline?: RibbonSpacing,
 ) {
-  omitPercussionClefs(host, renderDocument);
   alignRehearsalBoxes(osmd);
-  if (timeline)
-    host.querySelectorAll(".vf-timesignature").forEach((e) => e.remove());
   const svgs = Array.from(host.querySelectorAll("svg"));
   if (!svgs.length) throw Error(i18nText("musicxml.message413"));
   applyHollowNoteheads(osmd);
-  centerWholeMeasureRests(osmd, timeline);
+  centerRestGlyphs(osmd, timeline);
   annotateNoteHighlights(
     osmd,
     parsed.measures.map((m) => m.denominator),
@@ -38,22 +37,6 @@ export function finishMusicXMLGlyphs(
   identifyScoreHeadings(svgs, renderDocument);
 
   return svgs;
-}
-
-function omitPercussionClefs(host: HTMLElement, renderDocument: Document) {
-  // This drum practice viewer omits percussion clef glyphs, including system
-  // repeats. Keep source XML and all barline/repeat glyphs unchanged.
-  const clefSigns = Array.from(
-    renderDocument.querySelectorAll(
-      "part > measure > attributes > clef > sign",
-    ),
-  );
-  if (
-    clefSigns.length &&
-    clefSigns.every((sign) => sign.textContent?.trim() === "percussion")
-  ) {
-    host.querySelectorAll(".vf-clef").forEach((clef) => clef.remove());
-  }
 }
 
 function alignRehearsalBoxes(osmd: OpenSheetMusicDisplay) {
@@ -125,32 +108,34 @@ function applyHollowNoteheads(osmd: OpenSheetMusicDisplay) {
     }
 }
 
-function centerWholeMeasureRests(
+function centerRestGlyphs(
   osmd: OpenSheetMusicDisplay,
   timeline?: RibbonSpacing,
 ) {
-  // Explicit rest display pitches bypass OSMD's automatic whole-rest centering.
-  // Move only full-bar silence glyphs; keep staff entries and playback anchors intact.
+  // Move rest glyphs independently of their rhythmic anchors and lyric positions.
   for (const row of osmd.GraphicSheet.MeasureList)
     for (const g of row) {
       if (!g) continue;
       const notes = g.staffEntries.flatMap((entry) =>
         entry.graphicalVoiceEntries.flatMap((voice) =>
-          voice.notes.filter((note) => note.sourceNote.PrintObject !== false),
+          voice.notes
+            .filter((note) => note.sourceNote.PrintObject !== false)
+            .map((note) => ({
+              note,
+              quarter: entry.relInMeasureTimestamp.RealValue * 4,
+            })),
         ),
       );
       // Hidden lyric rhythm must not turn an otherwise silent drum bar into notes.
-      if (
-        !notes.length ||
-        !notes.every(
-          (note) =>
+      const fullBarSilence =
+        notes.length > 0 &&
+        notes.every(
+          ({ note }) =>
             note.sourceNote.isRest() &&
             (note.sourceNote.IsWholeMeasureRest ||
               note.sourceNote.Length.RealValue ===
                 g.parentSourceMeasure.Duration.RealValue),
-        )
-      )
-        continue;
+        );
       const page = g.ParentMusicSystem.Parent;
       const box = g.PositionAndShape;
       const left =
@@ -163,47 +148,43 @@ function centerWholeMeasureRests(
           page.PositionAndShape.AbsolutePosition.x +
           box.BorderRight) *
         10;
-      for (const note of notes) {
-        if (
-          !note.sourceNote.isRest() ||
-          (!timeline && !note.sourceNote.Pitch) ||
-          !(
-            note.sourceNote.IsWholeMeasureRest ||
-            note.sourceNote.Length.RealValue ===
-              note.sourceNote.SourceMeasure.ActiveTimeSignature.RealValue
-          )
-        )
-          continue;
+      for (const { note, quarter } of notes) {
+        const halfRest =
+          note.sourceNote.isRest() &&
+          note.sourceNote.NoteTypeXml === NoteType.HALF &&
+          note.sourceNote.DotsXml === 0;
+        if (!fullBarSilence && !halfRest) continue;
         const glyph = (
           note as unknown as { getSVGGElement(): SVGGElement }
         ).getSVGGElement();
         if (!glyph) continue;
         const bounds = glyph.getBBox();
-        const nativeLeft = timeline
-          ? (g as unknown as { getVFStave(): { getX(): number } })
-              .getVFStave()
-              .getX()
-          : left;
-        // Full-bar rests represent the whole measure, not its first grid tick.
-        // VexFlow's rest offset can put them left of the cropped grid region.
-        const dx = timeline
-          ? restCenterShift(
-              nativeLeft,
-              nativeLeft +
-                (timeline.uniformQuarters && timeline.rowWidth
-                  ? timeline.rowWidth
-                  : g.parentSourceMeasure.Duration.RealValue *
-                    4 *
-                    timeline.quarter),
-              bounds.x,
-              bounds.width,
+        const staveX = (g as VexFlowMeasure).getVFStave().getX();
+        let start = timeline ? staveX : left;
+        let end = timeline
+          ? start +
+            timeMeasureWidth(
+              g.parentSourceMeasure.Duration.RealValue * 4,
+              timeline,
             )
-          : restCenterShift(left, right, bounds.x, bounds.width);
+          : right;
+        if (!fullBarSilence) {
+          // Center a half rest between its first and second quarter starts:
+          // a rest starting at beat 1 is drawn at beat 1.5, as requested.
+          const spacing = scoreMeasureSpacing(g, timeline ?? TIME_SPACING);
+          const prefix = timeline ? 0 : g.beginInstructionsWidth * 10;
+          start = staveX + prefix + timePosition(quarter, spacing);
+          end = start + spacing.quarter;
+        }
+        const dx = restCenterShift(start, end, bounds.x, bounds.width);
         glyph.setAttribute(
           "transform",
           `translate(${dx} 0) ${glyph.getAttribute("transform") || ""}`,
         );
-        glyph.setAttribute("data-full-measure-rest", "centered");
+        glyph.setAttribute(
+          fullBarSilence ? "data-full-measure-rest" : "data-half-rest",
+          "centered",
+        );
       }
     }
 }

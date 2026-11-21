@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "caller": "drum-practice-editor",
+  "return_route": "drum-practice:production-requests",
+  "read_targets": [],
+  "send_targets": ["01a0fd08-ba73-7482-b10e-40e637a1efc0"],
+  "allow_steer": true,
+  "ledger_dir": "/Users/raphael/Playground/drum-practice/data/production/requests/.bridge-ledger",
+  "ipc": {
+    "desktop_socket_home_relative": ".codex/ipc/ipc.sock",
+    "timeout_seconds": 15
+  }
+}

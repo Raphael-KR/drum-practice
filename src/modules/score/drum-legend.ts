@@ -33,13 +33,16 @@ export const DRUM_LEGEND: Record<string, [string, string, string, string?]> = {
 };
 const set = (parent: Element, tag: string, value: string) => {
   let e = parent.querySelector(`:scope > ${tag}`);
+  if (e?.textContent === value) return false;
   if (!e) {
     e = parent.ownerDocument.createElement(tag);
     parent.append(e);
   }
   e.textContent = value;
+  return true;
 };
 export function applyDrumLegend(doc: Document) {
+  let changed = false;
   const names = new Map(
     [...doc.querySelectorAll("score-instrument")].map((e) => [
       e.id,
@@ -54,20 +57,25 @@ export function applyDrumLegend(doc: Document) {
     const rule = DRUM_LEGEND[name],
       u = note.querySelector("unpitched");
     if (!rule || !u) continue;
-    set(u, "display-step", rule[0]);
-    set(u, "display-octave", rule[1]);
-    set(note, "notehead", rule[2]);
+    if (set(u, "display-step", rule[0])) changed = true;
+    if (set(u, "display-octave", rule[1])) changed = true;
+    if (set(note, "notehead", rule[2])) changed = true;
     const head = note.querySelector("notehead")!;
-    if (rule[3]) head.setAttribute("filled", rule[3]);
-    else head.removeAttribute("filled");
+    const filled = rule[3] ?? null;
+    if (head.getAttribute("filled") !== filled) {
+      if (filled !== null) head.setAttribute("filled", filled);
+      else head.removeAttribute("filled");
+      changed = true;
+    }
   }
+  return changed;
 }
 
 export function normalizeDrumScore(text: string) {
   const doc = new DOMParser().parseFromString(text, "application/xml");
   if (doc.querySelector("parsererror")) throw Error("Invalid MusicXML");
-  repairLegacyDrumIdentity(doc);
-  applyDrumLegend(doc);
+  let changed = repairLegacyDrumIdentity(doc);
+  if (applyDrumLegend(doc)) changed = true;
   // MusicXML sequence order; retain all notes, directions and expressive attributes.
   const order = [
     "grace",
@@ -98,10 +106,14 @@ export function normalizeDrumScore(text: string) {
   ];
   for (const n of doc.querySelectorAll("part > measure > note")) {
     const children = [...n.children];
-    children.sort(
+    const sorted = [...children].sort(
       (a, b) => order.indexOf(a.localName) - order.indexOf(b.localName),
     );
-    children.forEach((e) => n.append(e));
+    if (sorted.some((child, i) => child !== children[i])) {
+      sorted.forEach((e) => n.append(e));
+      changed = true;
+    }
   }
-  return new XMLSerializer().serializeToString(doc);
+  // Opening an unchanged score must preserve its canonical bytes and revision hash.
+  return changed ? new XMLSerializer().serializeToString(doc) : text;
 }

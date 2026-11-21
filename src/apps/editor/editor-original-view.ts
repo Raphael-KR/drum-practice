@@ -5,7 +5,7 @@ import { displayPage } from "../../modules/score/score-pages";
 import { songScores } from "../../modules/score/song-scores";
 import { t as i18nText } from "../../shared/i18n/i18n";
 import { $ } from "./editor-dom";
-import { openSettingsChild } from "./workspace";
+import { openEditorDialog } from "./workspace";
 
 interface OriginalScoreHost {
   readonly record: RecordData | undefined;
@@ -56,13 +56,13 @@ export function installOriginalScoreView(h: OriginalScoreHost) {
     originalURLs = await Promise.all(
       pdf.pages.map(async (p) => URL.createObjectURL(await displayPage(p))),
     );
-    const index = $<HTMLDialogElement>("editor-dialog").open
+    const index = !$("editor-dialog").hidden
       ? h.selected
       : locate(song(), engine().current()).index;
     originalPage =
       pdf.regions.find((r) => r.id === pdf.measures[index]?.regionId)?.page ||
       0;
     showOriginalPage();
-    openSettingsChild($<HTMLDialogElement>("original-dialog"));
+    openEditorDialog($<HTMLDialogElement>("original-dialog"));
   });
 }

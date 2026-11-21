@@ -7,6 +7,8 @@
 | PDF·음원·유튜브로 악보 제작 | [접수부터 인계까지](how-to/produce-score.md) | [제작 기준](reference/score/production.md) → [MusicXML](reference/score/musicxml.md) → [악기·주법](reference/score/notation.md) → [조판](reference/score/rendering.md) |
 | 악보·패키지 검수 | [검수 절차](how-to/review-score.md) | [파일 형식](reference/score/file-formats.md), [검증 기준](reference/engineering/verification.md) |
 | 가사 교정 | [교정 절차](how-to/correct-lyrics.md) | [음악적 가사 위치](reference/score/musicxml.md), [선택적 수동 교정 범위](reference/score/production.md) |
+| 사용자와 제작자의 검수·가사 교정·수정 | [공동작업 워크플로우](how-to/collaborate-on-score.md) | [제작 공동작업](reference/score/production.md#score-session-collaboration), [구현 상태](plans/local-score-projects-20261113.md) |
+| 워크플로우에 맞춘 제작기 수정 계획 검토 | [사용자 검토용 계획](plans/score-editor-workflow-20261114.md) | [공동작업 워크플로우](how-to/collaborate-on-score.md), [제작기](reference/product/editor.md), [UX](reference/product/ux.md) |
 | 요청된 드럼 음원 제작 | [음원 제작](how-to/render-drum-audio.md) | [드럼킷](reference/score/drum-kits.md), [공통 도구](reference/score/tools.md) |
 | 앱 개발 | [개발 절차](how-to/develop.md) | [구조](reference/engineering/architecture.md) → [UX](reference/product/ux.md) → [재생](reference/product/playback.md)·[음원](reference/product/audio-practice.md)·[제작기](reference/product/editor.md) |
 | 다른 프로젝트의 pnpm 전환 | [공통 저장소·중앙 YAML 연결](how-to/adopt-shared-pnpm-catalog.md) | [공유 의존성 결정](decisions/0028-shared-dependency-store-and-catalog.md) |

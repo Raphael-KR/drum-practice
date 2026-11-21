@@ -195,7 +195,7 @@ export function updateScoreFrame(h: {
     `[data-index="${index + 1}"]`,
   );
   const sameRow =
-    s.settings.uniformSpacing && s.settings.view === "rows"
+    s.scoreFormat === "musicxml" && s.settings.view === "rows"
       ? !!nextCell &&
         currentCell?.closest(".browse-row") === nextCell.closest(".browse-row")
       : index % 4 !== 3;
@@ -203,7 +203,7 @@ export function updateScoreFrame(h: {
     !s.audioPractice && next && sameRow
       ? 1 +
         xAtBeat(nextRegion!, next, 0) *
-          (s.settings.uniformSpacing && currentCell && nextCell
+          (s.scoreFormat === "musicxml" && currentCell && nextCell
             ? nextCell.offsetWidth / currentCell.offsetWidth
             : 1)
       : 1;
@@ -211,8 +211,12 @@ export function updateScoreFrame(h: {
     index +
     (s.audioPractice
       ? beat / m.beats
-      : s.settings.uniformSpacing
-        ? gridPhase((beat * 4) / m.denominator, (m.beats * 4) / m.denominator)
+      : s.scoreFormat === "musicxml"
+        ? gridPhase(
+            (beat * 4) / m.denominator,
+            (m.beats * 4) / m.denominator,
+            region!.beatXs[0],
+          )
         : continuousX(region!, m, beat, 1, nextStart));
   const savedRanges = repeatEnabled
     ? savedLoopSlots(s)
@@ -288,7 +292,10 @@ export function buildScoreTrack(
   stage.style.setProperty("--scroll-x", "0px");
   ribbon.innerHTML = s.measures
     .map((m, i) => {
-      const w = s.settings.view === "rows" ? stage.clientWidth / 4 : widthOf(m);
+      const w =
+        s.settings.view === "rows" && s.scoreFormat !== "musicxml"
+          ? stage.clientWidth / 4
+          : widthOf(m);
       offsets.push(x);
       widths.push(w);
       x += w;

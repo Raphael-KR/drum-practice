@@ -1,105 +1,70 @@
-import type { GraphicalStaffEntry } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/GraphicalStaffEntry";
+import {
+  MusicSystemBuilder,
+  type OpenSheetMusicDisplay,
+} from "opensheetmusicdisplay";
 import type { VexFlowMeasure } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowMeasure";
 import type { VexFlowVoiceEntry } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/VexFlow/VexFlowVoiceEntry";
 import type { MusicSheetCalculator } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/MusicSheetCalculator";
-type LayoutCalculator = MusicSheetCalculator & {
+import type { MusicSystem } from "opensheetmusicdisplay/build/dist/src/MusicalScore/Graphical/MusicSystem";
+import { visibleBeginInstructions } from "./score-instructions";
+import {
+  expandFullWidthSystem,
+  scoreMeasureSpacing,
+} from "./full-score-spacing";
+import {
+  timeMeasureWidth,
+  timePosition,
+  RIBBON_HEAD_ANCHOR,
+  type TimeSpacing,
+} from "./time-spacing";
+export type RibbonSpacing = TimeSpacing;
+type LayoutCalculator = Omit<
+  MusicSheetCalculator,
+  "calculateMeasureXLayout" | "calculateMeasureWidthFromStaffEntries"
+> & {
   calculateMeasureXLayout(row: VexFlowMeasure[]): number;
+  calculateMeasureWidthFromStaffEntries(
+    row: VexFlowMeasure[],
+    width: number,
+  ): number;
 };
-import type { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { gridPhase, RIBBON_HEAD_ANCHOR } from "./ribbon-timeline";
-/** Native spacing adapter, introduced with OSMD 2.1: move musical positions, never scale glyphs. */
-export interface RibbonSpacing {
-  quarter: number;
-  uniformQuarters?: number;
-  rowWidth?: number;
-  fixedGrid?: boolean;
-  offset: number;
-}
-export function ribbonSpacing(osmd: OpenSheetMusicDisplay): RibbonSpacing {
-  let quarter = 64,
-    offset = 8;
-  const measures: { q: number; left: number; right: number }[][] = [];
-  for (const row of osmd.GraphicSheet.MeasureList) {
-    const g = row[0];
-    const entries: { q: number; left: number; right: number }[] = [];
-    for (const e of g.staffEntries) {
-      const bounds = entrySpacing(e);
-      entries.push(bounds);
-      // Only an ornament on the first beat needs a leading margin.
-      // Interior ornaments are already covered by their preceding interval.
-      if (Math.abs(e.relInMeasureTimestamp.RealValue) < 1e-7)
-        offset = Math.max(offset, bounds.left + 4);
-    }
-    entries.push({
-      q: g.parentSourceMeasure.Duration.RealValue * 4,
-      left: 0,
-      right: 0,
-    });
-    measures.push(entries);
-  }
-  for (const entries of measures)
-    for (let i = 1; i < entries.length; i++) {
-      const prev = entries[i - 1],
-        next = entries[i],
-        delta = next.q - prev.q;
-      if (delta > 1e-7) {
-        quarter = Math.max(
-          quarter,
-          (prev.right + next.left + 4) / delta,
-          i === entries.length - 1 ? (offset + prev.right + 4) / delta : 0,
-        );
-      }
-    }
-  const rowWidth = Math.ceil(
-    Math.max(320, ...measures.map((entries) => offset + rowMinimum(entries))),
-  );
-  return {
-    rowWidth,
-    quarter: Math.ceil(quarter),
-    offset: Math.ceil(offset),
-  };
-}
+
+/** Reuse native tick contexts, beams, labels and drawing; replace only the time axis. */
 export function installRibbonEngraving(
   osmd: OpenSheetMusicDisplay,
   spacing: RibbonSpacing,
+  playback = true,
 ) {
   const calculator = osmd.GraphicSheet
     .GetCalculator as unknown as LayoutCalculator;
-  installMeasureEndWedges(osmd);
+  if (playback) installMeasureEndWedges(osmd);
+  // Width factors scale rhythmic space; retain authored rhythm, not old print stretching.
+  osmd.Sheet.MeasureWidthFactor = 1;
+  for (const measure of osmd.Sheet.SourceMeasures) measure.WidthFactor = 1;
   const calculate = calculator.calculateMeasureXLayout.bind(calculator);
-  calculator.calculateMeasureXLayout = (row: VexFlowMeasure[]) => {
-    const minimum = calculate(row);
+  const widthOf = (row: VexFlowMeasure[]) =>
+    timeMeasureWidth(
+      row[0].parentSourceMeasure.Duration.RealValue * 4,
+      spacing,
+    ) / 10;
+  // Native lyric and symbol minimum widths must not stretch the musical axis.
+  calculator.calculateMeasureWidthFromStaffEntries = widthOf;
+  calculator.calculateMeasureXLayout = (row) => {
+    calculate(row);
     for (const measure of row) {
       if (!measure?.formatVoices) continue;
       const format = measure.formatVoices;
-      measure.formatVoices = (width: number, parent: VexFlowMeasure) => {
-        format(width, parent);
+      measure.formatVoices = (width, parent) => {
         const duration = measure.parentSourceMeasure.Duration.RealValue * 4;
-        const quarters = spacing.uniformQuarters ?? duration;
-        const targetWidth =
-          spacing.uniformQuarters && spacing.rowWidth
-            ? spacing.rowWidth
-            : quarters * spacing.quarter;
-        const rowEntries = spacing.rowWidth
-          ? measure.staffEntries.map(entrySpacing)
-          : [];
-        const points = spacing.rowWidth
-          ? spacing.fixedGrid
-            ? rowEntries.map((e: { q: number }) =>
-                gridPosition(e.q, duration, targetWidth),
-              )
-            : rowPositions(
-                [...rowEntries, { q: duration, left: 0, right: 0 }],
-                spacing.offset,
-                targetWidth,
-              )
-          : undefined;
-        measure.setWidth(targetWidth / 10);
-        const stave = measure.getVFStave(),
-          contexts = new Set();
-        for (const [entryIndex, entry] of measure.staffEntries.entries())
+        if (playback)
+          measure.setWidth(timeMeasureWidth(duration, spacing) / 10);
+        format(width, parent);
+        const stave = measure.getVFStave();
+        const prefix = playback ? 0 : measure.beginInstructionsWidth * 10;
+        const axis = scoreMeasureSpacing(measure, spacing);
+        const contexts = new Set();
+        for (const entry of measure.staffEntries)
           for (const voice of entry.graphicalVoiceEntries) {
-            // GraceNoteGroup remains attached to its principal note in VexFlow.
             if (voice.parentVoiceEntry.IsGrace) continue;
             const note = (voice as VexFlowVoiceEntry).vfStaveNote;
             if (!note) continue;
@@ -109,68 +74,176 @@ export function installRibbonEngraving(
             contexts.add(context);
             const x =
               stave.getX() +
-              (points
-                ? points[entryIndex]
-                : spacing.offset +
-                  (entry.relInMeasureTimestamp.RealValue *
-                    4 *
-                    spacing.quarter *
-                    quarters) /
-                    duration);
+              prefix +
+              timePosition(entry.relInMeasureTimestamp.RealValue * 4, axis) -
+              RIBBON_HEAD_ANCHOR;
             context.setX(context.getX() + x - note.getAbsoluteX());
           }
       };
     }
-    return minimum;
+    return widthOf(row);
   };
 }
 
-interface RowEntry {
-  q: number;
-  left: number;
-  right: number;
-}
-/** Include native lyric width along with drum ink before allocating timed space. */
-function entrySpacing(entry: GraphicalStaffEntry): RowEntry {
-  let left = 0,
-    right = 12;
-  for (const voice of entry.graphicalVoiceEntries) {
-    if (voice.parentVoiceEntry.IsGrace) continue;
-    const metrics = (voice as VexFlowVoiceEntry).vfStaveNote
-      ?.getTickContext()
-      ?.getMetrics();
-    left = Math.max(left, metrics?.extraLeftPx || 0);
-    right = Math.max(
-      right,
-      (metrics?.notePx || 12) + (metrics?.extraRightPx || 0),
+/** OSMD builds systems inside render(). Scope its native width policy to this render,
+ * retaining source row breaks and native barlines. Only authored full-width rows expand. */
+export function renderTimeSpacedScore(
+  osmd: OpenSheetMusicDisplay,
+  {
+    printHost,
+    alignSystems,
+    fullWidthSystems = new Set<number>(),
+  }: {
+    printHost?: HTMLElement;
+    alignSystems: boolean;
+    fullWidthSystems?: ReadonlySet<number>;
+  },
+) {
+  const prototype = MusicSystemBuilder.prototype as unknown as {
+    rules: typeof osmd.EngravingRules;
+    currentSystemParams: {
+      currentSystem: MusicSystem;
+      currentWidth: number;
+      currentSystemFixWidth: number;
+      currentSystemVarWidth: number;
+    };
+    addBeginInstructions(
+      row: VexFlowMeasure[],
+      systemStart: boolean,
+      firstSource: boolean,
+    ): number;
+    calculateXScalingFactor(fixed: number, variable: number): number;
+    stretchMusicSystem(last: boolean): void;
+  };
+  const scaling = prototype.calculateXScalingFactor;
+  const stretch = prototype.stretchMusicSystem;
+  const instructions = prototype.addBeginInstructions;
+  let systemStartWidth: number | undefined;
+  prototype.addBeginInstructions = function (row, systemStart, firstSource) {
+    const width = instructions.call(this, row, systemStart, firstSource);
+    if (this.rules !== osmd.EngravingRules) return width;
+    for (const measure of row)
+      if (measure)
+        measure.beginInstructionsWidth = visibleBeginInstructions(measure);
+    let visibleWidth = Math.max(
+      0,
+      ...row.map((measure) => measure?.beginInstructionsWidth ?? 0),
     );
+    if (alignSystems && systemStart) {
+      // Share only the first row's visible instruction space. Clefs omitted
+      // before native layout contribute nothing to this alignment gutter.
+      systemStartWidth ??= visibleWidth;
+      visibleWidth = Math.max(visibleWidth, systemStartWidth);
+      for (const measure of row)
+        if (measure) measure.beginInstructionsWidth = visibleWidth;
+    }
+    return visibleWidth;
+  };
+  prototype.calculateXScalingFactor = function (fixed, variable) {
+    return this.rules === osmd.EngravingRules
+      ? 1
+      : scaling.call(this, fixed, variable);
+  };
+  let regularSystemWidth: number | undefined;
+  let firstSystemWidth: number | undefined;
+  let expandedBeforeReference = false;
+  prototype.stretchMusicSystem = function (last) {
+    if (this.rules === osmd.EngravingRules && alignSystems) {
+      const { currentSystem } = this.currentSystemParams;
+      const measures = currentSystem.StaffLines[0].Measures;
+      const realMeasures = measures.filter((m) => !m.IsExtraGraphicalMeasure);
+      let width = measures.reduce(
+        (sum, m) =>
+          sum +
+          m.beginInstructionsWidth +
+          m.minimumStaffEntriesWidth +
+          m.endInstructionsWidth,
+        0,
+      );
+      firstSystemWidth ??= width;
+      if (
+        realMeasures.length === 4 &&
+        realMeasures.every(
+          (m) => m.parentSourceMeasure.Duration.RealValue === 1,
+        )
+      ) {
+        regularSystemWidth ??= width;
+        const tail = Math.max(0, regularSystemWidth - width);
+        // Starts already align; absorb any remaining native end-instruction
+        // width difference here without stretching the rhythmic axis.
+        for (const staff of currentSystem.StaffLines)
+          staff.Measures.filter((m) => !m.IsExtraGraphicalMeasure).at(
+            -1,
+          )!.endInstructionsWidth += tail;
+        this.currentSystemParams.currentWidth += tail;
+        this.currentSystemParams.currentSystemFixWidth += tail;
+        width += tail;
+      }
+      if (
+        fullWidthSystems.size &&
+        realMeasures.length &&
+        fullWidthSystems.has(
+          realMeasures[0].parentSourceMeasure.measureListIndex,
+        )
+      ) {
+        expandedBeforeReference ||= regularSystemWidth === undefined;
+        const extra = expandFullWidthSystem(
+          currentSystem,
+          (regularSystemWidth ?? firstSystemWidth) - width,
+        );
+        this.currentSystemParams.currentWidth += extra;
+        this.currentSystemParams.currentSystemVarWidth += extra;
+      }
+    }
+    stretch.call(this, this.rules === osmd.EngravingRules || last);
+  };
+  try {
+    osmd.render();
+    // A declared row can precede the first normal reference row. Reuse the
+    // measured reference once; ordinary scores and ending rows need no extra pass.
+    if (expandedBeforeReference && regularSystemWidth !== undefined)
+      osmd.render();
+    if (printHost && fitPrintedSystemWidth(osmd, printHost)) osmd.render();
+  } finally {
+    prototype.addBeginInstructions = instructions;
+    prototype.calculateXScalingFactor = scaling;
+    prototype.stretchMusicSystem = stretch;
   }
-  for (const lyric of entry.LyricsEntries) {
-    const box = lyric.GraphicalLabel.PositionAndShape;
-    left = Math.max(left, -box.BorderMarginLeft * 10);
-    right = Math.max(right, box.BorderMarginRight * 10);
-  }
-  return { q: entry.relInMeasureTimestamp.RealValue * 4, left, right };
 }
 
-function rowMinimum(entries: RowEntry[]) {
-  return entries
-    .slice(1)
-    .reduce((sum, e, i) => sum + entries[i].right + e.left + 4, 0);
-}
-/** Reserve glyph/ornament clearance, then distribute spare space by musical time. */
-export function rowPositions(
-  entries: RowEntry[],
-  offset: number,
-  width: number,
-) {
-  const spare = Math.max(0, width - offset - rowMinimum(entries));
-  const duration = entries.at(-1)!.q;
-  let used = offset;
-  return entries.map((e, i) => {
-    if (i) used += entries[i - 1].right + e.left + 4;
-    return used + (spare * e.q) / duration;
-  });
+/** Fit authored rows once without disabling vertical pagination. Native widths
+ * include instruction space; only the canvas grows, never notes or rhythm. */
+function fitPrintedSystemWidth(
+  osmd: OpenSheetMusicDisplay,
+  host: HTMLElement,
+): boolean {
+  if (
+    !osmd.Sheet.SourceMeasures.some(
+      (m) => m.printNewSystemXml || m.printNewPageXml,
+    )
+  )
+    return false;
+  let width = 0,
+    maximum = 0;
+  for (const [index, row] of osmd.GraphicSheet.MeasureList.entries()) {
+    const measure = row[0],
+      source = measure.parentSourceMeasure;
+    if (!index || source.printNewSystemXml || source.printNewPageXml) {
+      maximum = Math.max(maximum, width);
+      width =
+        measure.PositionAndShape.AbsolutePosition.x -
+        measure.ParentMusicSystem.Parent.PositionAndShape.AbsolutePosition.x;
+    }
+    width += measure.PositionAndShape.Size.width;
+  }
+  const pixels = Math.ceil(
+    (Math.max(maximum, width) + osmd.EngravingRules.PageRightMargin) *
+      10 *
+      osmd.Zoom,
+  );
+  if (pixels <= host.getBoundingClientRect().width) return false;
+  host.style.width = `${pixels}px`;
+  return true;
 }
 
 /** Barline stops were interpreted as the next system's x=0 in OSMD 2.1.x.
@@ -225,9 +298,4 @@ export function installMeasureEndWedges(osmd: OpenSheetMusicDisplay) {
       end.EndOffsetFraction = offset;
     }
   };
-}
-
-/** A 64th occupies one sixteenth of a quarter; tuplets retain fractional positions. */
-export function gridPosition(quarter: number, duration: number, width: number) {
-  return width * gridPhase(quarter, duration) - RIBBON_HEAD_ANCHOR;
 }

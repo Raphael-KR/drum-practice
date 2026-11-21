@@ -27,14 +27,3 @@
   width: 100%;
   height: 100%;
 }
-
-#screen-dialog #view[hidden] {
-  display: none;
-}
-#review-help {
-  flex-basis: 100%;
-}
-#review-help p {
-  font-size: 14px;
-  margin: 6px 0;
-}

@@ -10,14 +10,14 @@ import type { GraphicalStaffEntry } from "opensheetmusicdisplay/build/dist/src/M
 import type { Song } from "../../model/model";
 import { parseMusicXML } from "./musicxml-parse";
 import { readCanonicalLyrics } from "./canonical-lyric-read";
+import { lyricSVGClass } from "./score-lyric-id";
 import { canonicalManifest } from "./canonical-metadata";
-import { writeLyricVoices } from "./canonical-lyric-voice";
 import { SCORE_TEXT_FONT_FAMILY } from "./score-text-font";
 
 /** Shared SVG lyric colour; embedded images cannot inherit the host CSS accent. */
 export const SCORE_LYRIC_COLOR = "#3f74d4";
 
-/** Read once before engraving passes; legacy voices are upgraded only in this copy. */
+/** Read final display groups and untimed measure text before engraving. */
 export function prepareScoreLyrics(
   source: string,
   partId: string,
@@ -32,15 +32,7 @@ export function prepareScoreLyrics(
       lyric.text,
     ]),
   );
-  if (data?.version !== 1) return { xml: source, texts };
-  const part = Array.from(
-    parsed.document.querySelectorAll("score-partwise > part"),
-  ).find((part) => part.id === partId)!;
-  // v1's independent part superseded any imported drum-note lyrics.
-  const lyrics = readCanonicalLyrics(parsed.document, data);
-  part.querySelectorAll("note > lyric").forEach((lyric) => lyric.remove());
-  writeLyricVoices(part, { measures: data.measures, lyrics });
-  return { xml: new XMLSerializer().serializeToString(parsed.document), texts };
+  return { xml: source, texts };
 }
 
 interface LyricsCalculator {
@@ -55,9 +47,12 @@ export function installScoreLyrics(
   osmd: OpenSheetMusicDisplay,
   textByIndex: Map<number, string>,
   timeline = false,
+  document?: Document,
 ) {
   const measureLabels = new Map<StaffLine, GraphicalLabel[]>();
-  if (!textByIndex.size && !timeline) return measureLabels;
+  const manifest = document && canonicalManifest(document);
+  const lyrics =
+    manifest && document ? readCanonicalLyrics(document, manifest) : [];
   const calculator = osmd.GraphicSheet
     .GetCalculator as unknown as LyricsCalculator;
   const calculate =
@@ -66,6 +61,24 @@ export function installScoreLyrics(
     const inkBottom = staff.SkyBottomLineCalculator.getBottomLineMax();
     const entries = calculate(staff, verses);
     if (staff.ParentStaff.idInMusicSheet !== 0) return entries;
+    for (const entry of entries) {
+      const measure =
+        manifest?.measures[
+          entry.parentMeasure.parentSourceMeasure.measureListIndex
+        ];
+      const at = entry.relInMeasureTimestamp.RealValue * 4;
+      const owned = lyrics.find(
+        (lyric) =>
+          lyric.scorePosition &&
+          lyric.scorePosition.measureId === measure?.id &&
+          Math.abs(lyric.scorePosition.quarterOffset - at) < 1e-8,
+      );
+      if (owned)
+        for (const lyric of entry.LyricsEntries)
+          // OSMD passes SVGClass to classList.add as one token. Repeated layout
+          // must reuse the identity rather than append classes or whitespace.
+          lyric.GraphicalLabel.SVGClass = lyricSVGClass(owned.id);
+    }
     if (timeline) {
       // Time-spaced lyrics can fall between narrow stems in OSMD's X-range
       // sampling. Reserve the measure's ink floor, retaining native verse gaps.

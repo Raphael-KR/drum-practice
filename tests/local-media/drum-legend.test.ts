@@ -8,6 +8,16 @@ import {
 } from "../../src/modules/score/drum-legend";
 const parse = (s: string) =>
   new DOMParser().parseFromString(s, "application/xml");
+it("opening the unchanged warmup score preserves its canonical bytes", async () => {
+  const zip = await JSZip.loadAsync(
+    readFileSync("public/scores/preplay-warmup.drumscore"),
+  );
+  const { canonicalXML } = JSON.parse(
+    await zip.file("manifest.json")!.async("string"),
+  );
+  expect(normalizeDrumScore(canonicalXML)).toBe(canonicalXML);
+}, 30000);
+
 function events(doc: Document, repair = false) {
   const result: string[] = [];
   for (const [pi, p] of [...doc.querySelectorAll("part")].entries())

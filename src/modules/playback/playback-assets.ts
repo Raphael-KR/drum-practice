@@ -1,5 +1,4 @@
 import {
-  RIBBON_HEAD_ANCHOR,
   RIBBON_TIMELINE_VERSION,
   validateRibbonTimeline,
 } from "../score/ribbon-timeline";
@@ -16,25 +15,11 @@ import {
   type StaffPosition,
 } from "../score/practice-staff-layout";
 export interface RibbonAsset {
-  row?: RibbonAsset;
-  grid?: RibbonAsset;
   region: Region;
-  phase: number;
   staff: StaffPosition;
   url: string;
   ratio: number;
   highlight?: HighlightPage;
-}
-/** Select native geometry matching the view's bar widths; retain legacy fallbacks. */
-export function selectPlaybackEngraving(
-  asset: RibbonAsset | undefined,
-  uniform = false,
-  view = "rows",
-) {
-  return (
-    (uniform ? asset?.grid : undefined) ??
-    (view === "ribbon" ? asset : (asset?.row ?? asset))
-  );
 }
 export interface PlaybackAssets {
   urls: string[];
@@ -48,11 +33,7 @@ export function releasePlaybackAssets(
 ) {
   assets.urls.forEach((url) => URL.revokeObjectURL(url));
   new Set(
-    Array.from(assets.ribbon?.values() ?? []).flatMap((a) => [
-      a.url,
-      ...(a.row ? [a.row.url] : []),
-      ...(a.grid ? [a.grid.url] : []),
-    ]),
+    Array.from(assets.ribbon?.values() ?? [], (asset) => asset.url),
   ).forEach((url) => URL.revokeObjectURL(url));
 }
 /** Prepare transactionally: callers retain their current assets until this succeeds. */
@@ -162,69 +143,54 @@ export async function preparePlaybackAssets(
     if (song.scoreFormat !== "musicxml")
       framePracticeStaffs(song.regions, result.practiceStaffs);
     if (timeline) {
-      for (const data of [
-        timeline,
-        ...(timeline.rows ? [timeline.rows] : []),
-        ...(timeline.grid ? [timeline.grid] : []),
-      ]) {
-        const ribbonSong = { ...song, regions: data.regions };
-        const prepared = await preparePlaybackAssets(
-          data.pages.map(
-            (s: string) => new Blob([s], { type: "image/svg+xml" }),
+      const ribbonSong = { ...song, regions: timeline.regions };
+      const prepared = await preparePlaybackAssets(
+        timeline.pages.map(
+          (s: string) => new Blob([s], { type: "image/svg+xml" }),
+        ),
+        ribbonSong,
+        {
+          ...options,
+          nativeStaffs: new Map(
+            timeline.regions.map((r: Region, i: number) => [
+              r.id,
+              timeline.staffs[i],
+            ]),
           ),
-          ribbonSong,
-          {
-            ...options,
-            nativeStaffs: new Map(
-              data.regions.map((r: Region, i: number) => [
-                r.id,
-                data.staffs[i],
-              ]),
-            ),
-          },
-          false,
+        },
+        false,
+      );
+      try {
+        const ratios = prepared.pageRatios;
+        // Native words can extend above the minimum eight-space frame.
+        // Keep complete source-system crops visible without changing glyph scale.
+        framePracticeStaffs(
+          timeline.regions,
+          prepared.practiceStaffs,
+          MUSICXML_TOP_SPACES,
         );
-        try {
-          const ratios = prepared.pageRatios;
-          // Native words can extend above the minimum eight-space frame.
-          // Keep complete source-system crops visible without changing glyph scale.
-          framePracticeStaffs(
-            data.regions,
-            prepared.practiceStaffs,
-            MUSICXML_TOP_SPACES,
-          );
-          data.regions.forEach((region: Region, index: number) => {
-            const staff = prepared.practiceStaffs.get(region.id);
-            if (!staff || !Number.isFinite(staff.top) || !(staff.gap > 0))
-              throw Error("Missing ribbon staff geometry");
-            const asset: RibbonAsset = {
-              region,
-              staff: {
-                ...staff,
-                nativePageRatio: ratios[region.page],
-                ribbonQuarterInGaps:
-                  data.quarter /
-                  (staff.gap * prepared.highlightPages[region.page]!.height),
-              },
-              phase:
-                (data.offset + RIBBON_HEAD_ANCHOR) /
-                ((data.uniformQuarters ??
-                  (song.measures[index].beats * 4) /
-                    song.measures[index].denominator) *
-                  data.quarter),
-              url: prepared.urls[region.page],
-              ratio: ratios[region.page],
-              highlight: prepared.highlightPages[region.page],
-            };
-            if (data === timeline) result.ribbon!.set(index, asset);
-            else if (data === timeline.grid)
-              result.ribbon!.get(index)!.grid = asset;
-            else result.ribbon!.get(index)!.row = asset;
-          });
-        } catch (error) {
-          releasePlaybackAssets(prepared);
-          throw error;
-        }
+        timeline.regions.forEach((region: Region, index: number) => {
+          const staff = prepared.practiceStaffs.get(region.id);
+          if (!staff || !Number.isFinite(staff.top) || !(staff.gap > 0))
+            throw Error("Missing ribbon staff geometry");
+          const asset: RibbonAsset = {
+            region,
+            staff: {
+              ...staff,
+              nativePageRatio: ratios[region.page],
+              ribbonQuarterInGaps:
+                timeline.quarter /
+                (staff.gap * prepared.highlightPages[region.page]!.height),
+            },
+            url: prepared.urls[region.page],
+            ratio: ratios[region.page],
+            highlight: prepared.highlightPages[region.page],
+          };
+          result.ribbon!.set(index, asset);
+        });
+      } catch (error) {
+        releasePlaybackAssets(prepared);
+        throw error;
       }
     }
     return result;
